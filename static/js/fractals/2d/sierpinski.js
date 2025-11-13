@@ -1,0 +1,123 @@
+import * as THREE from 'three';
+import { vertexShader, createFragmentShader, getColorSchemeIndex } from '../utils.js';
+
+// Sierpinski triangle using barycentric coordinate method
+const fractalFunction = `
+    // Define the three vertices of the base triangle
+    vec2 v0 = vec2(0.0, 0.866);      // Top vertex
+    vec2 v1 = vec2(-1.0, -0.866);   // Bottom left
+    vec2 v2 = vec2(1.0, -0.866);    // Bottom right
+    
+    // Compute barycentric coordinates
+    vec3 barycentric(vec2 p, vec2 a, vec2 b, vec2 c) {
+        vec2 v0 = c - a;
+        vec2 v1 = b - a;
+        vec2 v2 = p - a;
+        
+        float dot00 = dot(v0, v0);
+        float dot01 = dot(v0, v1);
+        float dot02 = dot(v0, v2);
+        float dot11 = dot(v1, v1);
+        float dot12 = dot(v1, v2);
+        
+        float invDenom = 1.0 / (dot00 * dot11 - dot01 * dot01);
+        float u = (dot11 * dot02 - dot01 * dot12) * invDenom;
+        float v = (dot00 * dot12 - dot01 * dot02) * invDenom;
+        
+        return vec3(1.0 - u - v, v, u);
+    }
+    
+    int computeFractal(vec2 c) {
+        vec2 p = c;
+        
+        // Iteratively subdivide using barycentric coordinates
+        for (int i = 0; i < 200; i++) {
+            if (i >= int(uIterations)) break;
+            
+            // Get barycentric coordinates
+            vec3 bary = barycentric(p, v0, v1, v2);
+            
+            // Check if point is outside the triangle
+            if (bary.x < 0.0 || bary.y < 0.0 || bary.z < 0.0) {
+                return i;
+            }
+            
+            // Determine which sub-triangle the point is in
+            // The Sierpinski triangle excludes the center triangle
+            // We check which "corner" of the triangle the point is closest to
+            float maxBary = max(max(bary.x, bary.y), bary.z);
+            
+            // If the point is in the center (all barycentric coords > 1/3), it's excluded
+            if (bary.x > 0.333 && bary.y > 0.333 && bary.z > 0.333) {
+                return i;
+            }
+            
+            // Map to the corresponding sub-triangle
+            // Scale and translate based on which vertex is dominant
+            // We scale by 2.0 to map from the sub-triangle back to the full triangle
+            if (bary.x >= bary.y && bary.x >= bary.z) {
+                // Closest to v0 - map to top sub-triangle
+                p = (p - v0) * 2.0 + v0;
+            } else if (bary.y >= bary.z) {
+                // Closest to v1 - map to bottom-left sub-triangle
+                p = (p - v1) * 2.0 + v1;
+            } else {
+                // Closest to v2 - map to bottom-right sub-triangle
+                p = (p - v2) * 2.0 + v2;
+            }
+        }
+        
+        // If we completed all iterations, the point is in the set
+        return int(uIterations);
+    }
+`;
+
+const fragmentShader = createFragmentShader(fractalFunction);
+
+export function render(scene, camera, renderer, params, fractalPlane) {
+  scene.clear();
+
+  if (fractalPlane) {
+    fractalPlane.geometry.dispose();
+    fractalPlane.material.dispose();
+    fractalPlane = null;
+  }
+
+  const container = renderer.domElement.parentElement;
+  const containerRect = container.getBoundingClientRect();
+  const aspect =
+    (containerRect.width || renderer.domElement.width) /
+    (containerRect.height || renderer.domElement.height);
+  const viewSize = 2;
+  const geometry = new THREE.PlaneGeometry(viewSize * 2 * aspect, viewSize * 2);
+  const material = new THREE.ShaderMaterial({
+    vertexShader,
+    fragmentShader,
+    uniforms: {
+      uTime: { value: 0 },
+      uIterations: { value: params.iterations },
+      uZoom: { value: params.zoom },
+      uOffset: { value: new THREE.Vector2(params.offset.x, params.offset.y) },
+      uResolution: {
+        value: new THREE.Vector2(renderer.domElement.width, renderer.domElement.height),
+      },
+      uJuliaC: { value: new THREE.Vector2(0, 0) },
+      uColorScheme: { value: getColorSchemeIndex(params.colorScheme) },
+      uXScale: { value: params.xScale },
+      uYScale: { value: params.yScale },
+    },
+  });
+
+  const plane = new THREE.Mesh(geometry, material);
+  plane.position.set(0, 0, 0);
+  scene.add(plane);
+
+  camera.position.set(0, 0, 1);
+  camera.lookAt(0, 0, 0);
+  camera.updateProjectionMatrix();
+
+  renderer.render(scene, camera);
+  return plane;
+}
+
+export const is2D = true;
