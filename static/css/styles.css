@@ -158,12 +158,59 @@ header p {
   margin: 5px 0;
 }
 
+/* Loading bar */
+.loading-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0%;
+  height: 4px;
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 50%, #667eea 100%);
+  background-size: 200% 100%;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 1000;
+  pointer-events: none;
+  box-shadow: 0 0 12px rgb(102 126 234 / 80%), 0 2px 8px rgb(102 126 234 / 60%);
+  border-bottom: 1px solid rgb(255 255 255 / 20%);
+}
+
+.loading-bar.active {
+  opacity: 0.95;
+  animation: loading-progress 0.8s ease-out, loading-shimmer 1.2s linear infinite;
+}
+
+@keyframes loading-progress {
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+@keyframes loading-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
 /* Fullscreen styles */
 .canvas-container:fullscreen {
   width: 100vw;
   height: 100vh;
   border-radius: 0;
   background: #000;
+}
+
+.canvas-container:fullscreen .loading-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
 }
 
 .canvas-container:-webkit-full-screen {
@@ -173,6 +220,13 @@ header p {
   background: #000;
 }
 
+.canvas-container:-webkit-full-screen .loading-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+}
+
 .canvas-container:-moz-full-screen {
   width: 100vw;
   height: 100vh;
@@ -180,11 +234,25 @@ header p {
   background: #000;
 }
 
+.canvas-container:-moz-full-screen .loading-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+}
+
 .canvas-container:-ms-fullscreen {
   width: 100vw;
   height: 100vh;
   border-radius: 0;
   background: #000;
+}
+
+.canvas-container:-ms-fullscreen .loading-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
 }
 
 @media (width <= 768px) {

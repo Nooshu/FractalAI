@@ -2,9 +2,7 @@ import * as THREE from 'three';
 
 // Application state
 let scene, camera, renderer;
-let camera2D, camera3D; // Separate cameras for 2D and 3D
 let currentFractalType = 'mandelbrot';
-let is2D = true;
 let lastTime = 0;
 let frameCount = 0;
 let fps = 0;
@@ -12,12 +10,19 @@ let fractalPlane = null;
 let currentFractalModule = null; // Currently loaded fractal module
 let fractalCache = new Map(); // Cache for loaded fractal modules
 
+// Render throttling for smooth interaction
+let renderScheduled = false;
+let pendingRender = false;
+
+// Progressive rendering state
+let progressiveRenderTimeout = null;
+let currentProgressiveIterations = 0;
+let targetIterations = 0;
+let isProgressiveRendering = false;
+
 // Function to calculate pixel ratio based on zoom level
 // Higher zoom = higher pixel ratio for better quality
 function calculatePixelRatio() {
-  if (!is2D) {
-    return window.devicePixelRatio || 1;
-  }
   // Scale pixel ratio with zoom, but cap it to avoid performance issues
   // Base pixel ratio * sqrt(zoom) gives a good balance
   const basePixelRatio = window.devicePixelRatio || 1;
@@ -33,13 +38,38 @@ function updatePixelRatio() {
   }
 }
 
+// Global function to update renderer size (needed for fullscreen and double-click)
+let updateRendererSize = null;
+
+// Throttled render function - batches multiple render requests
+function scheduleRender() {
+  // Show loading bar immediately when render is scheduled
+  showLoadingBar();
+  
+  if (!renderScheduled) {
+    renderScheduled = true;
+    requestAnimationFrame(() => {
+      renderScheduled = false;
+      if (pendingRender) {
+        pendingRender = false;
+        // Use progressive rendering for faster feedback
+        renderFractalProgressive();
+      } else {
+        // Use progressive rendering for faster feedback
+        renderFractalProgressive();
+      }
+    });
+  } else {
+    pendingRender = true;
+  }
+}
+
+
 // Fractal parameters
 let params = {
   iterations: 100,
   colorScheme: 'classic',
   juliaC: new THREE.Vector2(-0.7269, 0.1889),
-  power: 8,
-  resolution: 100,
   center: new THREE.Vector2(0, 0),
   zoom: 1,
   offset: new THREE.Vector2(0, 0),
@@ -67,11 +97,10 @@ function init() {
 
   const containerSize = getContainerSize();
 
-  // Camera setup - separate cameras for 2D and 3D
-  // 2D: OrthographicCamera to fill viewport exactly
+  // Camera setup - OrthographicCamera for 2D fractals
   const aspect = containerSize.width / containerSize.height;
   const viewSize = 2; // Size of the view in world units
-  camera2D = new THREE.OrthographicCamera(
+  camera = new THREE.OrthographicCamera(
     -viewSize * aspect, // left
     viewSize * aspect, // right
     viewSize, // top
@@ -79,42 +108,39 @@ function init() {
     0.1,
     10
   );
-  camera2D.position.z = 1;
-
-  // 3D: PerspectiveCamera for 3D fractals
-  camera3D = new THREE.PerspectiveCamera(75, aspect, 0.1, 1000);
-  camera3D.position.z = 5;
-
-  // Set active camera based on initial fractal type
-  camera = is2D ? camera2D : camera3D;
+  camera.position.z = 1;
 
   // Renderer setup
   renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
   
   // Function to update renderer size and pixel ratio
-  const updateRendererSize = () => {
-    const size = getContainerSize();
+  updateRendererSize = () => {
+    // Get container from canvas parent (use renderer.domElement which is the canvas)
+    const canvasElement = renderer.domElement;
+    const container = canvasElement.parentElement;
+    const rect = container.getBoundingClientRect();
+    const size = {
+      width: rect.width || container.clientWidth || 800,
+      height: rect.height || container.clientHeight || 600,
+    };
+    
     updatePixelRatio();
     renderer.setSize(size.width, size.height);
 
     // Override any inline styles Three.js might set
-    canvas.style.width = '100%';
-    canvas.style.height = '100%';
-    canvas.style.display = 'block';
+    canvasElement.style.width = '100%';
+    canvasElement.style.height = '100%';
+    canvasElement.style.display = 'block';
 
     const aspect = size.width / size.height;
     const viewSize = 2;
 
-    // Update 2D camera (orthographic)
-    camera2D.left = -viewSize * aspect;
-    camera2D.right = viewSize * aspect;
-    camera2D.top = viewSize;
-    camera2D.bottom = -viewSize;
-    camera2D.updateProjectionMatrix();
-
-    // Update 3D camera (perspective)
-    camera3D.aspect = aspect;
-    camera3D.updateProjectionMatrix();
+    // Update camera (orthographic)
+    camera.left = -viewSize * aspect;
+    camera.right = viewSize * aspect;
+    camera.top = viewSize;
+    camera.bottom = -viewSize;
+    camera.updateProjectionMatrix();
   };
 
   // Initial size setup
@@ -149,33 +175,23 @@ async function loadFractal(fractalType) {
   // Check cache first
   if (fractalCache.has(fractalType)) {
     currentFractalModule = fractalCache.get(fractalType);
-    is2D = currentFractalModule.is2D;
     return;
   }
 
   try {
-    // Determine if this is a 2D or 3D fractal
-    const is2DFractal = ['mandelbrot', 'julia', 'sierpinski', 'koch'].includes(fractalType);
-    const subfolder = is2DFractal ? '2d' : '3d';
-
-    // Dynamically import the fractal module from the appropriate subfolder
-    // Use explicit path to ensure Vite can resolve it
-    const module = await import(`./fractals/${subfolder}/${fractalType}.js`);
+    // All fractals are 2D, load from 2d folder
+    const module = await import(`./fractals/2d/${fractalType}.js`);
 
     // Verify the module has required exports
     if (!module.render) {
       throw new Error(`Fractal module ${fractalType} missing render function`);
     }
-    if (module.is2D === undefined) {
-      throw new Error(`Fractal module ${fractalType} missing is2D export`);
-    }
 
     currentFractalModule = module;
-    is2D = module.is2D;
 
     // Cache the module
     fractalCache.set(fractalType, module);
-    console.log(`Loaded fractal module: ${fractalType} (is2D: ${is2D})`);
+    console.log(`Loaded fractal module: ${fractalType}`);
   } catch (error) {
     console.error(`Failed to load fractal: ${fractalType}`, error);
     // Fallback to mandelbrot if loading fails
@@ -195,32 +211,55 @@ function setupControls() {
   let lastMouseY = 0;
 
   canvas.addEventListener('mousedown', (e) => {
-    isDragging = true;
-    lastMouseX = e.clientX;
-    lastMouseY = e.clientY;
-  });
-
-  canvas.addEventListener('mousemove', (e) => {
-    if (isDragging && is2D) {
-      const deltaX = e.clientX - lastMouseX;
-      const deltaY = e.clientY - lastMouseY;
-      params.offset.x -= deltaX * 0.001 * params.zoom;
-      params.offset.y += deltaY * 0.001 * params.zoom;
+    // Only start dragging on left mouse button
+    if (e.button === 0) {
+      isDragging = true;
       lastMouseX = e.clientX;
       lastMouseY = e.clientY;
-      renderFractal();
+      canvas.style.cursor = 'grabbing';
+      // Prevent text selection while dragging
+      e.preventDefault();
     }
   });
 
-  canvas.addEventListener('mouseup', () => {
-    isDragging = false;
+  // Use window mousemove so dragging continues even if mouse leaves canvas
+  window.addEventListener('mousemove', (e) => {
+    if (isDragging) {
+      const deltaX = e.clientX - lastMouseX;
+      const deltaY = e.clientY - lastMouseY;
+      // Adjust sensitivity based on zoom level for better control
+      const sensitivity = 0.001 * params.zoom;
+      params.offset.x -= deltaX * sensitivity;
+      params.offset.y += deltaY * sensitivity;
+      lastMouseX = e.clientX;
+      lastMouseY = e.clientY;
+      scheduleRender(); // Use throttled render for smooth panning
+    }
+  });
+
+  // Use window mouseup so dragging stops even if mouse is outside canvas
+  window.addEventListener('mouseup', (e) => {
+    if (isDragging && e.button === 0) {
+      isDragging = false;
+      canvas.style.cursor = 'grab';
+    }
+  });
+
+  // Also handle mouse leave to reset cursor if drag ends
+  canvas.addEventListener('mouseleave', () => {
+    if (!isDragging) {
+      canvas.style.cursor = 'grab';
+    }
   });
 
   // Double-click to zoom into a point
   canvas.addEventListener('dblclick', (e) => {
-    if (!is2D) return; // Only for 2D fractals
-    
     e.preventDefault();
+    
+    // Ensure renderer size is up-to-date (important for fullscreen mode)
+    if (updateRendererSize) {
+      updateRendererSize();
+    }
     
     // Get canvas bounding rect for mouse position
     const rect = canvas.getBoundingClientRect();
@@ -232,6 +271,12 @@ function setupControls() {
     const displayWidth = rect.width;
     const displayHeight = rect.height;
     
+    // Ensure we have valid dimensions
+    if (displayWidth === 0 || displayHeight === 0) {
+      console.warn('Invalid canvas dimensions for double-click zoom');
+      return;
+    }
+    
     const uvX = mouseX / displayWidth;
     const uvY = mouseY / displayHeight;
     
@@ -241,6 +286,13 @@ function setupControls() {
     // But we use renderer dimensions to match exactly what the shader sees
     const rendererWidth = renderer.domElement.width;
     const rendererHeight = renderer.domElement.height;
+    
+    // Ensure we have valid renderer dimensions
+    if (rendererWidth === 0 || rendererHeight === 0) {
+      console.warn('Invalid renderer dimensions for double-click zoom');
+      return;
+    }
+    
     const aspect = rendererWidth / rendererHeight;
     
     // Convert to fractal coordinates using the exact same formula as the shader
@@ -261,20 +313,15 @@ function setupControls() {
     params.offset.x = fractalX;
     params.offset.y = fractalY;
     
-    renderFractal();
+    // Use progressive rendering for faster feedback
+    renderFractalProgressive();
   });
 
   canvas.addEventListener('wheel', (e) => {
     e.preventDefault();
-    if (is2D) {
-      const zoomFactor = e.deltaY > 0 ? 1.1 : 0.9;
-      params.zoom *= zoomFactor;
-      renderFractal();
-    } else {
-      camera.position.z += e.deltaY * 0.01;
-      camera.position.z = Math.max(1, Math.min(20, camera.position.z));
-      renderFractal();
-    }
+    const zoomFactor = e.deltaY > 0 ? 1.1 : 0.9;
+    params.zoom *= zoomFactor;
+    scheduleRender(); // Use throttled render for smooth zooming
   });
 }
 
@@ -287,25 +334,16 @@ function setupUI() {
   const juliaCRealValue = document.getElementById('julia-c-real-value');
   const juliaCImag = document.getElementById('julia-c-imag');
   const juliaCImagValue = document.getElementById('julia-c-imag-value');
-  const powerSlider = document.getElementById('power');
-  const powerValue = document.getElementById('power-value');
-  const resolutionSlider = document.getElementById('resolution');
-  const resolutionValue = document.getElementById('resolution-value');
   const resetViewBtn = document.getElementById('reset-view');
   const screenshotBtn = document.getElementById('screenshot');
   const fullscreenBtn = document.getElementById('fullscreen');
   const juliaControls = document.getElementById('julia-controls');
-  const controls3D = document.getElementById('3d-controls');
-  const controls2D = document.getElementById('2d-controls');
   const xScaleSlider = document.getElementById('x-scale');
   const xScaleValue = document.getElementById('x-scale-value');
   const yScaleSlider = document.getElementById('y-scale');
   const yScaleValue = document.getElementById('y-scale-value');
 
   const updateFractalBtn = document.getElementById('update-fractal');
-
-  // Set initial visibility of controls based on default fractal type
-  controls2D.style.display = is2D ? 'block' : 'none';
 
   fractalTypeSelect.addEventListener('change', async (e) => {
     currentFractalType = e.target.value;
@@ -328,19 +366,14 @@ function setupUI() {
       await loadFractal(currentFractalType);
       console.log(
         `Fractal type changed to: ${currentFractalType}, module loaded:`,
-        !!currentFractalModule,
-        'is2D:',
-        is2D
+        !!currentFractalModule
       );
     } catch (error) {
       console.error('Failed to load fractal on change:', error);
       return;
     }
 
-    juliaControls.style.display =
-      currentFractalType === 'julia' || currentFractalType === 'julia3d' ? 'block' : 'none';
-    controls3D.style.display = is2D ? 'none' : 'block';
-    controls2D.style.display = is2D ? 'block' : 'none';
+    juliaControls.style.display = currentFractalType === 'julia' ? 'block' : 'none';
 
     params.zoom = 1;
     params.offset.set(0, 0);
@@ -367,18 +400,6 @@ function setupUI() {
   juliaCImag.addEventListener('input', (e) => {
     params.juliaC.y = parseFloat(e.target.value);
     juliaCImagValue.textContent = params.juliaC.y.toFixed(4);
-    // Don't auto-render, wait for update button
-  });
-
-  powerSlider.addEventListener('input', (e) => {
-    params.power = parseFloat(e.target.value);
-    powerValue.textContent = params.power;
-    // Don't auto-render, wait for update button
-  });
-
-  resolutionSlider.addEventListener('input', (e) => {
-    params.resolution = parseInt(e.target.value);
-    resolutionValue.textContent = params.resolution;
     // Don't auto-render, wait for update button
   });
 
@@ -413,11 +434,8 @@ function setupUI() {
       return;
     }
 
-    // Update is2D from the module
-    is2D = currentFractalModule.is2D;
-
     // Reset plane to force recreation with new settings
-    if (is2D && fractalPlane) {
+    if (fractalPlane) {
       fractalPlane.geometry.dispose();
       fractalPlane.material.dispose();
       fractalPlane = null;
@@ -433,9 +451,13 @@ function setupUI() {
         renderFractal();
       } catch (error) {
         console.error('Error rendering fractal:', error);
+        hideLoadingBar();
       } finally {
-        updateFractalBtn.textContent = 'Update Fractal';
-        updateFractalBtn.disabled = false;
+        // Reset button after rendering completes
+        setTimeout(() => {
+          updateFractalBtn.textContent = 'Update Fractal';
+          updateFractalBtn.disabled = false;
+        }, 100);
       }
     });
   });
@@ -449,13 +471,7 @@ function setupUI() {
     yScaleSlider.value = 1.0;
     xScaleValue.textContent = '1.0';
     yScaleValue.textContent = '1.0';
-    if (is2D) {
-      camera2D.position.set(0, 0, 1);
-      camera = camera2D;
-    } else {
-      camera3D.position.set(0, 0, 5);
-      camera = camera3D;
-    }
+    camera.position.set(0, 0, 1);
     camera.lookAt(0, 0, 0);
     renderFractal();
   });
@@ -504,13 +520,19 @@ function setupUI() {
     );
   };
 
-  // Update button text based on fullscreen state
+  // Update button text and renderer size based on fullscreen state
   const updateFullscreenButton = () => {
     if (isFullscreen()) {
       fullscreenBtn.textContent = 'Exit Fullscreen';
     } else {
       fullscreenBtn.textContent = 'View in Fullscreen';
     }
+    // Force renderer size update when fullscreen changes
+    // Use a small delay to ensure the DOM has updated
+    setTimeout(() => {
+      updateRendererSize();
+      renderFractal();
+    }, 100);
   };
 
   // Listen for fullscreen changes
@@ -533,19 +555,119 @@ function setupUI() {
   });
 }
 
+function showLoadingBar() {
+  const loadingBar = document.getElementById('loading-bar');
+  if (loadingBar) {
+    loadingBar.classList.remove('active');
+    // Force reflow to reset animation
+    void loadingBar.offsetWidth;
+    loadingBar.classList.add('active');
+  }
+}
+
+function hideLoadingBar() {
+  const loadingBar = document.getElementById('loading-bar');
+  if (loadingBar) {
+    loadingBar.classList.remove('active');
+  }
+}
+
+function renderFractalProgressive(startIterations = null) {
+  if (!currentFractalModule || !currentFractalModule.render) {
+    hideLoadingBar();
+    return;
+  }
+
+  // Cancel any existing progressive render
+  if (progressiveRenderTimeout) {
+    clearTimeout(progressiveRenderTimeout);
+    progressiveRenderTimeout = null;
+  }
+
+  targetIterations = params.iterations;
+  
+  // If we have an existing plane, update it progressively
+  if (fractalPlane && fractalPlane.material && fractalPlane.material.uniforms) {
+    isProgressiveRendering = true;
+    
+    // Update pixel ratio based on zoom level
+    updatePixelRatio();
+    
+    // Start with low quality for immediate feedback
+    const initialIterations = startIterations || Math.max(20, Math.floor(targetIterations * 0.2));
+    currentProgressiveIterations = initialIterations;
+    
+    // Update all uniforms and render immediately
+    fractalPlane.material.uniforms.uIterations.value = currentProgressiveIterations;
+    fractalPlane.material.uniforms.uZoom.value = params.zoom;
+    fractalPlane.material.uniforms.uOffset.value.set(params.offset.x, params.offset.y);
+    fractalPlane.material.uniforms.uXScale.value = params.xScale;
+    fractalPlane.material.uniforms.uYScale.value = params.yScale;
+    
+    // Update resolution in case renderer size changed
+    if (fractalPlane.material.uniforms.uResolution) {
+      fractalPlane.material.uniforms.uResolution.value.set(
+        renderer.domElement.width,
+        renderer.domElement.height
+      );
+    }
+    
+    if (fractalPlane.material.uniforms.uJuliaC) {
+      fractalPlane.material.uniforms.uJuliaC.value.set(params.juliaC.x, params.juliaC.y);
+    }
+    
+    renderer.render(scene, camera);
+    
+    // Progressively increase quality
+    const stepSize = Math.max(10, Math.floor(targetIterations * 0.15));
+    const progressiveStep = () => {
+      if (currentProgressiveIterations < targetIterations) {
+        currentProgressiveIterations = Math.min(
+          currentProgressiveIterations + stepSize,
+          targetIterations
+        );
+        fractalPlane.material.uniforms.uIterations.value = currentProgressiveIterations;
+        renderer.render(scene, camera);
+        
+        // Schedule next step
+        progressiveRenderTimeout = setTimeout(progressiveStep, 16); // ~60fps
+      } else {
+        isProgressiveRendering = false;
+        hideLoadingBar();
+      }
+    };
+    
+    // Start progressive rendering after a short delay
+    progressiveRenderTimeout = setTimeout(progressiveStep, 16);
+    return;
+  }
+  
+  // No existing plane, do full render
+  renderFractal();
+}
+
 function renderFractal() {
   if (!currentFractalModule) {
     console.warn('No fractal module loaded');
+    hideLoadingBar();
     return;
   }
 
   if (!currentFractalModule.render) {
     console.error('Fractal module missing render function:', currentFractalType);
+    hideLoadingBar();
     return;
   }
 
-  // Update is2D from the module to ensure it's correct
-  is2D = currentFractalModule.is2D;
+  // Cancel progressive rendering if active
+  if (progressiveRenderTimeout) {
+    clearTimeout(progressiveRenderTimeout);
+    progressiveRenderTimeout = null;
+    isProgressiveRendering = false;
+  }
+
+  // Show loading bar (if not already shown by scheduleRender)
+  showLoadingBar();
 
   // Update pixel ratio based on zoom level for better quality when zoomed in
   updatePixelRatio();
@@ -553,24 +675,21 @@ function renderFractal() {
   // Clear the scene before rendering
   scene.clear();
 
-  // Clear previous 2D plane if switching to 3D
-  if (!is2D && fractalPlane) {
-    fractalPlane.geometry.dispose();
-    fractalPlane.material.dispose();
-    fractalPlane = null;
-  }
-
-  // Set appropriate camera
-  camera = is2D ? camera2D : camera3D;
-
-  console.log(`Rendering fractal: ${currentFractalType}, is2D: ${is2D}`);
+  console.log(`Rendering fractal: ${currentFractalType}`);
 
   // Call the fractal's render function
-  if (is2D) {
-    fractalPlane = currentFractalModule.render(scene, camera, renderer, params, fractalPlane);
-  } else {
-    currentFractalModule.render(scene, camera, renderer, params);
-  }
+  fractalPlane = currentFractalModule.render(scene, camera, renderer, params, fractalPlane);
+
+  // Hide loading bar after ensuring rendering is complete
+  // Use multiple requestAnimationFrame calls and a small delay to make it more visible
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      // Add a small delay so the loading bar is visible even for fast renders
+      setTimeout(() => {
+        hideLoadingBar();
+      }, 100);
+    });
+  });
 }
 
 function animate() {
@@ -586,12 +705,8 @@ function animate() {
     document.getElementById('fps').textContent = `FPS: ${fps}`;
   }
 
-  // Rotate 3D fractals
-  if (!is2D && scene.children.length > 0) {
-    scene.rotation.y += 0.005;
-    renderer.render(scene, camera);
-  } else if (is2D && fractalPlane) {
-    // Update time for 2D shaders if needed
+  // Update time for shaders if needed
+  if (fractalPlane && fractalPlane.material && fractalPlane.material.uniforms) {
     fractalPlane.material.uniforms.uTime.value = currentTime / 1000;
     renderer.render(scene, camera);
   }
