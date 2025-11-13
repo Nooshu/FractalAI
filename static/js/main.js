@@ -20,6 +20,11 @@ let currentProgressiveIterations = 0;
 let targetIterations = 0;
 let isProgressiveRendering = false;
 
+// Frame cache for rendered fractals
+let frameCache = new Map();
+const MAX_CACHE_SIZE = 10; // Maximum number of cached frames
+let cachedDisplayPlane = null; // Plane for displaying cached frames
+
 // Function to calculate pixel ratio based on zoom level
 // Higher zoom = higher pixel ratio for better quality
 function calculatePixelRatio() {
@@ -40,6 +45,71 @@ function updatePixelRatio() {
 
 // Global function to update renderer size (needed for fullscreen and double-click)
 let updateRendererSize = null;
+
+// Generate cache key from view parameters
+function generateCacheKey() {
+  if (!renderer) return null;
+  
+  // Round values to avoid floating point precision issues
+  const zoom = Math.round(params.zoom * 1000) / 1000;
+  const offsetX = Math.round(params.offset.x * 10000) / 10000;
+  const offsetY = Math.round(params.offset.y * 10000) / 10000;
+  const iterations = params.iterations;
+  const colorScheme = params.colorScheme;
+  const xScale = Math.round(params.xScale * 100) / 100;
+  const yScale = Math.round(params.yScale * 100) / 100;
+  const juliaCX = currentFractalType === 'julia' ? Math.round(params.juliaC.x * 10000) / 10000 : 0;
+  const juliaCY = currentFractalType === 'julia' ? Math.round(params.juliaC.y * 10000) / 10000 : 0;
+  const width = renderer.domElement.width;
+  const height = renderer.domElement.height;
+  
+  return `${currentFractalType}_${zoom}_${offsetX}_${offsetY}_${iterations}_${colorScheme}_${xScale}_${yScale}_${juliaCX}_${juliaCY}_${width}_${height}`;
+}
+
+// Check if current view is cached
+function getCachedFrame() {
+  const key = generateCacheKey();
+  if (!key) return null;
+  const cached = frameCache.get(key);
+  // Verify the cached texture dimensions match current renderer size
+  if (cached && cached.texture && renderer) {
+    const cachedWidth = cached.texture.image?.width || cached.renderTarget?.width;
+    const cachedHeight = cached.texture.image?.height || cached.renderTarget?.height;
+    if (cachedWidth === renderer.domElement.width && 
+        cachedHeight === renderer.domElement.height) {
+      return cached;
+    }
+  }
+  return null;
+}
+
+// Store rendered frame in cache
+function cacheFrame(texture, renderTarget) {
+  const key = generateCacheKey();
+  
+  // Limit cache size - remove oldest entries if cache is full
+  if (frameCache.size >= MAX_CACHE_SIZE) {
+    // Remove first (oldest) entry
+    const firstKey = frameCache.keys().next().value;
+    const oldEntry = frameCache.get(firstKey);
+    if (oldEntry) {
+      oldEntry.texture.dispose();
+      oldEntry.renderTarget.dispose();
+    }
+    frameCache.delete(firstKey);
+  }
+  
+  frameCache.set(key, { texture, renderTarget, timestamp: Date.now() });
+}
+
+// Clear frame cache
+function clearFrameCache() {
+  for (const [key, entry] of frameCache.entries()) {
+    if (entry.texture) entry.texture.dispose();
+    if (entry.renderTarget) entry.renderTarget.dispose();
+  }
+  frameCache.clear();
+}
 
 // Throttled render function - batches multiple render requests
 function scheduleRender() {
@@ -206,25 +276,67 @@ async function loadFractal(fractalType) {
 
 function setupControls() {
   const canvas = document.getElementById('fractal-canvas');
+  const selectionBox = document.getElementById('selection-box');
   let isDragging = false;
+  let isSelecting = false;
   let lastMouseX = 0;
   let lastMouseY = 0;
+  let selectionStartX = 0;
+  let selectionStartY = 0;
 
   canvas.addEventListener('mousedown', (e) => {
     // Only start dragging on left mouse button
     if (e.button === 0) {
-      isDragging = true;
-      lastMouseX = e.clientX;
-      lastMouseY = e.clientY;
-      canvas.style.cursor = 'grabbing';
-      // Prevent text selection while dragging
-      e.preventDefault();
+      const rect = canvas.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+      
+      // Check if Shift key is held for selection mode
+      if (e.shiftKey) {
+        // Start selection box
+        isSelecting = true;
+        isDragging = false;
+        selectionStartX = mouseX;
+        selectionStartY = mouseY;
+        selectionBox.style.left = mouseX + 'px';
+        selectionBox.style.top = mouseY + 'px';
+        selectionBox.style.width = '0px';
+        selectionBox.style.height = '0px';
+        selectionBox.classList.add('active');
+        canvas.style.cursor = 'crosshair';
+        e.preventDefault();
+      } else {
+        // Start panning
+        isDragging = true;
+        isSelecting = false;
+        lastMouseX = e.clientX;
+        lastMouseY = e.clientY;
+        canvas.style.cursor = 'grabbing';
+        selectionBox.classList.remove('active');
+        // Prevent text selection while dragging
+        e.preventDefault();
+      }
     }
   });
 
   // Use window mousemove so dragging continues even if mouse leaves canvas
   window.addEventListener('mousemove', (e) => {
-    if (isDragging) {
+    if (isSelecting) {
+      // Update selection box
+      const rect = canvas.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+      
+      const left = Math.min(selectionStartX, mouseX);
+      const top = Math.min(selectionStartY, mouseY);
+      const width = Math.abs(mouseX - selectionStartX);
+      const height = Math.abs(mouseY - selectionStartY);
+      
+      selectionBox.style.left = left + 'px';
+      selectionBox.style.top = top + 'px';
+      selectionBox.style.width = width + 'px';
+      selectionBox.style.height = height + 'px';
+    } else if (isDragging) {
       const deltaX = e.clientX - lastMouseX;
       const deltaY = e.clientY - lastMouseY;
       // Adjust sensitivity based on zoom level for better control
@@ -239,15 +351,54 @@ function setupControls() {
 
   // Use window mouseup so dragging stops even if mouse is outside canvas
   window.addEventListener('mouseup', (e) => {
-    if (isDragging && e.button === 0) {
-      isDragging = false;
-      canvas.style.cursor = 'grab';
+    if (e.button === 0) {
+      if (isSelecting) {
+        // Zoom into selection box
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+        
+        const width = Math.abs(mouseX - selectionStartX);
+        const height = Math.abs(mouseY - selectionStartY);
+        
+        // Only zoom if selection box is large enough (at least 10x10 pixels)
+        if (width > 10 && height > 10) {
+          zoomToSelection(selectionStartX, selectionStartY, mouseX, mouseY, rect);
+        }
+        
+        isSelecting = false;
+        selectionBox.classList.remove('active');
+        canvas.style.cursor = 'grab';
+      } else if (isDragging) {
+        isDragging = false;
+        canvas.style.cursor = 'grab';
+      }
     }
   });
 
   // Also handle mouse leave to reset cursor if drag ends
   canvas.addEventListener('mouseleave', () => {
-    if (!isDragging) {
+    if (!isDragging && !isSelecting) {
+      canvas.style.cursor = 'grab';
+    }
+  });
+  
+  // Update cursor based on modifier keys
+  canvas.addEventListener('mousemove', (e) => {
+    if (!isDragging && !isSelecting) {
+      canvas.style.cursor = e.shiftKey ? 'crosshair' : 'grab';
+    }
+  });
+  
+  // Handle keydown/keyup to update cursor
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Shift' && !isDragging && !isSelecting) {
+      canvas.style.cursor = 'crosshair';
+    }
+  });
+  
+  window.addEventListener('keyup', (e) => {
+    if (e.key === 'Shift' && !isDragging && !isSelecting) {
       canvas.style.cursor = 'grab';
     }
   });
@@ -360,6 +511,9 @@ function setupUI() {
 
     // Clear the cache for this fractal type to force a fresh load
     fractalCache.delete(currentFractalType);
+    
+    // Clear frame cache when fractal type changes
+    clearFrameCache();
 
     // Load the new fractal module
     try {
@@ -578,6 +732,15 @@ function renderFractalProgressive(startIterations = null) {
     return;
   }
 
+  // Check cache first - if we have a cached frame, use it immediately
+  const cached = getCachedFrame();
+  if (cached && cached.texture) {
+    // Display cached frame
+    displayCachedFrame(cached.texture);
+    hideLoadingBar();
+    return;
+  }
+
   // Cancel any existing progressive render
   if (progressiveRenderTimeout) {
     clearTimeout(progressiveRenderTimeout);
@@ -633,6 +796,8 @@ function renderFractalProgressive(startIterations = null) {
         progressiveRenderTimeout = setTimeout(progressiveStep, 16); // ~60fps
       } else {
         isProgressiveRendering = false;
+        // Cache the fully rendered frame
+        cacheCurrentFrame();
         hideLoadingBar();
       }
     };
@@ -646,6 +811,121 @@ function renderFractalProgressive(startIterations = null) {
   renderFractal();
 }
 
+// Zoom into a selection box area
+function zoomToSelection(startX, startY, endX, endY, canvasRect) {
+  const canvasWidth = canvasRect.width;
+  const canvasHeight = canvasRect.height;
+  
+  // Normalize coordinates to 0-1
+  const x1 = Math.min(startX, endX) / canvasWidth;
+  const y1 = Math.min(startY, endY) / canvasHeight;
+  const x2 = Math.max(startX, endX) / canvasWidth;
+  const y2 = Math.max(startY, endY) / canvasHeight;
+  
+  // Get renderer dimensions for aspect calculation
+  const rendererWidth = renderer.domElement.width;
+  const rendererHeight = renderer.domElement.height;
+  const aspect = rendererWidth / rendererHeight;
+  
+  // Calculate fractal coordinates for the selection corners
+  const scale = 4.0 / params.zoom;
+  
+  // Top-left corner
+  const fractalX1 = (x1 - 0.5) * scale * aspect * params.xScale + params.offset.x;
+  const fractalY1 = (y1 - 0.5) * scale * params.yScale + params.offset.y;
+  
+  // Bottom-right corner
+  const fractalX2 = (x2 - 0.5) * scale * aspect * params.xScale + params.offset.x;
+  const fractalY2 = (y2 - 0.5) * scale * params.yScale + params.offset.y;
+  
+  // Calculate center and size of selection in fractal space
+  const centerX = (fractalX1 + fractalX2) / 2;
+  const centerY = (fractalY1 + fractalY2) / 2;
+  const width = Math.abs(fractalX2 - fractalX1);
+  const height = Math.abs(fractalY2 - fractalY1);
+  
+  // Calculate new zoom to fit the selection
+  // The selection should fill the viewport
+  const selectionAspect = width / height;
+  const viewAspect = aspect;
+  
+  // Calculate zoom factor needed to fit selection
+  // We want: 4.0 / newZoom = width (or height adjusted for aspect)
+  let newZoom;
+  if (selectionAspect > viewAspect) {
+    // Selection is wider - fit to width
+    newZoom = (4.0 * aspect * params.xScale) / width;
+  } else {
+    // Selection is taller - fit to height
+    newZoom = (4.0 * params.yScale) / height;
+  }
+  
+  // Update parameters
+  params.zoom = newZoom;
+  params.offset.x = centerX;
+  params.offset.y = centerY;
+  
+  // Render the new view
+  renderFractalProgressive();
+}
+
+// Display a cached frame
+function displayCachedFrame(texture) {
+  // Get current container dimensions
+  const container = renderer.domElement.parentElement;
+  const containerRect = container.getBoundingClientRect();
+  const aspect = (containerRect.width || renderer.domElement.width) / 
+                 (containerRect.height || renderer.domElement.height);
+  const viewSize = 2;
+  
+  if (!cachedDisplayPlane) {
+    // Create a plane for displaying cached textures
+    const geometry = new THREE.PlaneGeometry(viewSize * 2 * aspect, viewSize * 2);
+    const material = new THREE.MeshBasicMaterial({ map: texture });
+    cachedDisplayPlane = new THREE.Mesh(geometry, material);
+    cachedDisplayPlane.position.set(0, 0, 0);
+  } else {
+    // Update existing plane's texture and geometry if aspect changed
+    cachedDisplayPlane.material.map = texture;
+    cachedDisplayPlane.material.needsUpdate = true;
+    
+    // Update geometry if aspect ratio changed
+    const currentAspect = cachedDisplayPlane.geometry.parameters.width / 
+                          cachedDisplayPlane.geometry.parameters.height;
+    if (Math.abs(currentAspect - aspect) > 0.01) {
+      cachedDisplayPlane.geometry.dispose();
+      cachedDisplayPlane.geometry = new THREE.PlaneGeometry(viewSize * 2 * aspect, viewSize * 2);
+    }
+  }
+  
+  scene.clear();
+  scene.add(cachedDisplayPlane);
+  renderer.render(scene, camera);
+}
+
+// Cache the current rendered frame
+function cacheCurrentFrame() {
+  if (!fractalPlane || !renderer) return;
+  
+  // Create render target to capture the current frame
+  const width = renderer.domElement.width;
+  const height = renderer.domElement.height;
+  
+  const renderTarget = new THREE.WebGLRenderTarget(width, height, {
+    minFilter: THREE.LinearFilter,
+    magFilter: THREE.LinearFilter,
+    format: THREE.RGBAFormat,
+  });
+  
+  // Render to texture
+  renderer.setRenderTarget(renderTarget);
+  renderer.render(scene, camera);
+  renderer.setRenderTarget(null);
+  
+  // Store in cache
+  cacheFrame(renderTarget.texture, renderTarget);
+}
+
 function renderFractal() {
   if (!currentFractalModule) {
     console.warn('No fractal module loaded');
@@ -655,6 +935,14 @@ function renderFractal() {
 
   if (!currentFractalModule.render) {
     console.error('Fractal module missing render function:', currentFractalType);
+    hideLoadingBar();
+    return;
+  }
+
+  // Check cache first
+  const cached = getCachedFrame();
+  if (cached && cached.texture) {
+    displayCachedFrame(cached.texture);
     hideLoadingBar();
     return;
   }
@@ -680,10 +968,10 @@ function renderFractal() {
   // Call the fractal's render function
   fractalPlane = currentFractalModule.render(scene, camera, renderer, params, fractalPlane);
 
-  // Hide loading bar after ensuring rendering is complete
-  // Use multiple requestAnimationFrame calls and a small delay to make it more visible
+  // Cache the rendered frame after a short delay to ensure it's fully rendered
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
+      cacheCurrentFrame();
       // Add a small delay so the loading bar is visible even for fast renders
       setTimeout(() => {
         hideLoadingBar();

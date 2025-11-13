@@ -142,6 +142,21 @@ header p {
   cursor: grabbing;
 }
 
+/* Selection box for zoom area */
+.selection-box {
+  position: absolute;
+  border: 2px dashed #667eea;
+  background: rgb(102 126 234 / 10%);
+  pointer-events: none;
+  display: none;
+  z-index: 100;
+  box-shadow: 0 0 10px rgb(102 126 234 / 50%);
+}
+
+.selection-box.active {
+  display: block;
+}
+
 #info-panel {
   position: absolute;
   top: 10px;
