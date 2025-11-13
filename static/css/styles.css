@@ -158,6 +158,35 @@ header p {
   margin: 5px 0;
 }
 
+/* Fullscreen styles */
+.canvas-container:fullscreen {
+  width: 100vw;
+  height: 100vh;
+  border-radius: 0;
+  background: #000;
+}
+
+.canvas-container:-webkit-full-screen {
+  width: 100vw;
+  height: 100vh;
+  border-radius: 0;
+  background: #000;
+}
+
+.canvas-container:-moz-full-screen {
+  width: 100vw;
+  height: 100vh;
+  border-radius: 0;
+  background: #000;
+}
+
+.canvas-container:-ms-fullscreen {
+  width: 100vw;
+  height: 100vh;
+  border-radius: 0;
+  background: #000;
+}
+
 @media (width <= 768px) {
   header h1 {
     font-size: 2rem;

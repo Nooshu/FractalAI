@@ -224,6 +224,7 @@ function setupUI() {
   const resolutionValue = document.getElementById('resolution-value');
   const resetViewBtn = document.getElementById('reset-view');
   const screenshotBtn = document.getElementById('screenshot');
+  const fullscreenBtn = document.getElementById('fullscreen');
   const juliaControls = document.getElementById('julia-controls');
   const controls3D = document.getElementById('3d-controls');
   const controls2D = document.getElementById('2d-controls');
@@ -395,6 +396,71 @@ function setupUI() {
     link.download = `fractal-${currentFractalType}-${Date.now()}.png`;
     link.href = renderer.domElement.toDataURL();
     link.click();
+  });
+
+  // Fullscreen API functionality
+  const canvasContainer = document.querySelector('.canvas-container');
+  
+  // Helper functions for cross-browser fullscreen support
+  const requestFullscreen = (element) => {
+    if (element.requestFullscreen) {
+      return element.requestFullscreen();
+    } else if (element.webkitRequestFullscreen) {
+      return element.webkitRequestFullscreen();
+    } else if (element.mozRequestFullScreen) {
+      return element.mozRequestFullScreen();
+    } else if (element.msRequestFullscreen) {
+      return element.msRequestFullscreen();
+    }
+  };
+
+  const exitFullscreen = () => {
+    if (document.exitFullscreen) {
+      return document.exitFullscreen();
+    } else if (document.webkitExitFullscreen) {
+      return document.webkitExitFullscreen();
+    } else if (document.mozCancelFullScreen) {
+      return document.mozCancelFullScreen();
+    } else if (document.msExitFullscreen) {
+      return document.msExitFullscreen();
+    }
+  };
+
+  const isFullscreen = () => {
+    return !!(
+      document.fullscreenElement ||
+      document.webkitFullscreenElement ||
+      document.mozFullScreenElement ||
+      document.msFullscreenElement
+    );
+  };
+
+  // Update button text based on fullscreen state
+  const updateFullscreenButton = () => {
+    if (isFullscreen()) {
+      fullscreenBtn.textContent = 'Exit Fullscreen';
+    } else {
+      fullscreenBtn.textContent = 'View in Fullscreen';
+    }
+  };
+
+  // Listen for fullscreen changes
+  document.addEventListener('fullscreenchange', updateFullscreenButton);
+  document.addEventListener('webkitfullscreenchange', updateFullscreenButton);
+  document.addEventListener('mozfullscreenchange', updateFullscreenButton);
+  document.addEventListener('MSFullscreenChange', updateFullscreenButton);
+
+  // Toggle fullscreen on button click
+  fullscreenBtn.addEventListener('click', async () => {
+    try {
+      if (isFullscreen()) {
+        await exitFullscreen();
+      } else {
+        await requestFullscreen(canvasContainer);
+      }
+    } catch (error) {
+      console.error('Error toggling fullscreen:', error);
+    }
   });
 }
 
