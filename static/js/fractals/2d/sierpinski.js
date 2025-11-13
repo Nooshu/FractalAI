@@ -30,6 +30,10 @@ const fractalFunction = `
     int computeFractal(vec2 c) {
         vec2 p = c;
         
+        // Optimized Sierpinski with early bailout
+        // Pre-compute constant for center check
+        const float centerThreshold = 0.333;
+        
         // Iteratively subdivide using barycentric coordinates
         for (int i = 0; i < 200; i++) {
             if (i >= int(uIterations)) break;
@@ -37,24 +41,18 @@ const fractalFunction = `
             // Get barycentric coordinates
             vec3 bary = barycentric(p, v0, v1, v2);
             
-            // Check if point is outside the triangle
+            // Early bailout: check if point is outside the triangle
             if (bary.x < 0.0 || bary.y < 0.0 || bary.z < 0.0) {
                 return i;
             }
             
-            // Determine which sub-triangle the point is in
-            // The Sierpinski triangle excludes the center triangle
-            // We check which "corner" of the triangle the point is closest to
-            float maxBary = max(max(bary.x, bary.y), bary.z);
-            
-            // If the point is in the center (all barycentric coords > 1/3), it's excluded
-            if (bary.x > 0.333 && bary.y > 0.333 && bary.z > 0.333) {
+            // Early bailout: if in center triangle, exclude it
+            if (bary.x > centerThreshold && bary.y > centerThreshold && bary.z > centerThreshold) {
                 return i;
             }
             
             // Map to the corresponding sub-triangle
-            // Scale and translate based on which vertex is dominant
-            // We scale by 2.0 to map from the sub-triangle back to the full triangle
+            // Optimized: determine dominant vertex without extra max() call
             if (bary.x >= bary.y && bary.x >= bary.z) {
                 // Closest to v0 - map to top sub-triangle
                 p = (p - v0) * 2.0 + v0;

@@ -23,7 +23,7 @@ export function getColor(iterations, maxIterations, scheme) {
 }
 
 export function getColorSchemeIndex(scheme) {
-  const schemes = ['classic', 'fire', 'ocean', 'rainbow', 'monochrome'];
+  const schemes = ['classic', 'fire', 'ocean', 'rainbow', 'monochrome', 'forest', 'sunset', 'purple', 'cyan', 'gold', 'ice', 'neon', 'rainbow2', 'rainbow3', 'rainbow4', 'rainbow5', 'rainbow6'];
   return schemes.indexOf(scheme);
 }
 
@@ -39,6 +39,10 @@ export const vertexShader = `
 // Base fragment shader template for 2D fractals
 export function createFragmentShader(fractalFunction) {
   return `
+    #ifdef GL_ES
+    precision highp float;
+    #endif
+    
     uniform float uTime;
     uniform float uIterations;
     uniform float uZoom;
@@ -61,9 +65,55 @@ export function createFragmentShader(fractalFunction) {
             return vec3(0.5 + 0.5 * cos(hue * 6.28 + 0.0),
                        0.5 + 0.5 * cos(hue * 6.28 + 2.09),
                        0.5 + 0.5 * cos(hue * 6.28 + 4.18));
+        } else if (scheme == 12) { // rainbow2 - pastel rainbow
+            float hue = mod(t * 360.0, 360.0) / 360.0;
+            float sat = 0.6; // Lower saturation for pastel
+            float light = 0.7; // Higher lightness for pastel
+            return vec3(light + sat * cos(hue * 6.28 + 0.0),
+                       light + sat * cos(hue * 6.28 + 2.09),
+                       light + sat * cos(hue * 6.28 + 4.18));
+        } else if (scheme == 13) { // rainbow3 - dark rainbow
+            float hue = mod(t * 360.0, 360.0) / 360.0;
+            float sat = 1.0;
+            float light = 0.3; // Lower lightness for dark
+            return vec3(light + sat * cos(hue * 6.28 + 0.0),
+                       light + sat * cos(hue * 6.28 + 2.09),
+                       light + sat * cos(hue * 6.28 + 4.18));
+        } else if (scheme == 14) { // rainbow4 - vibrant rainbow (higher saturation)
+            float hue = mod(t * 360.0, 360.0) / 360.0;
+            float sat = 1.2; // Over-saturated for vibrant
+            float light = 0.4;
+            return vec3(clamp(light + sat * cos(hue * 6.28 + 0.0), 0.0, 1.0),
+                       clamp(light + sat * cos(hue * 6.28 + 2.09), 0.0, 1.0),
+                       clamp(light + sat * cos(hue * 6.28 + 4.18), 0.0, 1.0));
+        } else if (scheme == 15) { // rainbow5 - double rainbow (faster hue rotation)
+            float hue = mod(t * 720.0, 360.0) / 360.0; // Double speed
+            return vec3(0.5 + 0.5 * cos(hue * 6.28 + 0.0),
+                       0.5 + 0.5 * cos(hue * 6.28 + 2.09),
+                       0.5 + 0.5 * cos(hue * 6.28 + 4.18));
+        } else if (scheme == 16) { // rainbow6 - shifted rainbow (offset hue)
+            float hue = mod(t * 360.0 + 60.0, 360.0) / 360.0; // 60 degree offset
+            return vec3(0.5 + 0.5 * cos(hue * 6.28 + 0.0),
+                       0.5 + 0.5 * cos(hue * 6.28 + 2.09),
+                       0.5 + 0.5 * cos(hue * 6.28 + 4.18));
         } else if (scheme == 4) { // monochrome
             return vec3(t, t, t);
-        } else { // classic
+        } else if (scheme == 5) { // forest
+            return vec3(t * 0.3, t * 0.8, t * 0.4);
+        } else if (scheme == 6) { // sunset
+            return vec3(t, t * 0.4, t * 0.2);
+        } else if (scheme == 7) { // purple
+            return vec3(t * 0.6, t * 0.3, t);
+        } else if (scheme == 8) { // cyan
+            return vec3(0.0, t, t);
+        } else if (scheme == 9) { // gold
+            return vec3(t, t * 0.8, t * 0.2);
+        } else if (scheme == 10) { // ice
+            return vec3(t * 0.7, t * 0.9, t);
+        } else if (scheme == 11) { // neon
+            float pulse = sin(t * 3.14159) * 0.5 + 0.5;
+            return vec3(t * 0.2 + pulse * 0.8, t * 0.8 + pulse * 0.2, t);
+        } else { // classic (scheme == 0)
             return vec3(t * 0.5, t, t * 1.5);
         }
     }

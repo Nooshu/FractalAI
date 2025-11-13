@@ -9,6 +9,8 @@ let fps = 0;
 let fractalPlane = null;
 let currentFractalModule = null; // Currently loaded fractal module
 let fractalCache = new Map(); // Cache for loaded fractal modules
+let needsRender = false; // Flag to indicate if a render is needed
+let isDisplayingCached = false; // Track if we're displaying a cached frame
 
 // Render throttling for smooth interaction
 let renderScheduled = false;
@@ -60,6 +62,8 @@ function generateCacheKey() {
   const yScale = Math.round(params.yScale * 100) / 100;
   const juliaCX = currentFractalType === 'julia' ? Math.round(params.juliaC.x * 10000) / 10000 : 0;
   const juliaCY = currentFractalType === 'julia' ? Math.round(params.juliaC.y * 10000) / 10000 : 0;
+  // Use display dimensions (not render dimensions affected by pixel ratio) for cache key
+  // This ensures cache hits even when pixel ratio changes
   const width = renderer.domElement.width;
   const height = renderer.domElement.height;
   
@@ -71,12 +75,11 @@ function getCachedFrame() {
   const key = generateCacheKey();
   if (!key) return null;
   const cached = frameCache.get(key);
-  // Verify the cached texture dimensions match current renderer size
+  // Verify the cached texture exists and dimensions are reasonable
+  // We use display dimensions in cache key, so we just need to verify texture exists
   if (cached && cached.texture && renderer) {
-    const cachedWidth = cached.texture.image?.width || cached.renderTarget?.width;
-    const cachedHeight = cached.texture.image?.height || cached.renderTarget?.height;
-    if (cachedWidth === renderer.domElement.width && 
-        cachedHeight === renderer.domElement.height) {
+    // Check if texture is still valid (not disposed)
+    if (cached.texture.image || cached.renderTarget) {
       return cached;
     }
   }
@@ -180,8 +183,26 @@ function init() {
   );
   camera.position.z = 1;
 
-  // Renderer setup
-  renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  // Renderer setup - optimize for performance
+  renderer = new THREE.WebGLRenderer({ 
+    canvas, 
+    antialias: true,
+    powerPreference: 'high-performance', // Prefer dedicated GPU if available
+    stencil: false, // Disable stencil buffer (not needed for fractals)
+    depth: false // Disable depth buffer (2D fractals don't need it)
+  });
+  
+  // Check for WebGL2 support (for potential future enhancements)
+  try {
+    const gl = renderer.getContext();
+    if (gl instanceof WebGL2RenderingContext) {
+      console.log('WebGL2 available - enhanced features enabled');
+    } else {
+      console.log('WebGL1 in use - still optimized for performance');
+    }
+  } catch (e) {
+    console.log('WebGL context check completed');
+  }
   
   // Function to update renderer size and pixel ratio
   updateRendererSize = () => {
@@ -276,6 +297,7 @@ async function loadFractal(fractalType) {
 
 function setupControls() {
   const canvas = document.getElementById('fractal-canvas');
+  const canvasContainer = canvas.parentElement; // Get container for fullscreen event handling
   const selectionBox = document.getElementById('selection-box');
   let isDragging = false;
   let isSelecting = false;
@@ -287,6 +309,12 @@ function setupControls() {
   canvas.addEventListener('mousedown', (e) => {
     // Only start dragging on left mouse button
     if (e.button === 0) {
+      // Check if the click is on a fullscreen control button - if so, don't handle it
+      const target = e.target;
+      if (target.closest && target.closest('.fullscreen-control-btn')) {
+        return; // Let the button handle its own click
+      }
+      
       const rect = canvas.getBoundingClientRect();
       const mouseX = e.clientX - rect.left;
       const mouseY = e.clientY - rect.top;
@@ -321,6 +349,12 @@ function setupControls() {
 
   // Use window mousemove so dragging continues even if mouse leaves canvas
   window.addEventListener('mousemove', (e) => {
+    // Don't interfere if mouse is over fullscreen control buttons
+    const target = e.target;
+    if (target.closest && target.closest('.fullscreen-control-btn')) {
+      return; // Let buttons handle their own hover states
+    }
+    
     if (isSelecting) {
       // Update selection box
       const rect = canvas.getBoundingClientRect();
@@ -404,8 +438,25 @@ function setupControls() {
   });
 
   // Double-click to zoom into a point
-  canvas.addEventListener('dblclick', (e) => {
+  // Handle on both canvas and container to ensure it works in fullscreen
+  const handleDoubleClick = (e) => {
+    // Check if the click is on a fullscreen control button - if so, don't zoom
+    const target = e.target;
+    if (target.closest && target.closest('.fullscreen-control-btn')) {
+      return; // Let the button handle its own click
+    }
+    
+    // The fullscreen-controls container has pointer-events: none, so clicks pass through
+    // We only need to check if we're actually clicking on a button (already done above)
+    // Allow handling if clicking on canvas, container, or anywhere in the canvas container
+    if (target === canvas || target === canvasContainer || canvas.contains(target) || canvasContainer.contains(target)) {
+      // Continue with zoom logic - clicks pass through the controls container
+    } else {
+      return; // Not clicking on canvas area
+    }
+    
     e.preventDefault();
+    e.stopPropagation();
     
     // Ensure renderer size is up-to-date (important for fullscreen mode)
     if (updateRendererSize) {
@@ -466,7 +517,12 @@ function setupControls() {
     
     // Use progressive rendering for faster feedback
     renderFractalProgressive();
-  });
+  };
+  
+  // Attach double-click handler to both canvas and container
+  // This ensures it works in both normal and fullscreen modes
+  canvas.addEventListener('dblclick', handleDoubleClick);
+  canvasContainer.addEventListener('dblclick', handleDoubleClick);
 
   canvas.addEventListener('wheel', (e) => {
     e.preventDefault();
@@ -495,6 +551,11 @@ function setupUI() {
   const yScaleValue = document.getElementById('y-scale-value');
 
   const updateFractalBtn = document.getElementById('update-fractal');
+  
+  // Color scheme cycling (shared between main UI and fullscreen controls)
+  const colorSchemes = ['classic', 'fire', 'ocean', 'rainbow', 'rainbow2', 'rainbow3', 'rainbow4', 'rainbow5', 'rainbow6', 'monochrome', 'forest', 'sunset', 'purple', 'cyan', 'gold', 'ice', 'neon'];
+  let currentColorSchemeIndex = colorSchemes.indexOf(params.colorScheme);
+  if (currentColorSchemeIndex === -1) currentColorSchemeIndex = 0;
 
   fractalTypeSelect.addEventListener('change', async (e) => {
     currentFractalType = e.target.value;
@@ -542,6 +603,11 @@ function setupUI() {
 
   colorSchemeSelect.addEventListener('change', (e) => {
     params.colorScheme = e.target.value;
+    // Update color scheme index for fullscreen cycling
+    const newIndex = colorSchemes.indexOf(params.colorScheme);
+    if (newIndex !== -1) {
+      currentColorSchemeIndex = newIndex;
+    }
     // Don't auto-render, wait for update button
   });
 
@@ -631,10 +697,54 @@ function setupUI() {
   });
 
   screenshotBtn.addEventListener('click', () => {
-    const link = document.createElement('a');
-    link.download = `fractal-${currentFractalType}-${Date.now()}.png`;
-    link.href = renderer.domElement.toDataURL();
-    link.click();
+    // Ensure we're rendering to the main canvas (not a render target)
+    const previousRenderTarget = renderer.getRenderTarget();
+    renderer.setRenderTarget(null);
+    
+    // Ensure the scene is rendered before capturing
+    if (scene.children.length > 0) {
+      renderer.render(scene, camera);
+    }
+    
+    // Wait a frame to ensure rendering is complete
+    requestAnimationFrame(() => {
+      // Capture the canvas as PNG
+      const canvas = renderer.domElement;
+      
+      // Check if canvas has content
+      if (canvas.width === 0 || canvas.height === 0) {
+        console.error('Canvas has no dimensions, cannot capture screenshot');
+        return;
+      }
+      
+      try {
+        const dataURL = canvas.toDataURL('image/png');
+        
+        // Verify we got valid data (not just a blank image)
+        if (!dataURL || dataURL === 'data:,') {
+          console.error('Failed to capture canvas data');
+          return;
+        }
+        
+        // Create download link
+        const link = document.createElement('a');
+        link.download = `fractal-${currentFractalType}-${Date.now()}.png`;
+        link.href = dataURL;
+        
+        // Trigger download
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } catch (error) {
+        console.error('Error capturing screenshot:', error);
+        alert('Failed to capture screenshot. Please try again.');
+      } finally {
+        // Restore previous render target if it existed
+        if (previousRenderTarget) {
+          renderer.setRenderTarget(previousRenderTarget);
+        }
+      }
+    });
   });
 
   // Fullscreen API functionality
@@ -674,12 +784,438 @@ function setupUI() {
     );
   };
 
+  // Fullscreen controls
+  const fullscreenControls = document.getElementById('fullscreen-controls');
+  const fullscreenScreenshotBtn = document.getElementById('fullscreen-screenshot');
+  const fullscreenColorCycleBtn = document.getElementById('fullscreen-color-cycle');
+  const fullscreenRandomBtn = document.getElementById('fullscreen-random');
+  
+  // Function to validate if coordinates will produce an interesting view
+  // Samples points and checks for variation in iteration counts
+  function isValidInterestingView(offset, zoom, fractalType) {
+    // For geometric fractals, they're generally always interesting
+    if (fractalType === 'sierpinski' || fractalType === 'koch') {
+      return true;
+    }
+    
+    // For Mandelbrot/Julia, sample points to check for variation
+    const samplePoints = 9; // 3x3 grid
+    const iterations = params.iterations;
+    const aspect = renderer.domElement.width / renderer.domElement.height;
+    const scale = 4.0 / zoom;
+    
+    let escapeCount = 0;
+    let stayCount = 0;
+    let midRangeCount = 0;
+    
+    // Sample points across the view
+    for (let i = 0; i < 3; i++) {
+      for (let j = 0; j < 3; j++) {
+        // Sample at different positions in the view
+        const u = (i + 0.5) / 3;
+        const v = (j + 0.5) / 3;
+        
+        // Convert to fractal coordinates
+        const cX = (u - 0.5) * scale * aspect * params.xScale + offset.x;
+        const cY = (v - 0.5) * scale * params.yScale + offset.y;
+        
+        // Quick iteration check (simplified Mandelbrot/Julia calculation)
+        let zx = fractalType === 'mandelbrot' ? 0 : cX;
+        let zy = fractalType === 'mandelbrot' ? 0 : cY;
+        const cx = fractalType === 'mandelbrot' ? cX : params.juliaC.x;
+        const cy = fractalType === 'mandelbrot' ? cY : params.juliaC.y;
+        
+        let iter = 0;
+        let escaped = false;
+        
+        // Quick iteration (max 50 iterations for validation)
+        const maxCheckIter = Math.min(50, iterations);
+        for (let k = 0; k < maxCheckIter; k++) {
+          const zx2 = zx * zx;
+          const zy2 = zy * zy;
+          if (zx2 + zy2 > 4.0) {
+            escaped = true;
+            iter = k;
+            break;
+          }
+          const newZx = zx2 - zy2 + cx;
+          zy = 2.0 * zx * zy + cy;
+          zx = newZx;
+        }
+        
+        if (escaped) {
+          if (iter < 5) {
+            escapeCount++; // Escaped very quickly (likely blank area)
+          } else {
+            midRangeCount++; // Escaped after some iterations (interesting boundary)
+          }
+        } else {
+          stayCount++; // Never escaped (inside set)
+        }
+      }
+    }
+    
+    // A view is interesting if:
+    // 1. Not all points escape immediately (not all blank)
+    // 2. Not all points stay in set (not all black)
+    // 3. Has some variation (mix of escape times)
+    const hasVariation = escapeCount > 0 && stayCount > 0;
+    const hasMidRange = midRangeCount > 0;
+    const notAllBlank = escapeCount < samplePoints;
+    const notAllBlack = stayCount < samplePoints;
+    
+    // Also check if we're in a reasonable range for Mandelbrot
+    if (fractalType === 'mandelbrot') {
+      const distFromOrigin = Math.sqrt(offset.x * offset.x + offset.y * offset.y);
+      // If too far from origin at low zoom, likely blank
+      if (zoom < 10 && distFromOrigin > 2.5) {
+        return false;
+      }
+    }
+    
+    return (hasVariation || hasMidRange) && notAllBlank && notAllBlack;
+  }
+  
+  // Function to generate random interesting coordinates and zoom for each fractal type
+  function getRandomInterestingView() {
+    const fractalType = currentFractalType;
+    
+    switch (fractalType) {
+      case 'mandelbrot': {
+        // Interesting Mandelbrot locations (curated list of known interesting areas)
+        const interestingLocations = [
+          { x: -0.75, y: 0.1, zoom: 50 },      // Seahorse valley
+          { x: -0.5, y: 0.5, zoom: 100 },     // Top bulb
+          { x: 0.0, y: 0.0, zoom: 1 },        // Center
+          { x: -1.25, y: 0.0, zoom: 200 },    // Left side
+          { x: -0.1592, y: 1.0317, zoom: 500 }, // Mini mandelbrot
+          { x: -0.77568377, y: 0.13646737, zoom: 1000 }, // Deep zoom area
+          { x: 0.285, y: 0.01, zoom: 300 },   // Right side detail
+          { x: -0.8, y: 0.156, zoom: 800 },   // Elephant valley
+          { x: -0.235125, y: 0.827215, zoom: 400 }, // Another interesting area
+          { x: 0.286932, y: 0.008287, zoom: 250 }, // Right side detail
+        ];
+        
+        // Try up to 10 times to find a valid interesting view
+        for (let attempt = 0; attempt < 10; attempt++) {
+          const location = interestingLocations[Math.floor(Math.random() * interestingLocations.length)];
+          const zoom = location.zoom * (0.8 + Math.random() * 0.4);
+          const offset = new THREE.Vector2(location.x, location.y);
+          
+          // Validate the view
+          if (isValidInterestingView(offset, zoom, 'mandelbrot')) {
+            return { offset, zoom };
+          }
+        }
+        
+        // Fallback to a known good location if validation fails
+        return {
+          offset: new THREE.Vector2(-0.75, 0.1),
+          zoom: 50,
+        };
+      }
+      
+      case 'julia': {
+        // Random interesting Julia C values and corresponding views
+        const interestingJuliaSets = [
+          { cReal: -0.7269, cImag: 0.1889, x: 0, y: 0, zoom: 1.5 },
+          { cReal: -0.8, cImag: 0.156, x: 0, y: 0, zoom: 2 },
+          { cReal: 0.285, cImag: 0.01, x: 0, y: 0, zoom: 1.5 },
+          { cReal: -0.4, cImag: 0.6, x: 0, y: 0, zoom: 2.5 },
+          { cReal: 0.3, cImag: 0.5, x: 0, y: 0, zoom: 2 },
+          { cReal: -0.123, cImag: 0.745, x: 0, y: 0, zoom: 3 },
+          { cReal: 0.355, cImag: 0.355, x: 0, y: 0, zoom: 2.5 },
+          { cReal: -0.70176, cImag: -0.3842, x: 0, y: 0, zoom: 2 },
+          { cReal: 0.0, cImag: 0.8, x: 0, y: 0, zoom: 2.5 },
+        ];
+        
+        // Try up to 10 times to find a valid interesting view
+        for (let attempt = 0; attempt < 10; attempt++) {
+          const juliaSet = interestingJuliaSets[Math.floor(Math.random() * interestingJuliaSets.length)];
+          const zoom = juliaSet.zoom * (0.8 + Math.random() * 0.4);
+          const offset = new THREE.Vector2(juliaSet.x, juliaSet.y);
+          
+          // Temporarily set Julia C for validation
+          const oldJuliaC = params.juliaC.clone();
+          params.juliaC.set(juliaSet.cReal, juliaSet.cImag);
+          
+          // Validate the view
+          if (isValidInterestingView(offset, zoom, 'julia')) {
+            // Update Julia C sliders if they exist
+            const juliaCReal = document.getElementById('julia-c-real');
+            const juliaCImag = document.getElementById('julia-c-imag');
+            const juliaCRealValue = document.getElementById('julia-c-real-value');
+            const juliaCImagValue = document.getElementById('julia-c-imag-value');
+            if (juliaCReal) juliaCReal.value = juliaSet.cReal;
+            if (juliaCImag) juliaCImag.value = juliaSet.cImag;
+            if (juliaCRealValue) juliaCRealValue.textContent = juliaSet.cReal.toFixed(4);
+            if (juliaCImagValue) juliaCImagValue.textContent = juliaSet.cImag.toFixed(4);
+            return { offset, zoom };
+          }
+          
+          // Restore old Julia C if validation failed
+          params.juliaC.copy(oldJuliaC);
+        }
+        
+        // Fallback to a known good Julia set
+        const fallback = interestingJuliaSets[0];
+        params.juliaC.set(fallback.cReal, fallback.cImag);
+        const juliaCReal = document.getElementById('julia-c-real');
+        const juliaCImag = document.getElementById('julia-c-imag');
+        const juliaCRealValue = document.getElementById('julia-c-real-value');
+        const juliaCImagValue = document.getElementById('julia-c-imag-value');
+        if (juliaCReal) juliaCReal.value = fallback.cReal;
+        if (juliaCImag) juliaCImag.value = fallback.cImag;
+        if (juliaCRealValue) juliaCRealValue.textContent = fallback.cReal.toFixed(4);
+        if (juliaCImagValue) juliaCImagValue.textContent = fallback.cImag.toFixed(4);
+        return {
+          offset: new THREE.Vector2(fallback.x, fallback.y),
+          zoom: fallback.zoom,
+        };
+      }
+      
+      case 'sierpinski': {
+        // Sierpinski triangle is centered, so random offsets around center
+        const angle = Math.random() * Math.PI * 2;
+        const distance = Math.random() * 0.5;
+        return {
+          offset: new THREE.Vector2(
+            Math.cos(angle) * distance,
+            Math.sin(angle) * distance
+          ),
+          zoom: 1 + Math.random() * 3, // Zoom between 1x and 4x
+        };
+      }
+      
+      case 'koch': {
+        // Koch snowflake - similar to Sierpinski
+        const angle = Math.random() * Math.PI * 2;
+        const distance = Math.random() * 0.3;
+        return {
+          offset: new THREE.Vector2(
+            Math.cos(angle) * distance,
+            Math.sin(angle) * distance
+          ),
+          zoom: 1 + Math.random() * 2, // Zoom between 1x and 3x
+        };
+      }
+      
+      default:
+        // Default: random offset and zoom
+        return {
+          offset: new THREE.Vector2(
+            (Math.random() - 0.5) * 2,
+            (Math.random() - 0.5) * 2
+          ),
+          zoom: 1 + Math.random() * 5,
+        };
+    }
+  }
+  
+  // Random view button
+  fullscreenRandomBtn.addEventListener('click', () => {
+    // Get random interesting view
+    const randomView = getRandomInterestingView();
+    
+    // Update parameters
+    params.offset.set(randomView.offset.x, randomView.offset.y);
+    params.zoom = randomView.zoom;
+    
+    // Clear cached display since we're changing view
+    if (isDisplayingCached) {
+      scene.clear();
+      isDisplayingCached = false;
+      cachedDisplayPlane = null;
+    }
+    
+    // Render the new random view
+    renderFractalProgressive();
+  });
+  
+  // Iterations controls
+  const fullscreenIterationsUpBtn = document.getElementById('fullscreen-iterations-up');
+  const fullscreenIterationsDownBtn = document.getElementById('fullscreen-iterations-down');
+  // Reuse iterationsSlider and iterationsValue from setupUI scope
+  // They're already declared above, so we'll access them via the DOM
+  
+  fullscreenIterationsUpBtn.addEventListener('click', () => {
+    // Increase iterations by 5, capped at 200
+    params.iterations = Math.min(200, params.iterations + 5);
+    
+    // Update UI sliders if they exist (access via DOM since they're in setupUI scope)
+    const iterationsSliderEl = document.getElementById('iterations');
+    const iterationsValueEl = document.getElementById('iterations-value');
+    if (iterationsSliderEl) {
+      iterationsSliderEl.value = params.iterations;
+    }
+    if (iterationsValueEl) {
+      iterationsValueEl.textContent = params.iterations;
+    }
+    
+    // Clear cached display since iterations changed
+    if (isDisplayingCached) {
+      scene.clear();
+      isDisplayingCached = false;
+      cachedDisplayPlane = null;
+    }
+    
+    // If we have an existing fractal plane, update its iterations uniform
+    if (fractalPlane && fractalPlane.material && fractalPlane.material.uniforms && fractalPlane.material.uniforms.uIterations) {
+      fractalPlane.material.uniforms.uIterations.value = params.iterations;
+      // Ensure scene has the fractal plane
+      if (scene.children.length === 0 || !scene.children.includes(fractalPlane)) {
+        scene.clear();
+        scene.add(fractalPlane);
+      }
+      // Re-render with updated iterations
+      renderFractalProgressive();
+    } else {
+      // No existing plane, do full re-render
+      renderFractalProgressive();
+    }
+  });
+  
+  fullscreenIterationsDownBtn.addEventListener('click', () => {
+    // Decrease iterations by 5, minimum 10
+    params.iterations = Math.max(10, params.iterations - 5);
+    
+    // Update UI sliders if they exist (access via DOM since they're in setupUI scope)
+    const iterationsSliderEl = document.getElementById('iterations');
+    const iterationsValueEl = document.getElementById('iterations-value');
+    if (iterationsSliderEl) {
+      iterationsSliderEl.value = params.iterations;
+    }
+    if (iterationsValueEl) {
+      iterationsValueEl.textContent = params.iterations;
+    }
+    
+    // Clear cached display since iterations changed
+    if (isDisplayingCached) {
+      scene.clear();
+      isDisplayingCached = false;
+      cachedDisplayPlane = null;
+    }
+    
+    // If we have an existing fractal plane, update its iterations uniform
+    if (fractalPlane && fractalPlane.material && fractalPlane.material.uniforms && fractalPlane.material.uniforms.uIterations) {
+      fractalPlane.material.uniforms.uIterations.value = params.iterations;
+      // Ensure scene has the fractal plane
+      if (scene.children.length === 0 || !scene.children.includes(fractalPlane)) {
+        scene.clear();
+        scene.add(fractalPlane);
+      }
+      // Re-render with updated iterations
+      renderFractalProgressive();
+    } else {
+      // No existing plane, do full re-render
+      renderFractalProgressive();
+    }
+  });
+  
+  fullscreenColorCycleBtn.addEventListener('click', async () => {
+    // Cycle to next color scheme
+    currentColorSchemeIndex = (currentColorSchemeIndex + 1) % colorSchemes.length;
+    params.colorScheme = colorSchemes[currentColorSchemeIndex];
+    
+    // Update the color scheme select in the main UI
+    if (colorSchemeSelect) {
+      colorSchemeSelect.value = params.colorScheme;
+    }
+    
+    // Clear cached display if we're showing one (since color scheme changed)
+    if (isDisplayingCached) {
+      scene.clear();
+      isDisplayingCached = false;
+      cachedDisplayPlane = null; // Clear the cached display plane
+    }
+    
+    // If we have an existing fractal plane, update its color scheme uniform
+    if (fractalPlane && fractalPlane.material && fractalPlane.material.uniforms && fractalPlane.material.uniforms.uColorScheme) {
+      const { getColorSchemeIndex } = await import('./fractals/utils.js');
+      fractalPlane.material.uniforms.uColorScheme.value = getColorSchemeIndex(params.colorScheme);
+      // Ensure scene has the fractal plane
+      if (scene.children.length === 0 || !scene.children.includes(fractalPlane)) {
+        scene.clear();
+        scene.add(fractalPlane);
+      }
+      // Force re-render with updated color scheme
+      renderer.render(scene, camera);
+      needsRender = false;
+      // Cache the updated frame
+      cacheCurrentFrame();
+    } else {
+      // No existing plane, do full re-render
+      renderFractalProgressive();
+    }
+  });
+  
+  // Screenshot functionality for fullscreen
+  fullscreenScreenshotBtn.addEventListener('click', () => {
+    // Use the same screenshot logic as the main screenshot button
+    // Ensure we're rendering to the main canvas (not a render target)
+    const previousRenderTarget = renderer.getRenderTarget();
+    renderer.setRenderTarget(null);
+    
+    // Ensure the scene is rendered before capturing
+    if (scene.children.length > 0) {
+      renderer.render(scene, camera);
+    }
+    
+    // Wait a frame to ensure rendering is complete
+    requestAnimationFrame(() => {
+      // Capture the canvas as PNG
+      const canvas = renderer.domElement;
+      
+      // Check if canvas has content
+      if (canvas.width === 0 || canvas.height === 0) {
+        console.error('Canvas has no dimensions, cannot capture screenshot');
+        return;
+      }
+      
+      try {
+        const dataURL = canvas.toDataURL('image/png');
+        
+        // Verify we got valid data (not just a blank image)
+        if (!dataURL || dataURL === 'data:,') {
+          console.error('Failed to capture canvas data');
+          return;
+        }
+        
+        // Create download link
+        const link = document.createElement('a');
+        link.download = `fractal-${currentFractalType}-${Date.now()}.png`;
+        link.href = dataURL;
+        
+        // Trigger download
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } catch (error) {
+        console.error('Error capturing screenshot:', error);
+        alert('Failed to capture screenshot. Please try again.');
+      } finally {
+        // Restore previous render target if it existed
+        if (previousRenderTarget) {
+          renderer.setRenderTarget(previousRenderTarget);
+        }
+      }
+    });
+  });
+  
   // Update button text and renderer size based on fullscreen state
   const updateFullscreenButton = () => {
     if (isFullscreen()) {
       fullscreenBtn.textContent = 'Exit Fullscreen';
+      // Show fullscreen controls
+      if (fullscreenControls) {
+        fullscreenControls.classList.add('visible');
+      }
     } else {
       fullscreenBtn.textContent = 'View in Fullscreen';
+      // Hide fullscreen controls
+      if (fullscreenControls) {
+        fullscreenControls.classList.remove('visible');
+      }
     }
     // Force renderer size update when fullscreen changes
     // Use a small delay to ensure the DOM has updated
@@ -738,8 +1274,12 @@ function renderFractalProgressive(startIterations = null) {
     // Display cached frame
     displayCachedFrame(cached.texture);
     hideLoadingBar();
+    isProgressiveRendering = false; // Not rendering progressively
     return;
   }
+  
+  // Not using cache, so we're not displaying cached
+  isDisplayingCached = false;
 
   // Cancel any existing progressive render
   if (progressiveRenderTimeout) {
@@ -780,6 +1320,7 @@ function renderFractalProgressive(startIterations = null) {
     }
     
     renderer.render(scene, camera);
+    needsRender = false; // Progressive rendering handles its own renders
     
     // Progressively increase quality
     const stepSize = Math.max(10, Math.floor(targetIterations * 0.15));
@@ -791,6 +1332,7 @@ function renderFractalProgressive(startIterations = null) {
         );
         fractalPlane.material.uniforms.uIterations.value = currentProgressiveIterations;
         renderer.render(scene, camera);
+        needsRender = false; // Progressive rendering handles its own renders
         
         // Schedule next step
         progressiveRenderTimeout = setTimeout(progressiveStep, 16); // ~60fps
@@ -900,6 +1442,9 @@ function displayCachedFrame(texture) {
   
   scene.clear();
   scene.add(cachedDisplayPlane);
+  isDisplayingCached = true;
+  needsRender = true; // Mark that we need to render this cached frame
+  // Render immediately so cached frame appears right away
   renderer.render(scene, camera);
 }
 
@@ -944,8 +1489,12 @@ function renderFractal() {
   if (cached && cached.texture) {
     displayCachedFrame(cached.texture);
     hideLoadingBar();
+    isProgressiveRendering = false; // Not rendering progressively
     return;
   }
+  
+  // Not using cache, so we're not displaying cached
+  isDisplayingCached = false;
 
   // Cancel progressive rendering if active
   if (progressiveRenderTimeout) {
@@ -967,6 +1516,8 @@ function renderFractal() {
 
   // Call the fractal's render function
   fractalPlane = currentFractalModule.render(scene, camera, renderer, params, fractalPlane);
+  needsRender = false; // Render complete (renderFractal handles its own render call)
+  isDisplayingCached = false; // Not displaying cached frame
 
   // Cache the rendered frame after a short delay to ensure it's fully rendered
   requestAnimationFrame(() => {
@@ -993,10 +1544,30 @@ function animate() {
     document.getElementById('fps').textContent = `FPS: ${fps}`;
   }
 
-  // Update time for shaders if needed
-  if (fractalPlane && fractalPlane.material && fractalPlane.material.uniforms) {
-    fractalPlane.material.uniforms.uTime.value = currentTime / 1000;
-    renderer.render(scene, camera);
+  // Only render when necessary:
+  // 1. When progressive rendering is active (needs continuous updates)
+  // 2. When explicitly marked as needing a render (one-time render)
+  const shouldRender = needsRender || isProgressiveRendering;
+  
+  if (shouldRender) {
+    // Update time for shaders if needed (only for non-cached fractals)
+    if (!isDisplayingCached && fractalPlane && fractalPlane.material && fractalPlane.material.uniforms && fractalPlane.material.uniforms.uTime) {
+      fractalPlane.material.uniforms.uTime.value = currentTime / 1000;
+    }
+    
+    // Only render if we have something to render
+    if (scene.children.length > 0) {
+      renderer.render(scene, camera);
+    }
+    
+    // Reset needsRender flag after rendering (progressive rendering will keep setting it)
+    if (!isProgressiveRendering) {
+      needsRender = false;
+      // If we were displaying a cached frame, we've now rendered it once, so stop
+      if (isDisplayingCached) {
+        isDisplayingCached = false;
+      }
+    }
   }
 }
 

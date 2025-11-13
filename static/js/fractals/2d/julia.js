@@ -3,11 +3,38 @@ import { vertexShader, createFragmentShader, getColorSchemeIndex } from '../util
 
 const fractalFunction = `
     int computeFractal(vec2 c) {
+        // Optimized Julia set with early bailout
         vec2 z = c;
-        for (int i = 0; i < 200; i++) {
+        float zx2 = 0.0;
+        float zy2 = 0.0;
+        
+        // Unroll first few iterations for better performance
+        zx2 = z.x * z.x;
+        zy2 = z.y * z.y;
+        if (zx2 + zy2 > 4.0) return 0;
+        z = vec2(zx2 - zy2, 2.0 * z.x * z.y) + uJuliaC;
+        
+        zx2 = z.x * z.x;
+        zy2 = z.y * z.y;
+        if (zx2 + zy2 > 4.0) return 1;
+        z = vec2(zx2 - zy2, 2.0 * z.x * z.y) + uJuliaC;
+        
+        zx2 = z.x * z.x;
+        zy2 = z.y * z.y;
+        if (zx2 + zy2 > 4.0) return 2;
+        z = vec2(zx2 - zy2, 2.0 * z.x * z.y) + uJuliaC;
+        
+        // Continue with loop for remaining iterations
+        for (int i = 3; i < 200; i++) {
             if (i >= int(uIterations)) break;
-            if (dot(z, z) > 4.0) return i;
-            z = vec2(z.x * z.x - z.y * z.y, 2.0 * z.x * z.y) + uJuliaC;
+            
+            // Use squared magnitude check (faster than dot product)
+            zx2 = z.x * z.x;
+            zy2 = z.y * z.y;
+            if (zx2 + zy2 > 4.0) return i;
+            
+            // Optimized complex multiplication
+            z = vec2(zx2 - zy2, 2.0 * z.x * z.y) + uJuliaC;
         }
         return int(uIterations);
     }
