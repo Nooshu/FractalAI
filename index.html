@@ -1,100 +1,99 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>FractalAI - 2D & 3D Fractal Generator</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
     <div class="container">
-        <header>
-            <h1>FractalAI</h1>
-            <p>Interactive 2D & 3D Fractal Generator</p>
-        </header>
+      <header>
+        <h1>FractalAI</h1>
+        <p>Interactive 2D & 3D Fractal Generator</p>
+      </header>
 
-        <div class="controls-panel">
-            <div class="control-group">
-                <label for="fractal-type">Fractal Type:</label>
-                <select id="fractal-type">
-                    <optgroup label="2D Fractals">
-                        <option value="mandelbrot">Mandelbrot Set</option>
-                        <option value="julia">Julia Set</option>
-                        <option value="sierpinski">Sierpinski Triangle</option>
-                        <option value="koch">Koch Snowflake</option>
-                    </optgroup>
-                    <optgroup label="3D Fractals">
-                        <option value="mandelbulb">Mandelbulb</option>
-                        <option value="menger">Menger Sponge</option>
-                        <option value="julia3d">Julia 3D</option>
-                    </optgroup>
-                </select>
-            </div>
-
-            <div class="control-group" id="julia-controls" style="display: none;">
-                <label for="julia-c-real">Julia C (Real):</label>
-                <input type="range" id="julia-c-real" min="-2" max="2" step="0.01" value="-0.7269">
-                <span id="julia-c-real-value">-0.7269</span>
-                <label for="julia-c-imag">Julia C (Imaginary):</label>
-                <input type="range" id="julia-c-imag" min="-2" max="2" step="0.01" value="0.1889">
-                <span id="julia-c-imag-value">0.1889</span>
-            </div>
-
-            <div class="control-group">
-                <label for="iterations">Iterations:</label>
-                <input type="range" id="iterations" min="10" max="200" step="5" value="100">
-                <span id="iterations-value">100</span>
-            </div>
-
-            <div class="control-group">
-                <label for="color-scheme">Color Scheme:</label>
-                <select id="color-scheme">
-                    <option value="classic">Classic</option>
-                    <option value="fire">Fire</option>
-                    <option value="ocean">Ocean</option>
-                    <option value="rainbow">Rainbow</option>
-                    <option value="monochrome">Monochrome</option>
-                </select>
-            </div>
-
-            <div class="control-group" id="2d-controls">
-                <label for="x-scale">X Scale:</label>
-                <input type="range" id="x-scale" min="0.1" max="3" step="0.1" value="1.0">
-                <span id="x-scale-value">1.0</span>
-                <label for="y-scale">Y Scale:</label>
-                <input type="range" id="y-scale" min="0.1" max="3" step="0.1" value="1.0">
-                <span id="y-scale-value">1.0</span>
-            </div>
-
-            <div class="control-group" id="3d-controls" style="display: none;">
-                <label for="power">Power (3D):</label>
-                <input type="range" id="power" min="2" max="20" step="0.5" value="8">
-                <span id="power-value">8</span>
-                <label for="resolution">Resolution:</label>
-                <input type="range" id="resolution" min="50" max="200" step="10" value="100">
-                <span id="resolution-value">100</span>
-            </div>
-
-            <div class="control-group">
-                <button id="update-fractal" class="primary-button">Update Fractal</button>
-            </div>
-
-            <div class="control-group">
-                <button id="reset-view">Reset View</button>
-                <button id="screenshot">Screenshot</button>
-            </div>
+      <div class="controls-panel">
+        <div class="control-group">
+          <label for="fractal-type">Fractal Type:</label>
+          <select id="fractal-type">
+            <optgroup label="2D Fractals">
+              <option value="mandelbrot">Mandelbrot Set</option>
+              <option value="julia">Julia Set</option>
+              <option value="sierpinski">Sierpinski Triangle</option>
+              <option value="koch">Koch Snowflake</option>
+            </optgroup>
+            <optgroup label="3D Fractals">
+              <option value="mandelbulb">Mandelbulb</option>
+              <option value="menger">Menger Sponge</option>
+              <option value="julia3d">Julia 3D</option>
+            </optgroup>
+          </select>
         </div>
 
-        <div class="canvas-container">
-            <canvas id="fractal-canvas"></canvas>
-            <div id="info-panel">
-                <div id="fps">FPS: --</div>
-                <div id="coordinates">Coordinates: --</div>
-            </div>
+        <div class="control-group" id="julia-controls" style="display: none">
+          <label for="julia-c-real">Julia C (Real):</label>
+          <input type="range" id="julia-c-real" min="-2" max="2" step="0.01" value="-0.7269" />
+          <span id="julia-c-real-value">-0.7269</span>
+          <label for="julia-c-imag">Julia C (Imaginary):</label>
+          <input type="range" id="julia-c-imag" min="-2" max="2" step="0.01" value="0.1889" />
+          <span id="julia-c-imag-value">0.1889</span>
         </div>
+
+        <div class="control-group">
+          <label for="iterations">Iterations:</label>
+          <input type="range" id="iterations" min="10" max="200" step="5" value="100" />
+          <span id="iterations-value">100</span>
+        </div>
+
+        <div class="control-group">
+          <label for="color-scheme">Color Scheme:</label>
+          <select id="color-scheme">
+            <option value="classic">Classic</option>
+            <option value="fire">Fire</option>
+            <option value="ocean">Ocean</option>
+            <option value="rainbow">Rainbow</option>
+            <option value="monochrome">Monochrome</option>
+          </select>
+        </div>
+
+        <div class="control-group" id="2d-controls">
+          <label for="x-scale">X Scale:</label>
+          <input type="range" id="x-scale" min="0.1" max="3" step="0.1" value="1.0" />
+          <span id="x-scale-value">1.0</span>
+          <label for="y-scale">Y Scale:</label>
+          <input type="range" id="y-scale" min="0.1" max="3" step="0.1" value="1.0" />
+          <span id="y-scale-value">1.0</span>
+        </div>
+
+        <div class="control-group" id="3d-controls" style="display: none">
+          <label for="power">Power (3D):</label>
+          <input type="range" id="power" min="2" max="20" step="0.5" value="8" />
+          <span id="power-value">8</span>
+          <label for="resolution">Resolution:</label>
+          <input type="range" id="resolution" min="50" max="200" step="10" value="100" />
+          <span id="resolution-value">100</span>
+        </div>
+
+        <div class="control-group">
+          <button id="update-fractal" class="primary-button">Update Fractal</button>
+        </div>
+
+        <div class="control-group">
+          <button id="reset-view">Reset View</button>
+          <button id="screenshot">Screenshot</button>
+        </div>
+      </div>
+
+      <div class="canvas-container">
+        <canvas id="fractal-canvas"></canvas>
+        <div id="info-panel">
+          <div id="fps">FPS: --</div>
+          <div id="coordinates">Coordinates: --</div>
+        </div>
+      </div>
     </div>
 
     <script type="module" src="main.js"></script>
-</body>
+  </body>
 </html>
-

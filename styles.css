@@ -1,174 +1,174 @@
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: #fff;
-    min-height: 100vh;
-    overflow-x: hidden;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+  min-height: 100vh;
+  overflow-x: hidden;
 }
 
 .container {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px;
 }
 
 header {
-    text-align: center;
-    margin-bottom: 30px;
+  text-align: center;
+  margin-bottom: 30px;
 }
 
 header h1 {
-    font-size: 3rem;
-    font-weight: 700;
-    margin-bottom: 10px;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  font-size: 3rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+  text-shadow: 2px 2px 4px rgb(0 0 0 / 30%);
 }
 
 header p {
-    font-size: 1.2rem;
-    opacity: 0.9;
+  font-size: 1.2rem;
+  opacity: 0.9;
 }
 
 .controls-panel {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    border-radius: 15px;
-    padding: 20px;
-    margin-bottom: 20px;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 15px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  background: rgb(255 255 255 / 10%);
+  backdrop-filter: blur(10px);
+  border-radius: 15px;
+  padding: 20px;
+  margin-bottom: 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  box-shadow: 0 8px 32px rgb(0 0 0 / 10%);
 }
 
 .control-group {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .control-group label {
-    font-weight: 600;
-    font-size: 0.9rem;
-    margin-bottom: 5px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 5px;
 }
 
 .control-group select,
-.control-group input[type="range"] {
-    padding: 8px;
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    background: rgba(255, 255, 255, 0.1);
-    color: #fff;
-    font-size: 0.9rem;
+.control-group input[type='range'] {
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid rgb(255 255 255 / 30%);
+  background: rgb(255 255 255 / 10%);
+  color: #fff;
+  font-size: 0.9rem;
 }
 
 .control-group select {
-    cursor: pointer;
+  cursor: pointer;
 }
 
 .control-group select option {
-    background: #667eea;
-    color: #fff;
+  background: #667eea;
+  color: #fff;
 }
 
-.control-group input[type="range"] {
-    cursor: pointer;
-    accent-color: #fff;
+.control-group input[type='range'] {
+  cursor: pointer;
+  accent-color: #fff;
 }
 
 .control-group span {
-    font-size: 0.85rem;
-    opacity: 0.8;
-    margin-top: -5px;
+  font-size: 0.85rem;
+  opacity: 0.8;
+  margin-top: -5px;
 }
 
 .control-group button {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 8px;
-    background: rgba(255, 255, 255, 0.2);
-    color: #fff;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    margin-top: 5px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  background: rgb(255 255 255 / 20%);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 5px;
 }
 
 .control-group button:hover {
-    background: rgba(255, 255, 255, 0.3);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  background: rgb(255 255 255 / 30%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgb(0 0 0 / 20%);
 }
 
 .control-group button.primary-button {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    font-size: 1rem;
-    padding: 12px 24px;
-    margin-top: 10px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  font-size: 1rem;
+  padding: 12px 24px;
+  margin-top: 10px;
 }
 
 .control-group button.primary-button:hover {
-    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+  box-shadow: 0 6px 20px rgb(102 126 234 / 40%);
 }
 
 .canvas-container {
-    position: relative;
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 15px;
-    overflow: hidden;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-    width: 100%;
-    height: 70vh;
-    min-height: 400px;
+  position: relative;
+  background: rgb(0 0 0 / 30%);
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgb(0 0 0 / 30%);
+  width: 100%;
+  height: 70vh;
+  min-height: 400px;
 }
 
 #fractal-canvas {
-    display: block;
-    width: 100%;
-    height: 100%;
-    cursor: grab;
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: grab;
 }
 
 #fractal-canvas:active {
-    cursor: grabbing;
+  cursor: grabbing;
 }
 
 #info-panel {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(10px);
-    padding: 10px 15px;
-    border-radius: 8px;
-    font-size: 0.85rem;
-    font-family: 'Courier New', monospace;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgb(0 0 0 / 60%);
+  backdrop-filter: blur(10px);
+  padding: 10px 15px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-family: 'Courier New', monospace;
 }
 
 #info-panel div {
-    margin: 5px 0;
+  margin: 5px 0;
 }
 
-@media (max-width: 768px) {
-    header h1 {
-        font-size: 2rem;
-    }
+@media (width <= 768px) {
+  header h1 {
+    font-size: 2rem;
+  }
 
-    .controls-panel {
-        grid-template-columns: 1fr;
-    }
+  .controls-panel {
+    grid-template-columns: 1fr;
+  }
 
-    .canvas-container {
-        height: 50vh;
-        min-height: 300px;
-    }
+  .canvas-container {
+    height: 50vh;
+    min-height: 300px;
+  }
 }
-

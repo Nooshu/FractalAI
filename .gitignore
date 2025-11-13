@@ -3,4 +3,8 @@ dist/
 .DS_Store
 *.log
 .vite/
+.env
+.env.local
+*.min.js
+*.min.css
 

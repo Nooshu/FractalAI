@@ -5,17 +5,20 @@ A web-based fractal generator with 2D and 3D support using Three.js and WebGL. T
 ## Features
 
 ### 2D Fractals
+
 - **Mandelbrot Set** - The classic fractal with infinite detail
 - **Julia Set** - Interactive Julia sets with adjustable parameters
 - **Sierpinski Triangle** - Geometric fractal pattern
 - **Koch Snowflake** - Self-similar fractal curve
 
 ### 3D Fractals
+
 - **Mandelbulb** - 3D extension of the Mandelbrot set
 - **Menger Sponge** - 3D fractal cube
 - **Julia 3D** - 3D Julia sets
 
 ### Interactive Controls
+
 - Adjustable iteration count
 - Multiple color schemes (Classic, Fire, Ocean, Rainbow, Monochrome)
 - Zoom and pan for 2D fractals
@@ -26,11 +29,13 @@ A web-based fractal generator with 2D and 3D support using Three.js and WebGL. T
 ## Installation
 
 1. Install dependencies:
+
 ```bash
 npm install
 ```
 
 2. Start the development server:
+
 ```bash
 npm run dev
 ```
@@ -68,10 +73,11 @@ The built files will be in the `dist/` directory.
 ## Browser Compatibility
 
 Requires a modern browser with WebGL support:
+
 - Chrome/Edge (latest)
 - Firefox (latest)
 - Safari (latest)
 
 ## License
 
-See LICENSE file for details. 
+See LICENSE file for details.
