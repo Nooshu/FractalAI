@@ -12,6 +12,27 @@ let fractalPlane = null;
 let currentFractalModule = null; // Currently loaded fractal module
 let fractalCache = new Map(); // Cache for loaded fractal modules
 
+// Function to calculate pixel ratio based on zoom level
+// Higher zoom = higher pixel ratio for better quality
+function calculatePixelRatio() {
+  if (!is2D) {
+    return window.devicePixelRatio || 1;
+  }
+  // Scale pixel ratio with zoom, but cap it to avoid performance issues
+  // Base pixel ratio * sqrt(zoom) gives a good balance
+  const basePixelRatio = window.devicePixelRatio || 1;
+  const zoomMultiplier = Math.min(Math.sqrt(params.zoom), 4); // Cap at 4x
+  return basePixelRatio * zoomMultiplier;
+}
+
+// Update renderer pixel ratio based on current zoom
+function updatePixelRatio() {
+  if (renderer) {
+    const pixelRatio = calculatePixelRatio();
+    renderer.setPixelRatio(pixelRatio);
+  }
+}
+
 // Fractal parameters
 let params = {
   iterations: 100,
@@ -69,11 +90,11 @@ function init() {
 
   // Renderer setup
   renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
-  renderer.setPixelRatio(window.devicePixelRatio);
-
-  // Function to update renderer size
+  
+  // Function to update renderer size and pixel ratio
   const updateRendererSize = () => {
     const size = getContainerSize();
+    updatePixelRatio();
     renderer.setSize(size.width, size.height);
 
     // Override any inline styles Three.js might set
@@ -193,6 +214,54 @@ function setupControls() {
 
   canvas.addEventListener('mouseup', () => {
     isDragging = false;
+  });
+
+  // Double-click to zoom into a point
+  canvas.addEventListener('dblclick', (e) => {
+    if (!is2D) return; // Only for 2D fractals
+    
+    e.preventDefault();
+    
+    // Get canvas bounding rect for mouse position
+    const rect = canvas.getBoundingClientRect();
+    
+    // Calculate mouse position relative to canvas (0 to 1)
+    // UV coordinates are based on the geometry, which uses display dimensions
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    const displayWidth = rect.width;
+    const displayHeight = rect.height;
+    
+    const uvX = mouseX / displayWidth;
+    const uvY = mouseY / displayHeight;
+    
+    // Get the renderer's actual pixel dimensions (which the shader uses for uResolution)
+    // The shader calculates aspect as uResolution.x / uResolution.y
+    // Note: pixel ratio affects both dimensions equally, so aspect should match display aspect
+    // But we use renderer dimensions to match exactly what the shader sees
+    const rendererWidth = renderer.domElement.width;
+    const rendererHeight = renderer.domElement.height;
+    const aspect = rendererWidth / rendererHeight;
+    
+    // Convert to fractal coordinates using the exact same formula as the shader
+    // Shader: (uv.x - 0.5) * scale * aspect * uXScale + uOffset.x
+    // where scale = 4.0 / uZoom
+    const scale = 4.0 / params.zoom;
+    const fractalX = (uvX - 0.5) * scale * aspect * params.xScale + params.offset.x;
+    const fractalY = (uvY - 0.5) * scale * params.yScale + params.offset.y;
+    
+    // Zoom in by a factor (e.g., 2x)
+    const zoomFactor = 2.0;
+    params.zoom *= zoomFactor;
+    
+    // Center on the clicked point by setting offset to the fractal coordinate
+    // After zooming, when uv = 0.5 (center), the formula becomes:
+    // (0.5 - 0.5) * (4.0 / newZoom) * aspect * xScale + offset = offset
+    // So setting offset to the fractal coordinate centers it correctly
+    params.offset.x = fractalX;
+    params.offset.y = fractalY;
+    
+    renderFractal();
   });
 
   canvas.addEventListener('wheel', (e) => {
@@ -477,6 +546,9 @@ function renderFractal() {
 
   // Update is2D from the module to ensure it's correct
   is2D = currentFractalModule.is2D;
+
+  // Update pixel ratio based on zoom level for better quality when zoomed in
+  updatePixelRatio();
 
   // Clear the scene before rendering
   scene.clear();
