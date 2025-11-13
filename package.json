@@ -13,16 +13,18 @@
     "format:check": "prettier --check \"**/*.{js,json,css,html,md}\"",
     "stylelint": "stylelint \"**/*.css\"",
     "stylelint:fix": "stylelint \"**/*.css\" --fix",
-    "check": "npm run lint && npm run format:check && npm run stylelint"
+    "check": "npm run lint && npm run format:check && npm run stylelint",
+    "verify": "npm ci && npm audit --audit-level=moderate",
+    "audit": "npm audit"
   },
   "dependencies": {
-    "three": "^0.169.0"
+    "three": "0.169.0"
   },
   "devDependencies": {
-    "vite": "^5.4.0",
-    "eslint": "^8.57.0",
-    "prettier": "^3.2.5",
-    "stylelint": "^16.2.1",
-    "stylelint-config-standard": "^36.0.1"
+    "vite": "5.4.21",
+    "eslint": "8.57.1",
+    "prettier": "3.6.2",
+    "stylelint": "16.25.0",
+    "stylelint-config-standard": "36.0.1"
   }
 }
