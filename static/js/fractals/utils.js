@@ -17,12 +17,31 @@ export function getColor(iterations, maxIterations, scheme) {
       const x = c * (1 - Math.abs(((h * 6) % 2) - 1));
       const m = 0.5 - c / 2;
       let r, g, b;
-      if (h < 1/6) { r = c; g = x; b = 0; }
-      else if (h < 2/6) { r = x; g = c; b = 0; }
-      else if (h < 3/6) { r = 0; g = c; b = x; }
-      else if (h < 4/6) { r = 0; g = x; b = c; }
-      else if (h < 5/6) { r = x; g = 0; b = c; }
-      else { r = c; g = 0; b = x; }
+      if (h < 1 / 6) {
+        r = c;
+        g = x;
+        b = 0;
+      } else if (h < 2 / 6) {
+        r = x;
+        g = c;
+        b = 0;
+      } else if (h < 3 / 6) {
+        r = 0;
+        g = c;
+        b = x;
+      } else if (h < 4 / 6) {
+        r = 0;
+        g = x;
+        b = c;
+      } else if (h < 5 / 6) {
+        r = x;
+        g = 0;
+        b = c;
+      } else {
+        r = c;
+        g = 0;
+        b = x;
+      }
       return { r: r + m, g: g + m, b: b + m };
     }
     case 'monochrome':
@@ -33,7 +52,25 @@ export function getColor(iterations, maxIterations, scheme) {
 }
 
 export function getColorSchemeIndex(scheme) {
-  const schemes = ['classic', 'fire', 'ocean', 'rainbow', 'monochrome', 'forest', 'sunset', 'purple', 'cyan', 'gold', 'ice', 'neon', 'rainbow2', 'rainbow3', 'rainbow4', 'rainbow5', 'rainbow6'];
+  const schemes = [
+    'classic',
+    'fire',
+    'ocean',
+    'rainbow',
+    'monochrome',
+    'forest',
+    'sunset',
+    'purple',
+    'cyan',
+    'gold',
+    'ice',
+    'neon',
+    'rainbow2',
+    'rainbow3',
+    'rainbow4',
+    'rainbow5',
+    'rainbow6',
+  ];
   return schemes.indexOf(scheme);
 }
 

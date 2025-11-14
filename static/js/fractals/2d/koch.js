@@ -11,9 +11,9 @@ function generateKochSnowflake(iterations) {
   const w = h * (Math.sqrt(3) / 2); // Half-width
 
   let vertices = [
-    [0, h * (2 / 3)],        // Top point
-    [-w, -h * (1 / 3)],      // Bottom-left point
-    [w, -h * (1 / 3)],       // Bottom-right point
+    [0, h * (2 / 3)], // Top point
+    [-w, -h * (1 / 3)], // Bottom-left point
+    [w, -h * (1 / 3)], // Bottom-right point
   ];
 
   const SQRT3_OVER_2 = Math.sqrt(3) / 2;
@@ -209,7 +209,7 @@ export function render(regl, params, canvas) {
 
     primitive: 'line loop',
     count: vertices.length,
-    
+
     lineWidth: 1, // WebGL only supports 1 on most systems
 
     depth: {

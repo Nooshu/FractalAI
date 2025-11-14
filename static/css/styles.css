@@ -10,31 +10,32 @@
   --bg-panel: #252525;
   --bg-control: #2d2d2d;
   --bg-hover: #353535;
-  --text-primary: #ffffff;
+  --text-primary: #fff;
   --text-secondary: #a0a0a0;
   --accent-blue: #4a9eff;
   --accent-blue-dim: #3a7ac7;
   --border-color: #3a3a3a;
   --disabled-opacity: 0.4;
-  
+
   /* Layout Constants */
   --panel-width: 360px;
-  
+
   /* Common RGBA Values */
-  --overlay-dark: rgba(0, 0, 0, 0.7);
-  --overlay-medium: rgba(0, 0, 0, 0.4);
-  --overlay-light: rgba(255, 255, 255, 0.1);
-  --overlay-lighter: rgba(255, 255, 255, 0.2);
-  --button-bg: rgba(45, 45, 45, 0.85);
-  --button-bg-hover: rgba(53, 53, 53, 0.9);
-  
+  --overlay-dark: rgb(0 0 0 / 70%);
+  --overlay-medium: rgb(0 0 0 / 40%);
+  --overlay-light: rgb(255 255 255 / 10%);
+  --overlay-lighter: rgb(255 255 255 / 20%);
+  --button-bg: rgb(45 45 45 / 85%);
+  --button-bg-hover: rgb(53 53 53 / 90%);
+
   /* Transitions */
   --transition-fast: 0.2s ease;
   --transition-normal: 0.3s ease;
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   background: var(--bg-darker);
   color: var(--text-primary);
   height: 100vh;
@@ -56,7 +57,9 @@ body {
   flex-direction: column;
   border-right: 1px solid var(--border-color);
   overflow: hidden;
-  transition: transform var(--transition-normal), width var(--transition-normal);
+  transition:
+    transform var(--transition-normal),
+    width var(--transition-normal);
 }
 
 .side-panel.hidden {
@@ -102,8 +105,7 @@ body {
 
 .panel-content {
   flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden auto;
   padding: 8px 0;
 }
 
@@ -172,7 +174,9 @@ body {
 .section-content {
   max-height: 0;
   overflow: hidden;
-  transition: max-height 0.3s ease, padding 0.3s ease;
+  transition:
+    max-height 0.3s ease,
+    padding 0.3s ease;
   padding: 0 20px;
 }
 
@@ -254,12 +258,12 @@ body {
   border-radius: 50%;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(74, 158, 255, 0.4);
+  box-shadow: 0 2px 8px rgb(74 158 255 / 40%);
 }
 
 .styled-slider::-webkit-slider-thumb:hover {
   transform: scale(1.15);
-  box-shadow: 0 2px 12px rgba(74, 158, 255, 0.6);
+  box-shadow: 0 2px 12px rgb(74 158 255 / 60%);
 }
 
 .styled-slider::-moz-range-thumb {
@@ -270,12 +274,12 @@ body {
   border-radius: 50%;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(74, 158, 255, 0.4);
+  box-shadow: 0 2px 8px rgb(74 158 255 / 40%);
 }
 
 .styled-slider::-moz-range-thumb:hover {
   transform: scale(1.15);
-  box-shadow: 0 2px 12px rgba(74, 158, 255, 0.6);
+  box-shadow: 0 2px 12px rgb(74 158 255 / 60%);
 }
 
 .styled-slider:disabled {
@@ -343,10 +347,25 @@ body {
   display: flex;
   gap: 12px;
   padding: 16px 20px;
-  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.4) 70%, transparent 100%);
+  background: linear-gradient(
+    to bottom,
+    rgb(0 0 0 / 70%) 0%,
+    rgb(0 0 0 / 40%) 70%,
+    transparent 100%
+  );
   backdrop-filter: blur(10px);
   z-index: 100;
   pointer-events: none;
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+.canvas-area:not(:hover) .top-action-bar {
+  opacity: 0.6;
+}
+
+.canvas-area .top-action-bar:hover {
+  opacity: 1;
 }
 
 .top-action-btn {
@@ -365,7 +384,7 @@ body {
   outline: none;
   pointer-events: auto;
   backdrop-filter: blur(10px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 30%);
 }
 
 .top-action-btn svg {
@@ -384,13 +403,13 @@ body {
 }
 
 .top-action-btn.primary {
-  background: rgba(74, 158, 255, 0.9);
+  background: rgb(74 158 255 / 90%);
   border-color: var(--accent-blue);
   color: white;
 }
 
 .top-action-btn.primary:hover {
-  background: rgba(58, 122, 199, 0.95);
+  background: rgb(58 122 199 / 95%);
   border-color: var(--accent-blue-dim);
 }
 
@@ -401,13 +420,13 @@ body {
 }
 
 .top-action-btn.primary:disabled {
-  background: rgba(45, 45, 45, 0.85);
-  border-color: rgba(255, 255, 255, 0.1);
+  background: rgb(45 45 45 / 85%);
+  border-color: rgb(255 255 255 / 10%);
 }
 
 .top-action-btn:disabled:hover {
   transform: none;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 30%);
 }
 
 /* Show Panel Button */
@@ -418,7 +437,7 @@ body {
   transform: translateY(-50%);
   width: 44px;
   height: 44px;
-  background: rgba(45, 45, 45, 0.9);
+  background: rgb(45 45 45 / 90%);
   border: 1px solid var(--overlay-lighter);
   border-radius: 8px;
   color: var(--text-primary);
@@ -429,11 +448,11 @@ body {
   z-index: 200;
   transition: all var(--transition-fast);
   backdrop-filter: blur(10px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 12px rgb(0 0 0 / 30%);
 }
 
 .show-panel-btn:hover {
-  background: rgba(53, 53, 53, 0.95);
+  background: rgb(53 53 53 / 95%);
   border-color: var(--accent-blue);
   transform: translateY(-50%) translateX(2px);
 }
@@ -449,11 +468,18 @@ body {
   left: 0;
   width: var(--panel-width);
   padding: 12px 20px;
-  background: linear-gradient(to top, var(--overlay-dark) 0%, var(--overlay-medium) 70%, transparent 100%);
+  background: linear-gradient(
+    to top,
+    var(--overlay-dark) 0%,
+    var(--overlay-medium) 70%,
+    transparent 100%
+  );
   backdrop-filter: blur(10px);
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-top: 1px solid rgb(255 255 255 / 5%);
   z-index: 150;
-  transition: transform var(--transition-normal), width var(--transition-normal);
+  transition:
+    transform var(--transition-normal),
+    width var(--transition-normal);
 }
 
 .app-footer p {
@@ -476,13 +502,18 @@ body {
 
 .footer-separator {
   margin: 0 8px;
-  color: rgba(255, 255, 255, 0.3);
+  color: rgb(255 255 255 / 30%);
 }
 
 .github-link {
   display: inline-flex;
   align-items: center;
   gap: 4px;
+}
+
+.fullscreen-control-btn svg {
+  width: 24px;
+  height: 24px;
 }
 
 .github-link svg {
@@ -533,11 +564,11 @@ body {
 .selection-box {
   position: absolute;
   border: 2px dashed var(--accent-blue);
-  background: rgba(74, 158, 255, 0.1);
+  background: rgb(74 158 255 / 10%);
   pointer-events: none;
   display: none;
   z-index: 100;
-  box-shadow: 0 0 10px rgba(74, 158, 255, 0.5);
+  box-shadow: 0 0 10px rgb(74 158 255 / 50%);
 }
 
 .selection-box.active {
@@ -549,13 +580,13 @@ body {
   position: absolute;
   bottom: 16px;
   right: 16px;
-  background: rgba(0, 0, 0, 0.75);
+  background: rgb(0 0 0 / 75%);
   backdrop-filter: blur(10px);
   padding: 8px 14px;
   border-radius: 8px;
   font-size: 0.8rem;
   font-family: 'Courier New', monospace;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgb(255 255 255 / 10%);
   transition: opacity 0.3s ease;
 }
 
@@ -576,18 +607,21 @@ body {
   transition: opacity 0.15s ease;
   z-index: 1000;
   pointer-events: none;
-  box-shadow: 0 0 12px rgba(74, 158, 255, 0.8);
+  box-shadow: 0 0 12px rgb(74 158 255 / 80%);
 }
 
 .loading-bar.active {
   opacity: 1;
-  animation: loading-progress 0.8s ease-out, loading-shimmer 1.2s linear infinite;
+  animation:
+    loading-progress 0.8s ease-out,
+    loading-shimmer 1.2s linear infinite;
 }
 
 @keyframes loading-progress {
   from {
     width: 0%;
   }
+
   to {
     width: 100%;
   }
@@ -597,6 +631,7 @@ body {
   0% {
     background-position: 200% 0;
   }
+
   100% {
     background-position: -200% 0;
   }
@@ -622,9 +657,9 @@ body {
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgb(0 0 0 / 70%);
   backdrop-filter: blur(10px);
-  border: 2px solid rgba(255, 255, 255, 0.2);
+  border: 2px solid rgb(255 255 255 / 20%);
   color: #fff;
   cursor: pointer;
   display: flex;
@@ -632,23 +667,18 @@ body {
   justify-content: center;
   transition: all 0.3s ease;
   pointer-events: auto;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 12px rgb(0 0 0 / 40%);
 }
 
 .fullscreen-control-btn:hover {
-  background: rgba(0, 0, 0, 0.85);
+  background: rgb(0 0 0 / 85%);
   border-color: var(--accent-blue);
   transform: scale(1.1);
-  box-shadow: 0 6px 20px rgba(74, 158, 255, 0.4);
+  box-shadow: 0 6px 20px rgb(74 158 255 / 40%);
 }
 
 .fullscreen-control-btn:active {
   transform: scale(0.95);
-}
-
-.fullscreen-control-btn svg {
-  width: 24px;
-  height: 24px;
 }
 
 .fullscreen-iterations-controls {
@@ -658,19 +688,13 @@ body {
 }
 
 /* Fullscreen Mode */
-.canvas-container:fullscreen,
-.canvas-container:-webkit-full-screen,
-.canvas-container:-moz-full-screen,
-.canvas-container:-ms-fullscreen {
+.canvas-container:fullscreen {
   width: 100vw;
   height: 100vh;
   background: #000;
 }
 
-.canvas-container:fullscreen .fullscreen-controls,
-.canvas-container:-webkit-full-screen .fullscreen-controls,
-.canvas-container:-moz-full-screen .fullscreen-controls,
-.canvas-container:-ms-fullscreen .fullscreen-controls {
+.canvas-container:fullscreen .fullscreen-controls {
   display: flex;
 }
 
@@ -683,44 +707,21 @@ body.is-fullscreen #info-panel {
 }
 
 /* Fallback for native fullscreen pseudo-classes */
-div.canvas-container:fullscreen > #info-panel,
-div.canvas-container:-webkit-full-screen > #info-panel,
-div.canvas-container:-moz-full-screen > #info-panel,
-div.canvas-container:-ms-fullscreen > #info-panel {
+div.canvas-container:fullscreen > #info-panel {
   display: none;
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
 }
 
-.canvas-container:fullscreen .loading-bar,
-.canvas-container:-webkit-full-screen .loading-bar,
-.canvas-container:-moz-full-screen .loading-bar,
-.canvas-container:-ms-fullscreen .loading-bar {
+.canvas-container:fullscreen .loading-bar {
   position: fixed;
   width: 100vw;
 }
 
 /* Hide top action bar in fullscreen - use overlay controls instead */
-.canvas-area:has(.canvas-container:fullscreen) .top-action-bar,
-.canvas-area:has(.canvas-container:-webkit-full-screen) .top-action-bar,
-.canvas-area:has(.canvas-container:-moz-full-screen) .top-action-bar,
-.canvas-area:has(.canvas-container:-ms-fullscreen) .top-action-bar {
+.canvas-area:has(.canvas-container:fullscreen) .top-action-bar {
   display: none;
-}
-
-/* Auto-hide top action bar when not hovering */
-.top-action-bar {
-  opacity: 1;
-  transition: opacity 0.3s ease;
-}
-
-.canvas-area:not(:hover) .top-action-bar {
-  opacity: 0.6;
-}
-
-.canvas-area .top-action-bar:hover {
-  opacity: 1;
 }
 
 /* Mobile Responsive */

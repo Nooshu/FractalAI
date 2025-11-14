@@ -122,6 +122,7 @@ Feature suggestions are welcome! Please:
 - Keep functions **small and focused**
 
 Example:
+
 ```javascript
 /**
  * Generates vertices for a fractal
@@ -142,6 +143,7 @@ function generateVertices(iterations) {
 - Add comments for complex styles
 
 Example:
+
 ```css
 :root {
   --primary-color: #4a9eff;
@@ -167,15 +169,17 @@ To add a new fractal type:
 1. **Create a new file** in `static/js/fractals/2d/` (e.g., `myFractal.js`)
 
 2. **Implement the required exports**:
+
    ```javascript
    export function render(regl, params, canvas) {
      // Return a regl draw command
    }
-   
+
    export const is2D = true;
    ```
 
 3. **Add to the dropdown** in `index.html`:
+
    ```html
    <option value="myFractal">My Fractal</option>
    ```
@@ -222,6 +226,7 @@ Before submitting, test your changes with:
 ### Branch Naming
 
 Use descriptive branch names:
+
 - `feature/add-dragon-curve`
 - `fix/julia-set-rendering`
 - `docs/update-readme`
@@ -243,6 +248,7 @@ Add Dragon Curve fractal implementation
 ### Pull Request Process
 
 1. **Update your branch** with the latest main:
+
    ```bash
    git fetch upstream
    git rebase upstream/main
@@ -263,16 +269,19 @@ Add Dragon Curve fractal implementation
 ## Style Guide Summary
 
 ### Files and Folders
+
 - Use lowercase with hyphens: `my-fractal.js`
 - Place fractals in appropriate subdirectories
 
 ### Code Organization
+
 - Group imports at the top
 - Declare constants before functions
 - Export required functions/constants
 - Clean up resources when needed
 
 ### Comments
+
 - Explain **why**, not **what**
 - Add JSDoc for public functions
 - Document complex algorithms
@@ -293,4 +302,3 @@ By contributing to FractalAI, you agree that your contributions will be licensed
 ---
 
 Thank you for contributing to FractalAI! Your efforts help make this project better for everyone. 🎨✨
-

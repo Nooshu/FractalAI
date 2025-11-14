@@ -1,27 +1,21 @@
 # FractalAI
 
-A web-based fractal generator with 2D and 3D support using regl and WebGL. This project demonstrates interactive fractal visualization with real-time rendering capabilities.
+A web-based fractal generator using regl and WebGL. This project demonstrates interactive fractal visualization with real-time rendering capabilities.
 
 ## Features
 
-### 2D Fractals
+### Fractals
 
 - **Mandelbrot Set** - The classic fractal with infinite detail
 - **Julia Set** - Interactive Julia sets with adjustable parameters
 - **Sierpinski Triangle** - Geometric fractal pattern
 - **Koch Snowflake** - Self-similar fractal curve
 
-### 3D Fractals
-
-- **Mandelbulb** - 3D extension of the Mandelbrot set
-- **Menger Sponge** - 3D fractal cube
-- **Julia 3D** - 3D Julia sets
-
 ### Interactive Controls
 
 - Adjustable iteration count
 - Multiple color schemes (Classic, Fire, Ocean, Rainbow, Monochrome)
-- Zoom and pan for 2D fractals
+- Zoom and pan
 - Real-time parameter adjustment
 - Screenshot capture
 - FPS monitoring
@@ -55,14 +49,11 @@ The built files will be in the `dist/` directory.
 1. Select a fractal type from the dropdown menu
 2. Adjust iterations to control detail level (higher = more detail, slower)
 3. Choose a color scheme to change the visual appearance
-4. For 2D fractals:
+4. Interaction:
    - Click and drag to pan
-   - Scroll to zoom in/out
-5. For 3D fractals:
-   - The fractal will auto-rotate
-   - Scroll to zoom in/out
-   - Adjust power and resolution for different effects
-6. Click "Screenshot" to save the current view
+   - Scroll or double-click to zoom in/out
+   - Adjust parameters (like Julia set constants) for different effects
+5. Click "Screenshot" to save the current view
 
 ## Technology Stack
 

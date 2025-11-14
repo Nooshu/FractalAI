@@ -1,14 +1,14 @@
 {
   "name": "fractalai",
   "version": "1.0.0",
-  "description": "A web-based fractal generator with 2D and 3D support using regl",
+  "description": "A web-based fractal generator using regl and WebGL",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "lint": "eslint . --ext .js",
-    "lint:fix": "eslint . --ext .js --fix",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "format": "prettier --write \"**/*.{js,json,css,html,md}\"",
     "format:check": "prettier --check \"**/*.{js,json,css,html,md}\"",
     "stylelint": "stylelint \"**/*.css\"",
@@ -18,13 +18,13 @@
     "audit": "npm audit"
   },
   "dependencies": {
-    "regl": "^2.1.0"
+    "regl": "2.1.1"
   },
   "devDependencies": {
-    "vite": "5.4.21",
-    "eslint": "8.57.1",
+    "vite": "7.2.2",
+    "eslint": "9.39.1",
     "prettier": "3.6.2",
     "stylelint": "16.25.0",
-    "stylelint-config-standard": "36.0.1"
+    "stylelint-config-standard": "39.0.1"
   }
 }
