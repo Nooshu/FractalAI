@@ -246,6 +246,12 @@ function init() {
   setupCollapsibleSections();
   setupPanelToggle();
 
+  // Get the initial fractal type from the dropdown (defaults to mandelbrot if not found)
+  const fractalTypeSelect = document.getElementById('fractal-type');
+  if (fractalTypeSelect && fractalTypeSelect.value) {
+    currentFractalType = fractalTypeSelect.value;
+  }
+
   // Load initial fractal
   loadFractal(currentFractalType).then(() => {
     renderFractal();
@@ -778,6 +784,11 @@ function setupUI() {
       params.zoom = 1;
       params.offset.x = 0;
       params.offset.y = 0;
+    } else if (currentFractalType === 'folded-paper-dragon') {
+      // Folded Paper Dragon - default centered view
+      params.zoom = 1;
+      params.offset.x = 0;
+      params.offset.y = 0;
     } else {
       // Default view for other fractals
       params.zoom = 1;
@@ -1010,7 +1021,7 @@ function setupUI() {
   // Samples points and checks for variation in iteration counts
   function isValidInterestingView(offset, zoom, fractalType) {
     // For geometric fractals and chaotic maps, they're generally always interesting
-    if (fractalType === 'sierpinski' || fractalType === 'sierpinski-arrowhead' || fractalType === 'sierpinski-carpet' || fractalType === 'sierpinski-pentagon' || fractalType === 'sierpinski-hexagon' || fractalType === 'sierpinski-gasket' || fractalType === 'koch' || fractalType === 'quadratic-koch' || fractalType === 'minkowski-sausage' || fractalType === 'cesaro' || fractalType === 'vicsek' || fractalType === 'cross' || fractalType === 'box-variants' || fractalType === 'h-tree' || fractalType === 'h-tree-generalized' || fractalType === 'heighway-dragon' || fractalType === 'twindragon' || fractalType === 'terdragon' || fractalType === 'binary-dragon' || fractalType === 'popcorn' || fractalType === 'rose' || fractalType === 'mutant-mandelbrot' || fractalType === 'cantor' || fractalType === 'fat-cantor' || fractalType === 'smith-volterra-cantor' || fractalType === 'random-cantor') {
+    if (fractalType === 'sierpinski' || fractalType === 'sierpinski-arrowhead' || fractalType === 'sierpinski-carpet' || fractalType === 'sierpinski-pentagon' || fractalType === 'sierpinski-hexagon' || fractalType === 'sierpinski-gasket' || fractalType === 'koch' || fractalType === 'quadratic-koch' || fractalType === 'minkowski-sausage' || fractalType === 'cesaro' || fractalType === 'vicsek' || fractalType === 'cross' || fractalType === 'box-variants' || fractalType === 'h-tree' || fractalType === 'h-tree-generalized' || fractalType === 'heighway-dragon' || fractalType === 'twindragon' || fractalType === 'terdragon' || fractalType === 'binary-dragon' || fractalType === 'folded-paper-dragon' || fractalType === 'popcorn' || fractalType === 'rose' || fractalType === 'mutant-mandelbrot' || fractalType === 'cantor' || fractalType === 'fat-cantor' || fractalType === 'smith-volterra-cantor' || fractalType === 'random-cantor') {
       return true;
     }
 
@@ -1814,6 +1825,30 @@ function setupUI() {
         // Binary Dragon curve - zoom into the binary pattern
         const interestingLocations = [
           { x: 0, y: 0, zoom: 1 }, // Full binary dragon view
+          { x: 0, y: 0, zoom: 2 }, // Center detail
+          { x: 0.2, y: 0.1, zoom: 3 }, // Right region
+          { x: -0.2, y: 0.1, zoom: 3 }, // Left region
+          { x: 0.1, y: -0.2, zoom: 3 }, // Lower region
+          { x: 0.15, y: 0.15, zoom: 4 }, // Upper right detail
+          { x: -0.15, y: 0.15, zoom: 4 }, // Upper left detail
+          { x: 0.15, y: -0.15, zoom: 4 }, // Lower right detail
+          { x: 0.2, y: 0.1, zoom: 6 }, // Deep zoom
+          { x: 0, y: 0, zoom: 1.5 }, // Medium zoom center
+        ];
+
+        const location =
+          interestingLocations[Math.floor(Math.random() * interestingLocations.length)];
+        const zoom = location.zoom * (0.8 + Math.random() * 0.4);
+        return {
+          offset: { x: location.x, y: location.y },
+          zoom: zoom,
+        };
+      }
+
+      case 'folded-paper-dragon': {
+        // Folded Paper Dragon curve - zoom into the paper-folding pattern
+        const interestingLocations = [
+          { x: 0, y: 0, zoom: 1 }, // Full folded paper dragon view
           { x: 0, y: 0, zoom: 2 }, // Center detail
           { x: 0.2, y: 0.1, zoom: 3 }, // Right region
           { x: -0.2, y: 0.1, zoom: 3 }, // Left region
