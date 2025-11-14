@@ -630,6 +630,12 @@ function setupUI() {
 
   const updateFractalBtn = document.getElementById('update-fractal');
   
+  // Initialize Julia controls state based on current fractal type
+  const isJulia = currentFractalType === 'julia';
+  juliaCReal.disabled = !isJulia;
+  juliaCImag.disabled = !isJulia;
+  juliaControls.style.opacity = isJulia ? '1' : '0.5';
+  
   // Color scheme cycling (shared between main UI and fullscreen controls)
   const colorSchemes = ['classic', 'fire', 'ocean', 'rainbow', 'rainbow2', 'rainbow3', 'rainbow4', 'rainbow5', 'rainbow6', 'monochrome', 'forest', 'sunset', 'purple', 'cyan', 'gold', 'ice', 'neon'];
   let currentColorSchemeIndex = colorSchemes.indexOf(params.colorScheme);
@@ -669,7 +675,11 @@ function setupUI() {
       return;
     }
 
-    juliaControls.style.display = currentFractalType === 'julia' ? 'block' : 'none';
+    // Enable/disable Julia controls based on fractal type
+    const isJulia = currentFractalType === 'julia';
+    juliaCReal.disabled = !isJulia;
+    juliaCImag.disabled = !isJulia;
+    juliaControls.style.opacity = isJulia ? '1' : '0.5';
 
     params.zoom = 1;
     params.offset.x = 0;

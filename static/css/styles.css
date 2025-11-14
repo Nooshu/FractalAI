@@ -84,10 +84,24 @@ header p {
   accent-color: #fff;
 }
 
+.control-group input[type='range']:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
 .control-group span {
   font-size: 0.85rem;
   opacity: 0.8;
   margin-top: -5px;
+}
+
+/* Styling for disabled control groups */
+#julia-controls {
+  transition: opacity 0.3s ease;
+}
+
+#julia-controls label {
+  transition: opacity 0.3s ease;
 }
 
 .control-group button {
