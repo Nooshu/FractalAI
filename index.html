@@ -4,133 +4,299 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>FractalAI - 2D Fractal Generator</title>
+    
+    <!-- Favicons -->
+    <link rel="icon" type="image/x-icon" href="/static/images/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/images/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/images/favicon-16x16.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/images/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    
     <link rel="stylesheet" href="static/css/styles.css" />
   </head>
   <body>
-    <div class="container">
-      <header>
-        <h1>FractalAI</h1>
-        <p>Interactive 2D Fractal Generator</p>
-      </header>
+    <div class="app-container">
+      <!-- Side Panel -->
+      <aside class="side-panel">
+        <header class="panel-header">
+          <button class="back-btn" title="Back">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+          </button>
+          <h1>Rendering</h1>
+          <button class="minimize-btn" title="Minimize">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 15l-6-6-6 6"/>
+            </svg>
+          </button>
+        </header>
 
-      <div class="controls-panel">
-        <div class="control-group">
-          <label for="fractal-type">Fractal Type:</label>
-          <select id="fractal-type">
-            <option value="mandelbrot">Mandelbrot Set</option>
-            <option value="julia">Julia Set</option>
-            <option value="sierpinski">Sierpinski Triangle</option>
-            <option value="koch">Koch Snowflake</option>
-          </select>
-        </div>
+        <div class="panel-content">
+          <!-- Auto-Render Setting -->
+          <div class="section">
+            <button class="section-header" data-section="settings">
+              <svg class="section-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M12 1v6m0 6v6M5.64 5.64l4.24 4.24m6.36 6.36l4.24 4.24M1 12h6m6 0h6M5.64 18.36l4.24-4.24m6.36-6.36l4.24-4.24"/>
+              </svg>
+              <span>Settings</span>
+              <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M6 9l6 6 6-6"/>
+              </svg>
+            </button>
+            <div class="section-content active">
+              <div class="control">
+                <label class="checkbox-label">
+                  <input type="checkbox" id="auto-render" class="styled-checkbox" />
+                  <span class="checkbox-text">Auto-Render on Change</span>
+                </label>
+                <div class="control-description">Automatically update the fractal when settings change</div>
+              </div>
+            </div>
+          </div>
 
-        <div class="control-group" id="julia-controls">
-          <label for="julia-c-real">Julia C (Real):</label>
-          <input type="range" id="julia-c-real" min="-2" max="2" step="0.01" value="-0.7269" disabled />
-          <span id="julia-c-real-value">-0.7269</span>
-          <label for="julia-c-imag">Julia C (Imaginary):</label>
-          <input type="range" id="julia-c-imag" min="-2" max="2" step="0.01" value="0.1889" disabled />
-          <span id="julia-c-imag-value">0.1889</span>
-        </div>
+          <!-- Fractal Section -->
+          <div class="section">
+            <button class="section-header" data-section="fractal">
+              <svg class="section-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M12 1v6m0 6v6M5.64 5.64l4.24 4.24m6.36 6.36l4.24 4.24M1 12h6m6 0h6M5.64 18.36l4.24-4.24m6.36-6.36l4.24-4.24"/>
+              </svg>
+              <span>Fractal</span>
+              <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M6 9l6 6 6-6"/>
+              </svg>
+            </button>
+            <div class="section-content active">
+              <div class="control">
+                <label for="fractal-type">Type</label>
+                <select id="fractal-type" class="styled-select">
+                  <option value="mandelbrot">Mandelbrot Set</option>
+                  <option value="julia">Julia Set</option>
+                  <option value="sierpinski">Sierpinski Triangle</option>
+                  <option value="koch">Koch Snowflake</option>
+                </select>
+              </div>
+            </div>
+          </div>
 
-        <div class="control-group">
-          <label for="iterations">Iterations:</label>
-          <input type="range" id="iterations" min="10" max="200" step="5" value="100" />
-          <span id="iterations-value">100</span>
-        </div>
+          <!-- Iterations Section -->
+          <div class="section">
+            <button class="section-header" data-section="iterations">
+              <svg class="section-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+              </svg>
+              <span>Iterations</span>
+              <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M6 9l6 6 6-6"/>
+              </svg>
+            </button>
+            <div class="section-content active">
+              <div class="control">
+                <label for="iterations">
+                  <span>Count</span>
+                  <span id="iterations-value" class="value">100</span>
+                </label>
+                <input type="range" id="iterations" min="10" max="200" step="5" value="100" class="styled-slider" />
+              </div>
+            </div>
+          </div>
 
-        <div class="control-group">
-          <label for="color-scheme">Color Scheme:</label>
-          <select id="color-scheme">
-            <option value="classic">Classic</option>
-            <option value="fire">Fire</option>
-            <option value="ocean">Ocean</option>
-            <option value="rainbow">Rainbow</option>
-            <option value="rainbow2">Rainbow Pastel</option>
-            <option value="rainbow3">Rainbow Dark</option>
-            <option value="rainbow4">Rainbow Vibrant</option>
-            <option value="rainbow5">Rainbow Double</option>
-            <option value="rainbow6">Rainbow Shifted</option>
-            <option value="monochrome">Monochrome</option>
-            <option value="forest">Forest</option>
-            <option value="sunset">Sunset</option>
-            <option value="purple">Purple</option>
-            <option value="cyan">Cyan</option>
-            <option value="gold">Gold</option>
-            <option value="ice">Ice</option>
-            <option value="neon">Neon</option>
-          </select>
-        </div>
+          <!-- Color Scheme Section -->
+          <div class="section">
+            <button class="section-header" data-section="color">
+              <svg class="section-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/>
+                <circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/>
+                <circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/>
+                <circle cx="13.5" cy="13.5" r=".5" fill="currentColor"/>
+                <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/>
+              </svg>
+              <span>Color Scheme</span>
+              <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M6 9l6 6 6-6"/>
+              </svg>
+            </button>
+            <div class="section-content active">
+              <div class="control">
+                <label for="color-scheme">Theme</label>
+                <select id="color-scheme" class="styled-select">
+                  <option value="classic">Classic</option>
+                  <option value="fire">Fire</option>
+                  <option value="ocean">Ocean</option>
+                  <option value="rainbow">Rainbow</option>
+                  <option value="rainbow2">Rainbow Pastel</option>
+                  <option value="rainbow3">Rainbow Dark</option>
+                  <option value="rainbow4">Rainbow Vibrant</option>
+                  <option value="rainbow5">Rainbow Double</option>
+                  <option value="rainbow6">Rainbow Shifted</option>
+                  <option value="monochrome">Monochrome</option>
+                  <option value="forest">Forest</option>
+                  <option value="sunset">Sunset</option>
+                  <option value="purple">Purple</option>
+                  <option value="cyan">Cyan</option>
+                  <option value="gold">Gold</option>
+                  <option value="ice">Ice</option>
+                  <option value="neon">Neon</option>
+                </select>
+              </div>
+            </div>
+          </div>
 
-        <div class="control-group" id="2d-controls">
-          <label for="x-scale">X Scale:</label>
-          <input type="range" id="x-scale" min="0.1" max="3" step="0.1" value="1.0" />
-          <span id="x-scale-value">1.0</span>
-          <label for="y-scale">Y Scale:</label>
-          <input type="range" id="y-scale" min="0.1" max="3" step="0.1" value="1.0" />
-          <span id="y-scale-value">1.0</span>
-        </div>
+          <!-- Julia Parameters Section -->
+          <div class="section" id="julia-controls">
+            <button class="section-header" data-section="julia">
+              <svg class="section-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <circle cx="12" cy="12" r="6"/>
+                <circle cx="12" cy="12" r="2"/>
+              </svg>
+              <span>Julia Parameters</span>
+              <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M6 9l6 6 6-6"/>
+              </svg>
+            </button>
+            <div class="section-content active">
+              <div class="control">
+                <label for="julia-c-real">
+                  <span>C (Real)</span>
+                  <span id="julia-c-real-value" class="value">-0.7269</span>
+                </label>
+                <input type="range" id="julia-c-real" min="-2" max="2" step="0.01" value="-0.7269" disabled class="styled-slider" />
+              </div>
+              <div class="control">
+                <label for="julia-c-imag">
+                  <span>C (Imaginary)</span>
+                  <span id="julia-c-imag-value" class="value">0.1889</span>
+                </label>
+                <input type="range" id="julia-c-imag" min="-2" max="2" step="0.01" value="0.1889" disabled class="styled-slider" />
+              </div>
+            </div>
+          </div>
 
-        <div class="control-group">
-          <button id="update-fractal" class="primary-button">Update Fractal</button>
-        </div>
+          <!-- Scale Section -->
+          <div class="section" id="2d-controls">
+            <button class="section-header" data-section="scale">
+              <svg class="section-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                <circle cx="12" cy="10" r="3"/>
+              </svg>
+              <span>Scale</span>
+              <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M6 9l6 6 6-6"/>
+              </svg>
+            </button>
+            <div class="section-content active">
+              <div class="control">
+                <label for="x-scale">
+                  <span>X Axis</span>
+                  <span id="x-scale-value" class="value">1.0</span>
+                </label>
+                <input type="range" id="x-scale" min="0.1" max="3" step="0.1" value="1.0" class="styled-slider" />
+              </div>
+              <div class="control">
+                <label for="y-scale">
+                  <span>Y Axis</span>
+                  <span id="y-scale-value" class="value">1.0</span>
+                </label>
+                <input type="range" id="y-scale" min="0.1" max="3" step="0.1" value="1.0" class="styled-slider" />
+              </div>
+            </div>
+          </div>
 
-        <div class="control-group">
-          <button id="reset-view">Reset View</button>
-          <button id="screenshot">Screenshot</button>
-          <button id="fullscreen">View in Fullscreen</button>
         </div>
-      </div>
+      </aside>
 
-      <div class="canvas-container">
-        <div id="loading-bar" class="loading-bar"></div>
-        <canvas id="fractal-canvas"></canvas>
-        <div id="selection-box" class="selection-box"></div>
-        <div id="info-panel">
-          <div id="fps">FPS: --</div>
-          <div id="coordinates">Coordinates: --</div>
-        </div>
-        <!-- Fullscreen controls overlay -->
-        <div id="fullscreen-controls" class="fullscreen-controls">
-          <button id="fullscreen-screenshot" class="fullscreen-control-btn" title="Take Screenshot">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <!-- Main Canvas Area -->
+      <main class="canvas-area">
+        <!-- Show Panel Button (visible when panel is hidden) -->
+        <button id="show-panel-btn" class="show-panel-btn" title="Show Panel">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </button>
+        
+        <!-- Top Action Bar -->
+        <div class="top-action-bar">
+          <button id="update-fractal" class="top-action-btn primary">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+            </svg>
+            Render
+          </button>
+          <button id="reset-view" class="top-action-btn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+              <path d="M3 3v5h5"/>
+            </svg>
+            Reset View
+          </button>
+          <button id="screenshot" class="top-action-btn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
               <circle cx="8.5" cy="8.5" r="1.5"></circle>
               <polyline points="21 15 16 10 5 21"></polyline>
             </svg>
+            Screenshot
           </button>
-          <button id="fullscreen-color-cycle" class="fullscreen-control-btn" title="Cycle Color Scheme">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="13.5" cy="6.5" r=".5" fill="currentColor"></circle>
-              <circle cx="17.5" cy="10.5" r=".5" fill="currentColor"></circle>
-              <circle cx="8.5" cy="7.5" r=".5" fill="currentColor"></circle>
-              <circle cx="13.5" cy="13.5" r=".5" fill="currentColor"></circle>
-              <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path>
+          <button id="fullscreen" class="top-action-btn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
             </svg>
+            Fullscreen
           </button>
-          <button id="fullscreen-random" class="fullscreen-control-btn" title="Random View">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M1 4v6h6"></path>
-              <path d="M23 20v-6h-6"></path>
-              <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"></path>
-            </svg>
-          </button>
-          <div class="fullscreen-iterations-controls">
-            <button id="fullscreen-iterations-up" class="fullscreen-control-btn" title="Increase Iterations">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="12" y1="19" x2="12" y2="5"></line>
-                <polyline points="5 12 12 5 19 12"></polyline>
+        </div>
+        
+        <div class="canvas-container">
+          <div id="loading-bar" class="loading-bar"></div>
+          <canvas id="fractal-canvas"></canvas>
+          <div id="selection-box" class="selection-box"></div>
+          <div id="info-panel">
+            <div id="fps">FPS: --</div>
+          </div>
+          <!-- Fullscreen controls overlay -->
+          <div id="fullscreen-controls" class="fullscreen-controls">
+            <button id="fullscreen-screenshot" class="fullscreen-control-btn" title="Take Screenshot">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                <polyline points="21 15 16 10 5 21"></polyline>
               </svg>
             </button>
-            <button id="fullscreen-iterations-down" class="fullscreen-control-btn" title="Decrease Iterations">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="12" y1="5" x2="12" y2="19"></line>
-                <polyline points="19 12 12 19 5 12"></polyline>
+            <button id="fullscreen-color-cycle" class="fullscreen-control-btn" title="Cycle Color Scheme">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="13.5" cy="6.5" r=".5" fill="currentColor"></circle>
+                <circle cx="17.5" cy="10.5" r=".5" fill="currentColor"></circle>
+                <circle cx="8.5" cy="7.5" r=".5" fill="currentColor"></circle>
+                <circle cx="13.5" cy="13.5" r=".5" fill="currentColor"></circle>
+                <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path>
               </svg>
             </button>
+            <button id="fullscreen-random" class="fullscreen-control-btn" title="Random View">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 4v6h6"></path>
+                <path d="M23 20v-6h-6"></path>
+                <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"></path>
+              </svg>
+            </button>
+            <div class="fullscreen-iterations-controls">
+              <button id="fullscreen-iterations-up" class="fullscreen-control-btn" title="Increase Iterations">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="12" y1="19" x2="12" y2="5"></line>
+                  <polyline points="5 12 12 5 19 12"></polyline>
+                </svg>
+              </button>
+              <button id="fullscreen-iterations-down" class="fullscreen-control-btn" title="Decrease Iterations">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <polyline points="19 12 12 19 5 12"></polyline>
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      </main>
     </div>
 
     <script type="module" src="static/js/main.js"></script>

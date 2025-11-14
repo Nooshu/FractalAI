@@ -251,6 +251,8 @@ function init() {
   // Setup controls
   setupControls();
   setupUI();
+  setupCollapsibleSections();
+  setupPanelToggle();
 
   // Load initial fractal
   loadFractal(currentFractalType).then(() => {
@@ -629,12 +631,36 @@ function setupUI() {
   const yScaleValue = document.getElementById('y-scale-value');
 
   const updateFractalBtn = document.getElementById('update-fractal');
+  const autoRenderCheckbox = document.getElementById('auto-render');
+  
+  // Auto-render functionality
+  let autoRenderEnabled = false;
+  
+  const triggerAutoRender = () => {
+    if (autoRenderEnabled) {
+      renderFractalProgressive();
+    }
+  };
+  
+  autoRenderCheckbox.addEventListener('change', (e) => {
+    autoRenderEnabled = e.target.checked;
+    updateFractalBtn.disabled = autoRenderEnabled;
+    
+    // If enabling auto-render, immediately render
+    if (autoRenderEnabled) {
+      renderFractalProgressive();
+    }
+  });
   
   // Initialize Julia controls state based on current fractal type
   const isJulia = currentFractalType === 'julia';
   juliaCReal.disabled = !isJulia;
   juliaCImag.disabled = !isJulia;
-  juliaControls.style.opacity = isJulia ? '1' : '0.5';
+  if (isJulia) {
+    juliaControls.classList.remove('disabled');
+  } else {
+    juliaControls.classList.add('disabled');
+  }
   
   // Color scheme cycling (shared between main UI and fullscreen controls)
   const colorSchemes = ['classic', 'fire', 'ocean', 'rainbow', 'rainbow2', 'rainbow3', 'rainbow4', 'rainbow5', 'rainbow6', 'monochrome', 'forest', 'sunset', 'purple', 'cyan', 'gold', 'ice', 'neon'];
@@ -679,18 +705,22 @@ function setupUI() {
     const isJulia = currentFractalType === 'julia';
     juliaCReal.disabled = !isJulia;
     juliaCImag.disabled = !isJulia;
-    juliaControls.style.opacity = isJulia ? '1' : '0.5';
+    if (isJulia) {
+      juliaControls.classList.remove('disabled');
+    } else {
+      juliaControls.classList.add('disabled');
+    }
 
     params.zoom = 1;
     params.offset.x = 0;
     params.offset.y = 0;
-    // Don't auto-render, wait for update button
+    triggerAutoRender();
   });
 
   iterationsSlider.addEventListener('input', (e) => {
     params.iterations = parseInt(e.target.value);
     iterationsValue.textContent = params.iterations;
-    // Don't auto-render, wait for update button
+    triggerAutoRender();
   });
 
   colorSchemeSelect.addEventListener('change', (e) => {
@@ -700,31 +730,31 @@ function setupUI() {
     if (newIndex !== -1) {
       currentColorSchemeIndex = newIndex;
     }
-    // Don't auto-render, wait for update button
+    triggerAutoRender();
   });
 
   juliaCReal.addEventListener('input', (e) => {
     params.juliaC.x = parseFloat(e.target.value);
     juliaCRealValue.textContent = params.juliaC.x.toFixed(4);
-    // Don't auto-render, wait for update button
+    triggerAutoRender();
   });
 
   juliaCImag.addEventListener('input', (e) => {
     params.juliaC.y = parseFloat(e.target.value);
     juliaCImagValue.textContent = params.juliaC.y.toFixed(4);
-    // Don't auto-render, wait for update button
+    triggerAutoRender();
   });
 
   xScaleSlider.addEventListener('input', (e) => {
     params.xScale = parseFloat(e.target.value);
     xScaleValue.textContent = params.xScale.toFixed(1);
-    // Don't auto-render, wait for update button
+    triggerAutoRender();
   });
 
   yScaleSlider.addEventListener('input', (e) => {
     params.yScale = parseFloat(e.target.value);
     yScaleValue.textContent = params.yScale.toFixed(1);
-    // Don't auto-render, wait for update button
+    triggerAutoRender();
   });
 
   updateFractalBtn.addEventListener('click', async () => {
@@ -1218,12 +1248,16 @@ function setupUI() {
       if (fullscreenControls) {
         fullscreenControls.classList.add('visible');
       }
+      // Add fullscreen class to body
+      document.body.classList.add('is-fullscreen');
     } else {
       fullscreenBtn.textContent = 'View in Fullscreen';
       // Hide fullscreen controls
       if (fullscreenControls) {
         fullscreenControls.classList.remove('visible');
       }
+      // Remove fullscreen class from body
+      document.body.classList.remove('is-fullscreen');
     }
     // Force renderer size update when fullscreen changes
     // Use a small delay to ensure the DOM has updated
@@ -1250,6 +1284,54 @@ function setupUI() {
     } catch (error) {
       console.error('Error toggling fullscreen:', error);
     }
+  });
+}
+
+function setupCollapsibleSections() {
+  const sectionHeaders = document.querySelectorAll('.section-header');
+  
+  sectionHeaders.forEach(header => {
+    header.addEventListener('click', () => {
+      const section = header.parentElement;
+      const content = section.querySelector('.section-content');
+      const isActive = content.classList.contains('active');
+      
+      if (isActive) {
+        content.classList.remove('active');
+        header.classList.add('collapsed');
+      } else {
+        content.classList.add('active');
+        header.classList.remove('collapsed');
+      }
+    });
+  });
+}
+
+function setupPanelToggle() {
+  const sidePanel = document.querySelector('.side-panel');
+  const backBtn = document.querySelector('.back-btn');
+  const showPanelBtn = document.getElementById('show-panel-btn');
+  
+  // Hide panel when back button is clicked
+  backBtn.addEventListener('click', () => {
+    sidePanel.classList.add('hidden');
+    // Resize canvas after panel animation
+    setTimeout(() => {
+      if (updateRendererSize) {
+        updateRendererSize();
+      }
+    }, 300);
+  });
+  
+  // Show panel when show button is clicked
+  showPanelBtn.addEventListener('click', () => {
+    sidePanel.classList.remove('hidden');
+    // Resize canvas after panel animation
+    setTimeout(() => {
+      if (updateRendererSize) {
+        updateRendererSize();
+      }
+    }, 300);
   });
 }
 
