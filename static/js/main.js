@@ -762,6 +762,15 @@ function setupUI() {
       if (juliaCImag) juliaCImag.value = 0.6;
       if (juliaCRealValue) juliaCRealValue.textContent = '-0.4000';
       if (juliaCImagValue) juliaCImagValue.textContent = '0.6000';
+    } else if (currentFractalType === 'sierpinski-gasket') {
+      // Generalised Sierpinski Gasket - start with hexagon (xScale = 0.5)
+      params.zoom = 1;
+      params.offset.x = 0;
+      params.offset.y = 0;
+      params.xScale = 0.5; // 6 sides (hexagon)
+      // Update xScale slider
+      if (xScaleSlider) xScaleSlider.value = 0.5;
+      if (xScaleValue) xScaleValue.textContent = '0.5';
     } else {
       // Default view for other fractals
       params.zoom = 1;
@@ -992,7 +1001,7 @@ function setupUI() {
   // Samples points and checks for variation in iteration counts
   function isValidInterestingView(offset, zoom, fractalType) {
     // For geometric fractals and chaotic maps, they're generally always interesting
-    if (fractalType === 'sierpinski' || fractalType === 'sierpinski-arrowhead' || fractalType === 'sierpinski-carpet' || fractalType === 'sierpinski-pentagon' || fractalType === 'koch' || fractalType === 'popcorn' || fractalType === 'rose' || fractalType === 'mutant-mandelbrot' || fractalType === 'cantor' || fractalType === 'fat-cantor' || fractalType === 'smith-volterra-cantor' || fractalType === 'random-cantor') {
+    if (fractalType === 'sierpinski' || fractalType === 'sierpinski-arrowhead' || fractalType === 'sierpinski-carpet' || fractalType === 'sierpinski-pentagon' || fractalType === 'sierpinski-hexagon' || fractalType === 'sierpinski-gasket' || fractalType === 'koch' || fractalType === 'popcorn' || fractalType === 'rose' || fractalType === 'mutant-mandelbrot' || fractalType === 'cantor' || fractalType === 'fat-cantor' || fractalType === 'smith-volterra-cantor' || fractalType === 'random-cantor') {
       return true;
     }
 
@@ -1395,6 +1404,79 @@ function setupUI() {
         const location =
           interestingLocations[Math.floor(Math.random() * interestingLocations.length)];
         const zoom = location.zoom * (0.8 + Math.random() * 0.4);
+        return {
+          offset: { x: location.x, y: location.y },
+          zoom: zoom,
+        };
+      }
+
+      case 'sierpinski-hexagon': {
+        // Sierpinski hexagon - zoom into vertices and edge details
+        const interestingLocations = [
+          { x: 0, y: 0, zoom: 1 }, // Full overview
+          { x: 0, y: 0.42, zoom: 2.5 }, // Top vertex region
+          { x: 0.36, y: 0.21, zoom: 3 }, // Upper right vertex
+          { x: 0.36, y: -0.21, zoom: 3 }, // Lower right vertex
+          { x: 0, y: -0.42, zoom: 3 }, // Bottom vertex
+          { x: -0.36, y: -0.21, zoom: 3 }, // Lower left vertex
+          { x: -0.36, y: 0.21, zoom: 3 }, // Upper left vertex
+          { x: 0, y: 0, zoom: 3.5 }, // Center detail
+          { x: 0.3, y: 0.15, zoom: 6 }, // Deep zoom upper right
+          { x: -0.3, y: 0.15, zoom: 6 }, // Deep zoom upper left
+        ];
+
+        const location =
+          interestingLocations[Math.floor(Math.random() * interestingLocations.length)];
+        const zoom = location.zoom * (0.8 + Math.random() * 0.4);
+        return {
+          offset: { x: location.x, y: location.y },
+          zoom: zoom,
+        };
+      }
+
+      case 'sierpinski-gasket': {
+        // Generalised Sierpinski Gasket - different polygon types
+        // xScale controls number of sides (3-12)
+        const polygonTypes = [
+          { sides: 3, name: 'Triangle' },   // xScale = 0.0
+          { sides: 4, name: 'Square' },     // xScale = 0.167
+          { sides: 5, name: 'Pentagon' },   // xScale = 0.333
+          { sides: 6, name: 'Hexagon' },    // xScale = 0.5
+          { sides: 7, name: 'Heptagon' },   // xScale = 0.667
+          { sides: 8, name: 'Octagon' },    // xScale = 0.833
+          { sides: 9, name: 'Nonagon' },    // xScale = 1.0
+          { sides: 10, name: 'Decagon' },   // xScale = 1.167
+          { sides: 12, name: 'Dodecagon' }, // xScale = 1.5
+        ];
+        
+        const polygonType = polygonTypes[Math.floor(Math.random() * polygonTypes.length)];
+        // Convert sides to xScale: xScale = (sides - 3) / 6
+        const xScale = (polygonType.sides - 3) / 6.0;
+        
+        const interestingLocations = [
+          { x: 0, y: 0, zoom: 1 }, // Full overview
+          { x: 0, y: 0.4, zoom: 2.5 }, // Top region
+          { x: 0.35, y: 0.2, zoom: 3 }, // Upper right
+          { x: 0.35, y: -0.2, zoom: 3 }, // Lower right
+          { x: 0, y: -0.4, zoom: 3 }, // Bottom
+          { x: -0.35, y: -0.2, zoom: 3 }, // Lower left
+          { x: -0.35, y: 0.2, zoom: 3 }, // Upper left
+          { x: 0, y: 0, zoom: 3.5 }, // Center detail
+          { x: 0.25, y: 0.15, zoom: 6 }, // Deep zoom
+          { x: -0.25, y: 0.15, zoom: 6 }, // Deep zoom left
+        ];
+        
+        const location =
+          interestingLocations[Math.floor(Math.random() * interestingLocations.length)];
+        const zoom = location.zoom * (0.8 + Math.random() * 0.4);
+        
+        // Update xScale slider
+        const xScaleSlider = document.getElementById('x-scale');
+        const xScaleValue = document.getElementById('x-scale-value');
+        if (xScaleSlider) xScaleSlider.value = xScale;
+        if (xScaleValue) xScaleValue.textContent = xScale.toFixed(1);
+        params.xScale = xScale;
+        
         return {
           offset: { x: location.x, y: location.y },
           zoom: zoom,
