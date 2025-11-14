@@ -729,9 +729,18 @@ function setupUI() {
       juliaControls.classList.add('disabled');
     }
 
-    params.zoom = 1;
-    params.offset.x = 0;
-    params.offset.y = 0;
+    // Set default view parameters based on fractal type
+    if (currentFractalType === 'burning-ship') {
+      // Burning Ship looks best centered on the "ship" shape
+      params.zoom = 1.2;
+      params.offset.x = -0.5;
+      params.offset.y = -0.6;
+    } else {
+      // Default view for other fractals
+      params.zoom = 1;
+      params.offset.x = 0;
+      params.offset.y = 0;
+    }
     triggerAutoRender();
   });
 
