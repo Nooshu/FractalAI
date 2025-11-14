@@ -1001,7 +1001,7 @@ function setupUI() {
   // Samples points and checks for variation in iteration counts
   function isValidInterestingView(offset, zoom, fractalType) {
     // For geometric fractals and chaotic maps, they're generally always interesting
-    if (fractalType === 'sierpinski' || fractalType === 'sierpinski-arrowhead' || fractalType === 'sierpinski-carpet' || fractalType === 'sierpinski-pentagon' || fractalType === 'sierpinski-hexagon' || fractalType === 'sierpinski-gasket' || fractalType === 'koch' || fractalType === 'quadratic-koch' || fractalType === 'minkowski-sausage' || fractalType === 'cesaro' || fractalType === 'vicsek' || fractalType === 'cross' || fractalType === 'box-variants' || fractalType === 'h-tree' || fractalType === 'popcorn' || fractalType === 'rose' || fractalType === 'mutant-mandelbrot' || fractalType === 'cantor' || fractalType === 'fat-cantor' || fractalType === 'smith-volterra-cantor' || fractalType === 'random-cantor') {
+    if (fractalType === 'sierpinski' || fractalType === 'sierpinski-arrowhead' || fractalType === 'sierpinski-carpet' || fractalType === 'sierpinski-pentagon' || fractalType === 'sierpinski-hexagon' || fractalType === 'sierpinski-gasket' || fractalType === 'koch' || fractalType === 'quadratic-koch' || fractalType === 'minkowski-sausage' || fractalType === 'cesaro' || fractalType === 'vicsek' || fractalType === 'cross' || fractalType === 'box-variants' || fractalType === 'h-tree' || fractalType === 'h-tree-generalized' || fractalType === 'popcorn' || fractalType === 'rose' || fractalType === 'mutant-mandelbrot' || fractalType === 'cantor' || fractalType === 'fat-cantor' || fractalType === 'smith-volterra-cantor' || fractalType === 'random-cantor') {
       return true;
     }
 
@@ -1685,6 +1685,47 @@ function setupUI() {
         return {
           offset: { x: location.x, y: location.y },
           zoom: zoom,
+        };
+      }
+
+      case 'h-tree-generalized': {
+        // Generalized H-tree with rotation and scaling
+        // Use xScale for rotation (0-2), yScale for scaling (0.5-1.5)
+        const configurations = [
+          { rotation: 0.0, scale: 1.0 }, // Classic H-tree
+          { rotation: 0.5, scale: 1.0 }, // Small rotation
+          { rotation: 1.0, scale: 1.0 }, // 45 degree rotation
+          { rotation: 1.5, scale: 1.0 }, // 67.5 degree rotation
+          { rotation: 2.0, scale: 1.0 }, // 90 degree rotation (windmill)
+          { rotation: 0.5, scale: 0.7 }, // Small rotation, tight scaling
+          { rotation: 1.0, scale: 0.7 }, // 45 degrees, tight scaling
+          { rotation: 1.0, scale: 1.3 }, // 45 degrees, loose scaling
+          { rotation: 0.3, scale: 0.5 }, // Slight rotation, very tight
+          { rotation: 1.5, scale: 1.5 }, // Large rotation, loose scaling
+        ];
+        
+        const interestingLocations = [
+          { x: 0, y: 0, zoom: 1 }, // Full overview
+          { x: 0, y: 0, zoom: 2 }, // Center detail
+          { x: -0.2, y: 0.2, zoom: 3 }, // Top-left branch
+          { x: 0.2, y: 0.2, zoom: 3 }, // Top-right branch
+          { x: -0.2, y: -0.2, zoom: 3 }, // Bottom-left branch
+          { x: 0.2, y: -0.2, zoom: 3 }, // Bottom-right branch
+          { x: -0.3, y: 0.3, zoom: 5 }, // Deep into top-left
+          { x: 0.3, y: 0.3, zoom: 5 }, // Deep into top-right
+          { x: -0.15, y: 0.15, zoom: 7 }, // Very deep zoom
+          { x: 0, y: 0, zoom: 1.5 }, // Medium zoom center
+        ];
+        
+        const config = configurations[Math.floor(Math.random() * configurations.length)];
+        const location =
+          interestingLocations[Math.floor(Math.random() * interestingLocations.length)];
+        const zoom = location.zoom * (0.8 + Math.random() * 0.4);
+        
+        return {
+          offset: { x: location.x, y: location.y },
+          zoom: zoom,
+          params: { xScale: config.rotation, yScale: config.scale },
         };
       }
 
