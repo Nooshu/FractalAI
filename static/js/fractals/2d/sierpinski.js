@@ -1,4 +1,4 @@
-import { vertexShader, createFragmentShader, getColorSchemeIndex } from '../utils.js';
+import { vertexShader, createFragmentShader, generatePaletteTexture } from '../utils.js';
 
 // Sierpinski triangle using barycentric coordinate method
 const fractalFunction = `
@@ -72,6 +72,9 @@ const fractalFunction = `
 const fragmentShader = createFragmentShader(fractalFunction);
 
 export function render(regl, params, canvas) {
+  // Generate palette texture for the current color scheme
+  const paletteTexture = generatePaletteTexture(regl, params.colorScheme);
+
   // Create or update the draw command
   const drawFractal = regl({
     vert: vertexShader,
@@ -86,7 +89,7 @@ export function render(regl, params, canvas) {
       uOffset: [params.offset.x, params.offset.y],
       uResolution: [canvas.width, canvas.height],
       uJuliaC: [0, 0],
-      uColorScheme: getColorSchemeIndex(params.colorScheme),
+      uPalette: paletteTexture,
       uXScale: params.xScale,
       uYScale: params.yScale,
     },

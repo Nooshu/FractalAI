@@ -1,54 +1,175 @@
+// Palette texture cache
+const paletteTextureCache = new Map();
+const PALETTE_SIZE = 512; // Number of colors in the palette texture
+
+/**
+ * Generates a color value for a given t value (0-1) and scheme
+ * @param {number} t - Value from 0 to 1
+ * @param {number} schemeIndex - Index of the color scheme
+ * @returns {Object} RGB color {r, g, b} in range [0, 1]
+ */
+function computeColorForScheme(t, schemeIndex) {
+  // Clamp t to [0, 1]
+  t = Math.max(0, Math.min(1, t));
+
+  switch (schemeIndex) {
+    case 1: // fire
+      return { r: t, g: t * 0.5, b: 0 };
+    case 2: // ocean
+      return { r: 0, g: t * 0.5, b: t };
+    case 3: // rainbow
+      {
+        const hue = ((t * 360) % 360) / 360;
+        return {
+          r: 0.5 + 0.5 * Math.cos(hue * 6.28 + 0.0),
+          g: 0.5 + 0.5 * Math.cos(hue * 6.28 + 2.09),
+          b: 0.5 + 0.5 * Math.cos(hue * 6.28 + 4.18),
+        };
+      }
+    case 12: // rainbow2 - pastel
+      {
+        const hue = ((t * 360) % 360) / 360;
+        const sat = 0.6;
+        const light = 0.7;
+        return {
+          r: light + sat * Math.cos(hue * 6.28 + 0.0),
+          g: light + sat * Math.cos(hue * 6.28 + 2.09),
+          b: light + sat * Math.cos(hue * 6.28 + 4.18),
+        };
+      }
+    case 13: // rainbow3 - dark
+      {
+        const hue = ((t * 360) % 360) / 360;
+        const sat = 1.0;
+        const light = 0.3;
+        return {
+          r: light + sat * Math.cos(hue * 6.28 + 0.0),
+          g: light + sat * Math.cos(hue * 6.28 + 2.09),
+          b: light + sat * Math.cos(hue * 6.28 + 4.18),
+        };
+      }
+    case 14: // rainbow4 - vibrant
+      {
+        const hue = ((t * 360) % 360) / 360;
+        const sat = 1.2;
+        const light = 0.4;
+        return {
+          r: Math.max(0, Math.min(1, light + sat * Math.cos(hue * 6.28 + 0.0))),
+          g: Math.max(0, Math.min(1, light + sat * Math.cos(hue * 6.28 + 2.09))),
+          b: Math.max(0, Math.min(1, light + sat * Math.cos(hue * 6.28 + 4.18))),
+        };
+      }
+    case 15: // rainbow5 - double
+      {
+        const hue = ((t * 720) % 360) / 360;
+        return {
+          r: 0.5 + 0.5 * Math.cos(hue * 6.28 + 0.0),
+          g: 0.5 + 0.5 * Math.cos(hue * 6.28 + 2.09),
+          b: 0.5 + 0.5 * Math.cos(hue * 6.28 + 4.18),
+        };
+      }
+    case 16: // rainbow6 - shifted
+      {
+        const hue = ((t * 360 + 60) % 360) / 360;
+        return {
+          r: 0.5 + 0.5 * Math.cos(hue * 6.28 + 0.0),
+          g: 0.5 + 0.5 * Math.cos(hue * 6.28 + 2.09),
+          b: 0.5 + 0.5 * Math.cos(hue * 6.28 + 4.18),
+        };
+      }
+    case 4: // monochrome
+      return { r: t, g: t, b: t };
+    case 5: // forest
+      return { r: t * 0.3, g: t * 0.8, b: t * 0.4 };
+    case 6: // sunset
+      return { r: t, g: t * 0.4, b: t * 0.2 };
+    case 7: // purple
+      return { r: t * 0.6, g: t * 0.3, b: t };
+    case 8: // cyan
+      return { r: 0, g: t, b: t };
+    case 9: // gold
+      return { r: t, g: t * 0.8, b: t * 0.2 };
+    case 10: // ice
+      return { r: t * 0.7, g: t * 0.9, b: t };
+    case 11: // neon
+      {
+        const pulse = Math.sin(t * Math.PI) * 0.5 + 0.5;
+        return {
+          r: t * 0.2 + pulse * 0.8,
+          g: t * 0.8 + pulse * 0.2,
+          b: t,
+        };
+      }
+    default: // classic (scheme == 0)
+      return { r: t * 0.5, g: t, b: Math.min(t * 1.5, 1) };
+  }
+}
+
+/**
+ * Generates a palette texture for a given color scheme
+ * @param {Object} regl - The regl context
+ * @param {string} colorScheme - Name of the color scheme
+ * @returns {Object} regl texture object
+ */
+export function generatePaletteTexture(regl, colorScheme) {
+  const schemeIndex = getColorSchemeIndex(colorScheme);
+  const cacheKey = `${colorScheme}_${PALETTE_SIZE}`;
+
+  // Return cached texture if available
+  if (paletteTextureCache.has(cacheKey)) {
+    return paletteTextureCache.get(cacheKey);
+  }
+
+  // Generate palette data
+  const paletteData = new Uint8Array(PALETTE_SIZE * 4); // RGBA
+
+  for (let i = 0; i < PALETTE_SIZE; i++) {
+    const t = i / (PALETTE_SIZE - 1);
+    const color = computeColorForScheme(t, schemeIndex);
+
+    const offset = i * 4;
+    paletteData[offset + 0] = Math.floor(color.r * 255); // R
+    paletteData[offset + 1] = Math.floor(color.g * 255); // G
+    paletteData[offset + 2] = Math.floor(color.b * 255); // B
+    paletteData[offset + 3] = 255; // A (fully opaque)
+  }
+
+  // Create 1D texture (using a 1xN 2D texture as WebGL doesn't have true 1D textures)
+  const texture = regl.texture({
+    width: PALETTE_SIZE,
+    height: 1,
+    data: paletteData,
+    format: 'rgba',
+    type: 'uint8',
+    min: 'linear',
+    mag: 'linear',
+    wrap: 'clamp',
+  });
+
+  // Cache the texture
+  paletteTextureCache.set(cacheKey, texture);
+
+  return texture;
+}
+
+/**
+ * Clears the palette texture cache
+ * Call this when cleaning up resources
+ */
+export function clearPaletteCache() {
+  for (const texture of paletteTextureCache.values()) {
+    texture.destroy();
+  }
+  paletteTextureCache.clear();
+}
+
 // Color schemes (for CPU-side color calculations if needed)
 export function getColor(iterations, maxIterations, scheme) {
   if (iterations >= maxIterations) return { r: 0, g: 0, b: 0 };
 
   const t = iterations / maxIterations;
-
-  switch (scheme) {
-    case 'fire':
-      return { r: t, g: t * 0.5, b: 0 };
-    case 'ocean':
-      return { r: 0, g: t * 0.5, b: t };
-    case 'rainbow': {
-      const hue = (t * 360) % 360;
-      const h = hue / 360;
-      // Convert HSL to RGB
-      const c = 1;
-      const x = c * (1 - Math.abs(((h * 6) % 2) - 1));
-      const m = 0.5 - c / 2;
-      let r, g, b;
-      if (h < 1 / 6) {
-        r = c;
-        g = x;
-        b = 0;
-      } else if (h < 2 / 6) {
-        r = x;
-        g = c;
-        b = 0;
-      } else if (h < 3 / 6) {
-        r = 0;
-        g = c;
-        b = x;
-      } else if (h < 4 / 6) {
-        r = 0;
-        g = x;
-        b = c;
-      } else if (h < 5 / 6) {
-        r = x;
-        g = 0;
-        b = c;
-      } else {
-        r = c;
-        g = 0;
-        b = x;
-      }
-      return { r: r + m, g: g + m, b: b + m };
-    }
-    case 'monochrome':
-      return { r: t, g: t, b: t };
-    default: // classic
-      return { r: t * 0.5, g: t, b: t * 1.5 };
-  }
+  const schemeIndex = getColorSchemeIndex(scheme);
+  return computeColorForScheme(t, schemeIndex);
 }
 
 export function getColorSchemeIndex(scheme) {
@@ -97,74 +218,11 @@ export function createFragmentShader(fractalFunction) {
     uniform vec2 uOffset;
     uniform vec2 uResolution;
     uniform vec2 uJuliaC;
-    uniform int uColorScheme;
+    uniform sampler2D uPalette;
     uniform float uXScale;
     uniform float uYScale;
     
     varying vec2 vUv;
-    
-    vec3 getColorScheme(float t, int scheme) {
-        if (scheme == 1) { // fire
-            return vec3(t, t * 0.5, 0.0);
-        } else if (scheme == 2) { // ocean
-            return vec3(0.0, t * 0.5, t);
-        } else if (scheme == 3) { // rainbow
-            float hue = mod(t * 360.0, 360.0) / 360.0;
-            return vec3(0.5 + 0.5 * cos(hue * 6.28 + 0.0),
-                       0.5 + 0.5 * cos(hue * 6.28 + 2.09),
-                       0.5 + 0.5 * cos(hue * 6.28 + 4.18));
-        } else if (scheme == 12) { // rainbow2 - pastel rainbow
-            float hue = mod(t * 360.0, 360.0) / 360.0;
-            float sat = 0.6; // Lower saturation for pastel
-            float light = 0.7; // Higher lightness for pastel
-            return vec3(light + sat * cos(hue * 6.28 + 0.0),
-                       light + sat * cos(hue * 6.28 + 2.09),
-                       light + sat * cos(hue * 6.28 + 4.18));
-        } else if (scheme == 13) { // rainbow3 - dark rainbow
-            float hue = mod(t * 360.0, 360.0) / 360.0;
-            float sat = 1.0;
-            float light = 0.3; // Lower lightness for dark
-            return vec3(light + sat * cos(hue * 6.28 + 0.0),
-                       light + sat * cos(hue * 6.28 + 2.09),
-                       light + sat * cos(hue * 6.28 + 4.18));
-        } else if (scheme == 14) { // rainbow4 - vibrant rainbow (higher saturation)
-            float hue = mod(t * 360.0, 360.0) / 360.0;
-            float sat = 1.2; // Over-saturated for vibrant
-            float light = 0.4;
-            return vec3(clamp(light + sat * cos(hue * 6.28 + 0.0), 0.0, 1.0),
-                       clamp(light + sat * cos(hue * 6.28 + 2.09), 0.0, 1.0),
-                       clamp(light + sat * cos(hue * 6.28 + 4.18), 0.0, 1.0));
-        } else if (scheme == 15) { // rainbow5 - double rainbow (faster hue rotation)
-            float hue = mod(t * 720.0, 360.0) / 360.0; // Double speed
-            return vec3(0.5 + 0.5 * cos(hue * 6.28 + 0.0),
-                       0.5 + 0.5 * cos(hue * 6.28 + 2.09),
-                       0.5 + 0.5 * cos(hue * 6.28 + 4.18));
-        } else if (scheme == 16) { // rainbow6 - shifted rainbow (offset hue)
-            float hue = mod(t * 360.0 + 60.0, 360.0) / 360.0; // 60 degree offset
-            return vec3(0.5 + 0.5 * cos(hue * 6.28 + 0.0),
-                       0.5 + 0.5 * cos(hue * 6.28 + 2.09),
-                       0.5 + 0.5 * cos(hue * 6.28 + 4.18));
-        } else if (scheme == 4) { // monochrome
-            return vec3(t, t, t);
-        } else if (scheme == 5) { // forest
-            return vec3(t * 0.3, t * 0.8, t * 0.4);
-        } else if (scheme == 6) { // sunset
-            return vec3(t, t * 0.4, t * 0.2);
-        } else if (scheme == 7) { // purple
-            return vec3(t * 0.6, t * 0.3, t);
-        } else if (scheme == 8) { // cyan
-            return vec3(0.0, t, t);
-        } else if (scheme == 9) { // gold
-            return vec3(t, t * 0.8, t * 0.2);
-        } else if (scheme == 10) { // ice
-            return vec3(t * 0.7, t * 0.9, t);
-        } else if (scheme == 11) { // neon
-            float pulse = sin(t * 3.14159) * 0.5 + 0.5;
-            return vec3(t * 0.2 + pulse * 0.8, t * 0.8 + pulse * 0.2, t);
-        } else { // classic (scheme == 0)
-            return vec3(t * 0.5, t, t * 1.5);
-        }
-    }
     
     ${fractalFunction}
     
@@ -179,9 +237,13 @@ export function createFragmentShader(fractalFunction) {
         
         float iterations = computeFractal(c);
         
-        float t = iterations / uIterations;
-        vec3 color = getColorScheme(t, uColorScheme);
+        // Normalized iteration value for color lookup
+        float t = clamp(iterations / uIterations, 0.0, 1.0);
         
+        // Texture-based palette lookup (much faster than computed colors)
+        vec3 color = texture2D(uPalette, vec2(t, 0.5)).rgb;
+        
+        // Points in the set are black
         if (iterations >= uIterations) {
             color = vec3(0.0);
         }
