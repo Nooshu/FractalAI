@@ -681,6 +681,7 @@ function setupUI() {
     'gold',
     'ice',
     'neon',
+    'white',
   ];
   let currentColorSchemeIndex = colorSchemes.indexOf(params.colorScheme);
   if (currentColorSchemeIndex === -1) currentColorSchemeIndex = 0;
@@ -2351,7 +2352,8 @@ function zoomToSelection(startX, startY, endX, endY, canvasRect) {
   // width = (4.0 / newZoom) * aspect * xScale  =>  newZoom = (4.0 * aspect * xScale) / width
   // height = (4.0 / newZoom) * yScale  =>  newZoom = (4.0 * yScale) / height
 
-  // Use the larger zoom value to ensure the selection fits
+  // Use the larger zoom value to ensure the selection fits within the viewport
+  // This ensures that the entire selection is visible after zooming
   const zoomByWidth = (4.0 * aspect * params.xScale) / width;
   const zoomByHeight = (4.0 * params.yScale) / height;
 
@@ -2361,6 +2363,8 @@ function zoomToSelection(startX, startY, endX, endY, canvasRect) {
     return;
   }
 
+  // Use the larger zoom value to ensure the selection fits
+  // This means the selection will fill one dimension and fit within the other
   const newZoom = Math.max(zoomByWidth, zoomByHeight);
 
   // Validate final zoom value and apply reasonable bounds

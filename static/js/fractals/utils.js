@@ -100,6 +100,8 @@ function computeColorForScheme(t, schemeIndex) {
           b: t,
         };
       }
+    case 17: // white
+      return { r: 1.0, g: 1.0, b: 1.0 };
     default: // classic (scheme == 0)
       return { r: t * 0.5, g: t, b: Math.min(t * 1.5, 1) };
   }
@@ -191,6 +193,7 @@ export function getColorSchemeIndex(scheme) {
     'rainbow4',
     'rainbow5',
     'rainbow6',
+    'white',
   ];
   return schemes.indexOf(scheme);
 }

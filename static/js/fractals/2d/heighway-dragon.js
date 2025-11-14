@@ -1,4 +1,5 @@
 import regl from 'regl';
+import { generatePaletteTexture } from '../utils.js';
 
 // Generate vertices for the Heighway dragon curve
 function generateHeighwayDragon(iterations) {
@@ -105,40 +106,8 @@ const fragmentShader = `
 `;
 
 export function render(regl, params, canvas) {
-  // Generate palette texture
-  const paletteData = new Uint8Array(256 * 3);
-  const scheme = params.colorScheme || 'classic';
-  
-  // Generate palette based on color scheme
-  for (let i = 0; i < 256; i++) {
-    const t = i / 255;
-    if (scheme === 'classic') {
-      paletteData[i * 3] = Math.floor(Math.sin(t * Math.PI * 2) * 127 + 128);
-      paletteData[i * 3 + 1] = Math.floor(Math.sin(t * Math.PI * 2 + Math.PI / 2) * 127 + 128);
-      paletteData[i * 3 + 2] = Math.floor(Math.sin(t * Math.PI * 2 + Math.PI) * 127 + 128);
-    } else if (scheme === 'fire') {
-      paletteData[i * 3] = Math.floor(t * 255);
-      paletteData[i * 3 + 1] = Math.floor(t * t * 255);
-      paletteData[i * 3 + 2] = Math.floor(t * t * t * 128);
-    } else if (scheme === 'ocean') {
-      paletteData[i * 3] = Math.floor(t * 128);
-      paletteData[i * 3 + 1] = Math.floor(t * 200);
-      paletteData[i * 3 + 2] = Math.floor(200 + t * 55);
-    } else {
-      // Default rainbow
-      paletteData[i * 3] = Math.floor(Math.sin(t * Math.PI * 2) * 127 + 128);
-      paletteData[i * 3 + 1] = Math.floor(Math.sin(t * Math.PI * 2 + 2) * 127 + 128);
-      paletteData[i * 3 + 2] = Math.floor(Math.sin(t * Math.PI * 2 + 4) * 127 + 128);
-    }
-  }
-
-  const paletteTexture = regl.texture({
-    data: paletteData,
-    width: 256,
-    height: 1,
-    format: 'rgb',
-    wrap: 'repeat',
-  });
+  // Generate palette texture for the current color scheme
+  const paletteTexture = generatePaletteTexture(regl, params.colorScheme);
 
   // Calculate iteration level based on params.iterations
   // Map 0-200 iterations to 0-15 levels

@@ -87,41 +87,39 @@ export function render(regl, params, canvas) {
   const vertexShader = `
     precision mediump float;
     attribute vec2 position;
-    uniform float zoom;
-    uniform vec2 offset;
-    uniform float aspectRatio;
-    uniform vec2 scale2d;
+    uniform float uZoom;
+    uniform vec2 uOffset;
+    uniform vec2 uResolution;
+    uniform float uXScale;
+    uniform float uYScale;
     varying vec2 vPosition;
 
     void main() {
-      // Pass original position to fragment shader for coloring
+      float aspect = uResolution.x / uResolution.y;
+      float scale = 4.0 / uZoom;
+      
+      // Transform vertex position to match the standard fractal coordinate system
+      // Fragment shader: c = (uv - 0.5) * scale * aspect * xScale + offset
+      // So for vertices in fractal coordinate space 'c', we need to convert to clip space:
+      // 1. Subtract offset to get relative position
+      vec2 fractalCoord = position;
+      vec2 relative = fractalCoord - uOffset;
+      
+      // 2. Convert to UV space (inverse of fragment shader transformation)
+      vec2 uv = vec2(
+        relative.x / (scale * aspect * uXScale) + 0.5,
+        relative.y / (scale * uYScale) + 0.5
+      );
+      
+      // 3. Convert UV (0-1) to clip space (-1 to 1)
+      vec2 clipSpace = (uv - 0.5) * 2.0;
+      
+      // 4. The fragment shader's aspect is already in the x coordinate,
+      //    so we need to divide by aspect to get proper clip space
+      clipSpace.x /= aspect;
+      
+      gl_Position = vec4(clipSpace, 0.0, 1.0);
       vPosition = position;
-      
-      // Start with the base vertex position
-      vec2 pos = position;
-      
-      // Apply x/y scale
-      pos.x *= scale2d.x;
-      pos.y *= scale2d.y;
-      
-      // Apply zoom (higher zoom = more zoomed in)
-      pos *= (zoom / 4.0);
-      
-      // Apply offset
-      pos.x -= offset.x;
-      pos.y -= offset.y;
-      
-      // Apply aspect ratio correction
-      if (aspectRatio > 1.0) {
-        pos.x /= aspectRatio;
-      } else {
-        pos.y *= aspectRatio;
-      }
-      
-      // Scale down slightly for padding
-      pos *= 0.9;
-      
-      gl_Position = vec4(pos, 0, 1);
     }
   `;
 
@@ -188,6 +186,8 @@ export function render(regl, params, canvas) {
         } else if (scheme == 11) { // neon
             float pulse = sin(t * 3.14159) * 0.5 + 0.5;
             return vec3(t * 0.2 + pulse * 0.8, t * 0.8 + pulse * 0.2, t);
+        } else if (scheme == 17) { // white
+            return vec3(1.0, 1.0, 1.0);
         } else { // classic (scheme == 0)
             return vec3(t * 0.5, t, min(t * 1.5, 1.0));
         }
@@ -214,10 +214,11 @@ export function render(regl, params, canvas) {
     },
 
     uniforms: {
-      zoom: params.zoom,
-      offset: [params.offset.x, params.offset.y],
-      aspectRatio: canvas.width / canvas.height,
-      scale2d: [params.xScale, params.yScale],
+      uZoom: params.zoom,
+      uOffset: [params.offset.x, params.offset.y],
+      uResolution: [canvas.width, canvas.height],
+      uXScale: params.xScale,
+      uYScale: params.yScale,
       uColorScheme: colorSchemeIndex,
     },
 

@@ -1,4 +1,5 @@
 import regl from 'regl';
+import { generatePaletteTexture } from '../utils.js';
 
 // Generate vertices for the Minkowski Sausage
 function generateMinkowskiSausage(iterations) {
@@ -84,16 +85,26 @@ const vertexShader = `
 
   void main() {
     float aspect = uResolution.x / uResolution.y;
+    float scale = 4.0 / uZoom;
     
-    // Apply zoom and offset
-    vec2 transformed = position;
-    transformed *= 4.0 / uZoom;
-    transformed.x *= aspect * uXScale;
-    transformed.y *= uYScale;
-    transformed += uOffset;
+    // Transform vertex position to match the standard fractal coordinate system
+    // Fragment shader: c = (uv - 0.5) * scale * aspect * xScale + offset
+    // So for vertices in fractal coordinate space 'c', we need to convert to clip space:
+    // 1. Subtract offset to get relative position
+    vec2 fractalCoord = position;
+    vec2 relative = fractalCoord - uOffset;
     
-    // Map back to clip space
-    vec2 clipSpace = transformed / 2.0;
+    // 2. Convert to UV space (inverse of fragment shader transformation)
+    vec2 uv = vec2(
+      relative.x / (scale * aspect * uXScale) + 0.5,
+      relative.y / (scale * uYScale) + 0.5
+    );
+    
+    // 3. Convert UV (0-1) to clip space (-1 to 1)
+    vec2 clipSpace = (uv - 0.5) * 2.0;
+    
+    // 4. The fragment shader's aspect is already in the x coordinate,
+    //    so we need to divide by aspect to get proper clip space
     clipSpace.x /= aspect;
     
     gl_Position = vec4(clipSpace, 0.0, 1.0);
@@ -118,40 +129,8 @@ const fragmentShader = `
 `;
 
 export function render(regl, params, canvas) {
-  // Generate palette texture
-  const paletteData = new Uint8Array(256 * 3);
-  const scheme = params.colorScheme || 'classic';
-  
-  // Generate palette based on color scheme
-  for (let i = 0; i < 256; i++) {
-    const t = i / 255;
-    if (scheme === 'classic') {
-      paletteData[i * 3] = Math.floor(Math.sin(t * Math.PI * 2) * 127 + 128);
-      paletteData[i * 3 + 1] = Math.floor(Math.sin(t * Math.PI * 2 + Math.PI / 2) * 127 + 128);
-      paletteData[i * 3 + 2] = Math.floor(Math.sin(t * Math.PI * 2 + Math.PI) * 127 + 128);
-    } else if (scheme === 'fire') {
-      paletteData[i * 3] = Math.floor(t * 255);
-      paletteData[i * 3 + 1] = Math.floor(t * t * 255);
-      paletteData[i * 3 + 2] = Math.floor(t * t * t * 128);
-    } else if (scheme === 'ocean') {
-      paletteData[i * 3] = Math.floor(t * 128);
-      paletteData[i * 3 + 1] = Math.floor(t * 200);
-      paletteData[i * 3 + 2] = Math.floor(200 + t * 55);
-    } else {
-      // Default rainbow
-      paletteData[i * 3] = Math.floor(Math.sin(t * Math.PI * 2) * 127 + 128);
-      paletteData[i * 3 + 1] = Math.floor(Math.sin(t * Math.PI * 2 + 2) * 127 + 128);
-      paletteData[i * 3 + 2] = Math.floor(Math.sin(t * Math.PI * 2 + 4) * 127 + 128);
-    }
-  }
-
-  const paletteTexture = regl.texture({
-    data: paletteData,
-    width: 256,
-    height: 1,
-    format: 'rgb',
-    wrap: 'repeat',
-  });
+  // Generate palette texture for the current color scheme
+  const paletteTexture = generatePaletteTexture(regl, params.colorScheme);
 
   // Calculate iteration level based on params.iterations
   // Map 0-200 iterations to 0-6 levels
