@@ -992,7 +992,7 @@ function setupUI() {
   // Samples points and checks for variation in iteration counts
   function isValidInterestingView(offset, zoom, fractalType) {
     // For geometric fractals and chaotic maps, they're generally always interesting
-    if (fractalType === 'sierpinski' || fractalType === 'sierpinski-arrowhead' || fractalType === 'koch' || fractalType === 'popcorn' || fractalType === 'rose' || fractalType === 'mutant-mandelbrot' || fractalType === 'cantor' || fractalType === 'fat-cantor' || fractalType === 'smith-volterra-cantor' || fractalType === 'random-cantor') {
+    if (fractalType === 'sierpinski' || fractalType === 'sierpinski-arrowhead' || fractalType === 'sierpinski-carpet' || fractalType === 'koch' || fractalType === 'popcorn' || fractalType === 'rose' || fractalType === 'mutant-mandelbrot' || fractalType === 'cantor' || fractalType === 'fat-cantor' || fractalType === 'smith-volterra-cantor' || fractalType === 'random-cantor') {
       return true;
     }
 
@@ -1342,6 +1342,30 @@ function setupUI() {
           { x: 0, y: 0, zoom: 2.5 }, // Closer center view
           { x: -0.15, y: 0, zoom: 6 }, // Left detail zoom
           { x: 0.15, y: 0, zoom: 6 }, // Right detail zoom
+        ];
+
+        const location =
+          interestingLocations[Math.floor(Math.random() * interestingLocations.length)];
+        const zoom = location.zoom * (0.8 + Math.random() * 0.4);
+        return {
+          offset: { x: location.x, y: location.y },
+          zoom: zoom,
+        };
+      }
+
+      case 'sierpinski-carpet': {
+        // Sierpinski carpet - zoom into edge details and corners
+        const interestingLocations = [
+          { x: 0, y: 0, zoom: 1 }, // Full overview
+          { x: 0.33, y: 0.33, zoom: 3 }, // Upper right quadrant
+          { x: -0.33, y: 0.33, zoom: 3 }, // Upper left quadrant
+          { x: 0.33, y: -0.33, zoom: 3 }, // Lower right quadrant
+          { x: -0.33, y: -0.33, zoom: 3 }, // Lower left quadrant
+          { x: 0, y: 0, zoom: 4 }, // Center zoom
+          { x: 0.22, y: 0.22, zoom: 9 }, // Deep zoom upper right
+          { x: -0.22, y: -0.22, zoom: 9 }, // Deep zoom lower left
+          { x: 0.11, y: 0.33, zoom: 12 }, // Edge detail
+          { x: -0.15, y: 0.15, zoom: 15 }, // Very deep zoom
         ];
 
         const location =
