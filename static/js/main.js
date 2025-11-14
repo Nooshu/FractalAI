@@ -1001,7 +1001,7 @@ function setupUI() {
   // Samples points and checks for variation in iteration counts
   function isValidInterestingView(offset, zoom, fractalType) {
     // For geometric fractals and chaotic maps, they're generally always interesting
-    if (fractalType === 'sierpinski' || fractalType === 'sierpinski-arrowhead' || fractalType === 'sierpinski-carpet' || fractalType === 'sierpinski-pentagon' || fractalType === 'sierpinski-hexagon' || fractalType === 'sierpinski-gasket' || fractalType === 'koch' || fractalType === 'quadratic-koch' || fractalType === 'popcorn' || fractalType === 'rose' || fractalType === 'mutant-mandelbrot' || fractalType === 'cantor' || fractalType === 'fat-cantor' || fractalType === 'smith-volterra-cantor' || fractalType === 'random-cantor') {
+    if (fractalType === 'sierpinski' || fractalType === 'sierpinski-arrowhead' || fractalType === 'sierpinski-carpet' || fractalType === 'sierpinski-pentagon' || fractalType === 'sierpinski-hexagon' || fractalType === 'sierpinski-gasket' || fractalType === 'koch' || fractalType === 'quadratic-koch' || fractalType === 'minkowski-sausage' || fractalType === 'popcorn' || fractalType === 'rose' || fractalType === 'mutant-mandelbrot' || fractalType === 'cantor' || fractalType === 'fat-cantor' || fractalType === 'smith-volterra-cantor' || fractalType === 'random-cantor') {
       return true;
     }
 
@@ -1520,6 +1520,30 @@ function setupUI() {
           { x: 0.35, y: -0.35, zoom: 5 }, // Bottom-right corner
           { x: -0.35, y: -0.35, zoom: 5 }, // Bottom-left corner
           { x: 0, y: 0, zoom: 2 }, // Medium zoom center
+        ];
+
+        const location =
+          interestingLocations[Math.floor(Math.random() * interestingLocations.length)];
+        const zoom = location.zoom * (0.8 + Math.random() * 0.4);
+        return {
+          offset: { x: location.x, y: location.y },
+          zoom: zoom,
+        };
+      }
+
+      case 'minkowski-sausage': {
+        // Minkowski sausage - zoom into rectangular protrusions
+        const interestingLocations = [
+          { x: 0, y: 0, zoom: 1 }, // Full overview
+          { x: 0, y: 0.5, zoom: 3 }, // Top edge bulge
+          { x: 0.5, y: 0, zoom: 3 }, // Right edge bulge
+          { x: 0, y: -0.5, zoom: 3 }, // Bottom edge bulge
+          { x: -0.5, y: 0, zoom: 3 }, // Left edge bulge
+          { x: 0.4, y: 0.4, zoom: 5 }, // Top-right corner detail
+          { x: -0.4, y: 0.4, zoom: 5 }, // Top-left corner detail
+          { x: 0.4, y: -0.4, zoom: 5 }, // Bottom-right corner detail
+          { x: -0.4, y: -0.4, zoom: 5 }, // Bottom-left corner detail
+          { x: 0, y: 0, zoom: 2.5 }, // Medium zoom center
         ];
 
         const location =
