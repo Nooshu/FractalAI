@@ -76,8 +76,12 @@ export function render(regl, params, canvas) {
     uniform vec2 offset;
     uniform float aspectRatio;
     uniform vec2 scale2d;
+    varying vec2 vPosition;
 
     void main() {
+      // Pass original position to fragment shader for coloring
+      vPosition = position;
+      
       // Apply zoom and offset
       vec2 pos = position / zoom - offset;
       
@@ -101,36 +105,82 @@ export function render(regl, params, canvas) {
 
   const fragmentShader = `
     precision mediump float;
-    uniform vec3 color;
+    uniform int uColorScheme;
+    varying vec2 vPosition;
+
+    vec3 getColorScheme(float t, int scheme) {
+        if (scheme == 1) { // fire
+            return vec3(t, t * 0.5, 0.0);
+        } else if (scheme == 2) { // ocean
+            return vec3(0.0, t * 0.5, t);
+        } else if (scheme == 3) { // rainbow
+            float hue = mod(t * 360.0, 360.0) / 360.0;
+            return vec3(0.5 + 0.5 * cos(hue * 6.28 + 0.0),
+                       0.5 + 0.5 * cos(hue * 6.28 + 2.09),
+                       0.5 + 0.5 * cos(hue * 6.28 + 4.18));
+        } else if (scheme == 12) { // rainbow2 - pastel
+            float hue = mod(t * 360.0, 360.0) / 360.0;
+            float sat = 0.6;
+            float light = 0.7;
+            return vec3(light + sat * cos(hue * 6.28 + 0.0),
+                       light + sat * cos(hue * 6.28 + 2.09),
+                       light + sat * cos(hue * 6.28 + 4.18));
+        } else if (scheme == 13) { // rainbow3 - dark
+            float hue = mod(t * 360.0, 360.0) / 360.0;
+            float sat = 1.0;
+            float light = 0.3;
+            return vec3(light + sat * cos(hue * 6.28 + 0.0),
+                       light + sat * cos(hue * 6.28 + 2.09),
+                       light + sat * cos(hue * 6.28 + 4.18));
+        } else if (scheme == 14) { // rainbow4 - vibrant
+            float hue = mod(t * 360.0, 360.0) / 360.0;
+            float sat = 1.2;
+            float light = 0.4;
+            return vec3(clamp(light + sat * cos(hue * 6.28 + 0.0), 0.0, 1.0),
+                       clamp(light + sat * cos(hue * 6.28 + 2.09), 0.0, 1.0),
+                       clamp(light + sat * cos(hue * 6.28 + 4.18), 0.0, 1.0));
+        } else if (scheme == 15) { // rainbow5 - double
+            float hue = mod(t * 720.0, 360.0) / 360.0;
+            return vec3(0.5 + 0.5 * cos(hue * 6.28 + 0.0),
+                       0.5 + 0.5 * cos(hue * 6.28 + 2.09),
+                       0.5 + 0.5 * cos(hue * 6.28 + 4.18));
+        } else if (scheme == 16) { // rainbow6 - shifted
+            float hue = mod(t * 360.0 + 60.0, 360.0) / 360.0;
+            return vec3(0.5 + 0.5 * cos(hue * 6.28 + 0.0),
+                       0.5 + 0.5 * cos(hue * 6.28 + 2.09),
+                       0.5 + 0.5 * cos(hue * 6.28 + 4.18));
+        } else if (scheme == 4) { // monochrome
+            return vec3(t, t, t);
+        } else if (scheme == 5) { // forest
+            return vec3(t * 0.3, t * 0.8, t * 0.4);
+        } else if (scheme == 6) { // sunset
+            return vec3(t, t * 0.4, t * 0.2);
+        } else if (scheme == 7) { // purple
+            return vec3(t * 0.6, t * 0.3, t);
+        } else if (scheme == 8) { // cyan
+            return vec3(0.0, t, t);
+        } else if (scheme == 9) { // gold
+            return vec3(t, t * 0.8, t * 0.2);
+        } else if (scheme == 10) { // ice
+            return vec3(t * 0.7, t * 0.9, t);
+        } else if (scheme == 11) { // neon
+            float pulse = sin(t * 3.14159) * 0.5 + 0.5;
+            return vec3(t * 0.2 + pulse * 0.8, t * 0.8 + pulse * 0.2, t);
+        } else { // classic (scheme == 0)
+            return vec3(t * 0.5, t, min(t * 1.5, 1.0));
+        }
+    }
 
     void main() {
+      // Use position to create variation in color
+      float t = length(vPosition) * 0.5 + 0.5;
+      vec3 color = getColorScheme(t, uColorScheme);
       gl_FragColor = vec4(color, 1.0);
     }
   `;
 
   // Get color based on color scheme
   const colorSchemeIndex = getColorSchemeIndex(params.colorScheme);
-  let color = [0.9, 1.0, 1.0]; // Default: light cyan
-  
-  // Map color schemes to RGB values
-  const colorSchemes = {
-    0: [0.5, 1.0, 1.5],   // classic (blue-cyan)
-    1: [1.0, 0.5, 0.0],   // fire (orange-red)
-    2: [0.0, 0.5, 1.0],   // ocean (blue)
-    3: [1.0, 0.5, 1.0],   // rainbow (pink)
-    4: [0.8, 0.8, 0.8],   // monochrome (grey)
-    5: [0.3, 0.8, 0.4],   // forest (green)
-    6: [1.0, 0.4, 0.2],   // sunset (orange)
-    7: [0.6, 0.3, 1.0],   // purple
-    8: [0.0, 1.0, 1.0],   // cyan
-    9: [1.0, 0.8, 0.2],   // gold
-    10: [0.7, 0.9, 1.0],  // ice (light blue)
-    11: [1.0, 0.0, 1.0],  // neon (magenta)
-  };
-  
-  if (colorSchemes[colorSchemeIndex]) {
-    color = colorSchemes[colorSchemeIndex];
-  }
 
   // Create the draw command
   const drawFractal = regl({
@@ -146,7 +196,7 @@ export function render(regl, params, canvas) {
       offset: [params.offset.x, params.offset.y],
       aspectRatio: canvas.width / canvas.height,
       scale2d: [params.xScale, params.yScale],
-      color: color,
+      uColorScheme: colorSchemeIndex,
     },
 
     primitive: 'line loop',
