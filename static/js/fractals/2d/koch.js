@@ -82,12 +82,20 @@ export function render(regl, params, canvas) {
       // Pass original position to fragment shader for coloring
       vPosition = position;
       
-      // Apply zoom and offset
-      vec2 pos = position / zoom - offset;
+      // Start with the base vertex position
+      vec2 pos = position;
       
       // Apply x/y scale
       pos.x *= scale2d.x;
       pos.y *= scale2d.y;
+      
+      // Apply zoom (higher zoom = more zoomed in)
+      // For geometry, we need to scale UP to zoom in (opposite of coordinate space scaling)
+      pos *= (zoom / 4.0);
+      
+      // Apply offset
+      pos.x -= offset.x;
+      pos.y -= offset.y;
       
       // Apply aspect ratio correction
       if (aspectRatio > 1.0) {
