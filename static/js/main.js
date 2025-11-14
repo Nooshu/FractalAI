@@ -362,13 +362,14 @@ function setupControls() {
     }
 
     if (isSelecting) {
-      // Update selection box - constrained to viewport aspect ratio
+      // Update selection box - constrained to render buffer aspect ratio
       const rect = getCanvasRect();
       const mouseX = e.clientX - rect.left;
       const mouseY = e.clientY - rect.top;
 
-      // Calculate viewport aspect ratio
-      const viewportAspect = rect.width / rect.height;
+      // Calculate render buffer aspect ratio (must match what the shader uses)
+      // This ensures the selection box matches the actual fractal coordinates
+      const renderBufferAspect = canvas.width / canvas.height;
 
       // Calculate raw dimensions from start point
       const rawWidth = mouseX - selectionStartX;
@@ -376,14 +377,14 @@ function setupControls() {
 
       // Determine which dimension to use as the base (use the larger one)
       let width, height;
-      if (Math.abs(rawWidth / viewportAspect) > Math.abs(rawHeight)) {
+      if (Math.abs(rawWidth / renderBufferAspect) > Math.abs(rawHeight)) {
         // Width is the constraining dimension
         width = rawWidth;
-        height = width / viewportAspect;
+        height = width / renderBufferAspect;
       } else {
         // Height is the constraining dimension
         height = rawHeight;
-        width = height * viewportAspect;
+        width = height * renderBufferAspect;
       }
 
       // Calculate position (ensure box grows from start point)
@@ -1604,6 +1605,20 @@ function zoomToSelection(startX, startY, endX, endY, canvasRect) {
     console.warn('Invalid center coordinates');
     return;
   }
+
+  // Log zoom details for debugging
+  console.log('Zoom to selection:', {
+    selectionBox: { startX, startY, endX, endY },
+    displaySize: { width: displayWidth, height: displayHeight },
+    renderBufferSize: { width: rendererWidth, height: rendererHeight },
+    aspect: aspect,
+    fractalBounds: { x1: fractalX1, y1: fractalY1, x2: fractalX2, y2: fractalY2 },
+    selectionSize: { width, height },
+    center: { x: centerX, y: centerY },
+    oldZoom: params.zoom,
+    newZoom: clampedZoom,
+    zoomMultiplier: clampedZoom / params.zoom,
+  });
 
   // Update parameters
   params.zoom = clampedZoom;
