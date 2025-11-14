@@ -1001,7 +1001,7 @@ function setupUI() {
   // Samples points and checks for variation in iteration counts
   function isValidInterestingView(offset, zoom, fractalType) {
     // For geometric fractals and chaotic maps, they're generally always interesting
-    if (fractalType === 'sierpinski' || fractalType === 'sierpinski-arrowhead' || fractalType === 'sierpinski-carpet' || fractalType === 'sierpinski-pentagon' || fractalType === 'sierpinski-hexagon' || fractalType === 'sierpinski-gasket' || fractalType === 'koch' || fractalType === 'quadratic-koch' || fractalType === 'minkowski-sausage' || fractalType === 'cesaro' || fractalType === 'vicsek' || fractalType === 'cross' || fractalType === 'popcorn' || fractalType === 'rose' || fractalType === 'mutant-mandelbrot' || fractalType === 'cantor' || fractalType === 'fat-cantor' || fractalType === 'smith-volterra-cantor' || fractalType === 'random-cantor') {
+    if (fractalType === 'sierpinski' || fractalType === 'sierpinski-arrowhead' || fractalType === 'sierpinski-carpet' || fractalType === 'sierpinski-pentagon' || fractalType === 'sierpinski-hexagon' || fractalType === 'sierpinski-gasket' || fractalType === 'koch' || fractalType === 'quadratic-koch' || fractalType === 'minkowski-sausage' || fractalType === 'cesaro' || fractalType === 'vicsek' || fractalType === 'cross' || fractalType === 'box-variants' || fractalType === 'popcorn' || fractalType === 'rose' || fractalType === 'mutant-mandelbrot' || fractalType === 'cantor' || fractalType === 'fat-cantor' || fractalType === 'smith-volterra-cantor' || fractalType === 'random-cantor') {
       return true;
     }
 
@@ -1624,6 +1624,43 @@ function setupUI() {
         return {
           offset: { x: location.x, y: location.y },
           zoom: zoom,
+        };
+      }
+
+      case 'box-variants': {
+        // Box fractal variants - different patterns with xScale
+        const patterns = [
+          { name: 'Vicsek', xScale: 0.1 },
+          { name: 'Anti-Vicsek', xScale: 0.3 },
+          { name: 'Corners+Center', xScale: 0.5 },
+          { name: 'Diagonal', xScale: 0.7 },
+          { name: 'Checkerboard', xScale: 0.9 },
+          { name: 'Checkerboard-2', xScale: 1.1 },
+          { name: 'H-Pattern', xScale: 1.3 },
+        ];
+        
+        const interestingLocations = [
+          { x: 0, y: 0, zoom: 1 }, // Full overview
+          { x: 0, y: 0, zoom: 3 }, // Center detail
+          { x: 0.33, y: 0, zoom: 4 }, // Right side
+          { x: -0.33, y: 0, zoom: 4 }, // Left side
+          { x: 0, y: 0.33, zoom: 4 }, // Top side
+          { x: 0, y: -0.33, zoom: 4 }, // Bottom side
+          { x: 0.25, y: 0.25, zoom: 6 }, // Corner region
+          { x: -0.25, y: 0.25, zoom: 6 }, // Another corner
+          { x: 0.15, y: 0.15, zoom: 9 }, // Deep zoom
+          { x: 0, y: 0, zoom: 2 }, // Medium zoom
+        ];
+        
+        const pattern = patterns[Math.floor(Math.random() * patterns.length)];
+        const location =
+          interestingLocations[Math.floor(Math.random() * interestingLocations.length)];
+        const zoom = location.zoom * (0.8 + Math.random() * 0.4);
+        
+        return {
+          offset: { x: location.x, y: location.y },
+          zoom: zoom,
+          params: { xScale: pattern.xScale },
         };
       }
 
