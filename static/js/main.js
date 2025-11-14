@@ -639,12 +639,22 @@ function setupUI() {
 
     // Clear previous fractal draw command
     drawFractal = null;
+    cachedDrawCommand = null;
+    isDisplayingCached = false;
 
     // Clear the cache for this fractal type to force a fresh load
     fractalCache.delete(currentFractalType);
     
     // Clear frame cache when fractal type changes
     clearFrameCache();
+
+    // Clear the canvas before switching fractals
+    if (regl && canvas) {
+      regl.clear({
+        color: [0, 0, 0, 1],
+        depth: 1,
+      });
+    }
 
     // Load the new fractal module
     try {
@@ -727,6 +737,16 @@ function setupUI() {
 
     // Reset draw command to force recreation with new settings
     drawFractal = null;
+    cachedDrawCommand = null;
+    isDisplayingCached = false;
+
+    // Clear the canvas before rendering new fractal
+    if (regl && canvas) {
+      regl.clear({
+        color: [0, 0, 0, 1],
+        depth: 1,
+      });
+    }
 
     // Add visual feedback
     updateFractalBtn.textContent = 'Rendering...';
@@ -1257,6 +1277,7 @@ function renderFractalProgressive(startIterations = null) {
   
   // Not using cache, so we're not displaying cached
   isDisplayingCached = false;
+  cachedDrawCommand = null;
 
   // Cancel any existing progressive render
   if (progressiveRenderTimeout) {
@@ -1268,6 +1289,12 @@ function renderFractalProgressive(startIterations = null) {
   
   // Update pixel ratio based on zoom level
   updatePixelRatio();
+  
+  // Clear the canvas before rendering
+  regl.clear({
+    color: [0, 0, 0, 1],
+    depth: 1,
+  });
   
   // Start with low quality for immediate feedback
   const initialIterations = startIterations || Math.max(20, Math.floor(targetIterations * 0.2));
@@ -1560,6 +1587,7 @@ function renderFractal() {
   
   // Not using cache, so we're not displaying cached
   isDisplayingCached = false;
+  cachedDrawCommand = null;
 
   // Cancel progressive rendering if active
   if (progressiveRenderTimeout) {
@@ -1573,6 +1601,12 @@ function renderFractal() {
 
   // Update pixel ratio based on zoom level for better quality when zoomed in
   updatePixelRatio();
+
+  // Clear the canvas before rendering
+  regl.clear({
+    color: [0, 0, 0, 1],
+    depth: 1,
+  });
 
   console.log(`Rendering fractal: ${currentFractalType}`);
 

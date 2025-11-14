@@ -1,129 +1,165 @@
-import { vertexShader, createFragmentShader, getColorSchemeIndex } from '../utils.js';
+import { getColorSchemeIndex } from '../utils.js';
 
-// Koch snowflake - based on proven GLSL implementation
-const fractalFunction = `
-    // Rotate a 2D vector by angle a
-    mat2 rot(float a) {
-        float c = cos(a);
-        float s = sin(a);
-        return mat2(c, -s, s, c);
-    }
-    
-    // Signed distance to an equilateral triangle centered at origin
-    float sdEquilateralTriangle(vec2 p) {
-        const float k = sqrt(3.0);
-        p.x = abs(p.x) - 1.0;
-        p.y = p.y + 1.0 / k;
-        if (p.x + k * p.y > 0.0) {
-            p = vec2(p.x - k * p.y, -k * p.x - p.y) / 2.0;
-        }
-        p.x -= clamp(p.x, -2.0, 0.0);
-        return -length(p) * sign(p.y);
-    }
-    
-    // Distance to a Koch edge along the x axis
-    float kochEdge(vec2 p) {
-        // Fold into first quadrant along x
-        p.x = abs(p.x);
-        
-        // Project along base segment [0,1]
-        float k = clamp(p.x, 0.0, 1.0);
-        p.x -= k;
-        
-        // Iteratively fold the segment into the Koch shape
-        int maxIter = int(min(uIterations, 6.0));
-        for (int i = 0; i < 200; i++) {
-            if (i >= maxIter) break;
-            
-            // Scale to 3 subsegments
-            p *= 3.0;
-            
-            // Fold into middle segment
-            if (p.x > 1.0) p.x = 2.0 - p.x;
-            
-            // Rotate the middle segment up to form the "bump"
-            // Rotation by 60 degrees: cos(60°)=0.5, sin(60°)=0.8660254
-            p = mat2(0.5, 0.8660254, -0.8660254, 0.5) * p;
-        }
-        
-        // Distance to the base line after folding
-        return abs(p.y);
-    }
-    
-    // Distance to full Koch snowflake outline
-    float sdKochSnowflake(vec2 p) {
-        // Scale and center - adjust for our coordinate system
-        p /= 1.0;
-        
-        // Build 3 Koch edges around the triangle
-        // The Koch snowflake is defined by the Koch curves on each edge
-        float dEdge = 1e9;
-        for (int i = 0; i < 3; i++) {
-            float a = 2.0 * 3.14159265 * float(i) / 3.0;
-            vec2 q = rot(a) * p;
-            // Align so that the edge lies roughly on x axis
-            // Translate to position the edge correctly
-            q.y -= -0.57735027; // -1 / sqrt(3)
-            float edgeDist = kochEdge(q);
-            dEdge = min(dEdge, edgeDist);
-        }
-        
-        // Use only the Koch edge distance (not the triangle)
-        // The Koch curve itself defines the snowflake shape
-        return dEdge;
-    }
-    
-    int computeFractal(vec2 c) {
-        vec2 p = c;
-        
-        // Compute distance to Koch snowflake
-        float dist = sdKochSnowflake(p);
-        
-        // Convert distance to iteration count
-        // Points very close to the curve = max iterations (black outline)
-        // Points further away = lower iterations (colored gradient)
-        // Use a fixed threshold that works well
-        if (dist < 0.008) {
-            return int(uIterations);
-        }
-        
-        // Create gradient based on distance
-        // Scale factor adjusted to create better gradient
-        float distFactor = dist * 120.0;
-        int iter = int(min(distFactor, uIterations - 1.0));
-        return max(iter, 1);
-    }
-`;
+/**
+ * Generates the vertices for a Koch Snowflake.
+ * @param {number} iterations - The number of fractal iterations (0-6 recommended)
+ * @returns {Array<[number, number]>} - Array of [x, y] vertex coordinates
+ */
+function generateKochSnowflake(iterations) {
+  // Start with a base equilateral triangle, centered at [0, 0]
+  const h = 0.75; // Total height of the base triangle
+  const w = h * (Math.sqrt(3) / 2); // Half-width
 
-const fragmentShader = createFragmentShader(fractalFunction);
+  let vertices = [
+    [0, h * (2 / 3)],        // Top point
+    [-w, -h * (1 / 3)],      // Bottom-left point
+    [w, -h * (1 / 3)],       // Bottom-right point
+  ];
+
+  const SQRT3_OVER_2 = Math.sqrt(3) / 2;
+
+  // Iteratively apply the Koch fractal rule
+  for (let i = 0; i < iterations; i++) {
+    let newVertices = [];
+
+    // Process each line segment
+    for (let j = 0; j < vertices.length; j++) {
+      const a = vertices[j];
+      const b = vertices[(j + 1) % vertices.length];
+
+      // Keep the starting point
+      newVertices.push(a);
+
+      // Calculate the 3 new points that replace the middle third
+      const dx = b[0] - a[0];
+      const dy = b[1] - a[1];
+
+      // Two points along the original line segment
+      const p1 = [a[0] + dx / 3, a[1] + dy / 3];
+      const p2 = [a[0] + dx * (2 / 3), a[1] + dy * (2 / 3)];
+
+      // The "tip" of the new equilateral triangle
+      const v_dx = p2[0] - p1[0];
+      const v_dy = p2[1] - p1[1];
+
+      // Apply 60° rotation
+      const qx = p1[0] + v_dx * 0.5 - v_dy * SQRT3_OVER_2;
+      const qy = p1[1] + v_dx * SQRT3_OVER_2 + v_dy * 0.5;
+      const q = [qx, qy];
+
+      // Add the three new points
+      newVertices.push(p1, q, p2);
+    }
+
+    vertices = newVertices;
+  }
+
+  return vertices;
+}
 
 export function render(regl, params, canvas) {
-  // Create or update the draw command
+  // Generate vertices based on iteration count (clamp to reasonable range)
+  const iterations = Math.max(0, Math.min(6, Math.floor(params.iterations / 30)));
+  const vertices = generateKochSnowflake(iterations);
+
+  // Convert to flat array for WebGL
+  const positions = [];
+  for (const [x, y] of vertices) {
+    positions.push(x, y);
+  }
+
+  // Shaders
+  const vertexShader = `
+    precision mediump float;
+    attribute vec2 position;
+    uniform float zoom;
+    uniform vec2 offset;
+    uniform float aspectRatio;
+    uniform vec2 scale2d;
+
+    void main() {
+      // Apply zoom and offset
+      vec2 pos = position / zoom - offset;
+      
+      // Apply x/y scale
+      pos.x *= scale2d.x;
+      pos.y *= scale2d.y;
+      
+      // Apply aspect ratio correction
+      if (aspectRatio > 1.0) {
+        pos.x /= aspectRatio;
+      } else {
+        pos.y *= aspectRatio;
+      }
+      
+      // Scale down slightly for padding
+      pos *= 0.9;
+      
+      gl_Position = vec4(pos, 0, 1);
+    }
+  `;
+
+  const fragmentShader = `
+    precision mediump float;
+    uniform vec3 color;
+
+    void main() {
+      gl_FragColor = vec4(color, 1.0);
+    }
+  `;
+
+  // Get color based on color scheme
+  const colorSchemeIndex = getColorSchemeIndex(params.colorScheme);
+  let color = [0.9, 1.0, 1.0]; // Default: light cyan
+  
+  // Map color schemes to RGB values
+  const colorSchemes = {
+    0: [0.5, 1.0, 1.5],   // classic (blue-cyan)
+    1: [1.0, 0.5, 0.0],   // fire (orange-red)
+    2: [0.0, 0.5, 1.0],   // ocean (blue)
+    3: [1.0, 0.5, 1.0],   // rainbow (pink)
+    4: [0.8, 0.8, 0.8],   // monochrome (grey)
+    5: [0.3, 0.8, 0.4],   // forest (green)
+    6: [1.0, 0.4, 0.2],   // sunset (orange)
+    7: [0.6, 0.3, 1.0],   // purple
+    8: [0.0, 1.0, 1.0],   // cyan
+    9: [1.0, 0.8, 0.2],   // gold
+    10: [0.7, 0.9, 1.0],  // ice (light blue)
+    11: [1.0, 0.0, 1.0],  // neon (magenta)
+  };
+  
+  if (colorSchemes[colorSchemeIndex]) {
+    color = colorSchemes[colorSchemeIndex];
+  }
+
+  // Create the draw command
   const drawFractal = regl({
     vert: vertexShader,
     frag: fragmentShader,
+
     attributes: {
-      position: [-1, -1, 1, -1, -1, 1, 1, 1], // Full-screen quad
+      position: regl.buffer(positions),
     },
+
     uniforms: {
-      uTime: 0,
-      uIterations: params.iterations,
-      uZoom: params.zoom,
-      uOffset: [params.offset.x, params.offset.y],
-      uResolution: [canvas.width, canvas.height],
-      uJuliaC: [0, 0],
-      uColorScheme: getColorSchemeIndex(params.colorScheme),
-      uXScale: params.xScale,
-      uYScale: params.yScale,
+      zoom: params.zoom,
+      offset: [params.offset.x, params.offset.y],
+      aspectRatio: canvas.width / canvas.height,
+      scale2d: [params.xScale, params.yScale],
+      color: color,
     },
+
+    primitive: 'line loop',
+    count: vertices.length,
+    
+    lineWidth: 1, // WebGL only supports 1 on most systems
+
     viewport: {
       x: 0,
       y: 0,
       width: canvas.width,
       height: canvas.height,
     },
-    count: 4,
-    primitive: 'triangle strip',
   });
 
   return drawFractal;
