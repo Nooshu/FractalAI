@@ -26,7 +26,7 @@ const fractalFunction = `
         return vec3(1.0 - u - v, v, u);
     }
     
-    int computeFractal(vec2 c) {
+    float computeFractal(vec2 c) {
         vec2 p = c;
         
         // Optimized Sierpinski with early bailout
@@ -42,12 +42,12 @@ const fractalFunction = `
             
             // Early bailout: check if point is outside the triangle
             if (bary.x < 0.0 || bary.y < 0.0 || bary.z < 0.0) {
-                return i;
+                return float(i);
             }
             
             // Early bailout: if in center triangle, exclude it
             if (bary.x > centerThreshold && bary.y > centerThreshold && bary.z > centerThreshold) {
-                return i;
+                return float(i);
             }
             
             // Map to the corresponding sub-triangle
@@ -65,7 +65,7 @@ const fractalFunction = `
         }
         
         // If we completed all iterations, the point is in the set
-        return int(uIterations);
+        return uIterations;
     }
 `;
 

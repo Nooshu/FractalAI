@@ -1,8 +1,8 @@
 import { vertexShader, createFragmentShader, getColorSchemeIndex } from '../utils.js';
 
 const fractalFunction = `
-    int computeFractal(vec2 c) {
-        // Optimized Julia set with early bailout
+    float computeFractal(vec2 c) {
+        // Optimized Julia set with smooth coloring and early bailout
         vec2 z = c;
         float zx2 = 0.0;
         float zy2 = 0.0;
@@ -10,17 +10,29 @@ const fractalFunction = `
         // Unroll first few iterations for better performance
         zx2 = z.x * z.x;
         zy2 = z.y * z.y;
-        if (zx2 + zy2 > 4.0) return 0;
+        if (zx2 + zy2 > 4.0) {
+            float log_zn = log(zx2 + zy2) * 0.5;
+            float nu = log(log_zn / log(2.0)) / log(2.0);
+            return 0.0 + 1.0 - nu;
+        }
         z = vec2(zx2 - zy2, 2.0 * z.x * z.y) + uJuliaC;
         
         zx2 = z.x * z.x;
         zy2 = z.y * z.y;
-        if (zx2 + zy2 > 4.0) return 1;
+        if (zx2 + zy2 > 4.0) {
+            float log_zn = log(zx2 + zy2) * 0.5;
+            float nu = log(log_zn / log(2.0)) / log(2.0);
+            return 1.0 + 1.0 - nu;
+        }
         z = vec2(zx2 - zy2, 2.0 * z.x * z.y) + uJuliaC;
         
         zx2 = z.x * z.x;
         zy2 = z.y * z.y;
-        if (zx2 + zy2 > 4.0) return 2;
+        if (zx2 + zy2 > 4.0) {
+            float log_zn = log(zx2 + zy2) * 0.5;
+            float nu = log(log_zn / log(2.0)) / log(2.0);
+            return 2.0 + 1.0 - nu;
+        }
         z = vec2(zx2 - zy2, 2.0 * z.x * z.y) + uJuliaC;
         
         // Continue with loop for remaining iterations
@@ -30,12 +42,17 @@ const fractalFunction = `
             // Use squared magnitude check (faster than dot product)
             zx2 = z.x * z.x;
             zy2 = z.y * z.y;
-            if (zx2 + zy2 > 4.0) return i;
+            if (zx2 + zy2 > 4.0) {
+                // Smooth coloring using continuous escape
+                float log_zn = log(zx2 + zy2) * 0.5;
+                float nu = log(log_zn / log(2.0)) / log(2.0);
+                return float(i) + 1.0 - nu;
+            }
             
             // Optimized complex multiplication
             z = vec2(zx2 - zy2, 2.0 * z.x * z.y) + uJuliaC;
         }
-        return int(uIterations);
+        return uIterations;
     }
 `;
 

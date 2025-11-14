@@ -177,12 +177,12 @@ export function createFragmentShader(fractalFunction) {
             (uv.y - 0.5) * scale * uYScale + uOffset.y
         );
         
-        int iterations = computeFractal(c);
+        float iterations = computeFractal(c);
         
-        float t = float(iterations) / uIterations;
+        float t = iterations / uIterations;
         vec3 color = getColorScheme(t, uColorScheme);
         
-        if (iterations >= int(uIterations)) {
+        if (iterations >= uIterations) {
             color = vec3(0.0);
         }
         

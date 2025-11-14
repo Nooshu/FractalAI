@@ -1,57 +1,76 @@
 import { getColorSchemeIndex } from '../utils.js';
 
+// Buffer cache for reuse
+let cachedBuffer = null;
+let cachedVertexCount = 0;
+
 /**
  * Generates the vertices for a Koch Snowflake.
  * @param {number} iterations - The number of fractal iterations (0-6 recommended)
- * @returns {Array<[number, number]>} - Array of [x, y] vertex coordinates
+ * @returns {Float32Array} - Flat array of vertex coordinates [x, y, x, y, ...]
  */
 function generateKochSnowflake(iterations) {
   // Start with a base equilateral triangle, centered at [0, 0]
   const h = 0.75; // Total height of the base triangle
   const w = h * (Math.sqrt(3) / 2); // Half-width
 
-  let vertices = [
-    [0, h * (2 / 3)], // Top point
-    [-w, -h * (1 / 3)], // Bottom-left point
-    [w, -h * (1 / 3)], // Bottom-right point
-  ];
-
+  // Pre-calculate constants
   const SQRT3_OVER_2 = Math.sqrt(3) / 2;
+  const ONE_THIRD = 1 / 3;
+  const TWO_THIRDS = 2 / 3;
+  const HALF = 0.5;
+
+  // Start with base triangle - using a flat array structure for better performance
+  let vertices = [
+    0, h * TWO_THIRDS,       // Top point
+    -w, -h * ONE_THIRD,      // Bottom-left point
+    w, -h * ONE_THIRD,       // Bottom-right point
+  ];
+  let vertexCount = 3;
 
   // Iteratively apply the Koch fractal rule
   for (let i = 0; i < iterations; i++) {
-    let newVertices = [];
+    const newVertexCount = vertexCount * 4;
+    const newVertices = new Float32Array(newVertexCount * 2);
+    let writeIndex = 0;
 
     // Process each line segment
-    for (let j = 0; j < vertices.length; j++) {
-      const a = vertices[j];
-      const b = vertices[(j + 1) % vertices.length];
+    for (let j = 0; j < vertexCount; j++) {
+      const aIndex = j * 2;
+      const bIndex = ((j + 1) % vertexCount) * 2;
+      
+      const ax = vertices[aIndex];
+      const ay = vertices[aIndex + 1];
+      const bx = vertices[bIndex];
+      const by = vertices[bIndex + 1];
 
       // Keep the starting point
-      newVertices.push(a);
+      newVertices[writeIndex++] = ax;
+      newVertices[writeIndex++] = ay;
 
       // Calculate the 3 new points that replace the middle third
-      const dx = b[0] - a[0];
-      const dy = b[1] - a[1];
+      const dx = bx - ax;
+      const dy = by - ay;
 
-      // Two points along the original line segment
-      const p1 = [a[0] + dx / 3, a[1] + dy / 3];
-      const p2 = [a[0] + dx * (2 / 3), a[1] + dy * (2 / 3)];
+      // Point 1: one-third along the segment
+      const p1x = ax + dx * ONE_THIRD;
+      const p1y = ay + dy * ONE_THIRD;
+      newVertices[writeIndex++] = p1x;
+      newVertices[writeIndex++] = p1y;
 
-      // The "tip" of the new equilateral triangle
-      const v_dx = p2[0] - p1[0];
-      const v_dy = p2[1] - p1[1];
+      // Point 2: the "tip" of the new equilateral triangle (60° rotation)
+      const v_dx = dx * ONE_THIRD;
+      const v_dy = dy * ONE_THIRD;
+      newVertices[writeIndex++] = p1x + v_dx * HALF - v_dy * SQRT3_OVER_2;
+      newVertices[writeIndex++] = p1y + v_dx * SQRT3_OVER_2 + v_dy * HALF;
 
-      // Apply 60° rotation
-      const qx = p1[0] + v_dx * 0.5 - v_dy * SQRT3_OVER_2;
-      const qy = p1[1] + v_dx * SQRT3_OVER_2 + v_dy * 0.5;
-      const q = [qx, qy];
-
-      // Add the three new points
-      newVertices.push(p1, q, p2);
+      // Point 3: two-thirds along the original segment
+      newVertices[writeIndex++] = ax + dx * TWO_THIRDS;
+      newVertices[writeIndex++] = ay + dy * TWO_THIRDS;
     }
 
     vertices = newVertices;
+    vertexCount = newVertexCount;
   }
 
   return vertices;
@@ -60,12 +79,19 @@ function generateKochSnowflake(iterations) {
 export function render(regl, params, canvas) {
   // Generate vertices based on iteration count (clamp to reasonable range)
   const iterations = Math.max(0, Math.min(6, Math.floor(params.iterations / 30)));
-  const vertices = generateKochSnowflake(iterations);
+  const positions = generateKochSnowflake(iterations);
+  const vertexCount = positions.length / 2;
 
-  // Convert to flat array for WebGL
-  const positions = [];
-  for (const [x, y] of vertices) {
-    positions.push(x, y);
+  // Reuse buffer if possible, otherwise create new one
+  if (!cachedBuffer || cachedVertexCount !== vertexCount) {
+    if (cachedBuffer) {
+      cachedBuffer.destroy();
+    }
+    cachedBuffer = regl.buffer(positions);
+    cachedVertexCount = vertexCount;
+  } else {
+    // Buffer exists with same size, just update the data
+    cachedBuffer.subdata(positions);
   }
 
   // Shaders
@@ -196,7 +222,7 @@ export function render(regl, params, canvas) {
     frag: fragmentShader,
 
     attributes: {
-      position: regl.buffer(positions),
+      position: cachedBuffer,
     },
 
     uniforms: {
@@ -208,7 +234,7 @@ export function render(regl, params, canvas) {
     },
 
     primitive: 'line loop',
-    count: vertices.length,
+    count: vertexCount,
 
     lineWidth: 1, // WebGL only supports 1 on most systems
 

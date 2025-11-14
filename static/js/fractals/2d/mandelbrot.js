@@ -1,8 +1,8 @@
 import { vertexShader, createFragmentShader, getColorSchemeIndex } from '../utils.js';
 
 const fractalFunction = `
-    int computeFractal(vec2 c) {
-        // Optimized Mandelbrot with early bailout and better precision
+    float computeFractal(vec2 c) {
+        // Optimized Mandelbrot with smooth coloring and early bailout
         vec2 z = vec2(0.0);
         float zx2 = 0.0;
         float zy2 = 0.0;
@@ -11,17 +11,29 @@ const fractalFunction = `
         // Iteration 0-2: manual unroll
         zx2 = z.x * z.x;
         zy2 = z.y * z.y;
-        if (zx2 + zy2 > 4.0) return 0;
+        if (zx2 + zy2 > 4.0) {
+            float log_zn = log(zx2 + zy2) * 0.5;
+            float nu = log(log_zn / log(2.0)) / log(2.0);
+            return 0.0 + 1.0 - nu;
+        }
         z = vec2(zx2 - zy2, 2.0 * z.x * z.y) + c;
         
         zx2 = z.x * z.x;
         zy2 = z.y * z.y;
-        if (zx2 + zy2 > 4.0) return 1;
+        if (zx2 + zy2 > 4.0) {
+            float log_zn = log(zx2 + zy2) * 0.5;
+            float nu = log(log_zn / log(2.0)) / log(2.0);
+            return 1.0 + 1.0 - nu;
+        }
         z = vec2(zx2 - zy2, 2.0 * z.x * z.y) + c;
         
         zx2 = z.x * z.x;
         zy2 = z.y * z.y;
-        if (zx2 + zy2 > 4.0) return 2;
+        if (zx2 + zy2 > 4.0) {
+            float log_zn = log(zx2 + zy2) * 0.5;
+            float nu = log(log_zn / log(2.0)) / log(2.0);
+            return 2.0 + 1.0 - nu;
+        }
         z = vec2(zx2 - zy2, 2.0 * z.x * z.y) + c;
         
         // Continue with loop for remaining iterations
@@ -31,12 +43,19 @@ const fractalFunction = `
             // Use squared magnitude check (faster than dot product)
             zx2 = z.x * z.x;
             zy2 = z.y * z.y;
-            if (zx2 + zy2 > 4.0) return i;
+            if (zx2 + zy2 > 4.0) {
+                // Smooth coloring using continuous escape
+                // log_zn = log(|z|^2) / 2 = log(|z|)
+                float log_zn = log(zx2 + zy2) * 0.5;
+                // Normalized iteration count for smooth coloring
+                float nu = log(log_zn / log(2.0)) / log(2.0);
+                return float(i) + 1.0 - nu;
+            }
             
             // Optimized complex multiplication: (a+bi)^2 = (a^2-b^2) + 2abi
             z = vec2(zx2 - zy2, 2.0 * z.x * z.y) + c;
         }
-        return int(uIterations);
+        return uIterations;
     }
 `;
 
