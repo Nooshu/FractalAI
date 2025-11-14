@@ -67,16 +67,26 @@ const vertexShader = `
 
   void main() {
     float aspect = uResolution.x / uResolution.y;
+    float scale = 4.0 / uZoom;
     
-    // Apply zoom and offset
-    vec2 transformed = position;
-    transformed *= 4.0 / uZoom;
-    transformed.x *= aspect * uXScale;
-    transformed.y *= uYScale;
-    transformed += uOffset;
+    // Transform vertex position to match the standard fractal coordinate system
+    // Fragment shader: c = (uv - 0.5) * scale * aspect * xScale + offset
+    // So for vertices in fractal coordinate space 'c', we need to convert to clip space:
+    // 1. Subtract offset to get relative position
+    vec2 fractalCoord = position;
+    vec2 relative = fractalCoord - uOffset;
     
-    // Map back to clip space
-    vec2 clipSpace = transformed / 2.0;
+    // 2. Convert to UV space (inverse of fragment shader transformation)
+    vec2 uv = vec2(
+      relative.x / (scale * aspect * uXScale) + 0.5,
+      relative.y / (scale * uYScale) + 0.5
+    );
+    
+    // 3. Convert UV (0-1) to clip space (-1 to 1)
+    vec2 clipSpace = (uv - 0.5) * 2.0;
+    
+    // 4. The fragment shader's aspect is already in the x coordinate,
+    //    so we need to divide by aspect to get proper clip space
     clipSpace.x /= aspect;
     
     gl_Position = vec4(clipSpace, 0.0, 1.0);
