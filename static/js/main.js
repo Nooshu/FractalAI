@@ -740,6 +740,11 @@ function setupUI() {
       params.zoom = 1.2;
       params.offset.x = -0.5;
       params.offset.y = 0.6;  // Opposite sign from Burning Ship
+    } else if (currentFractalType === 'popcorn') {
+      // Popcorn fractal - best viewed from the center
+      params.zoom = 1;
+      params.offset.x = 0;
+      params.offset.y = 0;
     } else {
       // Default view for other fractals
       params.zoom = 1;
@@ -969,8 +974,8 @@ function setupUI() {
   // Function to validate if coordinates will produce an interesting view
   // Samples points and checks for variation in iteration counts
   function isValidInterestingView(offset, zoom, fractalType) {
-    // For geometric fractals, they're generally always interesting
-    if (fractalType === 'sierpinski' || fractalType === 'koch') {
+    // For geometric fractals and chaotic maps, they're generally always interesting
+    if (fractalType === 'sierpinski' || fractalType === 'koch' || fractalType === 'popcorn') {
       return true;
     }
 
@@ -1259,6 +1264,30 @@ function setupUI() {
           { x: -0.2, y: 0.3, zoom: 12 }, // Upper left detail
           { x: 0.2, y: 0.3, zoom: 12 }, // Upper right detail
           { x: 0, y: -0.2, zoom: 15 }, // Bottom center detail
+        ];
+
+        const location =
+          interestingLocations[Math.floor(Math.random() * interestingLocations.length)];
+        const zoom = location.zoom * (0.8 + Math.random() * 0.4);
+        return {
+          offset: { x: location.x, y: location.y },
+          zoom: zoom,
+        };
+      }
+
+      case 'popcorn': {
+        // Popcorn fractal - interesting chaotic regions
+        const interestingLocations = [
+          { x: 0, y: 0, zoom: 1 }, // Center view
+          { x: 0.5, y: 0.5, zoom: 2 }, // Upper right quadrant
+          { x: -0.5, y: -0.5, zoom: 2 }, // Lower left quadrant
+          { x: 0.3, y: -0.3, zoom: 3 }, // Mixed region
+          { x: -0.4, y: 0.4, zoom: 3 }, // Another mixed region
+          { x: 0.7, y: 0.2, zoom: 4 }, // Edge patterns
+          { x: -0.2, y: 0.7, zoom: 4 }, // More edge patterns
+          { x: 0.1, y: 0.1, zoom: 5 }, // Detailed center
+          { x: -0.6, y: 0.1, zoom: 4 }, // Left region detail
+          { x: 0.4, y: -0.6, zoom: 4 }, // Bottom right detail
         ];
 
         const location =
