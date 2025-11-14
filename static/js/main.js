@@ -745,6 +745,11 @@ function setupUI() {
       params.zoom = 1;
       params.offset.x = 0;
       params.offset.y = 0;
+    } else if (currentFractalType === 'rose') {
+      // Rose window fractal - best viewed from center to see full pattern
+      params.zoom = 1;
+      params.offset.x = 0;
+      params.offset.y = 0;
     } else {
       // Default view for other fractals
       params.zoom = 1;
@@ -975,7 +980,7 @@ function setupUI() {
   // Samples points and checks for variation in iteration counts
   function isValidInterestingView(offset, zoom, fractalType) {
     // For geometric fractals and chaotic maps, they're generally always interesting
-    if (fractalType === 'sierpinski' || fractalType === 'koch' || fractalType === 'popcorn') {
+    if (fractalType === 'sierpinski' || fractalType === 'koch' || fractalType === 'popcorn' || fractalType === 'rose') {
       return true;
     }
 
@@ -1288,6 +1293,30 @@ function setupUI() {
           { x: 0.1, y: 0.1, zoom: 5 }, // Detailed center
           { x: -0.6, y: 0.1, zoom: 4 }, // Left region detail
           { x: 0.4, y: -0.6, zoom: 4 }, // Bottom right detail
+        ];
+
+        const location =
+          interestingLocations[Math.floor(Math.random() * interestingLocations.length)];
+        const zoom = location.zoom * (0.8 + Math.random() * 0.4);
+        return {
+          offset: { x: location.x, y: location.y },
+          zoom: zoom,
+        };
+      }
+
+      case 'rose': {
+        // Rose window fractal - symmetric petal patterns
+        const interestingLocations = [
+          { x: 0, y: 0, zoom: 1 }, // Center view - full rose
+          { x: 0, y: 0, zoom: 2 }, // Closer center view
+          { x: 0.3, y: 0, zoom: 3 }, // Right petal detail
+          { x: -0.3, y: 0, zoom: 3 }, // Left petal detail
+          { x: 0, y: 0.3, zoom: 3 }, // Top petal detail
+          { x: 0, y: -0.3, zoom: 3 }, // Bottom petal detail
+          { x: 0.2, y: 0.2, zoom: 4 }, // Diagonal petal detail
+          { x: -0.2, y: 0.2, zoom: 4 }, // Upper left detail
+          { x: 0.2, y: -0.2, zoom: 4 }, // Lower right detail
+          { x: 0, y: 0, zoom: 5 }, // Deep center zoom
         ];
 
         const location =
