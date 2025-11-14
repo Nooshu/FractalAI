@@ -992,7 +992,7 @@ function setupUI() {
   // Samples points and checks for variation in iteration counts
   function isValidInterestingView(offset, zoom, fractalType) {
     // For geometric fractals and chaotic maps, they're generally always interesting
-    if (fractalType === 'sierpinski' || fractalType === 'sierpinski-arrowhead' || fractalType === 'sierpinski-carpet' || fractalType === 'koch' || fractalType === 'popcorn' || fractalType === 'rose' || fractalType === 'mutant-mandelbrot' || fractalType === 'cantor' || fractalType === 'fat-cantor' || fractalType === 'smith-volterra-cantor' || fractalType === 'random-cantor') {
+    if (fractalType === 'sierpinski' || fractalType === 'sierpinski-arrowhead' || fractalType === 'sierpinski-carpet' || fractalType === 'sierpinski-pentagon' || fractalType === 'koch' || fractalType === 'popcorn' || fractalType === 'rose' || fractalType === 'mutant-mandelbrot' || fractalType === 'cantor' || fractalType === 'fat-cantor' || fractalType === 'smith-volterra-cantor' || fractalType === 'random-cantor') {
       return true;
     }
 
@@ -1366,6 +1366,30 @@ function setupUI() {
           { x: -0.22, y: -0.22, zoom: 9 }, // Deep zoom lower left
           { x: 0.11, y: 0.33, zoom: 12 }, // Edge detail
           { x: -0.15, y: 0.15, zoom: 15 }, // Very deep zoom
+        ];
+
+        const location =
+          interestingLocations[Math.floor(Math.random() * interestingLocations.length)];
+        const zoom = location.zoom * (0.8 + Math.random() * 0.4);
+        return {
+          offset: { x: location.x, y: location.y },
+          zoom: zoom,
+        };
+      }
+
+      case 'sierpinski-pentagon': {
+        // Sierpinski pentagon - zoom into vertices and edge details
+        const interestingLocations = [
+          { x: 0, y: 0, zoom: 1 }, // Full overview
+          { x: 0, y: 0.4, zoom: 2.5 }, // Top vertex region
+          { x: 0.38, y: 0.12, zoom: 3 }, // Upper right vertex
+          { x: 0.24, y: -0.32, zoom: 3 }, // Lower right vertex
+          { x: -0.24, y: -0.32, zoom: 3 }, // Lower left vertex
+          { x: -0.38, y: 0.12, zoom: 3 }, // Upper left vertex
+          { x: 0, y: 0, zoom: 3.5 }, // Center detail
+          { x: 0.3, y: 0.2, zoom: 6 }, // Deep zoom upper right
+          { x: -0.3, y: 0.2, zoom: 6 }, // Deep zoom upper left
+          { x: 0, y: -0.3, zoom: 8 }, // Deep zoom bottom
         ];
 
         const location =
