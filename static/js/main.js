@@ -180,6 +180,7 @@ function init() {
       powerPreference: 'high-performance',
       stencil: false,
       depth: false,
+      alpha: false, // Disable transparency to prevent background bleed-through
     },
   });
   
@@ -1485,6 +1486,12 @@ function zoomToSelection(startX, startY, endX, endY, canvasRect) {
 // Display a cached frame
 function displayCachedFrame(framebuffer) {
   if (!regl || !framebuffer || !canvas) return;
+  
+  // Clear the canvas first to prevent background bleed-through
+  regl.clear({
+    color: [0, 0, 0, 1],
+    depth: 1,
+  });
   
   // Create draw command to display the cached framebuffer
   // Use the texture from the framebuffer

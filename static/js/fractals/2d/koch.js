@@ -212,6 +212,14 @@ export function render(regl, params, canvas) {
     
     lineWidth: 1, // WebGL only supports 1 on most systems
 
+    depth: {
+      enable: false,
+    },
+
+    blend: {
+      enable: false,
+    },
+
     viewport: {
       x: 0,
       y: 0,
