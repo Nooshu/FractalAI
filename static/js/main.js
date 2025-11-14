@@ -992,7 +992,7 @@ function setupUI() {
   // Samples points and checks for variation in iteration counts
   function isValidInterestingView(offset, zoom, fractalType) {
     // For geometric fractals and chaotic maps, they're generally always interesting
-    if (fractalType === 'sierpinski' || fractalType === 'koch' || fractalType === 'popcorn' || fractalType === 'rose' || fractalType === 'mutant-mandelbrot' || fractalType === 'cantor' || fractalType === 'fat-cantor' || fractalType === 'smith-volterra-cantor' || fractalType === 'random-cantor') {
+    if (fractalType === 'sierpinski' || fractalType === 'sierpinski-arrowhead' || fractalType === 'koch' || fractalType === 'popcorn' || fractalType === 'rose' || fractalType === 'mutant-mandelbrot' || fractalType === 'cantor' || fractalType === 'fat-cantor' || fractalType === 'smith-volterra-cantor' || fractalType === 'random-cantor') {
       return true;
     }
 
@@ -1326,6 +1326,30 @@ function setupUI() {
             y: Math.sin(angle) * distance,
           },
           zoom: 1 + Math.random() * 3, // Zoom between 1x and 4x
+        };
+      }
+
+      case 'sierpinski-arrowhead': {
+        // Sierpinski arrowhead curve - interesting views of the curve
+        const interestingLocations = [
+          { x: 0, y: 0, zoom: 1 }, // Full overview
+          { x: 0, y: -0.2, zoom: 2 }, // Bottom detail
+          { x: -0.2, y: 0.1, zoom: 3 }, // Left side curve
+          { x: 0.2, y: 0.1, zoom: 3 }, // Right side curve
+          { x: 0, y: 0.2, zoom: 4 }, // Top detail
+          { x: -0.3, y: -0.1, zoom: 5 }, // Lower left spiral
+          { x: 0.3, y: -0.1, zoom: 5 }, // Lower right spiral
+          { x: 0, y: 0, zoom: 2.5 }, // Closer center view
+          { x: -0.15, y: 0, zoom: 6 }, // Left detail zoom
+          { x: 0.15, y: 0, zoom: 6 }, // Right detail zoom
+        ];
+
+        const location =
+          interestingLocations[Math.floor(Math.random() * interestingLocations.length)];
+        const zoom = location.zoom * (0.8 + Math.random() * 0.4);
+        return {
+          offset: { x: location.x, y: location.y },
+          zoom: zoom,
         };
       }
 
