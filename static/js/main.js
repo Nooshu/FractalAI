@@ -992,7 +992,7 @@ function setupUI() {
   // Samples points and checks for variation in iteration counts
   function isValidInterestingView(offset, zoom, fractalType) {
     // For geometric fractals and chaotic maps, they're generally always interesting
-    if (fractalType === 'sierpinski' || fractalType === 'koch' || fractalType === 'popcorn' || fractalType === 'rose' || fractalType === 'mutant-mandelbrot') {
+    if (fractalType === 'sierpinski' || fractalType === 'koch' || fractalType === 'popcorn' || fractalType === 'rose' || fractalType === 'mutant-mandelbrot' || fractalType === 'cantor') {
       return true;
     }
 
@@ -1395,6 +1395,30 @@ function setupUI() {
         const location =
           interestingLocations[Math.floor(Math.random() * interestingLocations.length)];
         const zoom = location.zoom * (0.8 + Math.random() * 0.4);
+        return {
+          offset: { x: location.x, y: location.y },
+          zoom: zoom,
+        };
+      }
+
+      case 'cantor': {
+        // Cantor set - best viewed with specific zoom levels to see the structure
+        const interestingLocations = [
+          { x: 0, y: 0.5, zoom: 1 }, // Full overview
+          { x: 0, y: 0.3, zoom: 1.5 }, // Upper levels detail
+          { x: 0, y: 0, zoom: 2 }, // Mid-level focus
+          { x: 0.5, y: 0.5, zoom: 2 }, // Right side upper levels
+          { x: -0.5, y: 0.5, zoom: 2 }, // Left side upper levels
+          { x: 0.3, y: 0, zoom: 3 }, // Right side detail
+          { x: -0.3, y: 0, zoom: 3 }, // Left side detail
+          { x: 0, y: -0.3, zoom: 2 }, // Lower levels
+          { x: 0, y: 0.7, zoom: 1.2 }, // Top view
+          { x: 0, y: 0, zoom: 1 }, // Centered full view
+        ];
+
+        const location =
+          interestingLocations[Math.floor(Math.random() * interestingLocations.length)];
+        const zoom = location.zoom * (0.9 + Math.random() * 0.2);
         return {
           offset: { x: location.x, y: location.y },
           zoom: zoom,
