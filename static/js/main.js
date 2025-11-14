@@ -777,7 +777,9 @@ function setupUI() {
       params.offset.x = 0;
       params.offset.y = 0;
     }
-    triggerAutoRender();
+    
+    // Always render immediately when switching fractals (regardless of auto-render setting)
+    renderFractalProgressive();
   });
 
   iterationsSlider.addEventListener('input', (e) => {
