@@ -198,13 +198,6 @@ function init() {
   
   // Function to update canvas size and pixel ratio
   updateRendererSize = () => {
-    const container = canvas.parentElement;
-    const rect = container.getBoundingClientRect();
-    const size = {
-      width: rect.width || container.clientWidth || 800,
-      height: rect.height || container.clientHeight || 600,
-    };
-    
     updatePixelRatio();
 
     // Ensure canvas style is set
@@ -1268,10 +1261,23 @@ function setupUI() {
   };
 
   // Listen for fullscreen changes
-  document.addEventListener('fullscreenchange', updateFullscreenButton);
-  document.addEventListener('webkitfullscreenchange', updateFullscreenButton);
-  document.addEventListener('mozfullscreenchange', updateFullscreenButton);
-  document.addEventListener('MSFullscreenChange', updateFullscreenButton);
+  const fullscreenChangeHandlers = [
+    { event: 'fullscreenchange', handler: updateFullscreenButton },
+    { event: 'webkitfullscreenchange', handler: updateFullscreenButton },
+    { event: 'mozfullscreenchange', handler: updateFullscreenButton },
+    { event: 'MSFullscreenChange', handler: updateFullscreenButton }
+  ];
+  
+  fullscreenChangeHandlers.forEach(({ event, handler }) => {
+    document.addEventListener(event, handler);
+  });
+
+  // Cleanup fullscreen listeners on beforeunload
+  window.addEventListener('beforeunload', () => {
+    fullscreenChangeHandlers.forEach(({ event, handler }) => {
+      document.removeEventListener(event, handler);
+    });
+  }, { once: true });
 
   // Toggle fullscreen on button click
   fullscreenBtn.addEventListener('click', async () => {
