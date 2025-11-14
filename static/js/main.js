@@ -653,7 +653,7 @@ function setupUI() {
   });
 
   // Initialize Julia controls state based on current fractal type
-  const isJulia = currentFractalType === 'julia';
+  const isJulia = currentFractalType === 'julia' || currentFractalType === 'julia-snakes';
   juliaCReal.disabled = !isJulia;
   juliaCImag.disabled = !isJulia;
   if (isJulia) {
@@ -720,7 +720,7 @@ function setupUI() {
     }
 
     // Enable/disable Julia controls based on fractal type
-    const isJulia = currentFractalType === 'julia';
+    const isJulia = currentFractalType === 'julia' || currentFractalType === 'julia-snakes';
     juliaCReal.disabled = !isJulia;
     juliaCImag.disabled = !isJulia;
     if (isJulia) {
@@ -750,6 +750,18 @@ function setupUI() {
       params.zoom = 1;
       params.offset.x = 0;
       params.offset.y = 0;
+    } else if (currentFractalType === 'julia-snakes') {
+      // Julia Snakes - set good default C value for snake-like patterns
+      params.zoom = 1;
+      params.offset.x = 0;
+      params.offset.y = 0;
+      params.juliaC.x = -0.4;
+      params.juliaC.y = 0.6;
+      // Update Julia C sliders
+      if (juliaCReal) juliaCReal.value = -0.4;
+      if (juliaCImag) juliaCImag.value = 0.6;
+      if (juliaCRealValue) juliaCRealValue.textContent = '-0.4000';
+      if (juliaCImagValue) juliaCImagValue.textContent = '0.6000';
     } else {
       // Default view for other fractals
       params.zoom = 1;
@@ -1177,6 +1189,43 @@ function setupUI() {
           offset: { x: fallback.x, y: fallback.y },
           zoom: fallback.zoom,
         };
+      }
+
+      case 'julia-snakes': {
+        // Julia Snakes - C values that create snake-like patterns
+        const interestingSnakeSets = [
+          { cReal: -0.4, cImag: 0.6, x: 0, y: 0, zoom: 1.5 },
+          { cReal: -0.162, cImag: 1.04, x: 0, y: 0, zoom: 2 },
+          { cReal: -0.54, cImag: 0.54, x: 0, y: 0, zoom: 1.8 },
+          { cReal: 0.285, cImag: 0.01, x: 0, y: 0, zoom: 2 },
+          { cReal: -0.7, cImag: 0.3, x: 0, y: 0, zoom: 1.5 },
+          { cReal: -0.39, cImag: 0.587, x: 0.2, y: 0.2, zoom: 3 },
+          { cReal: -0.194, cImag: 0.6557, x: 0, y: 0, zoom: 2.5 },
+          { cReal: -0.8, cImag: 0.156, x: 0, y: 0, zoom: 2 },
+          { cReal: -0.355, cImag: 0.355, x: 0.1, y: 0.1, zoom: 2.5 },
+          { cReal: -0.45, cImag: 0.6, x: 0, y: 0, zoom: 1.8 },
+        ];
+
+        const snakeSet =
+          interestingSnakeSets[Math.floor(Math.random() * interestingSnakeSets.length)];
+        const zoom = snakeSet.zoom * (0.8 + Math.random() * 0.4);
+        const offset = { x: snakeSet.x, y: snakeSet.y };
+
+        // Set Julia C values
+        params.juliaC.x = snakeSet.cReal;
+        params.juliaC.y = snakeSet.cImag;
+
+        // Update Julia C sliders
+        const juliaCReal = document.getElementById('julia-c-real');
+        const juliaCImag = document.getElementById('julia-c-imag');
+        const juliaCRealValue = document.getElementById('julia-c-real-value');
+        const juliaCImagValue = document.getElementById('julia-c-imag-value');
+        if (juliaCReal) juliaCReal.value = snakeSet.cReal;
+        if (juliaCImag) juliaCImag.value = snakeSet.cImag;
+        if (juliaCRealValue) juliaCRealValue.textContent = snakeSet.cReal.toFixed(4);
+        if (juliaCImagValue) juliaCImagValue.textContent = snakeSet.cImag.toFixed(4);
+
+        return { offset, zoom };
       }
 
       case 'burning-ship': {
