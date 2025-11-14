@@ -842,7 +842,7 @@ function setupUI() {
   });
 
   // Shared screenshot function to avoid code duplication
-  const captureScreenshot = () => {
+  const captureScreenshot = (event) => {
     // Ensure we render before capturing
     if (drawFractal) {
       drawFractal();
@@ -856,25 +856,51 @@ function setupUI() {
         return;
       }
 
+      // Determine which button was clicked (regular or fullscreen)
+      const button = event?.target?.closest('button') || screenshotBtn;
+      const originalHTML = button.innerHTML;
+      
+      // Show visual feedback that screenshot is being captured
+      button.innerHTML = '<span>Capturing...</span>';
+      button.disabled = true;
+
       try {
-        const dataURL = canvas.toDataURL('image/png');
+        // Use toBlob() instead of toDataURL() - non-blocking and more efficient
+        // This runs asynchronously without blocking the main thread
+        canvas.toBlob(
+          (blob) => {
+            // Re-enable button
+            button.innerHTML = originalHTML;
+            button.disabled = false;
 
-        // Verify we got valid data (not just a blank image)
-        if (!dataURL || dataURL === 'data:,') {
-          console.error('Failed to capture canvas data');
-          return;
-        }
+            if (!blob) {
+              console.error('Failed to capture canvas data');
+              alert('Failed to capture screenshot. Please try again.');
+              return;
+            }
 
-        // Create download link
-        const link = document.createElement('a');
-        link.download = `fractal-${currentFractalType}-${Date.now()}.png`;
-        link.href = dataURL;
+            // Create object URL from blob (much faster than base64 data URL)
+            const url = URL.createObjectURL(blob);
 
-        // Trigger download
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+            // Create download link
+            const link = document.createElement('a');
+            link.download = `fractal-${currentFractalType}-${Date.now()}.png`;
+            link.href = url;
+
+            // Trigger download
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            // Clean up object URL after a short delay
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+          },
+          'image/png',
+          1.0 // Quality (1.0 = max quality for lossless PNG)
+        );
       } catch (error) {
+        button.innerHTML = originalHTML;
+        button.disabled = false;
         console.error('Error capturing screenshot:', error);
         alert('Failed to capture screenshot. Please try again.');
       }
