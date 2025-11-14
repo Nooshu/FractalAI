@@ -49,8 +49,15 @@ function updatePixelRatio() {
 let updateRendererSize = null;
 
 // Generate cache key from view parameters
+// Optimized: cache DOM element reference and use template literal
+let cachedCanvasElement = null;
 function generateCacheKey() {
   if (!renderer) return null;
+  
+  // Cache canvas element reference
+  if (!cachedCanvasElement) {
+    cachedCanvasElement = renderer.domElement;
+  }
   
   // Round values to avoid floating point precision issues
   const zoom = Math.round(params.zoom * 1000) / 1000;
@@ -64,9 +71,10 @@ function generateCacheKey() {
   const juliaCY = currentFractalType === 'julia' ? Math.round(params.juliaC.y * 10000) / 10000 : 0;
   // Use display dimensions (not render dimensions affected by pixel ratio) for cache key
   // This ensures cache hits even when pixel ratio changes
-  const width = renderer.domElement.width;
-  const height = renderer.domElement.height;
+  const width = cachedCanvasElement.width;
+  const height = cachedCanvasElement.height;
   
+  // Use template literal for better performance
   return `${currentFractalType}_${zoom}_${offsetX}_${offsetY}_${iterations}_${colorScheme}_${xScale}_${yScale}_${juliaCX}_${juliaCY}_${width}_${height}`;
 }
 
@@ -123,14 +131,9 @@ function scheduleRender() {
     renderScheduled = true;
     requestAnimationFrame(() => {
       renderScheduled = false;
-      if (pendingRender) {
-        pendingRender = false;
-        // Use progressive rendering for faster feedback
-        renderFractalProgressive();
-      } else {
-        // Use progressive rendering for faster feedback
-        renderFractalProgressive();
-      }
+      pendingRender = false; // Clear pending flag
+      // Use progressive rendering for faster feedback
+      renderFractalProgressive();
     });
   } else {
     pendingRender = true;
@@ -237,18 +240,37 @@ function init() {
   // Initial size setup
   updateRendererSize();
 
+  // Throttled resize handler to avoid excessive renders
+  let resizeTimeout = null;
+  const handleResize = () => {
+    if (resizeTimeout) {
+      clearTimeout(resizeTimeout);
+    }
+    resizeTimeout = setTimeout(() => {
+      updateRendererSize();
+      renderFractal();
+      resizeTimeout = null;
+    }, 100); // Throttle resize to 100ms
+  };
+
   // Handle window resize
-  window.addEventListener('resize', () => {
-    updateRendererSize();
-    renderFractal();
-  });
+  window.addEventListener('resize', handleResize);
 
   // Use ResizeObserver for more accurate container size tracking
-  const resizeObserver = new ResizeObserver(() => {
-    updateRendererSize();
-    renderFractal();
-  });
+  const resizeObserver = new ResizeObserver(handleResize);
   resizeObserver.observe(container);
+  
+  // Cleanup on page unload
+  window.addEventListener('beforeunload', () => {
+    resizeObserver.disconnect();
+    if (resizeTimeout) {
+      clearTimeout(resizeTimeout);
+    }
+    clearFrameCache();
+    if (progressiveRenderTimeout) {
+      clearTimeout(progressiveRenderTimeout);
+    }
+  });
 
   // Setup controls
   setupControls();
@@ -305,17 +327,29 @@ function setupControls() {
   let lastMouseY = 0;
   let selectionStartX = 0;
   let selectionStartY = 0;
+  let cachedCanvasRect = null; // Cache canvas rect to avoid repeated getBoundingClientRect calls
+
+  // Helper to get canvas rect (cached for performance)
+  const getCanvasRect = () => {
+    // Invalidate cache on resize or after a delay
+    if (!cachedCanvasRect) {
+      cachedCanvasRect = canvas.getBoundingClientRect();
+      // Invalidate cache after 100ms to allow for resize
+      setTimeout(() => { cachedCanvasRect = null; }, 100);
+    }
+    return cachedCanvasRect;
+  };
 
   canvas.addEventListener('mousedown', (e) => {
     // Only start dragging on left mouse button
     if (e.button === 0) {
       // Check if the click is on a fullscreen control button - if so, don't handle it
       const target = e.target;
-      if (target.closest && target.closest('.fullscreen-control-btn')) {
+      if (target.closest?.('.fullscreen-control-btn')) {
         return; // Let the button handle its own click
       }
       
-      const rect = canvas.getBoundingClientRect();
+      const rect = getCanvasRect();
       const mouseX = e.clientX - rect.left;
       const mouseY = e.clientY - rect.top;
       
@@ -351,25 +385,65 @@ function setupControls() {
   window.addEventListener('mousemove', (e) => {
     // Don't interfere if mouse is over fullscreen control buttons
     const target = e.target;
-    if (target.closest && target.closest('.fullscreen-control-btn')) {
+    if (target.closest?.('.fullscreen-control-btn')) {
       return; // Let buttons handle their own hover states
     }
     
     if (isSelecting) {
-      // Update selection box
-      const rect = canvas.getBoundingClientRect();
+      // Update selection box - constrained to viewport aspect ratio
+      const rect = getCanvasRect();
       const mouseX = e.clientX - rect.left;
       const mouseY = e.clientY - rect.top;
       
-      const left = Math.min(selectionStartX, mouseX);
-      const top = Math.min(selectionStartY, mouseY);
-      const width = Math.abs(mouseX - selectionStartX);
-      const height = Math.abs(mouseY - selectionStartY);
+      // Calculate viewport aspect ratio
+      const viewportAspect = rect.width / rect.height;
+      
+      // Calculate raw dimensions from start point
+      const rawWidth = mouseX - selectionStartX;
+      const rawHeight = mouseY - selectionStartY;
+      
+      // Determine which dimension to use as the base (use the larger one)
+      let width, height;
+      if (Math.abs(rawWidth / viewportAspect) > Math.abs(rawHeight)) {
+        // Width is the constraining dimension
+        width = rawWidth;
+        height = width / viewportAspect;
+      } else {
+        // Height is the constraining dimension
+        height = rawHeight;
+        width = height * viewportAspect;
+      }
+      
+      // Calculate position (ensure box grows from start point)
+      let left = rawWidth >= 0 ? selectionStartX : selectionStartX + width;
+      let top = rawHeight >= 0 ? selectionStartY : selectionStartY + height;
+      
+      // Ensure selection box stays within canvas bounds
+      const absWidth = Math.abs(width);
+      const absHeight = Math.abs(height);
+      
+      // Clamp position to keep box within bounds
+      left = Math.max(0, Math.min(left, rect.width - absWidth));
+      top = Math.max(0, Math.min(top, rect.height - absHeight));
+      
+      // Clamp dimensions if they exceed bounds
+      const maxWidth = rect.width - left;
+      const maxHeight = rect.height - top;
+      
+      if (absWidth > maxWidth || absHeight > maxHeight) {
+        // Recalculate to fit within bounds while maintaining aspect ratio
+        const scaleByWidth = maxWidth / absWidth;
+        const scaleByHeight = maxHeight / absHeight;
+        const scale = Math.min(scaleByWidth, scaleByHeight);
+        
+        width = width * scale;
+        height = height * scale;
+      }
       
       selectionBox.style.left = left + 'px';
       selectionBox.style.top = top + 'px';
-      selectionBox.style.width = width + 'px';
-      selectionBox.style.height = height + 'px';
+      selectionBox.style.width = Math.abs(width) + 'px';
+      selectionBox.style.height = Math.abs(height) + 'px';
     } else if (isDragging) {
       const deltaX = e.clientX - lastMouseX;
       const deltaY = e.clientY - lastMouseY;
@@ -387,17 +461,39 @@ function setupControls() {
   window.addEventListener('mouseup', (e) => {
     if (e.button === 0) {
       if (isSelecting) {
-        // Zoom into selection box
-        const rect = canvas.getBoundingClientRect();
-        const mouseX = e.clientX - rect.left;
-        const mouseY = e.clientY - rect.top;
+        // Zoom into selection box - use the actual displayed box dimensions
+        const rect = getCanvasRect();
         
-        const width = Math.abs(mouseX - selectionStartX);
-        const height = Math.abs(mouseY - selectionStartY);
+        // Get the actual selection box position and size from the DOM
+        // This ensures we use the constrained aspect-ratio box that's displayed
+        const boxLeft = parseFloat(selectionBox.style.left) || 0;
+        const boxTop = parseFloat(selectionBox.style.top) || 0;
+        const boxWidth = parseFloat(selectionBox.style.width) || 0;
+        const boxHeight = parseFloat(selectionBox.style.height) || 0;
+        
+        // Validate selection box dimensions
+        if (isNaN(boxLeft) || isNaN(boxTop) || isNaN(boxWidth) || isNaN(boxHeight)) {
+          console.warn('Selection box has invalid dimensions (NaN)');
+          isSelecting = false;
+          selectionBox.classList.remove('active');
+          canvas.style.cursor = 'grab';
+          return;
+        }
         
         // Only zoom if selection box is large enough (at least 10x10 pixels)
-        if (width > 10 && height > 10) {
-          zoomToSelection(selectionStartX, selectionStartY, mouseX, mouseY, rect);
+        if (boxWidth > 10 && boxHeight > 10) {
+          // Calculate end coordinates from the box position and size
+          const startX = boxLeft;
+          const startY = boxTop;
+          const endX = boxLeft + boxWidth;
+          const endY = boxTop + boxHeight;
+          
+          // Validate coordinates before zooming
+          if (isFinite(startX) && isFinite(startY) && isFinite(endX) && isFinite(endY)) {
+            zoomToSelection(startX, startY, endX, endY, rect);
+          } else {
+            console.warn('Selection box coordinates are invalid (Infinity)');
+          }
         }
         
         isSelecting = false;
@@ -417,23 +513,29 @@ function setupControls() {
     }
   });
   
-  // Update cursor based on modifier keys
+  // Update cursor based on modifier keys (consolidated handler)
+  const updateCursor = (shiftKey) => {
+    if (!isDragging && !isSelecting) {
+      canvas.style.cursor = shiftKey ? 'crosshair' : 'grab';
+    }
+  };
+  
   canvas.addEventListener('mousemove', (e) => {
     if (!isDragging && !isSelecting) {
-      canvas.style.cursor = e.shiftKey ? 'crosshair' : 'grab';
+      updateCursor(e.shiftKey);
     }
   });
   
   // Handle keydown/keyup to update cursor
   window.addEventListener('keydown', (e) => {
-    if (e.key === 'Shift' && !isDragging && !isSelecting) {
-      canvas.style.cursor = 'crosshair';
+    if (e.key === 'Shift') {
+      updateCursor(true);
     }
   });
   
   window.addEventListener('keyup', (e) => {
-    if (e.key === 'Shift' && !isDragging && !isSelecting) {
-      canvas.style.cursor = 'grab';
+    if (e.key === 'Shift') {
+      updateCursor(false);
     }
   });
 
@@ -442,7 +544,7 @@ function setupControls() {
   const handleDoubleClick = (e) => {
     // Check if the click is on a fullscreen control button - if so, don't zoom
     const target = e.target;
-    if (target.closest && target.closest('.fullscreen-control-btn')) {
+    if (target.closest?.('.fullscreen-control-btn')) {
       return; // Let the button handle its own click
     }
     
@@ -463,8 +565,8 @@ function setupControls() {
       updateRendererSize();
     }
     
-    // Get canvas bounding rect for mouse position
-    const rect = canvas.getBoundingClientRect();
+    // Get canvas bounding rect for mouse position (use cached version)
+    const rect = getCanvasRect();
     
     // Calculate mouse position relative to canvas (0 to 1)
     // UV coordinates are based on the geometry, which uses display dimensions
@@ -696,7 +798,8 @@ function setupUI() {
     renderFractal();
   });
 
-  screenshotBtn.addEventListener('click', () => {
+  // Shared screenshot function to avoid code duplication
+  const captureScreenshot = () => {
     // Ensure we're rendering to the main canvas (not a render target)
     const previousRenderTarget = renderer.getRenderTarget();
     renderer.setRenderTarget(null);
@@ -745,7 +848,9 @@ function setupUI() {
         }
       }
     });
-  });
+  };
+  
+  screenshotBtn.addEventListener('click', captureScreenshot);
 
   // Fullscreen API functionality
   const canvasContainer = document.querySelector('.canvas-container');
@@ -801,12 +906,20 @@ function setupUI() {
     // For Mandelbrot/Julia, sample points to check for variation
     const samplePoints = 9; // 3x3 grid
     const iterations = params.iterations;
-    const aspect = renderer.domElement.width / renderer.domElement.height;
+    // Cache canvas dimensions
+    const canvasEl = cachedCanvasElement || renderer.domElement;
+    const aspect = canvasEl.width / canvasEl.height;
     const scale = 4.0 / zoom;
+    const scaleXAspect = scale * aspect * params.xScale;
+    const scaleY = scale * params.yScale;
     
     let escapeCount = 0;
     let stayCount = 0;
     let midRangeCount = 0;
+    
+    // Pre-calculate constants
+    const isMandelbrot = fractalType === 'mandelbrot';
+    const maxCheckIter = Math.min(50, iterations);
     
     // Sample points across the view
     for (let i = 0; i < 3; i++) {
@@ -815,21 +928,20 @@ function setupUI() {
         const u = (i + 0.5) / 3;
         const v = (j + 0.5) / 3;
         
-        // Convert to fractal coordinates
-        const cX = (u - 0.5) * scale * aspect * params.xScale + offset.x;
-        const cY = (v - 0.5) * scale * params.yScale + offset.y;
+        // Convert to fractal coordinates (optimized calculation)
+        const cX = (u - 0.5) * scaleXAspect + offset.x;
+        const cY = (v - 0.5) * scaleY + offset.y;
         
         // Quick iteration check (simplified Mandelbrot/Julia calculation)
-        let zx = fractalType === 'mandelbrot' ? 0 : cX;
-        let zy = fractalType === 'mandelbrot' ? 0 : cY;
-        const cx = fractalType === 'mandelbrot' ? cX : params.juliaC.x;
-        const cy = fractalType === 'mandelbrot' ? cY : params.juliaC.y;
+        let zx = isMandelbrot ? 0 : cX;
+        let zy = isMandelbrot ? 0 : cY;
+        const cx = isMandelbrot ? cX : params.juliaC.x;
+        const cy = isMandelbrot ? cY : params.juliaC.y;
         
         let iter = 0;
         let escaped = false;
         
         // Quick iteration (max 50 iterations for validation)
-        const maxCheckIter = Math.min(50, iterations);
         for (let k = 0; k < maxCheckIter; k++) {
           const zx2 = zx * zx;
           const zy2 = zy * zy;
@@ -865,10 +977,11 @@ function setupUI() {
     const notAllBlack = stayCount < samplePoints;
     
     // Also check if we're in a reasonable range for Mandelbrot
-    if (fractalType === 'mandelbrot') {
-      const distFromOrigin = Math.sqrt(offset.x * offset.x + offset.y * offset.y);
-      // If too far from origin at low zoom, likely blank
-      if (zoom < 10 && distFromOrigin > 2.5) {
+    if (isMandelbrot) {
+      // Use squared distance to avoid sqrt calculation
+      const distSquared = offset.x * offset.x + offset.y * offset.y;
+      // If too far from origin at low zoom, likely blank (compare squared: 2.5^2 = 6.25)
+      if (zoom < 10 && distSquared > 6.25) {
         return false;
       }
     }
@@ -1021,30 +1134,45 @@ function setupUI() {
     params.offset.set(randomView.offset.x, randomView.offset.y);
     params.zoom = randomView.zoom;
     
-    // Clear cached display since we're changing view
+    // Clear frame cache since we're changing to a new view
+    clearFrameCache();
+    
+    // Clear cached display if we're showing one
     if (isDisplayingCached) {
       scene.clear();
       isDisplayingCached = false;
       cachedDisplayPlane = null;
     }
     
-    // Render the new random view
+    // Ensure scene is ready for rendering
+    // If fractalPlane exists but isn't in scene, add it back
+    if (fractalPlane && !scene.children.includes(fractalPlane)) {
+      scene.add(fractalPlane);
+    }
+    
+    // Cancel any ongoing progressive rendering
+    if (progressiveRenderTimeout) {
+      clearTimeout(progressiveRenderTimeout);
+      progressiveRenderTimeout = null;
+      isProgressiveRendering = false;
+    }
+    
+    // Render the new random view with progressive rendering for better UX
     renderFractalProgressive();
   });
   
-  // Iterations controls
+  // Iterations controls - cache DOM references
   const fullscreenIterationsUpBtn = document.getElementById('fullscreen-iterations-up');
   const fullscreenIterationsDownBtn = document.getElementById('fullscreen-iterations-down');
-  // Reuse iterationsSlider and iterationsValue from setupUI scope
-  // They're already declared above, so we'll access them via the DOM
+  const iterationsSliderEl = document.getElementById('iterations');
+  const iterationsValueEl = document.getElementById('iterations-value');
   
-  fullscreenIterationsUpBtn.addEventListener('click', () => {
-    // Increase iterations by 5, capped at 200
-    params.iterations = Math.min(200, params.iterations + 5);
+  // Shared function to update iterations (avoids code duplication)
+  const updateIterations = (delta) => {
+    // Update iterations with delta, clamped to valid range
+    params.iterations = Math.max(10, Math.min(200, params.iterations + delta));
     
-    // Update UI sliders if they exist (access via DOM since they're in setupUI scope)
-    const iterationsSliderEl = document.getElementById('iterations');
-    const iterationsValueEl = document.getElementById('iterations-value');
+    // Update UI sliders
     if (iterationsSliderEl) {
       iterationsSliderEl.value = params.iterations;
     }
@@ -1060,7 +1188,7 @@ function setupUI() {
     }
     
     // If we have an existing fractal plane, update its iterations uniform
-    if (fractalPlane && fractalPlane.material && fractalPlane.material.uniforms && fractalPlane.material.uniforms.uIterations) {
+    if (fractalPlane?.material?.uniforms?.uIterations) {
       fractalPlane.material.uniforms.uIterations.value = params.iterations;
       // Ensure scene has the fractal plane
       if (scene.children.length === 0 || !scene.children.includes(fractalPlane)) {
@@ -1073,44 +1201,20 @@ function setupUI() {
       // No existing plane, do full re-render
       renderFractalProgressive();
     }
-  });
+  };
   
-  fullscreenIterationsDownBtn.addEventListener('click', () => {
-    // Decrease iterations by 5, minimum 10
-    params.iterations = Math.max(10, params.iterations - 5);
-    
-    // Update UI sliders if they exist (access via DOM since they're in setupUI scope)
-    const iterationsSliderEl = document.getElementById('iterations');
-    const iterationsValueEl = document.getElementById('iterations-value');
-    if (iterationsSliderEl) {
-      iterationsSliderEl.value = params.iterations;
+  fullscreenIterationsUpBtn.addEventListener('click', () => updateIterations(5));
+  fullscreenIterationsDownBtn.addEventListener('click', () => updateIterations(-5));
+  
+  // Cache color scheme index function import
+  let getColorSchemeIndexFn = null;
+  const getColorSchemeIndex = async () => {
+    if (!getColorSchemeIndexFn) {
+      const utils = await import('./fractals/utils.js');
+      getColorSchemeIndexFn = utils.getColorSchemeIndex;
     }
-    if (iterationsValueEl) {
-      iterationsValueEl.textContent = params.iterations;
-    }
-    
-    // Clear cached display since iterations changed
-    if (isDisplayingCached) {
-      scene.clear();
-      isDisplayingCached = false;
-      cachedDisplayPlane = null;
-    }
-    
-    // If we have an existing fractal plane, update its iterations uniform
-    if (fractalPlane && fractalPlane.material && fractalPlane.material.uniforms && fractalPlane.material.uniforms.uIterations) {
-      fractalPlane.material.uniforms.uIterations.value = params.iterations;
-      // Ensure scene has the fractal plane
-      if (scene.children.length === 0 || !scene.children.includes(fractalPlane)) {
-        scene.clear();
-        scene.add(fractalPlane);
-      }
-      // Re-render with updated iterations
-      renderFractalProgressive();
-    } else {
-      // No existing plane, do full re-render
-      renderFractalProgressive();
-    }
-  });
+    return getColorSchemeIndexFn;
+  };
   
   fullscreenColorCycleBtn.addEventListener('click', async () => {
     // Cycle to next color scheme
@@ -1130,9 +1234,10 @@ function setupUI() {
     }
     
     // If we have an existing fractal plane, update its color scheme uniform
-    if (fractalPlane && fractalPlane.material && fractalPlane.material.uniforms && fractalPlane.material.uniforms.uColorScheme) {
-      const { getColorSchemeIndex } = await import('./fractals/utils.js');
-      fractalPlane.material.uniforms.uColorScheme.value = getColorSchemeIndex(params.colorScheme);
+    const uniforms = fractalPlane?.material?.uniforms;
+    if (uniforms?.uColorScheme) {
+      const getIndex = await getColorSchemeIndex();
+      uniforms.uColorScheme.value = getIndex(params.colorScheme);
       // Ensure scene has the fractal plane
       if (scene.children.length === 0 || !scene.children.includes(fractalPlane)) {
         scene.clear();
@@ -1149,58 +1254,8 @@ function setupUI() {
     }
   });
   
-  // Screenshot functionality for fullscreen
-  fullscreenScreenshotBtn.addEventListener('click', () => {
-    // Use the same screenshot logic as the main screenshot button
-    // Ensure we're rendering to the main canvas (not a render target)
-    const previousRenderTarget = renderer.getRenderTarget();
-    renderer.setRenderTarget(null);
-    
-    // Ensure the scene is rendered before capturing
-    if (scene.children.length > 0) {
-      renderer.render(scene, camera);
-    }
-    
-    // Wait a frame to ensure rendering is complete
-    requestAnimationFrame(() => {
-      // Capture the canvas as PNG
-      const canvas = renderer.domElement;
-      
-      // Check if canvas has content
-      if (canvas.width === 0 || canvas.height === 0) {
-        console.error('Canvas has no dimensions, cannot capture screenshot');
-        return;
-      }
-      
-      try {
-        const dataURL = canvas.toDataURL('image/png');
-        
-        // Verify we got valid data (not just a blank image)
-        if (!dataURL || dataURL === 'data:,') {
-          console.error('Failed to capture canvas data');
-          return;
-        }
-        
-        // Create download link
-        const link = document.createElement('a');
-        link.download = `fractal-${currentFractalType}-${Date.now()}.png`;
-        link.href = dataURL;
-        
-        // Trigger download
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      } catch (error) {
-        console.error('Error capturing screenshot:', error);
-        alert('Failed to capture screenshot. Please try again.');
-      } finally {
-        // Restore previous render target if it existed
-        if (previousRenderTarget) {
-          renderer.setRenderTarget(previousRenderTarget);
-        }
-      }
-    });
-  });
+  // Screenshot functionality for fullscreen (reuse shared function)
+  fullscreenScreenshotBtn.addEventListener('click', captureScreenshot);
   
   // Update button text and renderer size based on fullscreen state
   const updateFullscreenButton = () => {
@@ -1355,30 +1410,79 @@ function renderFractalProgressive(startIterations = null) {
 
 // Zoom into a selection box area
 function zoomToSelection(startX, startY, endX, endY, canvasRect) {
-  const canvasWidth = canvasRect.width;
-  const canvasHeight = canvasRect.height;
+  // Validate input dimensions
+  const displayWidth = canvasRect.width;
+  const displayHeight = canvasRect.height;
   
-  // Normalize coordinates to 0-1
-  const x1 = Math.min(startX, endX) / canvasWidth;
-  const y1 = Math.min(startY, endY) / canvasHeight;
-  const x2 = Math.max(startX, endX) / canvasWidth;
-  const y2 = Math.max(startY, endY) / canvasHeight;
+  if (!displayWidth || !displayHeight || displayWidth <= 0 || displayHeight <= 0) {
+    console.warn('Invalid canvas dimensions for zoom to selection');
+    return;
+  }
   
-  // Get renderer dimensions for aspect calculation
+  // Validate selection coordinates
+  if (isNaN(startX) || isNaN(startY) || isNaN(endX) || isNaN(endY)) {
+    console.warn('Invalid selection coordinates (NaN)');
+    return;
+  }
+  
+  // Clamp coordinates to canvas bounds
+  const clampedStartX = Math.max(0, Math.min(startX, displayWidth));
+  const clampedStartY = Math.max(0, Math.min(startY, displayHeight));
+  const clampedEndX = Math.max(0, Math.min(endX, displayWidth));
+  const clampedEndY = Math.max(0, Math.min(endY, displayHeight));
+  
+  // Normalize coordinates to 0-1 (UV space)
+  const x1 = Math.min(clampedStartX, clampedEndX) / displayWidth;
+  const y1 = Math.min(clampedStartY, clampedEndY) / displayHeight;
+  const x2 = Math.max(clampedStartX, clampedEndX) / displayWidth;
+  const y2 = Math.max(clampedStartY, clampedEndY) / displayHeight;
+  
+  // Validate normalized coordinates
+  if (x1 === x2 || y1 === y2) {
+    console.warn('Selection box has zero width or height');
+    return;
+  }
+  
+  // Get renderer dimensions for aspect calculation (matches shader's uResolution)
+  // The shader uses: aspect = uResolution.x / uResolution.y
   const rendererWidth = renderer.domElement.width;
   const rendererHeight = renderer.domElement.height;
+  
+  if (!rendererWidth || !rendererHeight || rendererWidth <= 0 || rendererHeight <= 0) {
+    console.warn('Invalid renderer dimensions for zoom to selection');
+    return;
+  }
+  
   const aspect = rendererWidth / rendererHeight;
   
+  if (!isFinite(aspect) || aspect <= 0) {
+    console.warn('Invalid aspect ratio calculated');
+    return;
+  }
+  
+  // Validate current zoom
+  if (!params.zoom || !isFinite(params.zoom) || params.zoom <= 0) {
+    console.warn('Invalid current zoom level');
+    return;
+  }
+  
   // Calculate fractal coordinates for the selection corners
+  // This matches the shader formula: (uv - 0.5) * scale * aspect * uXScale + uOffset
   const scale = 4.0 / params.zoom;
   
-  // Top-left corner
+  // Top-left corner (x1, y1)
   const fractalX1 = (x1 - 0.5) * scale * aspect * params.xScale + params.offset.x;
   const fractalY1 = (y1 - 0.5) * scale * params.yScale + params.offset.y;
   
-  // Bottom-right corner
+  // Bottom-right corner (x2, y2)
   const fractalX2 = (x2 - 0.5) * scale * aspect * params.xScale + params.offset.x;
   const fractalY2 = (y2 - 0.5) * scale * params.yScale + params.offset.y;
+  
+  // Validate fractal coordinates
+  if (!isFinite(fractalX1) || !isFinite(fractalY1) || !isFinite(fractalX2) || !isFinite(fractalY2)) {
+    console.warn('Invalid fractal coordinates calculated (NaN or Infinity)');
+    return;
+  }
   
   // Calculate center and size of selection in fractal space
   const centerX = (fractalX1 + fractalX2) / 2;
@@ -1386,24 +1490,58 @@ function zoomToSelection(startX, startY, endX, endY, canvasRect) {
   const width = Math.abs(fractalX2 - fractalX1);
   const height = Math.abs(fractalY2 - fractalY1);
   
-  // Calculate new zoom to fit the selection
-  // The selection should fill the viewport
-  const selectionAspect = width / height;
-  const viewAspect = aspect;
+  // Validate selection size in fractal space
+  if (width <= 0 || height <= 0 || !isFinite(width) || !isFinite(height)) {
+    console.warn('Invalid selection size in fractal space');
+    return;
+  }
   
-  // Calculate zoom factor needed to fit selection
-  // We want: 4.0 / newZoom = width (or height adjusted for aspect)
-  let newZoom;
-  if (selectionAspect > viewAspect) {
-    // Selection is wider - fit to width
-    newZoom = (4.0 * aspect * params.xScale) / width;
-  } else {
-    // Selection is taller - fit to height
-    newZoom = (4.0 * params.yScale) / height;
+  // Calculate new zoom to fit the selection
+  // The selection should fill the viewport after zooming
+  // After zooming, the viewport will show: 4.0 / newZoom in fractal space
+  // We want the selection to fill this viewport
+  
+  // Calculate the required viewport size in fractal space
+  // The viewport in fractal space has dimensions:
+  // width: (4.0 / newZoom) * aspect * xScale
+  // height: (4.0 / newZoom) * yScale
+  // We want these to match the selection dimensions
+  
+  // Solve for newZoom:
+  // width = (4.0 / newZoom) * aspect * xScale  =>  newZoom = (4.0 * aspect * xScale) / width
+  // height = (4.0 / newZoom) * yScale  =>  newZoom = (4.0 * yScale) / height
+  
+  // Use the larger zoom value to ensure the selection fits
+  const zoomByWidth = (4.0 * aspect * params.xScale) / width;
+  const zoomByHeight = (4.0 * params.yScale) / height;
+  
+  // Validate zoom calculations
+  if (!isFinite(zoomByWidth) || !isFinite(zoomByHeight) || zoomByWidth <= 0 || zoomByHeight <= 0) {
+    console.warn('Invalid zoom calculation (NaN, Infinity, or <= 0)');
+    return;
+  }
+  
+  const newZoom = Math.max(zoomByWidth, zoomByHeight);
+  
+  // Validate final zoom value and apply reasonable bounds
+  if (!isFinite(newZoom) || newZoom <= 0) {
+    console.warn('Final zoom value is invalid');
+    return;
+  }
+  
+  // Apply reasonable zoom bounds (prevent extreme zoom levels that cause blank screens)
+  const minZoom = 0.1;
+  const maxZoom = 1e10; // Very high but still finite
+  const clampedZoom = Math.max(minZoom, Math.min(maxZoom, newZoom));
+  
+  // Validate center coordinates
+  if (!isFinite(centerX) || !isFinite(centerY)) {
+    console.warn('Invalid center coordinates');
+    return;
   }
   
   // Update parameters
-  params.zoom = newZoom;
+  params.zoom = clampedZoom;
   params.offset.x = centerX;
   params.offset.y = centerY;
   
