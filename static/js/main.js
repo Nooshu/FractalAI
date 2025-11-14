@@ -1,12 +1,13 @@
-import * as THREE from 'three';
+import createRegl from 'regl';
 
 // Application state
-let scene, camera, renderer;
+let regl = null;
+let canvas = null;
 let currentFractalType = 'mandelbrot';
 let lastTime = 0;
 let frameCount = 0;
 let fps = 0;
-let fractalPlane = null;
+let drawFractal = null; // Current regl draw command
 let currentFractalModule = null; // Currently loaded fractal module
 let fractalCache = new Map(); // Cache for loaded fractal modules
 let needsRender = false; // Flag to indicate if a render is needed
@@ -24,7 +25,7 @@ let isProgressiveRendering = false;
 // Frame cache for rendered fractals
 let frameCache = new Map();
 const MAX_CACHE_SIZE = 10; // Maximum number of cached frames
-let cachedDisplayPlane = null; // Plane for displaying cached frames
+let cachedDrawCommand = null; // Draw command for displaying cached frames
 
 // Function to calculate pixel ratio based on zoom level
 // Higher zoom = higher pixel ratio for better quality
@@ -36,11 +37,19 @@ function calculatePixelRatio() {
   return basePixelRatio * zoomMultiplier;
 }
 
-// Update renderer pixel ratio based on current zoom
+// Update canvas pixel ratio based on current zoom
 function updatePixelRatio() {
-  if (renderer) {
+  if (canvas && regl) {
     const pixelRatio = calculatePixelRatio();
-    renderer.setPixelRatio(pixelRatio);
+    // Regl handles pixel ratio automatically, but we can set it explicitly
+    const container = canvas.parentElement;
+    const rect = container.getBoundingClientRect();
+    const width = rect.width || container.clientWidth || 800;
+    const height = rect.height || container.clientHeight || 600;
+    canvas.width = width * pixelRatio;
+    canvas.height = height * pixelRatio;
+    canvas.style.width = width + 'px';
+    canvas.style.height = height + 'px';
   }
 }
 
@@ -51,11 +60,11 @@ let updateRendererSize = null;
 // Optimized: cache DOM element reference and use template literal
 let cachedCanvasElement = null;
 function generateCacheKey() {
-  if (!renderer) return null;
+  if (!canvas) return null;
   
   // Cache canvas element reference
   if (!cachedCanvasElement) {
-    cachedCanvasElement = renderer.domElement;
+    cachedCanvasElement = canvas;
   }
   
   // Round values to avoid floating point precision issues
@@ -70,8 +79,10 @@ function generateCacheKey() {
   const juliaCY = currentFractalType === 'julia' ? Math.round(params.juliaC.y * 10000) / 10000 : 0;
   // Use display dimensions (not render dimensions affected by pixel ratio) for cache key
   // This ensures cache hits even when pixel ratio changes
-  const width = cachedCanvasElement.width;
-  const height = cachedCanvasElement.height;
+  const container = canvas.parentElement;
+  const rect = container.getBoundingClientRect();
+  const width = Math.round(rect.width || container.clientWidth || 800);
+  const height = Math.round(rect.height || container.clientHeight || 600);
   
   // Use template literal for better performance
   return `${currentFractalType}_${zoom}_${offsetX}_${offsetY}_${iterations}_${colorScheme}_${xScale}_${yScale}_${juliaCX}_${juliaCY}_${width}_${height}`;
@@ -82,19 +93,15 @@ function getCachedFrame() {
   const key = generateCacheKey();
   if (!key) return null;
   const cached = frameCache.get(key);
-  // Verify the cached texture exists and dimensions are reasonable
-  // We use display dimensions in cache key, so we just need to verify texture exists
-  if (cached && cached.texture && renderer) {
-    // Check if texture is still valid (not disposed)
-    if (cached.texture.image || cached.renderTarget) {
-      return cached;
-    }
+  // Verify the cached framebuffer exists
+  if (cached && cached.framebuffer && regl) {
+    return cached;
   }
   return null;
 }
 
 // Store rendered frame in cache
-function cacheFrame(texture, renderTarget) {
+function cacheFrame(framebuffer) {
   const key = generateCacheKey();
   
   // Limit cache size - remove oldest entries if cache is full
@@ -102,21 +109,19 @@ function cacheFrame(texture, renderTarget) {
     // Remove first (oldest) entry
     const firstKey = frameCache.keys().next().value;
     const oldEntry = frameCache.get(firstKey);
-    if (oldEntry) {
-      oldEntry.texture.dispose();
-      oldEntry.renderTarget.dispose();
+    if (oldEntry && oldEntry.framebuffer) {
+      oldEntry.framebuffer.destroy();
     }
     frameCache.delete(firstKey);
   }
   
-  frameCache.set(key, { texture, renderTarget, timestamp: Date.now() });
+  frameCache.set(key, { framebuffer, timestamp: Date.now() });
 }
 
 // Clear frame cache
 function clearFrameCache() {
   for (const [, entry] of frameCache.entries()) {
-    if (entry.texture) entry.texture.dispose();
-    if (entry.renderTarget) entry.renderTarget.dispose();
+    if (entry.framebuffer) entry.framebuffer.destroy();
   }
   frameCache.clear();
 }
@@ -142,59 +147,45 @@ function scheduleRender() {
 let params = {
   iterations: 100,
   colorScheme: 'classic',
-  juliaC: new THREE.Vector2(-0.7269, 0.1889),
-  center: new THREE.Vector2(0, 0),
+  juliaC: { x: -0.7269, y: 0.1889 },
+  center: { x: 0, y: 0 },
   zoom: 1,
-  offset: new THREE.Vector2(0, 0),
+  offset: { x: 0, y: 0 },
   xScale: 1.0,
   yScale: 1.0,
 };
 
-// Initialize Three.js
+// Initialize regl
 function init() {
-  const canvas = document.getElementById('fractal-canvas');
+  canvas = document.getElementById('fractal-canvas');
   const container = canvas.parentElement;
 
-  // Scene setup
-  scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x000000);
+  // Set initial canvas size before initializing regl
+  const rect = container.getBoundingClientRect();
+  const initialWidth = rect.width || container.clientWidth || 800;
+  const initialHeight = rect.height || container.clientHeight || 600;
+  const pixelRatio = window.devicePixelRatio || 1;
+  
+  canvas.width = initialWidth * pixelRatio;
+  canvas.height = initialHeight * pixelRatio;
+  canvas.style.width = initialWidth + 'px';
+  canvas.style.height = initialHeight + 'px';
+  canvas.style.display = 'block';
 
-  // Get container dimensions - ensure we have valid dimensions
-  const getContainerSize = () => {
-    const rect = container.getBoundingClientRect();
-    return {
-      width: rect.width || container.clientWidth || 800,
-      height: rect.height || container.clientHeight || 600,
-    };
-  };
-
-  const containerSize = getContainerSize();
-
-  // Camera setup - OrthographicCamera for 2D fractals
-  const aspect = containerSize.width / containerSize.height;
-  const viewSize = 2; // Size of the view in world units
-  camera = new THREE.OrthographicCamera(
-    -viewSize * aspect, // left
-    viewSize * aspect, // right
-    viewSize, // top
-    -viewSize, // bottom
-    0.1,
-    10
-  );
-  camera.position.z = 1;
-
-  // Renderer setup - optimize for performance
-  renderer = new THREE.WebGLRenderer({ 
-    canvas, 
-    antialias: true,
-    powerPreference: 'high-performance', // Prefer dedicated GPU if available
-    stencil: false, // Disable stencil buffer (not needed for fractals)
-    depth: false // Disable depth buffer (2D fractals don't need it)
+  // Initialize regl
+  regl = createRegl({
+    canvas,
+    attributes: {
+      antialias: true,
+      powerPreference: 'high-performance',
+      stencil: false,
+      depth: false,
+    },
   });
   
-  // Check for WebGL2 support (for potential future enhancements)
+  // Check for WebGL2 support
   try {
-    const gl = renderer.getContext();
+    const gl = regl._gl;
     if (gl instanceof WebGL2RenderingContext) {
       console.log('WebGL2 available - enhanced features enabled');
     } else {
@@ -204,11 +195,9 @@ function init() {
     console.log('WebGL context check completed');
   }
   
-  // Function to update renderer size and pixel ratio
+  // Function to update canvas size and pixel ratio
   updateRendererSize = () => {
-    // Get container from canvas parent (use renderer.domElement which is the canvas)
-    const canvasElement = renderer.domElement;
-    const container = canvasElement.parentElement;
+    const container = canvas.parentElement;
     const rect = container.getBoundingClientRect();
     const size = {
       width: rect.width || container.clientWidth || 800,
@@ -216,22 +205,11 @@ function init() {
     };
     
     updatePixelRatio();
-    renderer.setSize(size.width, size.height);
 
-    // Override any inline styles Three.js might set
-    canvasElement.style.width = '100%';
-    canvasElement.style.height = '100%';
-    canvasElement.style.display = 'block';
-
-    const aspect = size.width / size.height;
-    const viewSize = 2;
-
-    // Update camera (orthographic)
-    camera.left = -viewSize * aspect;
-    camera.right = viewSize * aspect;
-    camera.top = viewSize;
-    camera.bottom = -viewSize;
-    camera.updateProjectionMatrix();
+    // Ensure canvas style is set
+    canvas.style.width = '100%';
+    canvas.style.height = '100%';
+    canvas.style.display = 'block';
   };
 
   // Initial size setup
@@ -581,12 +559,12 @@ function setupControls() {
     const uvX = mouseX / displayWidth;
     const uvY = mouseY / displayHeight;
     
-    // Get the renderer's actual pixel dimensions (which the shader uses for uResolution)
+    // Get the canvas's actual pixel dimensions (which the shader uses for uResolution)
     // The shader calculates aspect as uResolution.x / uResolution.y
     // Note: pixel ratio affects both dimensions equally, so aspect should match display aspect
-    // But we use renderer dimensions to match exactly what the shader sees
-    const rendererWidth = renderer.domElement.width;
-    const rendererHeight = renderer.domElement.height;
+    // But we use canvas dimensions to match exactly what the shader sees
+    const rendererWidth = canvas.width;
+    const rendererHeight = canvas.height;
     
     // Ensure we have valid renderer dimensions
     if (rendererWidth === 0 || rendererHeight === 0) {
@@ -659,15 +637,8 @@ function setupUI() {
   fractalTypeSelect.addEventListener('change', async (e) => {
     currentFractalType = e.target.value;
 
-    // Clear the scene completely
-    scene.clear();
-
-    // Clear previous fractal plane
-    if (fractalPlane) {
-      fractalPlane.geometry.dispose();
-      fractalPlane.material.dispose();
-      fractalPlane = null;
-    }
+    // Clear previous fractal draw command
+    drawFractal = null;
 
     // Clear the cache for this fractal type to force a fresh load
     fractalCache.delete(currentFractalType);
@@ -690,7 +661,8 @@ function setupUI() {
     juliaControls.style.display = currentFractalType === 'julia' ? 'block' : 'none';
 
     params.zoom = 1;
-    params.offset.set(0, 0);
+    params.offset.x = 0;
+    params.offset.y = 0;
     // Don't auto-render, wait for update button
   });
 
@@ -753,12 +725,8 @@ function setupUI() {
       return;
     }
 
-    // Reset plane to force recreation with new settings
-    if (fractalPlane) {
-      fractalPlane.geometry.dispose();
-      fractalPlane.material.dispose();
-      fractalPlane = null;
-    }
+    // Reset draw command to force recreation with new settings
+    drawFractal = null;
 
     // Add visual feedback
     updateFractalBtn.textContent = 'Rendering...';
@@ -783,34 +751,26 @@ function setupUI() {
 
   resetViewBtn.addEventListener('click', () => {
     params.zoom = 1;
-    params.offset.set(0, 0);
+    params.offset.x = 0;
+    params.offset.y = 0;
     params.xScale = 1.0;
     params.yScale = 1.0;
     xScaleSlider.value = 1.0;
     yScaleSlider.value = 1.0;
     xScaleValue.textContent = '1.0';
     yScaleValue.textContent = '1.0';
-    camera.position.set(0, 0, 1);
-    camera.lookAt(0, 0, 0);
     renderFractal();
   });
 
   // Shared screenshot function to avoid code duplication
   const captureScreenshot = () => {
-    // Ensure we're rendering to the main canvas (not a render target)
-    const previousRenderTarget = renderer.getRenderTarget();
-    renderer.setRenderTarget(null);
-    
-    // Ensure the scene is rendered before capturing
-    if (scene.children.length > 0) {
-      renderer.render(scene, camera);
+    // Ensure we render before capturing
+    if (drawFractal) {
+      drawFractal();
     }
     
     // Wait a frame to ensure rendering is complete
     requestAnimationFrame(() => {
-      // Capture the canvas as PNG
-      const canvas = renderer.domElement;
-      
       // Check if canvas has content
       if (canvas.width === 0 || canvas.height === 0) {
         console.error('Canvas has no dimensions, cannot capture screenshot');
@@ -838,11 +798,6 @@ function setupUI() {
       } catch (error) {
         console.error('Error capturing screenshot:', error);
         alert('Failed to capture screenshot. Please try again.');
-      } finally {
-        // Restore previous render target if it existed
-        if (previousRenderTarget) {
-          renderer.setRenderTarget(previousRenderTarget);
-        }
       }
     });
   };
@@ -904,7 +859,7 @@ function setupUI() {
     const samplePoints = 9; // 3x3 grid
     const iterations = params.iterations;
     // Cache canvas dimensions
-    const canvasEl = cachedCanvasElement || renderer.domElement;
+    const canvasEl = cachedCanvasElement || canvas;
     const aspect = canvasEl.width / canvasEl.height;
     const scale = 4.0 / zoom;
     const scaleXAspect = scale * aspect * params.xScale;
@@ -1010,7 +965,7 @@ function setupUI() {
         for (let attempt = 0; attempt < 10; attempt++) {
           const location = interestingLocations[Math.floor(Math.random() * interestingLocations.length)];
           const zoom = location.zoom * (0.8 + Math.random() * 0.4);
-          const offset = new THREE.Vector2(location.x, location.y);
+          const offset = { x: location.x, y: location.y };
           
           // Validate the view
           if (isValidInterestingView(offset, zoom, 'mandelbrot')) {
@@ -1020,7 +975,7 @@ function setupUI() {
         
         // Fallback to a known good location if validation fails
         return {
-          offset: new THREE.Vector2(-0.75, 0.1),
+          offset: { x: -0.75, y: 0.1 },
           zoom: 50,
         };
       }
@@ -1043,11 +998,12 @@ function setupUI() {
         for (let attempt = 0; attempt < 10; attempt++) {
           const juliaSet = interestingJuliaSets[Math.floor(Math.random() * interestingJuliaSets.length)];
           const zoom = juliaSet.zoom * (0.8 + Math.random() * 0.4);
-          const offset = new THREE.Vector2(juliaSet.x, juliaSet.y);
+          const offset = { x: juliaSet.x, y: juliaSet.y };
           
           // Temporarily set Julia C for validation
-          const oldJuliaC = params.juliaC.clone();
-          params.juliaC.set(juliaSet.cReal, juliaSet.cImag);
+          const oldJuliaC = { x: params.juliaC.x, y: params.juliaC.y };
+          params.juliaC.x = juliaSet.cReal;
+          params.juliaC.y = juliaSet.cImag;
           
           // Validate the view
           if (isValidInterestingView(offset, zoom, 'julia')) {
@@ -1064,12 +1020,14 @@ function setupUI() {
           }
           
           // Restore old Julia C if validation failed
-          params.juliaC.copy(oldJuliaC);
+          params.juliaC.x = oldJuliaC.x;
+          params.juliaC.y = oldJuliaC.y;
         }
         
         // Fallback to a known good Julia set
         const fallback = interestingJuliaSets[0];
-        params.juliaC.set(fallback.cReal, fallback.cImag);
+        params.juliaC.x = fallback.cReal;
+        params.juliaC.y = fallback.cImag;
         const juliaCReal = document.getElementById('julia-c-real');
         const juliaCImag = document.getElementById('julia-c-imag');
         const juliaCRealValue = document.getElementById('julia-c-real-value');
@@ -1079,7 +1037,7 @@ function setupUI() {
         if (juliaCRealValue) juliaCRealValue.textContent = fallback.cReal.toFixed(4);
         if (juliaCImagValue) juliaCImagValue.textContent = fallback.cImag.toFixed(4);
         return {
-          offset: new THREE.Vector2(fallback.x, fallback.y),
+          offset: { x: fallback.x, y: fallback.y },
           zoom: fallback.zoom,
         };
       }
@@ -1089,10 +1047,10 @@ function setupUI() {
         const angle = Math.random() * Math.PI * 2;
         const distance = Math.random() * 0.5;
         return {
-          offset: new THREE.Vector2(
-            Math.cos(angle) * distance,
-            Math.sin(angle) * distance
-          ),
+          offset: {
+            x: Math.cos(angle) * distance,
+            y: Math.sin(angle) * distance
+          },
           zoom: 1 + Math.random() * 3, // Zoom between 1x and 4x
         };
       }
@@ -1102,10 +1060,10 @@ function setupUI() {
         const angle = Math.random() * Math.PI * 2;
         const distance = Math.random() * 0.3;
         return {
-          offset: new THREE.Vector2(
-            Math.cos(angle) * distance,
-            Math.sin(angle) * distance
-          ),
+          offset: {
+            x: Math.cos(angle) * distance,
+            y: Math.sin(angle) * distance
+          },
           zoom: 1 + Math.random() * 2, // Zoom between 1x and 3x
         };
       }
@@ -1113,10 +1071,10 @@ function setupUI() {
       default:
         // Default: random offset and zoom
         return {
-          offset: new THREE.Vector2(
-            (Math.random() - 0.5) * 2,
-            (Math.random() - 0.5) * 2
-          ),
+          offset: {
+            x: (Math.random() - 0.5) * 2,
+            y: (Math.random() - 0.5) * 2
+          },
           zoom: 1 + Math.random() * 5,
         };
     }
@@ -1128,7 +1086,8 @@ function setupUI() {
     const randomView = getRandomInterestingView();
     
     // Update parameters
-    params.offset.set(randomView.offset.x, randomView.offset.y);
+    params.offset.x = randomView.offset.x;
+    params.offset.y = randomView.offset.y;
     params.zoom = randomView.zoom;
     
     // Clear frame cache since we're changing to a new view
@@ -1136,15 +1095,8 @@ function setupUI() {
     
     // Clear cached display if we're showing one
     if (isDisplayingCached) {
-      scene.clear();
       isDisplayingCached = false;
-      cachedDisplayPlane = null;
-    }
-    
-    // Ensure scene is ready for rendering
-    // If fractalPlane exists but isn't in scene, add it back
-    if (fractalPlane && !scene.children.includes(fractalPlane)) {
-      scene.add(fractalPlane);
+      cachedDrawCommand = null;
     }
     
     // Cancel any ongoing progressive rendering
@@ -1179,25 +1131,14 @@ function setupUI() {
     
     // Clear cached display since iterations changed
     if (isDisplayingCached) {
-      scene.clear();
       isDisplayingCached = false;
-      cachedDisplayPlane = null;
+      cachedDrawCommand = null;
     }
     
-    // If we have an existing fractal plane, update its iterations uniform
-    if (fractalPlane?.material?.uniforms?.uIterations) {
-      fractalPlane.material.uniforms.uIterations.value = params.iterations;
-      // Ensure scene has the fractal plane
-      if (scene.children.length === 0 || !scene.children.includes(fractalPlane)) {
-        scene.clear();
-        scene.add(fractalPlane);
-      }
-      // Re-render with updated iterations
-      renderFractalProgressive();
-    } else {
-      // No existing plane, do full re-render
-      renderFractalProgressive();
-    }
+    // Recreate draw command with updated iterations
+    drawFractal = null;
+    // Re-render with updated iterations
+    renderFractalProgressive();
   };
   
   fullscreenIterationsUpBtn.addEventListener('click', () => updateIterations(5));
@@ -1225,30 +1166,14 @@ function setupUI() {
     
     // Clear cached display if we're showing one (since color scheme changed)
     if (isDisplayingCached) {
-      scene.clear();
       isDisplayingCached = false;
-      cachedDisplayPlane = null; // Clear the cached display plane
+      cachedDrawCommand = null;
     }
     
-    // If we have an existing fractal plane, update its color scheme uniform
-    const uniforms = fractalPlane?.material?.uniforms;
-    if (uniforms?.uColorScheme) {
-      const getIndex = await getColorSchemeIndex();
-      uniforms.uColorScheme.value = getIndex(params.colorScheme);
-      // Ensure scene has the fractal plane
-      if (scene.children.length === 0 || !scene.children.includes(fractalPlane)) {
-        scene.clear();
-        scene.add(fractalPlane);
-      }
-      // Force re-render with updated color scheme
-      renderer.render(scene, camera);
-      needsRender = false;
-      // Cache the updated frame
-      cacheCurrentFrame();
-    } else {
-      // No existing plane, do full re-render
-      renderFractalProgressive();
-    }
+    // Recreate draw command with updated color scheme
+    drawFractal = null;
+    // Re-render with updated color scheme
+    renderFractalProgressive();
   });
   
   // Screenshot functionality for fullscreen (reuse shared function)
@@ -1315,16 +1240,16 @@ function hideLoadingBar() {
 }
 
 function renderFractalProgressive(startIterations = null) {
-  if (!currentFractalModule || !currentFractalModule.render) {
+  if (!currentFractalModule || !currentFractalModule.render || !regl) {
     hideLoadingBar();
     return;
   }
 
   // Check cache first - if we have a cached frame, use it immediately
   const cached = getCachedFrame();
-  if (cached && cached.texture) {
+  if (cached && cached.framebuffer) {
     // Display cached frame
-    displayCachedFrame(cached.texture);
+    displayCachedFrame(cached.framebuffer);
     hideLoadingBar();
     isProgressiveRendering = false; // Not rendering progressively
     return;
@@ -1341,68 +1266,52 @@ function renderFractalProgressive(startIterations = null) {
 
   targetIterations = params.iterations;
   
-  // If we have an existing plane, update it progressively
-  if (fractalPlane && fractalPlane.material && fractalPlane.material.uniforms) {
-    isProgressiveRendering = true;
-    
-    // Update pixel ratio based on zoom level
-    updatePixelRatio();
-    
-    // Start with low quality for immediate feedback
-    const initialIterations = startIterations || Math.max(20, Math.floor(targetIterations * 0.2));
-    currentProgressiveIterations = initialIterations;
-    
-    // Update all uniforms and render immediately
-    fractalPlane.material.uniforms.uIterations.value = currentProgressiveIterations;
-    fractalPlane.material.uniforms.uZoom.value = params.zoom;
-    fractalPlane.material.uniforms.uOffset.value.set(params.offset.x, params.offset.y);
-    fractalPlane.material.uniforms.uXScale.value = params.xScale;
-    fractalPlane.material.uniforms.uYScale.value = params.yScale;
-    
-    // Update resolution in case renderer size changed
-    if (fractalPlane.material.uniforms.uResolution) {
-      fractalPlane.material.uniforms.uResolution.value.set(
-        renderer.domElement.width,
-        renderer.domElement.height
-      );
-    }
-    
-    if (fractalPlane.material.uniforms.uJuliaC) {
-      fractalPlane.material.uniforms.uJuliaC.value.set(params.juliaC.x, params.juliaC.y);
-    }
-    
-    renderer.render(scene, camera);
-    needsRender = false; // Progressive rendering handles its own renders
-    
-    // Progressively increase quality
-    const stepSize = Math.max(10, Math.floor(targetIterations * 0.15));
-    const progressiveStep = () => {
-      if (currentProgressiveIterations < targetIterations) {
-        currentProgressiveIterations = Math.min(
-          currentProgressiveIterations + stepSize,
-          targetIterations
-        );
-        fractalPlane.material.uniforms.uIterations.value = currentProgressiveIterations;
-        renderer.render(scene, camera);
-        needsRender = false; // Progressive rendering handles its own renders
-        
-        // Schedule next step
-        progressiveRenderTimeout = setTimeout(progressiveStep, 16); // ~60fps
-      } else {
-        isProgressiveRendering = false;
-        // Cache the fully rendered frame
-        cacheCurrentFrame();
-        hideLoadingBar();
-      }
-    };
-    
-    // Start progressive rendering after a short delay
-    progressiveRenderTimeout = setTimeout(progressiveStep, 16);
-    return;
-  }
+  // Update pixel ratio based on zoom level
+  updatePixelRatio();
   
-  // No existing plane, do full render
-  renderFractal();
+  // Start with low quality for immediate feedback
+  const initialIterations = startIterations || Math.max(20, Math.floor(targetIterations * 0.2));
+  currentProgressiveIterations = initialIterations;
+  
+  // Create or recreate draw command with progressive iterations
+  drawFractal = currentFractalModule.render(regl, { ...params, iterations: currentProgressiveIterations }, canvas);
+  
+  // Render immediately
+  if (drawFractal) {
+    drawFractal();
+  }
+  needsRender = false; // Progressive rendering handles its own renders
+  
+  isProgressiveRendering = true;
+  
+  // Progressively increase quality
+  const stepSize = Math.max(10, Math.floor(targetIterations * 0.15));
+  const progressiveStep = () => {
+    if (currentProgressiveIterations < targetIterations) {
+      currentProgressiveIterations = Math.min(
+        currentProgressiveIterations + stepSize,
+        targetIterations
+      );
+      
+      // Recreate draw command with updated iterations
+      drawFractal = currentFractalModule.render(regl, { ...params, iterations: currentProgressiveIterations }, canvas);
+      if (drawFractal) {
+        drawFractal();
+      }
+      needsRender = false; // Progressive rendering handles its own renders
+      
+      // Schedule next step
+      progressiveRenderTimeout = setTimeout(progressiveStep, 16); // ~60fps
+    } else {
+      isProgressiveRendering = false;
+      // Cache the fully rendered frame
+      cacheCurrentFrame();
+      hideLoadingBar();
+    }
+  };
+  
+  // Start progressive rendering after a short delay
+  progressiveRenderTimeout = setTimeout(progressiveStep, 16);
 }
 
 // Zoom into a selection box area
@@ -1440,10 +1349,10 @@ function zoomToSelection(startX, startY, endX, endY, canvasRect) {
     return;
   }
   
-  // Get renderer dimensions for aspect calculation (matches shader's uResolution)
+  // Get canvas dimensions for aspect calculation (matches shader's uResolution)
   // The shader uses: aspect = uResolution.x / uResolution.y
-  const rendererWidth = renderer.domElement.width;
-  const rendererHeight = renderer.domElement.height;
+  const rendererWidth = canvas.width;
+  const rendererHeight = canvas.height;
   
   if (!rendererWidth || !rendererHeight || rendererWidth <= 0 || rendererHeight <= 0) {
     console.warn('Invalid renderer dimensions for zoom to selection');
@@ -1547,63 +1456,84 @@ function zoomToSelection(startX, startY, endX, endY, canvasRect) {
 }
 
 // Display a cached frame
-function displayCachedFrame(texture) {
-  // Get current container dimensions
-  const container = renderer.domElement.parentElement;
-  const containerRect = container.getBoundingClientRect();
-  const aspect = (containerRect.width || renderer.domElement.width) / 
-                 (containerRect.height || renderer.domElement.height);
-  const viewSize = 2;
+function displayCachedFrame(framebuffer) {
+  if (!regl || !framebuffer || !canvas) return;
   
-  if (!cachedDisplayPlane) {
-    // Create a plane for displaying cached textures
-    const geometry = new THREE.PlaneGeometry(viewSize * 2 * aspect, viewSize * 2);
-    const material = new THREE.MeshBasicMaterial({ map: texture });
-    cachedDisplayPlane = new THREE.Mesh(geometry, material);
-    cachedDisplayPlane.position.set(0, 0, 0);
-  } else {
-    // Update existing plane's texture and geometry if aspect changed
-    cachedDisplayPlane.material.map = texture;
-    cachedDisplayPlane.material.needsUpdate = true;
-    
-    // Update geometry if aspect ratio changed
-    const currentAspect = cachedDisplayPlane.geometry.parameters.width / 
-                          cachedDisplayPlane.geometry.parameters.height;
-    if (Math.abs(currentAspect - aspect) > 0.01) {
-      cachedDisplayPlane.geometry.dispose();
-      cachedDisplayPlane.geometry = new THREE.PlaneGeometry(viewSize * 2 * aspect, viewSize * 2);
-    }
-  }
+  // Create draw command to display the cached framebuffer
+  // Use the texture from the framebuffer
+  const texture = framebuffer.color[0] || framebuffer.color;
   
-  scene.clear();
-  scene.add(cachedDisplayPlane);
+  cachedDrawCommand = regl({
+    vert: `
+      attribute vec2 position;
+      varying vec2 vUv;
+      void main() {
+        vUv = position * 0.5 + 0.5;
+        gl_Position = vec4(position, 0, 1);
+      }
+    `,
+    frag: `
+      precision highp float;
+      uniform sampler2D texture;
+      varying vec2 vUv;
+      void main() {
+        gl_FragColor = texture2D(texture, vUv);
+      }
+    `,
+    attributes: {
+      position: [-1, -1, 1, -1, -1, 1, 1, 1],
+    },
+    uniforms: {
+      texture: texture,
+    },
+    viewport: {
+      x: 0,
+      y: 0,
+      width: canvas.width,
+      height: canvas.height,
+    },
+    count: 4,
+    primitive: 'triangle strip',
+  });
+  
   isDisplayingCached = true;
   needsRender = true; // Mark that we need to render this cached frame
   // Render immediately so cached frame appears right away
-  renderer.render(scene, camera);
+  if (cachedDrawCommand) {
+    cachedDrawCommand();
+  }
 }
 
 // Cache the current rendered frame
 function cacheCurrentFrame() {
-  if (!fractalPlane || !renderer) return;
+  if (!drawFractal || !regl || !canvas) return;
   
-  // Create render target to capture the current frame
-  const width = renderer.domElement.width;
-  const height = renderer.domElement.height;
+  // Create framebuffer to capture the current frame
+  const width = canvas.width;
+  const height = canvas.height;
   
-  const renderTarget = new THREE.WebGLRenderTarget(width, height, {
-    minFilter: THREE.LinearFilter,
-    magFilter: THREE.LinearFilter,
-    format: THREE.RGBAFormat,
+  const framebuffer = regl.framebuffer({
+    width,
+    height,
+    color: regl.texture({
+      width,
+      height,
+      min: 'linear',
+      mag: 'linear',
+    }),
+    depth: false,
+    stencil: false,
   });
   
-  // Render to texture
-  renderer.setRenderTarget(renderTarget);
-  renderer.render(scene, camera);
-  renderer.setRenderTarget(null);
+  // Render to framebuffer using regl context
+  framebuffer.use(() => {
+    if (drawFractal) {
+      drawFractal();
+    }
+  });
   
   // Store in cache
-  cacheFrame(renderTarget.texture, renderTarget);
+  cacheFrame(framebuffer);
 }
 
 function renderFractal() {
@@ -1613,16 +1543,16 @@ function renderFractal() {
     return;
   }
 
-  if (!currentFractalModule.render) {
-    console.error('Fractal module missing render function:', currentFractalType);
+  if (!currentFractalModule.render || !regl) {
+    console.error('Fractal module missing render function or regl not initialized:', currentFractalType);
     hideLoadingBar();
     return;
   }
 
   // Check cache first
   const cached = getCachedFrame();
-  if (cached && cached.texture) {
-    displayCachedFrame(cached.texture);
+  if (cached && cached.framebuffer) {
+    displayCachedFrame(cached.framebuffer);
     hideLoadingBar();
     isProgressiveRendering = false; // Not rendering progressively
     return;
@@ -1644,13 +1574,16 @@ function renderFractal() {
   // Update pixel ratio based on zoom level for better quality when zoomed in
   updatePixelRatio();
 
-  // Clear the scene before rendering
-  scene.clear();
-
   console.log(`Rendering fractal: ${currentFractalType}`);
 
-  // Call the fractal's render function
-  fractalPlane = currentFractalModule.render(scene, camera, renderer, params, fractalPlane);
+  // Call the fractal's render function to create draw command
+  drawFractal = currentFractalModule.render(regl, params, canvas);
+  
+  // Execute the draw command
+  if (drawFractal) {
+    drawFractal();
+  }
+  
   needsRender = false; // Render complete (renderFractal handles its own render call)
   isDisplayingCached = false; // Not displaying cached frame
 
@@ -1676,7 +1609,10 @@ function animate() {
     fps = frameCount;
     frameCount = 0;
     lastTime = currentTime;
-    document.getElementById('fps').textContent = `FPS: ${fps}`;
+    const fpsElement = document.getElementById('fps');
+    if (fpsElement) {
+      fpsElement.textContent = `FPS: ${fps}`;
+    }
   }
 
   // Only render when necessary:
@@ -1685,14 +1621,11 @@ function animate() {
   const shouldRender = needsRender || isProgressiveRendering;
   
   if (shouldRender) {
-    // Update time for shaders if needed (only for non-cached fractals)
-    if (!isDisplayingCached && fractalPlane && fractalPlane.material && fractalPlane.material.uniforms && fractalPlane.material.uniforms.uTime) {
-      fractalPlane.material.uniforms.uTime.value = currentTime / 1000;
-    }
-    
-    // Only render if we have something to render
-    if (scene.children.length > 0) {
-      renderer.render(scene, camera);
+    // Render cached frame or fractal
+    if (isDisplayingCached && cachedDrawCommand) {
+      cachedDrawCommand();
+    } else if (drawFractal) {
+      drawFractal();
     }
     
     // Reset needsRender flag after rendering (progressive rendering will keep setting it)

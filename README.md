@@ -1,6 +1,6 @@
 # FractalAI
 
-A web-based fractal generator with 2D and 3D support using Three.js and WebGL. This project demonstrates interactive fractal visualization with real-time rendering capabilities.
+A web-based fractal generator with 2D and 3D support using regl and WebGL. This project demonstrates interactive fractal visualization with real-time rendering capabilities.
 
 ## Features
 
@@ -66,7 +66,7 @@ The built files will be in the `dist/` directory.
 
 ## Technology Stack
 
-- **Three.js** (v0.169.0) - 3D graphics and WebGL rendering
+- **regl** (v2.1.0) - Functional WebGL library for efficient rendering
 - **Vite** - Fast build tool and dev server
 - **WebGL Shaders** - GPU-accelerated fractal computation
 

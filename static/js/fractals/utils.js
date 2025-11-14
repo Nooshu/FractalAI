@@ -1,24 +1,34 @@
-import * as THREE from 'three';
-
-// Color schemes
+// Color schemes (for CPU-side color calculations if needed)
 export function getColor(iterations, maxIterations, scheme) {
-  if (iterations >= maxIterations) return new THREE.Color(0, 0, 0);
+  if (iterations >= maxIterations) return { r: 0, g: 0, b: 0 };
 
   const t = iterations / maxIterations;
 
   switch (scheme) {
     case 'fire':
-      return new THREE.Color(t, t * 0.5, 0);
+      return { r: t, g: t * 0.5, b: 0 };
     case 'ocean':
-      return new THREE.Color(0, t * 0.5, t);
+      return { r: 0, g: t * 0.5, b: t };
     case 'rainbow': {
       const hue = (t * 360) % 360;
-      return new THREE.Color().setHSL(hue / 360, 1, 0.5);
+      const h = hue / 360;
+      // Convert HSL to RGB
+      const c = 1;
+      const x = c * (1 - Math.abs(((h * 6) % 2) - 1));
+      const m = 0.5 - c / 2;
+      let r, g, b;
+      if (h < 1/6) { r = c; g = x; b = 0; }
+      else if (h < 2/6) { r = x; g = c; b = 0; }
+      else if (h < 3/6) { r = 0; g = c; b = x; }
+      else if (h < 4/6) { r = 0; g = x; b = c; }
+      else if (h < 5/6) { r = x; g = 0; b = c; }
+      else { r = c; g = 0; b = x; }
+      return { r: r + m, g: g + m, b: b + m };
     }
     case 'monochrome':
-      return new THREE.Color(t, t, t);
+      return { r: t, g: t, b: t };
     default: // classic
-      return new THREE.Color(t * 0.5, t, t * 1.5);
+      return { r: t * 0.5, g: t, b: t * 1.5 };
   }
 }
 
@@ -27,12 +37,13 @@ export function getColorSchemeIndex(scheme) {
   return schemes.indexOf(scheme);
 }
 
-// Vertex shader for 2D fractals
+// Vertex shader for 2D fractals (regl uses a full-screen quad)
 export const vertexShader = `
+    attribute vec2 position;
     varying vec2 vUv;
     void main() {
-        vUv = uv;
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        vUv = position * 0.5 + 0.5;
+        gl_Position = vec4(position, 0, 1);
     }
 `;
 

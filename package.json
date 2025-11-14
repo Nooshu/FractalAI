@@ -1,7 +1,7 @@
 {
   "name": "fractalai",
   "version": "1.0.0",
-  "description": "A web-based fractal generator with 2D and 3D support using Three.js",
+  "description": "A web-based fractal generator with 2D and 3D support using regl",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -18,7 +18,7 @@
     "audit": "npm audit"
   },
   "dependencies": {
-    "three": "0.169.0"
+    "regl": "^2.1.0"
   },
   "devDependencies": {
     "vite": "5.4.21",
