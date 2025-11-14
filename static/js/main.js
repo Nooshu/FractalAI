@@ -1001,7 +1001,7 @@ function setupUI() {
   // Samples points and checks for variation in iteration counts
   function isValidInterestingView(offset, zoom, fractalType) {
     // For geometric fractals and chaotic maps, they're generally always interesting
-    if (fractalType === 'sierpinski' || fractalType === 'sierpinski-arrowhead' || fractalType === 'sierpinski-carpet' || fractalType === 'sierpinski-pentagon' || fractalType === 'sierpinski-hexagon' || fractalType === 'sierpinski-gasket' || fractalType === 'koch' || fractalType === 'quadratic-koch' || fractalType === 'minkowski-sausage' || fractalType === 'cesaro' || fractalType === 'popcorn' || fractalType === 'rose' || fractalType === 'mutant-mandelbrot' || fractalType === 'cantor' || fractalType === 'fat-cantor' || fractalType === 'smith-volterra-cantor' || fractalType === 'random-cantor') {
+    if (fractalType === 'sierpinski' || fractalType === 'sierpinski-arrowhead' || fractalType === 'sierpinski-carpet' || fractalType === 'sierpinski-pentagon' || fractalType === 'sierpinski-hexagon' || fractalType === 'sierpinski-gasket' || fractalType === 'koch' || fractalType === 'quadratic-koch' || fractalType === 'minkowski-sausage' || fractalType === 'cesaro' || fractalType === 'vicsek' || fractalType === 'popcorn' || fractalType === 'rose' || fractalType === 'mutant-mandelbrot' || fractalType === 'cantor' || fractalType === 'fat-cantor' || fractalType === 'smith-volterra-cantor' || fractalType === 'random-cantor') {
       return true;
     }
 
@@ -1567,6 +1567,30 @@ function setupUI() {
           { x: -0.35, y: 0.35, zoom: 5 }, // Top-left corner zigzag
           { x: 0.35, y: -0.35, zoom: 5 }, // Bottom-right corner zigzag
           { x: -0.35, y: -0.35, zoom: 5 }, // Bottom-left corner zigzag
+          { x: 0, y: 0, zoom: 2 }, // Medium zoom center
+        ];
+
+        const location =
+          interestingLocations[Math.floor(Math.random() * interestingLocations.length)];
+        const zoom = location.zoom * (0.8 + Math.random() * 0.4);
+        return {
+          offset: { x: location.x, y: location.y },
+          zoom: zoom,
+        };
+      }
+
+      case 'vicsek': {
+        // Vicsek snowflake - zoom into cross patterns
+        const interestingLocations = [
+          { x: 0, y: 0, zoom: 1 }, // Full overview showing cross
+          { x: 0, y: 0, zoom: 3 }, // Center cross detail
+          { x: 0.33, y: 0, zoom: 4 }, // Right arm
+          { x: -0.33, y: 0, zoom: 4 }, // Left arm
+          { x: 0, y: 0.33, zoom: 4 }, // Top arm
+          { x: 0, y: -0.33, zoom: 4 }, // Bottom arm
+          { x: 0.22, y: 0.22, zoom: 6 }, // Edge of center where cross meets
+          { x: -0.22, y: 0.22, zoom: 6 }, // Edge of center
+          { x: 0.11, y: 0.11, zoom: 9 }, // Deep zoom into self-similarity
           { x: 0, y: 0, zoom: 2 }, // Medium zoom center
         ];
 
