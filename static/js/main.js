@@ -14,7 +14,6 @@ let isDisplayingCached = false; // Track if we're displaying a cached frame
 
 // Render throttling for smooth interaction
 let renderScheduled = false;
-let pendingRender = false;
 
 // Progressive rendering state
 let progressiveRenderTimeout = null;
@@ -115,7 +114,7 @@ function cacheFrame(texture, renderTarget) {
 
 // Clear frame cache
 function clearFrameCache() {
-  for (const [key, entry] of frameCache.entries()) {
+  for (const [, entry] of frameCache.entries()) {
     if (entry.texture) entry.texture.dispose();
     if (entry.renderTarget) entry.renderTarget.dispose();
   }
@@ -131,13 +130,11 @@ function scheduleRender() {
     renderScheduled = true;
     requestAnimationFrame(() => {
       renderScheduled = false;
-      pendingRender = false; // Clear pending flag
       // Use progressive rendering for faster feedback
       renderFractalProgressive();
     });
-  } else {
-    pendingRender = true;
   }
+  // If render is already scheduled, the next render will be handled by the existing requestAnimationFrame
 }
 
 
