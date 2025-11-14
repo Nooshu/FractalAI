@@ -731,10 +731,15 @@ function setupUI() {
 
     // Set default view parameters based on fractal type
     if (currentFractalType === 'burning-ship') {
-      // Burning Ship looks best centered on the "ship" shape
+      // Burning Ship - shows the ship upright
       params.zoom = 1.2;
       params.offset.x = -0.5;
       params.offset.y = -0.6;
+    } else if (currentFractalType === 'buffalo') {
+      // Buffalo - vertical mirror of Burning Ship (same view, flipped y-axis)
+      params.zoom = 1.2;
+      params.offset.x = -0.5;
+      params.offset.y = 0.6;  // Opposite sign from Burning Ship
     } else {
       // Default view for other fractals
       params.zoom = 1;
@@ -969,7 +974,13 @@ function setupUI() {
       return true;
     }
 
-    // For Mandelbrot/Julia, sample points to check for variation
+    // For Burning Ship and Buffalo, use similar validation to Mandelbrot
+    // (they're escape-time fractals with similar characteristics)
+    if (fractalType === 'burning-ship' || fractalType === 'buffalo') {
+      fractalType = 'mandelbrot'; // Use same validation logic
+    }
+
+    // For Mandelbrot/Julia/Burning Ship/Buffalo, sample points to check for variation
     const samplePoints = 9; // 3x3 grid
     const iterations = params.iterations;
     // Cache canvas dimensions
@@ -1158,6 +1169,70 @@ function setupUI() {
         };
       }
 
+      case 'burning-ship': {
+        // Interesting Burning Ship locations (curated list of known interesting areas)
+        const interestingLocations = [
+          { x: -0.5, y: -0.6, zoom: 1.2 }, // Main ship view
+          { x: -1.75, y: -0.03, zoom: 100 }, // Bow detail
+          { x: -1.62, y: 0.0, zoom: 250 }, // Right antenna
+          { x: -1.755, y: -0.028, zoom: 500 }, // Deep bow zoom
+          { x: -1.7, y: 0.0, zoom: 80 }, // Side structures
+          { x: -0.4, y: -0.6, zoom: 150 }, // Hull detail
+          { x: -1.8, y: -0.0085, zoom: 300 }, // Fine bow structures
+          { x: -1.65, y: 0.0, zoom: 50 }, // Middle antenna
+          { x: -0.9, y: -0.3, zoom: 200 }, // Central structures
+          { x: -1.72, y: -0.025, zoom: 400 }, // Intricate bow patterns
+        ];
+
+        for (let attempt = 0; attempt < 10; attempt++) {
+          const location =
+            interestingLocations[Math.floor(Math.random() * interestingLocations.length)];
+          const zoom = location.zoom * (0.8 + Math.random() * 0.4);
+          const offset = { x: location.x, y: location.y };
+
+          if (isValidInterestingView(offset, zoom, 'burning-ship')) {
+            return { offset, zoom };
+          }
+        }
+
+        return {
+          offset: { x: -0.5, y: -0.6 },
+          zoom: 1.2,
+        };
+      }
+
+      case 'buffalo': {
+        // Buffalo is the vertical mirror of Burning Ship, so use flipped y coordinates
+        const interestingLocations = [
+          { x: -0.5, y: 0.6, zoom: 1.2 }, // Main buffalo view (flipped ship)
+          { x: -1.75, y: 0.03, zoom: 100 }, // Bow detail (flipped)
+          { x: -1.62, y: 0.0, zoom: 250 }, // Right antenna
+          { x: -1.755, y: 0.028, zoom: 500 }, // Deep bow zoom (flipped)
+          { x: -1.7, y: 0.0, zoom: 80 }, // Side structures
+          { x: -0.4, y: 0.6, zoom: 150 }, // Hull detail (flipped)
+          { x: -1.8, y: 0.0085, zoom: 300 }, // Fine bow structures (flipped)
+          { x: -1.65, y: 0.0, zoom: 50 }, // Middle antenna
+          { x: -0.9, y: 0.3, zoom: 200 }, // Central structures (flipped)
+          { x: -1.72, y: 0.025, zoom: 400 }, // Intricate bow patterns (flipped)
+        ];
+
+        for (let attempt = 0; attempt < 10; attempt++) {
+          const location =
+            interestingLocations[Math.floor(Math.random() * interestingLocations.length)];
+          const zoom = location.zoom * (0.8 + Math.random() * 0.4);
+          const offset = { x: location.x, y: location.y };
+
+          if (isValidInterestingView(offset, zoom, 'buffalo')) {
+            return { offset, zoom };
+          }
+        }
+
+        return {
+          offset: { x: -0.5, y: 0.6 },
+          zoom: 1.2,
+        };
+      }
+
       case 'sierpinski': {
         // Sierpinski triangle is centered, so random offsets around center
         const angle = Math.random() * Math.PI * 2;
@@ -1172,15 +1247,26 @@ function setupUI() {
       }
 
       case 'koch': {
-        // Koch snowflake - similar to Sierpinski
-        const angle = Math.random() * Math.PI * 2;
-        const distance = Math.random() * 0.3;
+        // Koch snowflake - zoom into interesting edge details
+        const interestingLocations = [
+          { x: 0, y: 0.5, zoom: 4 }, // Top peak
+          { x: -0.4, y: -0.25, zoom: 5 }, // Bottom left edge
+          { x: 0.4, y: -0.25, zoom: 5 }, // Bottom right edge
+          { x: 0, y: 0.35, zoom: 8 }, // Upper tip detail
+          { x: -0.3, y: -0.15, zoom: 10 }, // Left side detail
+          { x: 0.3, y: -0.15, zoom: 10 }, // Right side detail
+          { x: 0, y: 0, zoom: 2 }, // Center overview
+          { x: -0.2, y: 0.3, zoom: 12 }, // Upper left detail
+          { x: 0.2, y: 0.3, zoom: 12 }, // Upper right detail
+          { x: 0, y: -0.2, zoom: 15 }, // Bottom center detail
+        ];
+
+        const location =
+          interestingLocations[Math.floor(Math.random() * interestingLocations.length)];
+        const zoom = location.zoom * (0.8 + Math.random() * 0.4);
         return {
-          offset: {
-            x: Math.cos(angle) * distance,
-            y: Math.sin(angle) * distance,
-          },
-          zoom: 1 + Math.random() * 2, // Zoom between 1x and 3x
+          offset: { x: location.x, y: location.y },
+          zoom: zoom,
         };
       }
 
