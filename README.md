@@ -20,6 +20,13 @@ A web-based fractal generator using regl and WebGL. This project demonstrates in
 - Screenshot capture
 - FPS monitoring
 
+## Requirements
+
+- Node.js v24.x LTS or higher
+- npm v10.x or higher
+
+If you use [nvm](https://github.com/nvm-sh/nvm), run `nvm use` to automatically switch to the correct Node.js version.
+
 ## Installation
 
 1. Install dependencies:

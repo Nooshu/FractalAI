@@ -39,9 +39,24 @@ By participating in this project, you agree to maintain a respectful and inclusi
 
 ### Prerequisites
 
-- Node.js (v14 or higher)
-- npm or yarn
+- Node.js v24.x LTS or higher (see `.nvmrc` for exact version)
+- npm v10.x or higher
 - A modern web browser with WebGL support
+
+If you use [nvm](https://github.com/nvm-sh/nvm), simply run:
+
+```bash
+nvm use
+```
+
+### Editor Configuration
+
+This project includes an `.editorconfig` file to maintain consistent coding styles across different editors and IDEs. Most modern editors support EditorConfig either natively or via plugins:
+
+- **VS Code**: Install the [EditorConfig extension](https://marketplace.visualstudio.com/items?itemName=EditorConfig.EditorConfig)
+- **IntelliJ/WebStorm**: Built-in support
+- **Sublime Text**: Install the [EditorConfig package](https://github.com/sindresorhus/editorconfig-sublime)
+- **Vim**: Install the [editorconfig-vim plugin](https://github.com/editorconfig/editorconfig-vim)
 
 ### Tech Stack
 
