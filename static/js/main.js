@@ -1001,7 +1001,7 @@ function setupUI() {
   // Samples points and checks for variation in iteration counts
   function isValidInterestingView(offset, zoom, fractalType) {
     // For geometric fractals and chaotic maps, they're generally always interesting
-    if (fractalType === 'sierpinski' || fractalType === 'sierpinski-arrowhead' || fractalType === 'sierpinski-carpet' || fractalType === 'sierpinski-pentagon' || fractalType === 'sierpinski-hexagon' || fractalType === 'sierpinski-gasket' || fractalType === 'koch' || fractalType === 'quadratic-koch' || fractalType === 'minkowski-sausage' || fractalType === 'cesaro' || fractalType === 'vicsek' || fractalType === 'popcorn' || fractalType === 'rose' || fractalType === 'mutant-mandelbrot' || fractalType === 'cantor' || fractalType === 'fat-cantor' || fractalType === 'smith-volterra-cantor' || fractalType === 'random-cantor') {
+    if (fractalType === 'sierpinski' || fractalType === 'sierpinski-arrowhead' || fractalType === 'sierpinski-carpet' || fractalType === 'sierpinski-pentagon' || fractalType === 'sierpinski-hexagon' || fractalType === 'sierpinski-gasket' || fractalType === 'koch' || fractalType === 'quadratic-koch' || fractalType === 'minkowski-sausage' || fractalType === 'cesaro' || fractalType === 'vicsek' || fractalType === 'cross' || fractalType === 'popcorn' || fractalType === 'rose' || fractalType === 'mutant-mandelbrot' || fractalType === 'cantor' || fractalType === 'fat-cantor' || fractalType === 'smith-volterra-cantor' || fractalType === 'random-cantor') {
       return true;
     }
 
@@ -1592,6 +1592,30 @@ function setupUI() {
           { x: -0.22, y: 0.22, zoom: 6 }, // Edge of center
           { x: 0.11, y: 0.11, zoom: 9 }, // Deep zoom into self-similarity
           { x: 0, y: 0, zoom: 2 }, // Medium zoom center
+        ];
+
+        const location =
+          interestingLocations[Math.floor(Math.random() * interestingLocations.length)];
+        const zoom = location.zoom * (0.8 + Math.random() * 0.4);
+        return {
+          offset: { x: location.x, y: location.y },
+          zoom: zoom,
+        };
+      }
+
+      case 'cross': {
+        // Cross fractal (T-square) - zoom into removed quadrants
+        const interestingLocations = [
+          { x: 0, y: 0, zoom: 1 }, // Full overview
+          { x: 0.25, y: 0.25, zoom: 2 }, // Top-right missing corner
+          { x: 0.5, y: 0.5, zoom: 3 }, // Deep into top-right region
+          { x: 0.375, y: 0.375, zoom: 4 }, // Edge of removed region
+          { x: -0.25, y: -0.25, zoom: 3 }, // Bottom-left quadrant
+          { x: 0.25, y: -0.25, zoom: 3 }, // Bottom-right quadrant
+          { x: -0.25, y: 0.25, zoom: 3 }, // Top-left quadrant
+          { x: 0.5, y: 0.25, zoom: 5 }, // Right edge detail
+          { x: 0.25, y: 0.5, zoom: 5 }, // Top edge detail
+          { x: 0, y: 0, zoom: 2.5 }, // Medium zoom center
         ];
 
         const location =
