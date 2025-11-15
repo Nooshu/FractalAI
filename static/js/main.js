@@ -76,7 +76,7 @@ function generateCacheKey() {
   const colorScheme = params.colorScheme;
   const xScale = Math.round(params.xScale * 100) / 100;
   const yScale = Math.round(params.yScale * 100) / 100;
-  const isJuliaType = currentFractalType === 'julia' || currentFractalType === 'julia-snakes' || currentFractalType === 'multibrot-julia' || currentFractalType === 'burning-ship-julia';
+  const isJuliaType = currentFractalType === 'julia' || currentFractalType === 'julia-snakes' || currentFractalType === 'multibrot-julia' || currentFractalType === 'burning-ship-julia' || currentFractalType === 'tricorn-julia';
   const juliaCX = isJuliaType ? Math.round(params.juliaC.x * 10000) / 10000 : 0;
   const juliaCY = isJuliaType ? Math.round(params.juliaC.y * 10000) / 10000 : 0;
   // Use display dimensions (not render dimensions affected by pixel ratio) for cache key
@@ -662,7 +662,7 @@ function setupUI() {
   });
 
   // Initialize Julia controls state based on current fractal type
-  const isJulia = currentFractalType === 'julia' || currentFractalType === 'julia-snakes' || currentFractalType === 'multibrot-julia' || currentFractalType === 'burning-ship-julia';
+  const isJulia = currentFractalType === 'julia' || currentFractalType === 'julia-snakes' || currentFractalType === 'multibrot-julia' || currentFractalType === 'burning-ship-julia' || currentFractalType === 'tricorn-julia';
   juliaCReal.disabled = !isJulia;
   juliaCImag.disabled = !isJulia;
   if (isJulia) {
@@ -764,7 +764,7 @@ function setupUI() {
     }
 
     // Enable/disable Julia controls based on fractal type
-    const isJulia = currentFractalType === 'julia' || currentFractalType === 'julia-snakes' || currentFractalType === 'multibrot-julia' || currentFractalType === 'burning-ship-julia';
+    const isJulia = currentFractalType === 'julia' || currentFractalType === 'julia-snakes' || currentFractalType === 'multibrot-julia' || currentFractalType === 'burning-ship-julia' || currentFractalType === 'tricorn-julia';
     juliaCReal.disabled = !isJulia;
     juliaCImag.disabled = !isJulia;
     if (isJulia) {
@@ -864,6 +864,16 @@ function setupUI() {
       params.zoom = 1;
       params.offset.x = 0;
       params.offset.y = 0;
+      // Set iterations to 25
+      params.iterations = 25;
+      // Update iterations slider and value
+      if (iterationsSlider) iterationsSlider.value = 25;
+      if (iterationsValue) iterationsValue.textContent = '25';
+      // Update fullscreen iterations number
+      const fullscreenIterationsNumberEl = document.getElementById('fullscreen-iterations-number');
+      if (fullscreenIterationsNumberEl) {
+        fullscreenIterationsNumberEl.textContent = '25';
+      }
     } else if (currentFractalType === 'burning-ship-julia') {
       // Burning Ship Julia Set - default centered view
       params.zoom = 1;
@@ -896,6 +906,29 @@ function setupUI() {
       const fullscreenIterationsNumberEl = document.getElementById('fullscreen-iterations-number');
       if (fullscreenIterationsNumberEl) {
         fullscreenIterationsNumberEl.textContent = '40';
+      }
+    } else if (currentFractalType === 'tricorn-julia') {
+      // Tricorn Julia Set - default centered view
+      params.zoom = 1;
+      params.offset.x = 0;
+      params.offset.y = 0;
+      // Use interesting C values for Tricorn Julia
+      params.juliaC.x = -0.5;
+      params.juliaC.y = 0.5;
+      // Update Julia C sliders
+      if (juliaCReal) juliaCReal.value = -0.5;
+      if (juliaCImag) juliaCImag.value = 0.5;
+      if (juliaCRealValue) juliaCRealValue.textContent = '-0.5000';
+      if (juliaCImagValue) juliaCImagValue.textContent = '0.5000';
+      // Set iterations to 25
+      params.iterations = 25;
+      // Update iterations slider and value
+      if (iterationsSlider) iterationsSlider.value = 25;
+      if (iterationsValue) iterationsValue.textContent = '25';
+      // Update fullscreen iterations number
+      const fullscreenIterationsNumberEl = document.getElementById('fullscreen-iterations-number');
+      if (fullscreenIterationsNumberEl) {
+        fullscreenIterationsNumberEl.textContent = '25';
       }
     } else {
       // Default view for other fractals
