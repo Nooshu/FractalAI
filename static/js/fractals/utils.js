@@ -8,7 +8,7 @@ const PALETTE_SIZE = 512; // Number of colors in the palette texture
  * @param {number} schemeIndex - Index of the color scheme
  * @returns {Object} RGB color {r, g, b} in range [0, 1]
  */
-function computeColorForScheme(t, schemeIndex) {
+export function computeColorForScheme(t, schemeIndex) {
   // Clamp t to [0, 1]
   t = Math.max(0, Math.min(1, t));
 
