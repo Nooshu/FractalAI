@@ -852,6 +852,34 @@ function setupUI() {
       if (fullscreenIterationsNumberEl) {
         fullscreenIterationsNumberEl.textContent = '50';
       }
+    } else if (currentFractalType === 'nova') {
+      // Nova Fractal - default centered view showing the three roots
+      // Uses relaxed Newton's method with alpha parameter controlled by xScale
+      params.zoom = 1;
+      params.offset.x = 0;
+      params.offset.y = 0;
+      params.iterations = 50;
+      params.xScale = 0.5; // alpha = 0.55 (good default for interesting patterns)
+      if (iterationsSlider) iterationsSlider.value = 50;
+      if (iterationsValue) iterationsValue.textContent = '50';
+      if (xScaleSlider) xScaleSlider.value = 0.5;
+      if (xScaleValue) xScaleValue.textContent = '0.5';
+      const fullscreenIterationsNumberEl = document.getElementById('fullscreen-iterations-number');
+      if (fullscreenIterationsNumberEl) {
+        fullscreenIterationsNumberEl.textContent = '50';
+      }
+    } else if (currentFractalType === 'halley') {
+      // Halley Fractal - default centered view showing the three roots
+      params.zoom = 1;
+      params.offset.x = 0;
+      params.offset.y = 0;
+      params.iterations = 50;
+      if (iterationsSlider) iterationsSlider.value = 50;
+      if (iterationsValue) iterationsValue.textContent = '50';
+      const fullscreenIterationsNumberEl = document.getElementById('fullscreen-iterations-number');
+      if (fullscreenIterationsNumberEl) {
+        fullscreenIterationsNumberEl.textContent = '50';
+      }
     } else if (currentFractalType === 'hilbert-curve') {
       // Hilbert Curve - default centered view
       params.zoom = 1;
