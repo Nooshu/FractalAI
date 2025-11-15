@@ -669,6 +669,7 @@ body {
   transition: all 0.3s ease;
   pointer-events: auto;
   box-shadow: 0 4px 12px rgb(0 0 0 / 40%);
+  position: relative;
 }
 
 .fullscreen-control-btn:hover {
@@ -682,10 +683,62 @@ body {
   transform: scale(0.95);
 }
 
+.fullscreen-random-number {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 18px;
+  height: 18px;
+  background: var(--accent-blue);
+  color: #fff;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 0 4px;
+  box-shadow: 0 2px 6px rgb(0 0 0 / 50%);
+  border: 2px solid rgb(0 0 0 / 30%);
+  line-height: 1;
+}
+
+.fullscreen-color-palette {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 16px;
+  height: 16px;
+  border-radius: 2px;
+  border: 2px solid rgb(0 0 0 / 50%);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 40%);
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
 .fullscreen-iterations-controls {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  align-items: center;
+}
+
+.fullscreen-iterations-number {
+  min-width: 32px;
+  height: 24px;
+  background: rgb(0 0 0 / 70%);
+  backdrop-filter: blur(10px);
+  border: 2px solid rgb(255 255 255 / 20%);
+  color: #fff;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 0 8px;
+  box-shadow: 0 2px 6px rgb(0 0 0 / 50%);
+  line-height: 1;
 }
 
 /* Fullscreen Mode */

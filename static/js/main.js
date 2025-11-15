@@ -693,6 +693,135 @@ function setupUI() {
   let currentColorSchemeIndex = colorSchemes.indexOf(params.colorScheme);
   if (currentColorSchemeIndex === -1) currentColorSchemeIndex = 0;
 
+  // Function to render a mini palette preview for the current color scheme
+  const updateColorPalettePreview = () => {
+    const paletteCanvas = document.getElementById('fullscreen-color-palette');
+    if (!paletteCanvas) return;
+
+    const ctx = paletteCanvas.getContext('2d');
+    if (!ctx) return;
+
+    const width = paletteCanvas.width;
+    const height = paletteCanvas.height;
+    const numColors = 8; // Number of color swatches to show
+
+    // Clear canvas
+    ctx.clearRect(0, 0, width, height);
+
+    // Import the color computation function logic
+    const schemeIndex = colorSchemes.indexOf(params.colorScheme);
+    if (schemeIndex === -1) return;
+
+    // Draw color swatches
+    const swatchWidth = width / numColors;
+    for (let i = 0; i < numColors; i++) {
+      const t = i / (numColors - 1);
+      let r, g, b;
+
+      // Compute color based on scheme (matching utils.js logic)
+      switch (schemeIndex) {
+        case 1: // fire
+          r = t; g = t * 0.5; b = 0;
+          break;
+        case 2: // ocean
+          r = 0; g = t * 0.5; b = t;
+          break;
+        case 3: // rainbow
+          {
+            const hue = ((t * 360) % 360) / 360;
+            r = 0.5 + 0.5 * Math.cos(hue * 6.28 + 0.0);
+            g = 0.5 + 0.5 * Math.cos(hue * 6.28 + 2.09);
+            b = 0.5 + 0.5 * Math.cos(hue * 6.28 + 4.18);
+          }
+          break;
+        case 12: // rainbow2 - pastel
+          {
+            const hue = ((t * 360) % 360) / 360;
+            const sat = 0.6;
+            const light = 0.7;
+            r = light + sat * Math.cos(hue * 6.28 + 0.0);
+            g = light + sat * Math.cos(hue * 6.28 + 2.09);
+            b = light + sat * Math.cos(hue * 6.28 + 4.18);
+          }
+          break;
+        case 13: // rainbow3 - dark
+          {
+            const hue = ((t * 360) % 360) / 360;
+            const sat = 1.0;
+            const light = 0.3;
+            r = light + sat * Math.cos(hue * 6.28 + 0.0);
+            g = light + sat * Math.cos(hue * 6.28 + 2.09);
+            b = light + sat * Math.cos(hue * 6.28 + 4.18);
+          }
+          break;
+        case 14: // rainbow4 - vibrant
+          {
+            const hue = ((t * 360) % 360) / 360;
+            const sat = 1.2;
+            const light = 0.4;
+            r = Math.max(0, Math.min(1, light + sat * Math.cos(hue * 6.28 + 0.0)));
+            g = Math.max(0, Math.min(1, light + sat * Math.cos(hue * 6.28 + 2.09)));
+            b = Math.max(0, Math.min(1, light + sat * Math.cos(hue * 6.28 + 4.18)));
+          }
+          break;
+        case 15: // rainbow5 - double
+          {
+            const hue = ((t * 720) % 360) / 360;
+            r = 0.5 + 0.5 * Math.cos(hue * 6.28 + 0.0);
+            g = 0.5 + 0.5 * Math.cos(hue * 6.28 + 2.09);
+            b = 0.5 + 0.5 * Math.cos(hue * 6.28 + 4.18);
+          }
+          break;
+        case 16: // rainbow6 - shifted
+          {
+            const hue = ((t * 360 + 60) % 360) / 360;
+            r = 0.5 + 0.5 * Math.cos(hue * 6.28 + 0.0);
+            g = 0.5 + 0.5 * Math.cos(hue * 6.28 + 2.09);
+            b = 0.5 + 0.5 * Math.cos(hue * 6.28 + 4.18);
+          }
+          break;
+        case 4: // monochrome
+          r = t; g = t; b = t;
+          break;
+        case 5: // forest
+          r = t * 0.3; g = t * 0.8; b = t * 0.4;
+          break;
+        case 6: // sunset
+          r = t; g = t * 0.4; b = t * 0.2;
+          break;
+        case 7: // purple
+          r = t * 0.6; g = t * 0.3; b = t;
+          break;
+        case 8: // cyan
+          r = 0; g = t; b = t;
+          break;
+        case 9: // gold
+          r = t; g = t * 0.8; b = t * 0.2;
+          break;
+        case 10: // ice
+          r = t * 0.7; g = t * 0.9; b = t;
+          break;
+        case 11: // neon
+          {
+            const pulse = Math.sin(t * Math.PI) * 0.5 + 0.5;
+            r = t * 0.2 + pulse * 0.8;
+            g = t * 0.8 + pulse * 0.2;
+            b = t;
+          }
+          break;
+        case 17: // white
+          r = 1.0; g = 1.0; b = 1.0;
+          break;
+        default: // classic (scheme == 0)
+          r = t * 0.5; g = t; b = Math.min(t * 1.5, 1);
+      }
+
+      // Draw the color swatch
+      ctx.fillStyle = `rgb(${Math.floor(r * 255)}, ${Math.floor(g * 255)}, ${Math.floor(b * 255)})`;
+      ctx.fillRect(i * swatchWidth, 0, swatchWidth, height);
+    }
+  };
+
   fractalTypeSelect.addEventListener('change', async (e) => {
     currentFractalType = e.target.value;
 
@@ -836,6 +965,11 @@ function setupUI() {
   iterationsSlider.addEventListener('input', (e) => {
     params.iterations = parseInt(e.target.value);
     iterationsValue.textContent = params.iterations;
+    // Update fullscreen iterations number
+    const fullscreenIterationsNumberEl = document.getElementById('fullscreen-iterations-number');
+    if (fullscreenIterationsNumberEl) {
+      fullscreenIterationsNumberEl.textContent = params.iterations;
+    }
     triggerAutoRender();
   });
 
@@ -846,6 +980,8 @@ function setupUI() {
     if (newIndex !== -1) {
       currentColorSchemeIndex = newIndex;
     }
+    // Update palette preview when color scheme changes from main UI
+    updateColorPalettePreview();
     triggerAutoRender();
   });
 
@@ -2164,6 +2300,10 @@ function setupUI() {
     }
   }
 
+  // Track current interesting point index
+  let currentInterestingPointIndex = 1;
+  const fullscreenRandomNumberEl = document.getElementById('fullscreen-random-number');
+
   // Random view button
   fullscreenRandomBtn.addEventListener('click', () => {
     // Get random interesting view
@@ -2173,6 +2313,12 @@ function setupUI() {
     params.offset.x = randomView.offset.x;
     params.offset.y = randomView.offset.y;
     params.zoom = randomView.zoom;
+
+    // Increment and update the interesting point number
+    currentInterestingPointIndex++;
+    if (fullscreenRandomNumberEl) {
+      fullscreenRandomNumberEl.textContent = currentInterestingPointIndex;
+    }
 
     // Clear frame cache since we're changing to a new view
     clearFrameCache();
@@ -2197,6 +2343,7 @@ function setupUI() {
   // Iterations controls - cache DOM references
   const fullscreenIterationsUpBtn = document.getElementById('fullscreen-iterations-up');
   const fullscreenIterationsDownBtn = document.getElementById('fullscreen-iterations-down');
+  const fullscreenIterationsNumberEl = document.getElementById('fullscreen-iterations-number');
   const iterationsSliderEl = document.getElementById('iterations');
   const iterationsValueEl = document.getElementById('iterations-value');
 
@@ -2211,6 +2358,10 @@ function setupUI() {
     }
     if (iterationsValueEl) {
       iterationsValueEl.textContent = params.iterations;
+    }
+    // Update fullscreen iterations number
+    if (fullscreenIterationsNumberEl) {
+      fullscreenIterationsNumberEl.textContent = params.iterations;
     }
 
     // Clear cached display since iterations changed
@@ -2238,6 +2389,9 @@ function setupUI() {
       colorSchemeSelect.value = params.colorScheme;
     }
 
+    // Update the palette preview
+    updateColorPalettePreview();
+
     // Clear cached display if we're showing one (since color scheme changed)
     if (isDisplayingCached) {
       isDisplayingCached = false;
@@ -2263,6 +2417,17 @@ function setupUI() {
       }
       // Add fullscreen class to body
       document.body.classList.add('is-fullscreen');
+      // Reset interesting point counter when entering fullscreen
+      currentInterestingPointIndex = 1;
+      if (fullscreenRandomNumberEl) {
+        fullscreenRandomNumberEl.textContent = '1';
+      }
+      // Update color palette preview when entering fullscreen
+      updateColorPalettePreview();
+      // Update iterations number when entering fullscreen
+      if (fullscreenIterationsNumberEl) {
+        fullscreenIterationsNumberEl.textContent = params.iterations;
+      }
     } else {
       fullscreenBtn.textContent = 'View in Fullscreen';
       // Hide fullscreen controls
