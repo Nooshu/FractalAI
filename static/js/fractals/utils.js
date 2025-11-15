@@ -100,8 +100,31 @@ export function computeColorForScheme(t, schemeIndex) {
           b: t,
         };
       }
-    case 17: // white
-      return { r: 1.0, g: 1.0, b: 1.0 };
+    case 17: // cosmic (replaces white - dark space with bright stars/nebulae)
+      {
+        // Create a cosmic/galaxy theme: dark purples/blues transitioning to bright cyan/white
+        // Use t to create variation: low t = dark space, high t = bright stars
+        const darkBase = 0.05; // Very dark base
+        const brightPeak = 1.0; // Bright highlights
+        
+        // Create nebula-like colors: deep purple/blue transitioning to cyan/white
+        const phase1 = Math.min(t * 2.0, 1.0); // First half: dark to medium
+        const phase2 = Math.max(0.0, (t - 0.5) * 2.0); // Second half: medium to bright
+        
+        // Purple/blue nebula base
+        const r = darkBase + (brightPeak - darkBase) * (phase1 * 0.4 + phase2 * 0.6);
+        const g = darkBase + (brightPeak - darkBase) * (phase1 * 0.2 + phase2 * 0.8);
+        const b = darkBase + (brightPeak - darkBase) * (phase1 * 0.6 + phase2 * 1.0);
+        
+        // Add some sparkle/stars with sine waves
+        const sparkle = Math.sin(t * Math.PI * 8.0) * 0.1 + 0.9;
+        
+        return {
+          r: Math.min(1.0, r * sparkle),
+          g: Math.min(1.0, g * sparkle),
+          b: Math.min(1.0, b * sparkle),
+        };
+      }
     default: // classic (scheme == 0)
       return { r: t * 0.5, g: t, b: Math.min(t * 1.5, 1) };
   }
@@ -193,7 +216,7 @@ export function getColorSchemeIndex(scheme) {
     'rainbow4',
     'rainbow5',
     'rainbow6',
-    'white',
+    'cosmic',
   ];
   return schemes.indexOf(scheme);
 }

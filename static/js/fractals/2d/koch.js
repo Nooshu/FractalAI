@@ -197,8 +197,21 @@ export function render(regl, params, canvas) {
         } else if (scheme == 11) { // neon
             float pulse = sin(t * 3.14159) * 0.5 + 0.5;
             return vec3(t * 0.2 + pulse * 0.8, t * 0.8 + pulse * 0.2, t);
-        } else if (scheme == 17) { // white
-            return vec3(1.0, 1.0, 1.0);
+        } else if (scheme == 17) { // cosmic (replaces white - dark space with bright stars/nebulae)
+            // Create a cosmic/galaxy theme: dark purples/blues transitioning to bright cyan/white
+            float darkBase = 0.05;
+            float brightPeak = 1.0;
+            
+            float phase1 = min(t * 2.0, 1.0);
+            float phase2 = max(0.0, (t - 0.5) * 2.0);
+            
+            float r = darkBase + (brightPeak - darkBase) * (phase1 * 0.4 + phase2 * 0.6);
+            float g = darkBase + (brightPeak - darkBase) * (phase1 * 0.2 + phase2 * 0.8);
+            float b = darkBase + (brightPeak - darkBase) * (phase1 * 0.6 + phase2 * 1.0);
+            
+            float sparkle = sin(t * 3.14159 * 8.0) * 0.1 + 0.9;
+            
+            return vec3(min(1.0, r * sparkle), min(1.0, g * sparkle), min(1.0, b * sparkle));
         } else { // classic (scheme == 0)
             return vec3(t * 0.5, t, min(t * 1.5, 1.0));
         }

@@ -690,7 +690,7 @@ function setupUI() {
     'gold',
     'ice',
     'neon',
-    'white',
+    'cosmic',
   ];
   let currentColorSchemeIndex = colorSchemes.indexOf(params.colorScheme);
   if (currentColorSchemeIndex === -1) currentColorSchemeIndex = 0;
@@ -840,6 +840,18 @@ function setupUI() {
       params.zoom = 1;
       params.offset.x = 0;
       params.offset.y = 0;
+    } else if (currentFractalType === 'newton') {
+      // Newton Fractal - default centered view showing the three roots
+      params.zoom = 1;
+      params.offset.x = 0;
+      params.offset.y = 0;
+      params.iterations = 50;
+      if (iterationsSlider) iterationsSlider.value = 50;
+      if (iterationsValue) iterationsValue.textContent = '50';
+      const fullscreenIterationsNumberEl = document.getElementById('fullscreen-iterations-number');
+      if (fullscreenIterationsNumberEl) {
+        fullscreenIterationsNumberEl.textContent = '50';
+      }
     } else if (currentFractalType === 'hilbert-curve') {
       // Hilbert Curve - default centered view
       params.zoom = 1;
