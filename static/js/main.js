@@ -748,6 +748,11 @@ function setupUI() {
       params.zoom = 1.2;
       params.offset.x = -0.5;
       params.offset.y = -0.6;
+    } else if (currentFractalType === 'celtic-mandelbrot') {
+      // Celtic Mandelbrot - similar view to Burning Ship
+      params.zoom = 1.2;
+      params.offset.x = -0.5;
+      params.offset.y = -0.6;
     } else if (currentFractalType === 'buffalo') {
       // Buffalo - vertical mirror of Burning Ship (same view, flipped y-axis)
       params.zoom = 1.2;
