@@ -76,8 +76,9 @@ function generateCacheKey() {
   const colorScheme = params.colorScheme;
   const xScale = Math.round(params.xScale * 100) / 100;
   const yScale = Math.round(params.yScale * 100) / 100;
-  const juliaCX = currentFractalType === 'julia' ? Math.round(params.juliaC.x * 10000) / 10000 : 0;
-  const juliaCY = currentFractalType === 'julia' ? Math.round(params.juliaC.y * 10000) / 10000 : 0;
+  const isJuliaType = currentFractalType === 'julia' || currentFractalType === 'julia-snakes' || currentFractalType === 'multibrot-julia' || currentFractalType === 'burning-ship-julia';
+  const juliaCX = isJuliaType ? Math.round(params.juliaC.x * 10000) / 10000 : 0;
+  const juliaCY = isJuliaType ? Math.round(params.juliaC.y * 10000) / 10000 : 0;
   // Use display dimensions (not render dimensions affected by pixel ratio) for cache key
   // This ensures cache hits even when pixel ratio changes
   const container = canvas.parentElement;
@@ -661,7 +662,7 @@ function setupUI() {
   });
 
   // Initialize Julia controls state based on current fractal type
-  const isJulia = currentFractalType === 'julia' || currentFractalType === 'julia-snakes';
+  const isJulia = currentFractalType === 'julia' || currentFractalType === 'julia-snakes' || currentFractalType === 'multibrot-julia' || currentFractalType === 'burning-ship-julia';
   juliaCReal.disabled = !isJulia;
   juliaCImag.disabled = !isJulia;
   if (isJulia) {
@@ -763,7 +764,7 @@ function setupUI() {
     }
 
     // Enable/disable Julia controls based on fractal type
-    const isJulia = currentFractalType === 'julia' || currentFractalType === 'julia-snakes';
+    const isJulia = currentFractalType === 'julia' || currentFractalType === 'julia-snakes' || currentFractalType === 'multibrot-julia' || currentFractalType === 'burning-ship-julia';
     juliaCReal.disabled = !isJulia;
     juliaCImag.disabled = !isJulia;
     if (isJulia) {
@@ -857,6 +858,45 @@ function setupUI() {
       if (xScaleValue) xScaleValue.textContent = '0.25';
       if (yScaleSlider) yScaleSlider.value = 1.0;
       if (yScaleValue) yScaleValue.textContent = '1.0';
+    } else if (currentFractalType === 'multibrot-julia') {
+      // Multibrot Julia Set - default centered view with order 4 (cubic)
+      // Note: xScale controls the multibrot order, not coordinate scaling
+      params.zoom = 1;
+      params.offset.x = 0;
+      params.offset.y = 0;
+    } else if (currentFractalType === 'burning-ship-julia') {
+      // Burning Ship Julia Set - default centered view
+      params.zoom = 1;
+      params.offset.x = 0;
+      params.offset.y = 0;
+      // Use interesting C values for Burning Ship Julia
+      params.juliaC.x = -0.5;
+      params.juliaC.y = -0.5;
+      // Update Julia C sliders
+      if (juliaCReal) juliaCReal.value = -0.5;
+      if (juliaCImag) juliaCImag.value = -0.5;
+      if (juliaCRealValue) juliaCRealValue.textContent = '-0.5000';
+      if (juliaCImagValue) juliaCImagValue.textContent = '-0.5000';
+      // Set monochrome color scheme and 40 iterations
+      params.colorScheme = 'monochrome';
+      params.iterations = 40;
+      // Update color scheme selector
+      if (colorSchemeSelect) colorSchemeSelect.value = 'monochrome';
+      // Update color scheme index for fullscreen cycling
+      const newIndex = colorSchemes.indexOf('monochrome');
+      if (newIndex !== -1) {
+        currentColorSchemeIndex = newIndex;
+      }
+      // Update palette preview
+      updateColorPalettePreview();
+      // Update iterations slider and value
+      if (iterationsSlider) iterationsSlider.value = 40;
+      if (iterationsValue) iterationsValue.textContent = '40';
+      // Update fullscreen iterations number
+      const fullscreenIterationsNumberEl = document.getElementById('fullscreen-iterations-number');
+      if (fullscreenIterationsNumberEl) {
+        fullscreenIterationsNumberEl.textContent = '40';
+      }
     } else {
       // Default view for other fractals
       params.zoom = 1;
