@@ -76,7 +76,7 @@ function generateCacheKey() {
   const colorScheme = params.colorScheme;
   const xScale = Math.round(params.xScale * 100) / 100;
   const yScale = Math.round(params.yScale * 100) / 100;
-  const isJuliaType = currentFractalType === 'julia' || currentFractalType === 'julia-snakes' || currentFractalType === 'multibrot-julia' || currentFractalType === 'burning-ship-julia' || currentFractalType === 'tricorn-julia' || currentFractalType === 'phoenix-julia' || currentFractalType === 'lambda-julia';
+  const isJuliaType = currentFractalType === 'julia' || currentFractalType === 'julia-snakes' || currentFractalType === 'multibrot-julia' || currentFractalType === 'burning-ship-julia' || currentFractalType === 'tricorn-julia' || currentFractalType === 'phoenix-julia' || currentFractalType === 'lambda-julia' || currentFractalType === 'hybrid-julia';
   const juliaCX = isJuliaType ? Math.round(params.juliaC.x * 10000) / 10000 : 0;
   const juliaCY = isJuliaType ? Math.round(params.juliaC.y * 10000) / 10000 : 0;
   // Use display dimensions (not render dimensions affected by pixel ratio) for cache key
@@ -662,7 +662,7 @@ function setupUI() {
   });
 
   // Initialize Julia controls state based on current fractal type
-  const isJulia = currentFractalType === 'julia' || currentFractalType === 'julia-snakes' || currentFractalType === 'multibrot-julia' || currentFractalType === 'burning-ship-julia' || currentFractalType === 'tricorn-julia' || currentFractalType === 'phoenix-julia' || currentFractalType === 'lambda-julia';
+  const isJulia = currentFractalType === 'julia' || currentFractalType === 'julia-snakes' || currentFractalType === 'multibrot-julia' || currentFractalType === 'burning-ship-julia' || currentFractalType === 'tricorn-julia' || currentFractalType === 'phoenix-julia' || currentFractalType === 'lambda-julia' || currentFractalType === 'hybrid-julia';
   juliaCReal.disabled = !isJulia;
   juliaCImag.disabled = !isJulia;
   if (isJulia) {
@@ -764,7 +764,7 @@ function setupUI() {
     }
 
     // Enable/disable Julia controls based on fractal type
-    const isJulia = currentFractalType === 'julia' || currentFractalType === 'julia-snakes' || currentFractalType === 'multibrot-julia' || currentFractalType === 'burning-ship-julia' || currentFractalType === 'tricorn-julia' || currentFractalType === 'phoenix-julia' || currentFractalType === 'lambda-julia';
+    const isJulia = currentFractalType === 'julia' || currentFractalType === 'julia-snakes' || currentFractalType === 'multibrot-julia' || currentFractalType === 'burning-ship-julia' || currentFractalType === 'tricorn-julia' || currentFractalType === 'phoenix-julia' || currentFractalType === 'lambda-julia' || currentFractalType === 'hybrid-julia';
     juliaCReal.disabled = !isJulia;
     juliaCImag.disabled = !isJulia;
     if (isJulia) {
@@ -987,6 +987,39 @@ function setupUI() {
       const fullscreenIterationsNumberEl = document.getElementById('fullscreen-iterations-number');
       if (fullscreenIterationsNumberEl) {
         fullscreenIterationsNumberEl.textContent = '20';
+      }
+    } else if (currentFractalType === 'hybrid-julia') {
+      // Hybrid Julia Set - default centered view
+      params.zoom = 1;
+      params.offset.x = 0;
+      params.offset.y = 0;
+      // Use interesting c values for Hybrid Julia
+      params.juliaC.x = -0.4;
+      params.juliaC.y = 0.6;
+      // Update Julia C sliders
+      if (juliaCReal) juliaCReal.value = -0.4;
+      if (juliaCImag) juliaCImag.value = 0.6;
+      if (juliaCRealValue) juliaCRealValue.textContent = '-0.4000';
+      if (juliaCImagValue) juliaCImagValue.textContent = '0.6000';
+      // Set monochrome color scheme and 100 iterations (hybrid sets need more iterations)
+      params.colorScheme = 'monochrome';
+      params.iterations = 100;
+      // Update color scheme selector
+      if (colorSchemeSelect) colorSchemeSelect.value = 'monochrome';
+      // Update color scheme index for fullscreen cycling
+      const newIndex = colorSchemes.indexOf('monochrome');
+      if (newIndex !== -1) {
+        currentColorSchemeIndex = newIndex;
+      }
+      // Update palette preview
+      updateColorPalettePreview();
+      // Update iterations slider and value
+      if (iterationsSlider) iterationsSlider.value = 100;
+      if (iterationsValue) iterationsValue.textContent = '100';
+      // Update fullscreen iterations number
+      const fullscreenIterationsNumberEl = document.getElementById('fullscreen-iterations-number');
+      if (fullscreenIterationsNumberEl) {
+        fullscreenIterationsNumberEl.textContent = '100';
       }
     } else {
       // Default view for other fractals
