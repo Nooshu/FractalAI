@@ -214,7 +214,7 @@ body {
 /* Styled Select */
 .styled-select {
   width: 100%;
-  padding: 10px 12px;
+  padding: 10px 36px 10px 20px;
   background: var(--bg-control);
   border: 1px solid var(--border-color);
   border-radius: 8px;
@@ -223,6 +223,15 @@ body {
   cursor: pointer;
   outline: none;
   transition: all 0.2s ease;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image:
+    linear-gradient(to right, var(--text-secondary) 0px, var(--text-secondary) 1px, transparent 1px),
+    url("data:image/svg+xml,%3Csvg width='12' height='12' viewBox='0 0 12 12' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M2 4L6 8L10 4' stroke='%23ffffff' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat, no-repeat;
+  background-position: right 37px center, right 14px center;
+  background-size: 1px 60%, 12px;
 }
 
 .styled-select:hover {
