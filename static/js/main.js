@@ -76,7 +76,7 @@ function generateCacheKey() {
   const colorScheme = params.colorScheme;
   const xScale = Math.round(params.xScale * 100) / 100;
   const yScale = Math.round(params.yScale * 100) / 100;
-  const isJuliaType = currentFractalType === 'julia' || currentFractalType === 'julia-snakes' || currentFractalType === 'multibrot-julia' || currentFractalType === 'burning-ship-julia' || currentFractalType === 'tricorn-julia';
+  const isJuliaType = currentFractalType === 'julia' || currentFractalType === 'julia-snakes' || currentFractalType === 'multibrot-julia' || currentFractalType === 'burning-ship-julia' || currentFractalType === 'tricorn-julia' || currentFractalType === 'phoenix-julia';
   const juliaCX = isJuliaType ? Math.round(params.juliaC.x * 10000) / 10000 : 0;
   const juliaCY = isJuliaType ? Math.round(params.juliaC.y * 10000) / 10000 : 0;
   // Use display dimensions (not render dimensions affected by pixel ratio) for cache key
@@ -662,7 +662,7 @@ function setupUI() {
   });
 
   // Initialize Julia controls state based on current fractal type
-  const isJulia = currentFractalType === 'julia' || currentFractalType === 'julia-snakes' || currentFractalType === 'multibrot-julia' || currentFractalType === 'burning-ship-julia' || currentFractalType === 'tricorn-julia';
+  const isJulia = currentFractalType === 'julia' || currentFractalType === 'julia-snakes' || currentFractalType === 'multibrot-julia' || currentFractalType === 'burning-ship-julia' || currentFractalType === 'tricorn-julia' || currentFractalType === 'phoenix-julia';
   juliaCReal.disabled = !isJulia;
   juliaCImag.disabled = !isJulia;
   if (isJulia) {
@@ -764,7 +764,7 @@ function setupUI() {
     }
 
     // Enable/disable Julia controls based on fractal type
-    const isJulia = currentFractalType === 'julia' || currentFractalType === 'julia-snakes' || currentFractalType === 'multibrot-julia' || currentFractalType === 'burning-ship-julia' || currentFractalType === 'tricorn-julia';
+    const isJulia = currentFractalType === 'julia' || currentFractalType === 'julia-snakes' || currentFractalType === 'multibrot-julia' || currentFractalType === 'burning-ship-julia' || currentFractalType === 'tricorn-julia' || currentFractalType === 'phoenix-julia';
     juliaCReal.disabled = !isJulia;
     juliaCImag.disabled = !isJulia;
     if (isJulia) {
@@ -930,6 +930,31 @@ function setupUI() {
       if (fullscreenIterationsNumberEl) {
         fullscreenIterationsNumberEl.textContent = '25';
       }
+    } else if (currentFractalType === 'phoenix-julia') {
+      // Phoenix Julia Set - default centered view
+      params.zoom = 1;
+      params.offset.x = 0;
+      params.offset.y = 0;
+      // Use interesting C values for Phoenix Julia
+      params.juliaC.x = -0.5;
+      params.juliaC.y = 0.0;
+      // Update Julia C sliders
+      if (juliaCReal) juliaCReal.value = -0.5;
+      if (juliaCImag) juliaCImag.value = 0.0;
+      if (juliaCRealValue) juliaCRealValue.textContent = '-0.5000';
+      if (juliaCImagValue) juliaCImagValue.textContent = '0.0000';
+      // Phoenix parameter defaults (xScale and yScale control the Phoenix parameter p)
+      // p = ((xScale - 0.5) * 2.0, (yScale - 0.5) * 2.0)
+      // Set to non-zero values to show Phoenix effects (p = 0.2, 0.0)
+      // xScale = 0.6 gives p.real = (0.6 - 0.5) * 2 = 0.2
+      // yScale = 0.5 gives p.imag = (0.5 - 0.5) * 2 = 0.0
+      params.xScale = 0.6; // p real = 0.2
+      params.yScale = 0.5; // p imag = 0.0
+      // Update scale sliders
+      if (xScaleSlider) xScaleSlider.value = 0.6;
+      if (xScaleValue) xScaleValue.textContent = '0.6';
+      if (yScaleSlider) yScaleSlider.value = 0.5;
+      if (yScaleValue) yScaleValue.textContent = '0.5';
     } else {
       // Default view for other fractals
       params.zoom = 1;
