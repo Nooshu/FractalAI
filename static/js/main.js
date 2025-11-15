@@ -76,7 +76,7 @@ function generateCacheKey() {
   const colorScheme = params.colorScheme;
   const xScale = Math.round(params.xScale * 100) / 100;
   const yScale = Math.round(params.yScale * 100) / 100;
-  const isJuliaType = currentFractalType === 'julia' || currentFractalType === 'julia-snakes' || currentFractalType === 'multibrot-julia' || currentFractalType === 'burning-ship-julia' || currentFractalType === 'tricorn-julia' || currentFractalType === 'phoenix-julia';
+  const isJuliaType = currentFractalType === 'julia' || currentFractalType === 'julia-snakes' || currentFractalType === 'multibrot-julia' || currentFractalType === 'burning-ship-julia' || currentFractalType === 'tricorn-julia' || currentFractalType === 'phoenix-julia' || currentFractalType === 'lambda-julia';
   const juliaCX = isJuliaType ? Math.round(params.juliaC.x * 10000) / 10000 : 0;
   const juliaCY = isJuliaType ? Math.round(params.juliaC.y * 10000) / 10000 : 0;
   // Use display dimensions (not render dimensions affected by pixel ratio) for cache key
@@ -662,7 +662,7 @@ function setupUI() {
   });
 
   // Initialize Julia controls state based on current fractal type
-  const isJulia = currentFractalType === 'julia' || currentFractalType === 'julia-snakes' || currentFractalType === 'multibrot-julia' || currentFractalType === 'burning-ship-julia' || currentFractalType === 'tricorn-julia' || currentFractalType === 'phoenix-julia';
+  const isJulia = currentFractalType === 'julia' || currentFractalType === 'julia-snakes' || currentFractalType === 'multibrot-julia' || currentFractalType === 'burning-ship-julia' || currentFractalType === 'tricorn-julia' || currentFractalType === 'phoenix-julia' || currentFractalType === 'lambda-julia';
   juliaCReal.disabled = !isJulia;
   juliaCImag.disabled = !isJulia;
   if (isJulia) {
@@ -764,7 +764,7 @@ function setupUI() {
     }
 
     // Enable/disable Julia controls based on fractal type
-    const isJulia = currentFractalType === 'julia' || currentFractalType === 'julia-snakes' || currentFractalType === 'multibrot-julia' || currentFractalType === 'burning-ship-julia' || currentFractalType === 'tricorn-julia' || currentFractalType === 'phoenix-julia';
+    const isJulia = currentFractalType === 'julia' || currentFractalType === 'julia-snakes' || currentFractalType === 'multibrot-julia' || currentFractalType === 'burning-ship-julia' || currentFractalType === 'tricorn-julia' || currentFractalType === 'phoenix-julia' || currentFractalType === 'lambda-julia';
     juliaCReal.disabled = !isJulia;
     juliaCImag.disabled = !isJulia;
     if (isJulia) {
@@ -955,6 +955,39 @@ function setupUI() {
       if (xScaleValue) xScaleValue.textContent = '0.6';
       if (yScaleSlider) yScaleSlider.value = 0.5;
       if (yScaleValue) yScaleValue.textContent = '0.5';
+    } else if (currentFractalType === 'lambda-julia') {
+      // Lambda Julia Set - default centered view
+      params.zoom = 1;
+      params.offset.x = 0;
+      params.offset.y = 0;
+      // Use interesting λ values for Lambda Julia (λ = 0.5 + 0.5i)
+      params.juliaC.x = 0.5;
+      params.juliaC.y = 0.5;
+      // Update Julia C sliders
+      if (juliaCReal) juliaCReal.value = 0.5;
+      if (juliaCImag) juliaCImag.value = 0.5;
+      if (juliaCRealValue) juliaCRealValue.textContent = '0.5000';
+      if (juliaCImagValue) juliaCImagValue.textContent = '0.5000';
+      // Set monochrome color scheme and 20 iterations
+      params.colorScheme = 'monochrome';
+      params.iterations = 20;
+      // Update color scheme selector
+      if (colorSchemeSelect) colorSchemeSelect.value = 'monochrome';
+      // Update color scheme index for fullscreen cycling
+      const newIndex = colorSchemes.indexOf('monochrome');
+      if (newIndex !== -1) {
+        currentColorSchemeIndex = newIndex;
+      }
+      // Update palette preview
+      updateColorPalettePreview();
+      // Update iterations slider and value
+      if (iterationsSlider) iterationsSlider.value = 20;
+      if (iterationsValue) iterationsValue.textContent = '20';
+      // Update fullscreen iterations number
+      const fullscreenIterationsNumberEl = document.getElementById('fullscreen-iterations-number');
+      if (fullscreenIterationsNumberEl) {
+        fullscreenIterationsNumberEl.textContent = '20';
+      }
     } else {
       // Default view for other fractals
       params.zoom = 1;
