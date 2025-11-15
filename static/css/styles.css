@@ -107,6 +107,7 @@ body {
   flex: 1;
   overflow: hidden auto;
   padding: 8px 0;
+  padding-bottom: 80px; /* Add padding to prevent footer overlap */
 }
 
 .panel-content::-webkit-scrollbar {
@@ -305,7 +306,7 @@ body {
 }
 
 #julia-controls.disabled {
-  opacity: var(--disabled-opacity);
+  display: none;
 }
 
 /* Checkbox Styling */
@@ -722,6 +723,37 @@ div.canvas-container:fullscreen > #info-panel {
 /* Hide top action bar in fullscreen - use overlay controls instead */
 .canvas-area:has(.canvas-container:fullscreen) .top-action-bar {
   display: none;
+}
+
+/* Hide sidebar in fullscreen mode */
+body.is-fullscreen .side-panel {
+  display: none !important;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Hide footer in fullscreen mode */
+body.is-fullscreen .app-footer {
+  display: none !important;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Fallback using :has() selector for browsers that support it */
+.app-container:has(.canvas-container:fullscreen) .side-panel {
+  display: none !important;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.app-container:has(.canvas-container:fullscreen) .app-footer {
+  display: none !important;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
 }
 
 /* Mobile Responsive */

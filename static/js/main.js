@@ -144,7 +144,7 @@ function scheduleRender() {
 
 // Fractal parameters
 let params = {
-  iterations: 200,
+  iterations: 125,
   colorScheme: 'classic',
   juliaC: { x: -0.7269, y: 0.1889 },
   center: { x: 0, y: 0 },
@@ -738,6 +738,11 @@ function setupUI() {
     }
 
     // Set default view parameters based on fractal type
+    // First, reset scale parameters to defaults to avoid stretching issues
+    // (will be overridden by fractal-specific values below if needed)
+    params.xScale = 1.0;
+    params.yScale = 1.0;
+    
     if (currentFractalType === 'burning-ship') {
       // Burning Ship - shows the ship upright
       params.zoom = 1.2;
@@ -799,6 +804,19 @@ function setupUI() {
       params.zoom = 1;
       params.offset.x = 0;
       params.offset.y = 0;
+    } else if (currentFractalType === 'multibrot') {
+      // Multibrot Set - default centered view with order 4 (cubic)
+      // Note: xScale controls the multibrot order, not coordinate scaling
+      params.zoom = 1;
+      params.offset.x = 0;
+      params.offset.y = 0;
+      params.xScale = 0.25; // Order 4 (2 + 0.25 * 8 = 4) - only affects order, not coordinates
+      params.yScale = 1.0; // Ensure yScale is 1.0 for proper aspect ratio
+      // Update sliders
+      if (xScaleSlider) xScaleSlider.value = 0.25;
+      if (xScaleValue) xScaleValue.textContent = '0.25';
+      if (yScaleSlider) yScaleSlider.value = 1.0;
+      if (yScaleValue) yScaleValue.textContent = '1.0';
     } else {
       // Default view for other fractals
       params.zoom = 1;
@@ -904,15 +922,33 @@ function setupUI() {
   });
 
   resetViewBtn.addEventListener('click', () => {
+    // Reset zoom and offset
     params.zoom = 1;
     params.offset.x = 0;
     params.offset.y = 0;
-    params.xScale = 1.0;
-    params.yScale = 1.0;
-    xScaleSlider.value = 1.0;
-    yScaleSlider.value = 1.0;
-    xScaleValue.textContent = '1.0';
-    yScaleValue.textContent = '1.0';
+    
+    // Reset scale parameters based on fractal type
+    // Some fractals have specific default scales
+    if (currentFractalType === 'multibrot') {
+      params.xScale = 0.25; // Order 4 for multibrot (only affects order, not coordinates)
+      params.yScale = 1.0;
+      if (xScaleSlider) xScaleSlider.value = 0.25;
+      if (xScaleValue) xScaleValue.textContent = '0.25';
+    } else if (currentFractalType === 'sierpinski-gasket') {
+      params.xScale = 0.5; // Hexagon for sierpinski gasket
+      params.yScale = 1.0;
+      if (xScaleSlider) xScaleSlider.value = 0.5;
+      if (xScaleValue) xScaleValue.textContent = '0.5';
+    } else {
+      params.xScale = 1.0;
+      params.yScale = 1.0;
+      if (xScaleSlider) xScaleSlider.value = 1.0;
+      if (xScaleValue) xScaleValue.textContent = '1.0';
+    }
+    
+    if (yScaleSlider) yScaleSlider.value = params.yScale;
+    if (yScaleValue) yScaleValue.textContent = params.yScale.toFixed(1);
+    
     renderFractal();
   });
 
@@ -1035,9 +1071,9 @@ function setupUI() {
       return true;
     }
 
-    // For Burning Ship and Buffalo, use similar validation to Mandelbrot
+    // For Burning Ship, Buffalo, and Multibrot, use similar validation to Mandelbrot
     // (they're escape-time fractals with similar characteristics)
-    if (fractalType === 'burning-ship' || fractalType === 'buffalo') {
+    if (fractalType === 'burning-ship' || fractalType === 'buffalo' || fractalType === 'multibrot') {
       fractalType = 'mandelbrot'; // Use same validation logic
     }
 
@@ -1164,6 +1200,46 @@ function setupUI() {
         return {
           offset: { x: -0.75, y: 0.1 },
           zoom: 50,
+        };
+      }
+
+      case 'multibrot': {
+        // Multibrot Set - interesting areas with low zoom levels to avoid CPU overload
+        const interestingLocations = [
+          { x: 0.0, y: 0.0, zoom: 1 }, // Center - full view
+          { x: -0.5, y: 0.0, zoom: 2 }, // Left of center
+          { x: 0.5, y: 0.0, zoom: 2 }, // Right of center
+          { x: 0.0, y: 0.5, zoom: 2 }, // Top of center
+          { x: 0.0, y: -0.5, zoom: 2 }, // Bottom of center
+          { x: -0.75, y: 0.0, zoom: 3 }, // Left side
+          { x: 0.75, y: 0.0, zoom: 3 }, // Right side
+          { x: 0.0, y: 0.75, zoom: 3 }, // Top
+          { x: -0.4, y: 0.4, zoom: 4 }, // Upper left quadrant
+          { x: 0.4, y: 0.4, zoom: 4 }, // Upper right quadrant
+          { x: -0.4, y: -0.4, zoom: 4 }, // Lower left quadrant
+          { x: 0.4, y: -0.4, zoom: 4 }, // Lower right quadrant
+          { x: -0.6, y: 0.2, zoom: 5 }, // Left side detail
+          { x: 0.6, y: 0.2, zoom: 5 }, // Right side detail
+          { x: -0.2, y: 0.6, zoom: 5 }, // Top detail
+        ];
+
+        // Try up to 10 times to find a valid interesting view
+        for (let attempt = 0; attempt < 10; attempt++) {
+          const location =
+            interestingLocations[Math.floor(Math.random() * interestingLocations.length)];
+          const zoom = location.zoom * (0.9 + Math.random() * 0.2); // Smaller zoom variation
+          const offset = { x: location.x, y: location.y };
+
+          // Validate the view
+          if (isValidInterestingView(offset, zoom, 'multibrot')) {
+            return { offset, zoom };
+          }
+        }
+
+        // Fallback to a known good location if validation fails
+        return {
+          offset: { x: 0.0, y: 0.0 },
+          zoom: 1,
         };
       }
 
