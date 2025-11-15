@@ -144,7 +144,7 @@ function scheduleRender() {
 
 // Fractal parameters
 let params = {
-  iterations: 100,
+  iterations: 200,
   colorScheme: 'classic',
   juliaC: { x: -0.7269, y: 0.1889 },
   center: { x: 0, y: 0 },
@@ -2122,7 +2122,7 @@ function setupUI() {
   // Shared function to update iterations (avoids code duplication)
   const updateIterations = (delta) => {
     // Update iterations with delta, clamped to valid range
-    params.iterations = Math.max(10, Math.min(200, params.iterations + delta));
+    params.iterations = Math.max(10, Math.min(400, params.iterations + delta));
 
     // Update UI sliders
     if (iterationsSliderEl) {
