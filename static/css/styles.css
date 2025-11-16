@@ -370,6 +370,10 @@ body {
   transition: opacity 0.3s ease;
 }
 
+.top-action-bar #benchmark-toggle {
+  margin-left: auto;
+}
+
 .canvas-area:not(:hover) .top-action-bar {
   opacity: 0.6;
 }
@@ -390,7 +394,7 @@ body {
   font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all 0.2s ease;
   outline: none;
   pointer-events: auto;
   backdrop-filter: blur(10px);
@@ -402,23 +406,16 @@ body {
 }
 
 .top-action-btn:hover {
-  background: var(--button-bg-hover);
-  border-color: var(--overlay-lighter);
+  background: rgb(74 158 255 / 90%);
+  border-color: var(--accent-blue);
+  color: white;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px var(--overlay-medium);
+  box-shadow: 0 4px 12px rgb(74 158 255 / 30%);
+  transition: all 0.2s ease;
 }
 
 .top-action-btn:active {
   transform: translateY(0);
-}
-
-.top-action-btn.primary {
-  background: rgb(74 158 255 / 90%);
-  border-color: var(--accent-blue);
-  color: white;
-}
-
-.top-action-btn.primary:hover {
   background: rgb(58 122 199 / 95%);
   border-color: var(--accent-blue-dim);
 }
@@ -429,14 +426,13 @@ body {
   pointer-events: none;
 }
 
-.top-action-btn.primary:disabled {
-  background: rgb(45 45 45 / 85%);
-  border-color: rgb(255 255 255 / 10%);
-}
-
 .top-action-btn:disabled:hover {
   transform: none;
   box-shadow: 0 2px 8px rgb(0 0 0 / 30%);
+  background: var(--button-bg);
+  border-color: var(--overlay-light);
+  color: var(--text-primary);
+  transition: none;
 }
 
 /* Show Panel Button */
@@ -675,21 +671,24 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   pointer-events: auto;
   box-shadow: 0 4px 12px rgb(0 0 0 / 40%);
   position: relative;
 }
 
 .fullscreen-control-btn:hover {
-  background: rgb(0 0 0 / 85%);
+  background: rgb(74 158 255 / 90%);
   border-color: var(--accent-blue);
+  color: white;
   transform: scale(1.1);
-  box-shadow: 0 6px 20px rgb(74 158 255 / 40%);
+  box-shadow: 0 6px 20px rgb(74 158 255 / 50%);
 }
 
 .fullscreen-control-btn:active {
   transform: scale(0.95);
+  background: rgb(58 122 199 / 95%);
+  border-color: var(--accent-blue-dim);
 }
 
 .fullscreen-random-number {
@@ -698,7 +697,7 @@ body {
   right: -4px;
   min-width: 18px;
   height: 18px;
-  background: var(--accent-blue);
+  background: #f59e0b;
   color: #fff;
   border-radius: 9px;
   display: flex;
@@ -787,12 +786,179 @@ div.canvas-container:fullscreen > #info-panel {
   display: none;
 }
 
+/* Hide benchmark button in fullscreen */
+.canvas-area:has(.canvas-container:fullscreen) .top-action-bar #benchmark-toggle {
+  display: none;
+}
+
+body.is-fullscreen .top-action-bar #benchmark-toggle {
+  display: none !important;
+}
+
 /* Hide sidebar in fullscreen mode */
 body.is-fullscreen .side-panel {
   display: none !important;
   visibility: hidden;
   opacity: 0;
   pointer-events: none;
+}
+
+/* Benchmark Panel */
+.benchmark-panel {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 600px;
+  max-width: 90vw;
+  max-height: 80vh;
+  background: var(--bg-panel);
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgb(0 0 0 / 60%);
+  z-index: 10000;
+  display: none;
+  overflow: hidden;
+}
+
+.benchmark-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-darker);
+}
+
+.benchmark-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.benchmark-close {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 24px;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all var(--transition-fast);
+}
+
+.benchmark-close:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.benchmark-content {
+  padding: 20px;
+  overflow-y: auto;
+  max-height: calc(80vh - 80px);
+}
+
+.benchmark-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.benchmark-controls label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.benchmark-controls select,
+.benchmark-controls input {
+  padding: 8px 12px;
+  background: var(--bg-control);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  color: var(--text-primary);
+  font-size: 14px;
+  transition: all var(--transition-fast);
+}
+
+.benchmark-controls select:focus,
+.benchmark-controls input:focus {
+  outline: none;
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 0 2px rgb(74 158 255 / 20%);
+}
+
+.benchmark-btn {
+  padding: 10px 20px;
+  background: var(--accent-blue);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.benchmark-btn:hover:not(:disabled) {
+  background: var(--accent-blue-dim);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgb(74 158 255 / 30%);
+}
+
+.benchmark-btn:disabled {
+  opacity: var(--disabled-opacity);
+  cursor: not-allowed;
+}
+
+.benchmark-status {
+  margin-bottom: 20px;
+  min-height: 24px;
+}
+
+.benchmark-progress {
+  color: var(--accent-blue);
+  font-size: 14px;
+}
+
+.benchmark-success {
+  color: #4ade80;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.benchmark-error {
+  color: #f87171;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.benchmark-results {
+  background: var(--bg-darker);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 16px;
+  font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text-primary);
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.benchmark-results pre {
+  margin: 0;
+  white-space: pre-wrap;
+  word-wrap: break-word;
 }
 
 /* Hide footer in fullscreen mode */

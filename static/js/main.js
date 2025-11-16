@@ -1,5 +1,6 @@
 import createRegl from 'regl';
 import { getColorSchemeIndex, computeColorForScheme } from './fractals/utils.js';
+import { BenchmarkUI, addBenchmarkButton } from './performance/ui.js';
 
 // Application state
 let regl = null;
@@ -247,6 +248,28 @@ function init() {
   setupUI();
   setupCollapsibleSections();
   setupPanelToggle();
+
+  // Initialize benchmark UI
+  const benchmarkUI = new BenchmarkUI(
+    regl,
+    canvas,
+    async (fractalType) => {
+      await loadFractal(fractalType);
+      // Ensure render happens after load
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    },
+    (newParams) => {
+      // Update params
+      Object.assign(params, newParams);
+      // Trigger render
+      renderFractal();
+      // Wait for render to complete
+      return new Promise((resolve) => {
+        setTimeout(resolve, 100);
+      });
+    }
+  );
+  addBenchmarkButton(benchmarkUI);
 
   // Get the initial fractal type from the dropdown (defaults to mandelbrot if not found)
   const fractalTypeSelect = document.getElementById('fractal-type');
