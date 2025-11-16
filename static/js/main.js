@@ -829,20 +829,20 @@ function setupUI() {
       params.offset.x = -0.514;
       params.offset.y = 0.01;
     } else if (currentFractalType === 'buffalo') {
-      // Buffalo - vertical mirror of Burning Ship (same view, flipped y-axis)
+      // Buffalo - initial render position
       params.zoom = 1.2;
-      params.offset.x = -0.5;
-      params.offset.y = 0.6;  // Opposite sign from Burning Ship
+      params.offset.x = -0.1592;
+      params.offset.y = 0.5616;
     } else if (currentFractalType === 'popcorn') {
-      // Popcorn fractal - best viewed from the center
+      // Popcorn fractal - initial render position
       params.zoom = 1;
-      params.offset.x = 0;
-      params.offset.y = 0;
+      params.offset.x = 0.173;
+      params.offset.y = 0.114;
     } else if (currentFractalType === 'rose') {
-      // Rose window fractal - best viewed from center to see full pattern
+      // Rose window fractal - initial render position
       params.zoom = 1;
-      params.offset.x = 0;
-      params.offset.y = 0;
+      params.offset.x = 0.132;
+      params.offset.y = 0.139;
     } else if (currentFractalType === 'julia-snakes') {
       // Julia Snakes - set good default C value for snake-like patterns
       params.zoom = 1;
@@ -1149,13 +1149,10 @@ function setupUI() {
         fullscreenIterationsNumberEl.textContent = '100';
       }
     } else if (currentFractalType === 'magnet') {
-      // Magnet Fractal - iterated rational function
-      // Formula: z_new = (z^2 + (a-1)z) / (az + 1)
-      // Parameter 'a' is controlled by Julia C
-      // Use an interesting view with better parameters for visual appeal
-      params.zoom = 2.0;
-      params.offset.x = 0.2;
-      params.offset.y = -0.1;
+      // Magnet Fractal - initial render position
+      params.zoom = 2;
+      params.offset.x = 0.338;
+      params.offset.y = -0.048;
       // Use interesting complex parameter 'a' for magnet fractal
       // Complex values create more interesting patterns than real-only values
       // a = 1.2 + 0.8i produces beautiful magnetic patterns with spirals
@@ -1184,10 +1181,10 @@ function setupUI() {
       }
       updateColorPalettePreview();
     } else if (currentFractalType === 'amman-tiling') {
-      // Amman Tiling - default centered view with appropriate zoom
-      params.zoom = 0.8;
-      params.offset.x = 0;
-      params.offset.y = 0;
+      // Amman Tiling - initial render position
+      params.zoom = 3.2;
+      params.offset.x = 0.9382;
+      params.offset.y = 0.7956;
       // Set Rainbow Double color scheme by default
       params.colorScheme = 'rainbow5';
       if (colorSchemeSelect) colorSchemeSelect.value = 'rainbow5';
@@ -1197,10 +1194,10 @@ function setupUI() {
       }
       updateColorPalettePreview();
     } else if (currentFractalType === 'chair-tiling') {
-      // Chair Tiling - default centered view with 60 iterations
-      params.zoom = 1;
-      params.offset.x = 0;
-      params.offset.y = 0;
+      // Chair Tiling - initial render position
+      params.zoom = 4;
+      params.offset.x = 0.77;
+      params.offset.y = 0.502;
       params.iterations = 60;
       iterationsExplicitlySet = true;
       if (iterationsSlider) iterationsSlider.value = 60;
@@ -1257,12 +1254,10 @@ function setupUI() {
       params.offset.x = 2.46;
       params.offset.y = 1.631;
     } else if (currentFractalType === 'carpenter-square') {
-      // Carpenter Square - default centered view with appropriate zoom
-      // Base is at (0, -0.6), tree grows upward
-      // Offset centers the view on the tree structure (positive offset shifts view right/up)
-      params.zoom = 0.5;
-      params.offset.x = 1.0;
-      params.offset.y = 0.5;
+      // Carpenter Square - initial render position
+      params.zoom = 1;
+      params.offset.x = 2.9559;
+      params.offset.y = 2.7137;
       // Set Rainbow Double color scheme by default
       params.colorScheme = 'rainbow5';
       if (colorSchemeSelect) colorSchemeSelect.value = 'rainbow5';
@@ -1272,7 +1267,11 @@ function setupUI() {
       }
       updateColorPalettePreview();
     } else if (currentFractalType === 'diffusion-limited-aggregation') {
-      // Diffusion Limited Aggregation - default rainbow color scheme
+      // Diffusion Limited Aggregation - initial render position
+      params.zoom = 0.197;
+      params.offset.x = 1.2026;
+      params.offset.y = 0.9662;
+      // Default rainbow color scheme
       params.colorScheme = 'rainbow';
       if (colorSchemeSelect) colorSchemeSelect.value = 'rainbow';
       const newIndex = colorSchemes.indexOf('rainbow');
@@ -1396,6 +1395,71 @@ function setupUI() {
       params.zoom = 1;
       params.offset.x = 0;
       params.offset.y = 0.075;
+    } else if (currentFractalType === 'apollonian-gasket') {
+      // Apollonian Gasket - initial render position
+      params.zoom = 2;
+      params.offset.x = 1.3446;
+      params.offset.y = 1.0435;
+    } else if (currentFractalType === 'h-tree') {
+      // H-Tree - initial render position
+      params.zoom = 2;
+      params.offset.x = 0.1054;
+      params.offset.y = 0.0943;
+    } else if (currentFractalType === 'h-tree-generalized') {
+      // H-Tree Generalized - initial render position
+      params.zoom = 2;
+      params.offset.x = 0.0928;
+      params.offset.y = 0.0537;
+    } else if (currentFractalType === 'vicsek') {
+      // Vicsek - initial render position
+      params.zoom = 2;
+      params.offset.x = 1.4429;
+      params.offset.y = 1.1241;
+    } else if (currentFractalType === 'cross') {
+      // Cross - initial render position
+      params.zoom = 2;
+      params.offset.x = 1.2376;
+      params.offset.y = 0.986;
+    } else if (currentFractalType === 'fractal-flame') {
+      // Fractal Flame - initial render position
+      params.zoom = 2;
+      params.offset.x = 1.5885;
+      params.offset.y = 1.0331;
+    } else if (currentFractalType === 'recursive-circle-removal') {
+      // Recursive Circle Removal - initial render position
+      params.zoom = 3.294;
+      params.offset.x = 0.9156;
+      params.offset.y = 0.747;
+    } else if (currentFractalType === 'box-variants') {
+      // Box Variants - initial render position
+      params.zoom = 2;
+      params.offset.x = 1.4905;
+      params.offset.y = 1.1342;
+    } else if (currentFractalType === 'minkowski-sausage') {
+      // Minkowski Sausage - initial render position
+      params.zoom = 3.191;
+      params.offset.x = 0.0067;
+      params.offset.y = 0.0534;
+    } else if (currentFractalType === 'penrose-substitution') {
+      // Penrose Substitution - initial render position
+      params.zoom = 4;
+      params.offset.x = 0.7834;
+      params.offset.y = 0.5579;
+    } else if (currentFractalType === 'rauzy') {
+      // Rauzy - initial render position
+      params.zoom = 4;
+      params.offset.x = 0.7877;
+      params.offset.y = 0.6103;
+    } else if (currentFractalType === 'spider-set') {
+      // Spider Set - initial render position
+      params.zoom = 2;
+      params.offset.x = -0.7682;
+      params.offset.y = 0.0595;
+    } else if (currentFractalType === 'cesaro') {
+      // Cesaro - initial render position
+      params.zoom = 3.032;
+      params.offset.x = 0.0808;
+      params.offset.y = 0.0587;
     } else {
       // Default view for other fractals
       params.zoom = 1;
