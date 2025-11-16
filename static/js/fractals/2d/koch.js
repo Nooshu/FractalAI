@@ -73,7 +73,33 @@ function generateKochSnowflake(iterations) {
     vertexCount = newVertexCount;
   }
 
-  return vertices;
+  // Calculate bounding box
+  let minX = Infinity, maxX = -Infinity;
+  let minY = Infinity, maxY = -Infinity;
+  for (let i = 0; i < vertices.length; i += 2) {
+    minX = Math.min(minX, vertices[i]);
+    maxX = Math.max(maxX, vertices[i]);
+    minY = Math.min(minY, vertices[i + 1]);
+    maxY = Math.max(maxY, vertices[i + 1]);
+  }
+  
+  // Calculate center and size
+  const centerX = (minX + maxX) / 2;
+  const centerY = (minY + maxY) / 2;
+  const width = maxX - minX;
+  const height = maxY - minY;
+  const maxSize = Math.max(width, height);
+  
+  // Scale to fit in a larger range and center at origin
+  // Use a larger scale factor to make it clearly visible
+  const scale = maxSize > 0 ? 1.5 / maxSize : 1.0;
+  const scaledVertices = new Float32Array(vertices.length);
+  for (let i = 0; i < vertices.length; i += 2) {
+    scaledVertices[i] = (vertices[i] - centerX) * scale;
+    scaledVertices[i + 1] = (vertices[i + 1] - centerY) * scale;
+  }
+  
+  return scaledVertices;
 }
 
 export function render(regl, params, canvas) {
