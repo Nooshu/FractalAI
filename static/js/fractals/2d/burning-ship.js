@@ -8,40 +8,107 @@ const fractalFunction = `
         float zx2 = 0.0;
         float zy2 = 0.0;
         
-        // Unroll first few iterations for better performance
+        // Unroll first 8 iterations for better performance
+        float abs_x, abs_y;
+        
         // Iteration 0
         zx2 = z.x * z.x;
         zy2 = z.y * z.y;
-        if (zx2 + zy2 > 4.0) {
+        if (zx2 + zy2 > ESCAPE_RADIUS_SQ) {
             float log_zn = log(zx2 + zy2) * 0.5;
-            float nu = log(log_zn / log(2.0)) / log(2.0);
-            return 0.0 + 1.0 - nu;
+            float nu = log(log_zn * INV_LOG2) * INV_LOG2;
+            return 1.0 - nu;
         }
-        // Apply absolute values before squaring (key difference from Mandelbrot)
-        z = vec2(abs(z.x) * abs(z.x) - abs(z.y) * abs(z.y), 2.0 * abs(z.x) * abs(z.y)) + c;
+        abs_x = abs(z.x);
+        abs_y = abs(z.y);
+        z = vec2(abs_x * abs_x - abs_y * abs_y, 2.0 * abs_x * abs_y) + c;
         
         // Iteration 1
         zx2 = z.x * z.x;
         zy2 = z.y * z.y;
-        if (zx2 + zy2 > 4.0) {
+        if (zx2 + zy2 > ESCAPE_RADIUS_SQ) {
             float log_zn = log(zx2 + zy2) * 0.5;
-            float nu = log(log_zn / log(2.0)) / log(2.0);
-            return 1.0 + 1.0 - nu;
+            float nu = log(log_zn * INV_LOG2) * INV_LOG2;
+            return 2.0 - nu;
         }
-        z = vec2(abs(z.x) * abs(z.x) - abs(z.y) * abs(z.y), 2.0 * abs(z.x) * abs(z.y)) + c;
+        abs_x = abs(z.x);
+        abs_y = abs(z.y);
+        z = vec2(abs_x * abs_x - abs_y * abs_y, 2.0 * abs_x * abs_y) + c;
         
         // Iteration 2
         zx2 = z.x * z.x;
         zy2 = z.y * z.y;
-        if (zx2 + zy2 > 4.0) {
+        if (zx2 + zy2 > ESCAPE_RADIUS_SQ) {
             float log_zn = log(zx2 + zy2) * 0.5;
-            float nu = log(log_zn / log(2.0)) / log(2.0);
-            return 2.0 + 1.0 - nu;
+            float nu = log(log_zn * INV_LOG2) * INV_LOG2;
+            return 3.0 - nu;
         }
-        z = vec2(abs(z.x) * abs(z.x) - abs(z.y) * abs(z.y), 2.0 * abs(z.x) * abs(z.y)) + c;
+        abs_x = abs(z.x);
+        abs_y = abs(z.y);
+        z = vec2(abs_x * abs_x - abs_y * abs_y, 2.0 * abs_x * abs_y) + c;
+        
+        // Iteration 3
+        zx2 = z.x * z.x;
+        zy2 = z.y * z.y;
+        if (zx2 + zy2 > ESCAPE_RADIUS_SQ) {
+            float log_zn = log(zx2 + zy2) * 0.5;
+            float nu = log(log_zn * INV_LOG2) * INV_LOG2;
+            return 4.0 - nu;
+        }
+        abs_x = abs(z.x);
+        abs_y = abs(z.y);
+        z = vec2(abs_x * abs_x - abs_y * abs_y, 2.0 * abs_x * abs_y) + c;
+        
+        // Iteration 4
+        zx2 = z.x * z.x;
+        zy2 = z.y * z.y;
+        if (zx2 + zy2 > ESCAPE_RADIUS_SQ) {
+            float log_zn = log(zx2 + zy2) * 0.5;
+            float nu = log(log_zn * INV_LOG2) * INV_LOG2;
+            return 5.0 - nu;
+        }
+        abs_x = abs(z.x);
+        abs_y = abs(z.y);
+        z = vec2(abs_x * abs_x - abs_y * abs_y, 2.0 * abs_x * abs_y) + c;
+        
+        // Iteration 5
+        zx2 = z.x * z.x;
+        zy2 = z.y * z.y;
+        if (zx2 + zy2 > ESCAPE_RADIUS_SQ) {
+            float log_zn = log(zx2 + zy2) * 0.5;
+            float nu = log(log_zn * INV_LOG2) * INV_LOG2;
+            return 6.0 - nu;
+        }
+        abs_x = abs(z.x);
+        abs_y = abs(z.y);
+        z = vec2(abs_x * abs_x - abs_y * abs_y, 2.0 * abs_x * abs_y) + c;
+        
+        // Iteration 6
+        zx2 = z.x * z.x;
+        zy2 = z.y * z.y;
+        if (zx2 + zy2 > ESCAPE_RADIUS_SQ) {
+            float log_zn = log(zx2 + zy2) * 0.5;
+            float nu = log(log_zn * INV_LOG2) * INV_LOG2;
+            return 7.0 - nu;
+        }
+        abs_x = abs(z.x);
+        abs_y = abs(z.y);
+        z = vec2(abs_x * abs_x - abs_y * abs_y, 2.0 * abs_x * abs_y) + c;
+        
+        // Iteration 7
+        zx2 = z.x * z.x;
+        zy2 = z.y * z.y;
+        if (zx2 + zy2 > ESCAPE_RADIUS_SQ) {
+            float log_zn = log(zx2 + zy2) * 0.5;
+            float nu = log(log_zn * INV_LOG2) * INV_LOG2;
+            return 8.0 - nu;
+        }
+        abs_x = abs(z.x);
+        abs_y = abs(z.y);
+        z = vec2(abs_x * abs_x - abs_y * abs_y, 2.0 * abs_x * abs_y) + c;
         
         // Continue with loop for remaining iterations
-        for (int i = 3; i < 200; i++) {
+        for (int i = 8; i < 200; i++) {
             if (i >= int(uIterations)) break;
             
             // Calculate squared magnitudes
@@ -49,17 +116,18 @@ const fractalFunction = `
             zy2 = z.y * z.y;
             
             // Check for escape
-            if (zx2 + zy2 > 4.0) {
+            if (zx2 + zy2 > ESCAPE_RADIUS_SQ) {
                 // Smooth coloring using continuous escape
                 float log_zn = log(zx2 + zy2) * 0.5;
-                float nu = log(log_zn / log(2.0)) / log(2.0);
+                // Optimized: use precomputed INV_LOG2 instead of division
+                float nu = log(log_zn * INV_LOG2) * INV_LOG2;
                 return float(i) + 1.0 - nu;
             }
             
             // Burning Ship formula: use absolute values before squaring
             // z = (|Re(z)| + i|Im(z)|)^2 + c
-            float abs_x = abs(z.x);
-            float abs_y = abs(z.y);
+            abs_x = abs(z.x);
+            abs_y = abs(z.y);
             z = vec2(abs_x * abs_x - abs_y * abs_y, 2.0 * abs_x * abs_y) + c;
         }
         

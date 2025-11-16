@@ -2,6 +2,11 @@
 const paletteTextureCache = new Map();
 const PALETTE_SIZE = 512; // Number of colors in the palette texture
 
+// Shader compilation cache
+// Caches compiled regl draw commands to avoid recompilation
+const shaderCache = new Map();
+const MAX_SHADER_CACHE_SIZE = 50; // Maximum number of cached shaders
+
 /**
  * Generates a color value for a given t value (0-1) and scheme
  * @param {number} t - Value from 0 to 1
@@ -188,6 +193,87 @@ export function clearPaletteCache() {
   paletteTextureCache.clear();
 }
 
+/**
+ * Generates a cache key for shader compilation
+ * @param {string} fractalType - Type of fractal
+ * @param {string} fragmentShader - Fragment shader source code
+ * @returns {string} Cache key
+ */
+function generateShaderCacheKey(fractalType, fragmentShader) {
+  // Use a simple hash of the shader source for the key
+  // This ensures we cache based on actual shader code, not just fractal type
+  let hash = 0;
+  const str = fractalType + fragmentShader;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32-bit integer
+  }
+  return `${fractalType}_${hash}`;
+}
+
+/**
+ * Creates a cached regl draw command with dynamic uniforms
+ * This caches the shader compilation but allows uniforms to be updated
+ * @param {Object} regl - The regl context
+ * @param {string} fractalType - Type of fractal
+ * @param {string} vertexShader - Vertex shader source
+ * @param {string} fragmentShader - Fragment shader source
+ * @param {Object} staticConfig - Static configuration (attributes, viewport, etc.)
+ * @returns {Function} regl draw command factory that accepts uniforms
+ */
+export function createCachedShaderDrawCommand(regl, fractalType, vertexShader, fragmentShader, staticConfig) {
+  const cacheKey = generateShaderCacheKey(fractalType, fragmentShader);
+  
+  // Check cache first
+  if (shaderCache.has(cacheKey)) {
+    const cachedFactory = shaderCache.get(cacheKey);
+    // Return a function that creates draw commands with updated uniforms
+    return (uniforms) => {
+      // regl caches internally, so creating with same shaders is fast
+      return regl({
+        vert: vertexShader,
+        frag: fragmentShader,
+        ...staticConfig,
+        uniforms: uniforms,
+      });
+    };
+  }
+  
+  // Create and cache the factory function
+  const factory = (uniforms) => {
+    return regl({
+      vert: vertexShader,
+      frag: fragmentShader,
+      ...staticConfig,
+      uniforms: uniforms,
+    });
+  };
+  
+  // Cache it (with size limit)
+  if (shaderCache.size >= MAX_SHADER_CACHE_SIZE) {
+    // Remove oldest entry (simple FIFO)
+    const firstKey = shaderCache.keys().next().value;
+    shaderCache.delete(firstKey);
+  }
+  
+  shaderCache.set(cacheKey, factory);
+  return factory;
+}
+
+/**
+ * Clears the shader cache
+ * Call this when cleaning up resources
+ */
+export function clearShaderCache() {
+  for (const drawCommand of shaderCache.values()) {
+    if (drawCommand && drawCommand.destroy) {
+      drawCommand.destroy();
+    }
+  }
+  shaderCache.clear();
+}
+
 // Color schemes (for CPU-side color calculations if needed)
 export function getColor(iterations, maxIterations, scheme) {
   if (iterations >= maxIterations) return { r: 0, g: 0, b: 0 };
@@ -232,10 +318,11 @@ export const vertexShader = `
 `;
 
 // Base fragment shader template for 2D fractals
+// Optimized for performance: uses mediump precision, precomputed constants
 export function createFragmentShader(fractalFunction) {
   return `
     #ifdef GL_ES
-    precision highp float;
+    precision mediump float;
     #endif
     
     uniform float uTime;
@@ -250,29 +337,40 @@ export function createFragmentShader(fractalFunction) {
     
     varying vec2 vUv;
     
+    // Precomputed constants for better performance
+    const float LOG2 = 0.6931471805599453; // log(2.0)
+    const float INV_LOG2 = 1.4426950408889634; // 1.0 / log(2.0)
+    const float ESCAPE_RADIUS_SQ = 4.0; // Escape radius squared (2.0^2)
+    
     ${fractalFunction}
     
     void main() {
         vec2 uv = vUv;
+        
+        // Precompute aspect ratio and scale once
         float aspect = uResolution.x / uResolution.y;
         float scale = 4.0 / uZoom;
+        
+        // Optimize coordinate calculation
+        vec2 uvCentered = uv - 0.5;
         vec2 c = vec2(
-            (uv.x - 0.5) * scale * aspect * uXScale + uOffset.x,
-            (uv.y - 0.5) * scale * uYScale + uOffset.y
+            uvCentered.x * scale * aspect * uXScale + uOffset.x,
+            uvCentered.y * scale * uYScale + uOffset.y
         );
         
         float iterations = computeFractal(c);
         
         // Normalized iteration value for color lookup
-        float t = clamp(iterations / uIterations, 0.0, 1.0);
+        // Use multiplication instead of division where possible
+        float invIterations = 1.0 / uIterations;
+        float t = clamp(iterations * invIterations, 0.0, 1.0);
         
         // Texture-based palette lookup (much faster than computed colors)
         vec3 color = texture2D(uPalette, vec2(t, 0.5)).rgb;
         
-        // Points in the set are black
-        if (iterations >= uIterations) {
-            color = vec3(0.0);
-        }
+        // Points in the set are black - use step() to avoid branch
+        float isInSet = step(uIterations, iterations);
+        color = mix(color, vec3(0.0), isInSet);
         
         gl_FragColor = vec4(color, 1.0);
     }
