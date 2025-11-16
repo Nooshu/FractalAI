@@ -949,11 +949,16 @@ function setupUI() {
       iterationsExplicitlySet = true;
       if (iterationsSlider) iterationsSlider.value = 50;
       if (iterationsValue) iterationsValue.textContent = '50';
+    } else if (currentFractalType === 'plant') {
+      // Plant - initial render position
+      params.zoom = 0.59;
+      params.offset.x = 0.003;
+      params.offset.y = 1.094;
     } else if (currentFractalType === 'barnsley-fern') {
-      // Barnsley Fern - best viewed from center, slightly zoomed out
+      // Barnsley Fern - initial render position
       params.zoom = 0.8;
-      params.offset.x = 0;
-      params.offset.y = -0.3;
+      params.offset.x = 3.488;
+      params.offset.y = 0.6632;
       params.iterations = 100;
       iterationsExplicitlySet = true;
       if (iterationsSlider) iterationsSlider.value = 100;
