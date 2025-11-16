@@ -1122,6 +1122,19 @@ function setupUI() {
         currentColorSchemeIndex = newIndex;
       }
       updateColorPalettePreview();
+    } else if (currentFractalType === 'amman-tiling') {
+      // Amman Tiling - default centered view with appropriate zoom
+      params.zoom = 0.8;
+      params.offset.x = 0;
+      params.offset.y = 0;
+      // Set Rainbow Double color scheme by default
+      params.colorScheme = 'rainbow5';
+      if (colorSchemeSelect) colorSchemeSelect.value = 'rainbow5';
+      const newIndex = colorSchemes.indexOf('rainbow5');
+      if (newIndex !== -1) {
+        currentColorSchemeIndex = newIndex;
+      }
+      updateColorPalettePreview();
     } else if (currentFractalType === 'recursive-polygon-splitting') {
       // Recursive Polygon Splitting - default centered view with rainbow color scheme
       params.zoom = 1;
