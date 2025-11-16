@@ -87,6 +87,35 @@
                   Automatically update the fractal when settings change
                 </div>
               </div>
+              
+              <!-- Coordinate Display -->
+              <div class="control">
+                <label class="control-label">Coordinates</label>
+                <div class="coordinate-display">
+                  <div class="coordinate-row">
+                    <span class="coordinate-label">Zoom:</span>
+                    <span class="coordinate-value" id="coord-zoom">1.0</span>
+                  </div>
+                  <div class="coordinate-row">
+                    <span class="coordinate-label">Offset X:</span>
+                    <span class="coordinate-value" id="coord-offset-x">0.0</span>
+                  </div>
+                  <div class="coordinate-row">
+                    <span class="coordinate-label">Offset Y:</span>
+                    <span class="coordinate-value" id="coord-offset-y">0.0</span>
+                  </div>
+                  <button class="copy-coords-btn" id="copy-coords-btn" title="Copy coordinates to clipboard">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                    Copy Coordinates
+                  </button>
+                  <div class="control-description">
+                    Copy these coordinates to set initial render position
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 

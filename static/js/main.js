@@ -248,6 +248,8 @@ function init() {
   setupUI();
   setupCollapsibleSections();
   setupPanelToggle();
+  setupCoordinateCopy();
+  updateCoordinateDisplay();
 
   // Initialize benchmark UI
   const benchmarkUI = new BenchmarkUI(
@@ -280,6 +282,7 @@ function init() {
   // Load initial fractal
   loadFractal(currentFractalType).then(() => {
     renderFractal();
+    updateCoordinateDisplay();
     animate();
   });
 }
@@ -455,6 +458,7 @@ function setupControls() {
       const sensitivity = 0.001 * params.zoom;
       params.offset.x -= deltaX * sensitivity;
       params.offset.y += deltaY * sensitivity;
+      updateCoordinateDisplay();
       lastMouseX = e.clientX;
       lastMouseY = e.clientY;
       scheduleRender(); // Use throttled render for smooth panning
@@ -625,6 +629,7 @@ function setupControls() {
     // So setting offset to the fractal coordinate centers it correctly
     params.offset.x = fractalX;
     params.offset.y = fractalY;
+    updateCoordinateDisplay();
 
     // Use progressive rendering for faster feedback
     renderFractalProgressive();
@@ -640,6 +645,7 @@ function setupControls() {
     // Reversed logic: deltaY > 0 (pinch out/spread fingers) should zoom in, deltaY < 0 (pinch in) should zoom out
     const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1;
     params.zoom *= zoomFactor;
+    updateCoordinateDisplay();
     scheduleRender(); // Use throttled render for smooth zooming
   });
 }
@@ -798,20 +804,30 @@ function setupUI() {
     let iterationsExplicitlySet = false;
     
     if (currentFractalType === 'burning-ship') {
-      // Burning Ship - shows the ship upright
+      // Burning Ship - initial render position
       params.zoom = 1.2;
-      params.offset.x = -0.5;
-      params.offset.y = -0.6;
+      params.offset.x = -0.2924;
+      params.offset.y = -0.2544;
     } else if (currentFractalType === 'tricorn') {
       // Tricorn - similar view to Mandelbrot but inverted
       params.zoom = 1;
       params.offset.x = 0;
       params.offset.y = 0;
     } else if (currentFractalType === 'celtic-mandelbrot') {
-      // Celtic Mandelbrot - similar view to Burning Ship
+      // Celtic Mandelbrot - initial render position
       params.zoom = 1.2;
-      params.offset.x = -0.5;
-      params.offset.y = -0.6;
+      params.offset.x = -0.4868;
+      params.offset.y = 0.1464;
+    } else if (currentFractalType === 'mutant-mandelbrot') {
+      // Mutant Mandelbrot - initial render position
+      params.zoom = 1;
+      params.offset.x = -0.536;
+      params.offset.y = 0.006;
+    } else if (currentFractalType === 'phoenix-mandelbrot') {
+      // Phoenix Mandelbrot - initial render position
+      params.zoom = 1;
+      params.offset.x = -0.514;
+      params.offset.y = 0.01;
     } else if (currentFractalType === 'buffalo') {
       // Buffalo - vertical mirror of Burning Ship (same view, flipped y-axis)
       params.zoom = 1.2;
@@ -1009,10 +1025,10 @@ function setupUI() {
         fullscreenIterationsNumberEl.textContent = '25';
       }
     } else if (currentFractalType === 'phoenix-julia') {
-      // Phoenix Julia Set - default centered view
-      params.zoom = 1;
-      params.offset.x = 0;
-      params.offset.y = 0;
+      // Phoenix Julia Set - initial render position
+      params.zoom = 0.605;
+      params.offset.x = 0.0284;
+      params.offset.y = 0.0611;
       // Use interesting C values for Phoenix Julia
       params.juliaC.x = -0.5;
       params.juliaC.y = 0.0;
@@ -1034,10 +1050,10 @@ function setupUI() {
       if (yScaleSlider) yScaleSlider.value = 0.5;
       if (yScaleValue) yScaleValue.textContent = '0.5';
     } else if (currentFractalType === 'lambda-julia') {
-      // Lambda Julia Set - default centered view
+      // Lambda Julia Set - initial render position
       params.zoom = 1;
-      params.offset.x = 0;
-      params.offset.y = 0;
+      params.offset.x = 0.734;
+      params.offset.y = 0.24;
       // Use interesting λ values for Lambda Julia (λ = 0.5 + 0.5i)
       params.juliaC.x = 0.5;
       params.juliaC.y = 0.5;
@@ -1068,10 +1084,10 @@ function setupUI() {
         fullscreenIterationsNumberEl.textContent = '20';
       }
     } else if (currentFractalType === 'hybrid-julia') {
-      // Hybrid Julia Set - default centered view
+      // Hybrid Julia Set - initial render position
       params.zoom = 1;
-      params.offset.x = 0;
-      params.offset.y = 0;
+      params.offset.x = 0.194;
+      params.offset.y = 0.242;
       // Use interesting c values for Hybrid Julia
       params.juliaC.x = -0.4;
       params.juliaC.y = 0.6;
@@ -1257,6 +1273,9 @@ function setupUI() {
       params.offset.y = 0;
     }
     
+    // Update coordinate display after setting positions
+    updateCoordinateDisplay();
+    
     // Set default iterations to 200 if not explicitly set for this fractal type
     if (!iterationsExplicitlySet) {
       params.iterations = 200;
@@ -1386,6 +1405,7 @@ function setupUI() {
     params.zoom = 1;
     params.offset.x = 0;
     params.offset.y = 0;
+    updateCoordinateDisplay();
     
     // Reset scale parameters based on fractal type
     // Some fractals have specific default scales
@@ -3316,6 +3336,49 @@ function animate() {
         isDisplayingCached = false;
       }
     }
+  }
+}
+
+// Update coordinate display
+function updateCoordinateDisplay() {
+  const zoomEl = document.getElementById('coord-zoom');
+  const offsetXEl = document.getElementById('coord-offset-x');
+  const offsetYEl = document.getElementById('coord-offset-y');
+  
+  if (zoomEl && offsetXEl && offsetYEl) {
+    // Round to reasonable precision for display
+    zoomEl.textContent = Math.round(params.zoom * 1000) / 1000;
+    offsetXEl.textContent = Math.round(params.offset.x * 10000) / 10000;
+    offsetYEl.textContent = Math.round(params.offset.y * 10000) / 10000;
+  }
+}
+
+// Copy coordinates to clipboard
+function setupCoordinateCopy() {
+  const copyBtn = document.getElementById('copy-coords-btn');
+  if (copyBtn) {
+    copyBtn.addEventListener('click', () => {
+      const zoom = Math.round(params.zoom * 1000) / 1000;
+      const offsetX = Math.round(params.offset.x * 10000) / 10000;
+      const offsetY = Math.round(params.offset.y * 10000) / 10000;
+      
+      const coordsText = `fractal: ${currentFractalType}, zoom: ${zoom}, offsetX: ${offsetX}, offsetY: ${offsetY}`;
+      
+      navigator.clipboard.writeText(coordsText).then(() => {
+        // Show feedback
+        const originalText = copyBtn.innerHTML;
+        copyBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"></path></svg>Copied!';
+        copyBtn.style.background = 'var(--accent-blue)';
+        
+        setTimeout(() => {
+          copyBtn.innerHTML = originalText;
+          copyBtn.style.background = '';
+        }, 2000);
+      }).catch(err => {
+        console.error('Failed to copy coordinates:', err);
+        alert('Failed to copy coordinates. Please copy manually:\n' + coordsText);
+      });
+    });
   }
 }
 

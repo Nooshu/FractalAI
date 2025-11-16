@@ -340,6 +340,70 @@ body {
   font-weight: 500;
 }
 
+/* Coordinate Display */
+.coordinate-display {
+  background: var(--bg-control);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 12px;
+  margin-top: 8px;
+}
+
+.coordinate-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+}
+
+.coordinate-row:last-of-type {
+  margin-bottom: 12px;
+}
+
+.coordinate-label {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.coordinate-value {
+  color: var(--accent-blue);
+  font-family: 'Courier New', monospace;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.copy-coords-btn {
+  width: 100%;
+  padding: 10px 16px;
+  background: var(--bg-hover);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all var(--transition-fast);
+  margin-top: 8px;
+}
+
+.copy-coords-btn:hover {
+  background: var(--accent-blue-dim);
+  border-color: var(--accent-blue);
+  transform: translateY(-1px);
+}
+
+.copy-coords-btn:active {
+  transform: translateY(0);
+}
+
+.copy-coords-btn svg {
+  flex-shrink: 0;
+}
+
 .control-description {
   font-size: 0.8rem;
   color: var(--text-secondary);
