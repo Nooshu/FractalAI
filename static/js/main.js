@@ -1321,6 +1321,36 @@ function setupUI() {
       params.zoom = 2.571;
       params.offset.x = -0.0117;
       params.offset.y = 0.088;
+    } else if (currentFractalType === 'cantor') {
+      // Cantor Set - initial render position
+      params.zoom = 1;
+      params.offset.x = -0.015;
+      params.offset.y = 0.331;
+    } else if (currentFractalType === 'cantor-dust-base-expansion') {
+      // Cantor Dust Base Expansion - initial render position
+      params.zoom = 1;
+      params.offset.x = 2.978;
+      params.offset.y = 2.04;
+    } else if (currentFractalType === 'cantor-dust-circular') {
+      // Cantor Dust Circular - initial render position
+      params.zoom = 2.597;
+      params.offset.x = 1.1991;
+      params.offset.y = 0.9663;
+    } else if (currentFractalType === 'fat-cantor') {
+      // Fat Cantor Set - initial render position
+      params.zoom = 1;
+      params.offset.x = -0.001;
+      params.offset.y = 0.102;
+    } else if (currentFractalType === 'smith-volterra-cantor') {
+      // Smith-Volterra-Cantor Set - initial render position
+      params.zoom = 1;
+      params.offset.x = -0.001;
+      params.offset.y = 0.047;
+    } else if (currentFractalType === 'random-cantor') {
+      // Random Cantor Set - initial render position
+      params.zoom = 1;
+      params.offset.x = 0;
+      params.offset.y = 0.075;
     } else {
       // Default view for other fractals
       params.zoom = 1;
