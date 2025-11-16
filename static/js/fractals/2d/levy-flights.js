@@ -11,7 +11,6 @@ function generateLevyFlight(params) {
   
   const numSteps = Math.floor(params.iterations * 20); // Scale with iterations
   const alpha = 0.5 + params.xScale * 1.5; // Lévy distribution parameter (0.5 to 2.0)
-  const beta = params.yScale; // Skewness parameter (0 to 1)
   
   let x = 0;
   let y = 0;

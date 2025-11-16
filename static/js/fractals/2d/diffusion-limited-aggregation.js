@@ -3,7 +3,6 @@ import { generatePaletteTexture } from '../utils.js';
 // Buffer cache for reuse
 let cachedBuffer = null;
 let cachedVertexCount = 0;
-let cachedCluster = null;
 
 // Generate DLA structure using particle simulation
 function generateDLA(params) {

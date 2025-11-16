@@ -227,17 +227,8 @@ export function createCachedShaderDrawCommand(regl, fractalType, vertexShader, f
   
   // Check cache first
   if (shaderCache.has(cacheKey)) {
-    const cachedFactory = shaderCache.get(cacheKey);
-    // Return a function that creates draw commands with updated uniforms
-    return (uniforms) => {
-      // regl caches internally, so creating with same shaders is fast
-      return regl({
-        vert: vertexShader,
-        frag: fragmentShader,
-        ...staticConfig,
-        uniforms: uniforms,
-      });
-    };
+    // Return the cached factory function
+    return shaderCache.get(cacheKey);
   }
   
   // Create and cache the factory function
@@ -272,6 +263,73 @@ export function clearShaderCache() {
     }
   }
   shaderCache.clear();
+}
+
+/**
+ * Helper function to check if a fractal type is a Julia variant
+ * @param {string} fractalType - The fractal type name
+ * @returns {boolean} True if it's a Julia variant
+ */
+export function isJuliaType(fractalType) {
+  const juliaTypes = [
+    'julia',
+    'julia-snakes',
+    'multibrot-julia',
+    'burning-ship-julia',
+    'tricorn-julia',
+    'phoenix-julia',
+    'lambda-julia',
+    'hybrid-julia',
+    'magnet',
+  ];
+  return juliaTypes.includes(fractalType);
+}
+
+/**
+ * Creates a standard regl draw command for 2D shader-based fractals
+ * Reduces code duplication across fractal files
+ * @param {Object} regl - The regl context
+ * @param {Object} params - Render parameters
+ * @param {HTMLCanvasElement} canvas - The canvas element
+ * @param {string} fragmentShader - The fragment shader source
+ * @param {Object} options - Optional overrides (vertexShader, juliaC, etc.)
+ * @returns {Function} regl draw command
+ */
+export function createStandardDrawCommand(regl, params, canvas, fragmentShader, options = {}) {
+  const paletteTexture = generatePaletteTexture(regl, params.colorScheme);
+  const vertexShaderSource = options.vertexShader || vertexShader;
+  const juliaC = options.juliaC !== undefined 
+    ? [options.juliaC.x, options.juliaC.y] 
+    : (isJuliaType(options.fractalType || '') 
+        ? [params.juliaC.x, params.juliaC.y] 
+        : [0, 0]);
+
+  return regl({
+    vert: vertexShaderSource,
+    frag: fragmentShader,
+    attributes: {
+      position: [-1, -1, 1, -1, -1, 1, 1, 1], // Full-screen quad
+    },
+    uniforms: {
+      uTime: options.uTime ?? 0,
+      uIterations: params.iterations,
+      uZoom: params.zoom,
+      uOffset: [params.offset.x, params.offset.y],
+      uResolution: [canvas.width, canvas.height],
+      uJuliaC: juliaC,
+      uPalette: paletteTexture,
+      uXScale: params.xScale,
+      uYScale: params.yScale,
+    },
+    viewport: {
+      x: 0,
+      y: 0,
+      width: canvas.width,
+      height: canvas.height,
+    },
+    count: 4,
+    primitive: 'triangle strip',
+  });
 }
 
 // Color schemes (for CPU-side color calculations if needed)

@@ -2,7 +2,7 @@
  * UI components for performance benchmarking
  */
 
-import { TestRunner, DEFAULT_TEST_SUITES } from './test-runner.js';
+import { TestRunner } from './test-runner.js';
 
 export class BenchmarkUI {
   constructor(regl, canvas, loadFractal, setParams) {
@@ -137,17 +137,15 @@ export class BenchmarkUI {
       return;
     }
 
-    let content, mimeType, extension, filename;
+    let content, mimeType, filename;
 
     if (format === 'txt') {
       content = this.runner.suite.formatReport();
       mimeType = 'text/plain';
-      extension = 'txt';
       filename = `benchmark-${Date.now()}.txt`;
     } else {
       content = this.runner.suite.exportResults();
       mimeType = 'application/json';
-      extension = 'json';
       filename = `benchmark-${Date.now()}.json`;
     }
 

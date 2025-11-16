@@ -77,7 +77,6 @@ function generatePercolationCluster(params) {
   
   // Find the largest cluster
   let largestClusterSize = 0;
-  let largestClusterRoot = -1;
   const clusterSizes = new Map();
   
   for (let y = 0; y < gridSize; y++) {
@@ -93,7 +92,6 @@ function generatePercolationCluster(params) {
       
       if (size > largestClusterSize) {
         largestClusterSize = size;
-        largestClusterRoot = root;
       }
     }
   }

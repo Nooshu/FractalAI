@@ -90,10 +90,8 @@ const fragmentShader = createFragmentShader(fractalFunction);
 export function render(regl, params, canvas) {
   const paletteTexture = generatePaletteTexture(regl, params.colorScheme);
   
-  const frag = createFragmentShader(fractalFunction);
-  
   const drawFractal = regl({
-    frag,
+    frag: fragmentShader,
     vert: `
       precision mediump float;
       attribute vec2 position;

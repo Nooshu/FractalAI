@@ -1,5 +1,5 @@
 import createRegl from 'regl';
-import { getColorSchemeIndex, computeColorForScheme } from './fractals/utils.js';
+import { getColorSchemeIndex, computeColorForScheme, isJuliaType } from './fractals/utils.js';
 import { BenchmarkUI, addBenchmarkButton } from './performance/ui.js';
 
 // Application state
@@ -77,9 +77,9 @@ function generateCacheKey() {
   const colorScheme = params.colorScheme;
   const xScale = Math.round(params.xScale * 100) / 100;
   const yScale = Math.round(params.yScale * 100) / 100;
-  const isJuliaType = currentFractalType === 'julia' || currentFractalType === 'julia-snakes' || currentFractalType === 'multibrot-julia' || currentFractalType === 'burning-ship-julia' || currentFractalType === 'tricorn-julia' || currentFractalType === 'phoenix-julia' || currentFractalType === 'lambda-julia' || currentFractalType === 'hybrid-julia' || currentFractalType === 'magnet';
-  const juliaCX = isJuliaType ? Math.round(params.juliaC.x * 10000) / 10000 : 0;
-  const juliaCY = isJuliaType ? Math.round(params.juliaC.y * 10000) / 10000 : 0;
+  const isJulia = isJuliaType(currentFractalType);
+  const juliaCX = isJulia ? Math.round(params.juliaC.x * 10000) / 10000 : 0;
+  const juliaCY = isJulia ? Math.round(params.juliaC.y * 10000) / 10000 : 0;
   // Use display dimensions (not render dimensions affected by pixel ratio) for cache key
   // This ensures cache hits even when pixel ratio changes
   const container = canvas.parentElement;
@@ -685,7 +685,7 @@ function setupUI() {
   });
 
   // Initialize Julia controls state based on current fractal type
-  const isJulia = currentFractalType === 'julia' || currentFractalType === 'julia-snakes' || currentFractalType === 'multibrot-julia' || currentFractalType === 'burning-ship-julia' || currentFractalType === 'tricorn-julia' || currentFractalType === 'phoenix-julia' || currentFractalType === 'lambda-julia' || currentFractalType === 'hybrid-julia' || currentFractalType === 'magnet';
+  const isJulia = isJuliaType(currentFractalType);
   juliaCReal.disabled = !isJulia;
   juliaCImag.disabled = !isJulia;
   if (isJulia) {
@@ -779,7 +779,7 @@ function setupUI() {
     }
 
     // Enable/disable Julia controls based on fractal type
-    const isJulia = currentFractalType === 'julia' || currentFractalType === 'julia-snakes' || currentFractalType === 'multibrot-julia' || currentFractalType === 'burning-ship-julia' || currentFractalType === 'tricorn-julia' || currentFractalType === 'phoenix-julia' || currentFractalType === 'lambda-julia' || currentFractalType === 'hybrid-julia' || currentFractalType === 'magnet';
+    const isJulia = isJuliaType(currentFractalType);
     juliaCReal.disabled = !isJulia;
     juliaCImag.disabled = !isJulia;
     if (isJulia) {

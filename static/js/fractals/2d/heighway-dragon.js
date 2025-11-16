@@ -1,4 +1,3 @@
-import regl from 'regl';
 import { generatePaletteTexture } from '../utils.js';
 
 // Generate vertices for the Heighway dragon curve
@@ -30,7 +29,6 @@ function generateHeighwayDragon(iterations) {
   let angle = 0; // Start facing right
   
   // Calculate step size to fit the curve in view
-  const numSegments = sequence.length + 1;
   const stepLength = 1.0 / Math.pow(Math.sqrt(2), iterations);
   
   const vertices = [];

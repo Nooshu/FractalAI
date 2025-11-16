@@ -26,6 +26,7 @@ export default [
         HTMLCanvasElement: 'readonly',
         ResizeObserver: 'readonly',
         URL: 'readonly',
+        Blob: 'readonly',
         WebGL2RenderingContext: 'readonly',
         performance: 'readonly',
         // ES2021 globals

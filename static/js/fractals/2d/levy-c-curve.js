@@ -1,4 +1,3 @@
-import regl from 'regl';
 import { generatePaletteTexture } from '../utils.js';
 
 // Generate vertices for the Lévy C curve
