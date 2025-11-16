@@ -1150,6 +1150,15 @@ function setupUI() {
         currentColorSchemeIndex = newIndex;
       }
       updateColorPalettePreview();
+    } else if (currentFractalType === 'diffusion-limited-aggregation') {
+      // Diffusion Limited Aggregation - default rainbow color scheme
+      params.colorScheme = 'rainbow';
+      if (colorSchemeSelect) colorSchemeSelect.value = 'rainbow';
+      const newIndex = colorSchemes.indexOf('rainbow');
+      if (newIndex !== -1) {
+        currentColorSchemeIndex = newIndex;
+      }
+      updateColorPalettePreview();
     } else {
       // Default view for other fractals
       params.zoom = 1;
