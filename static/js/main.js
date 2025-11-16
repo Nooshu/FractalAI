@@ -1210,10 +1210,10 @@ function setupUI() {
         fullscreenIterationsNumberEl.textContent = '60';
       }
     } else if (currentFractalType === 'snowflake-tiling') {
-      // Snowflake Tiling - default centered view with 40 iterations and Rainbow Double theme
-      params.zoom = 1;
-      params.offset.x = 0;
-      params.offset.y = 0;
+      // Snowflake Tiling - initial render position
+      params.zoom = 4;
+      params.offset.x = 0.7616;
+      params.offset.y = 0.516;
       params.iterations = 40;
       iterationsExplicitlySet = true;
       if (iterationsSlider) iterationsSlider.value = 40;
@@ -1231,10 +1231,10 @@ function setupUI() {
       }
       updateColorPalettePreview();
     } else if (currentFractalType === 'domino-substitution') {
-      // Domino Substitution - default centered view with 40 iterations and Rainbow Double theme
-      params.zoom = 1;
-      params.offset.x = 0;
-      params.offset.y = 0;
+      // Domino Substitution - initial render position
+      params.zoom = 8.8;
+      params.offset.x = 0.3353;
+      params.offset.y = 0.2999;
       params.iterations = 40;
       iterationsExplicitlySet = true;
       if (iterationsSlider) iterationsSlider.value = 40;
@@ -1251,6 +1251,11 @@ function setupUI() {
         currentColorSchemeIndex = newIndex;
       }
       updateColorPalettePreview();
+    } else if (currentFractalType === 'pinwheel-tiling') {
+      // Pinwheel Tiling - initial render position
+      params.zoom = 1;
+      params.offset.x = 2.46;
+      params.offset.y = 1.631;
     } else if (currentFractalType === 'carpenter-square') {
       // Carpenter Square - default centered view with appropriate zoom
       // Base is at (0, -0.6), tree grows upward
