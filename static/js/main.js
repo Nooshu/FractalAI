@@ -76,7 +76,7 @@ function generateCacheKey() {
   const colorScheme = params.colorScheme;
   const xScale = Math.round(params.xScale * 100) / 100;
   const yScale = Math.round(params.yScale * 100) / 100;
-  const isJuliaType = currentFractalType === 'julia' || currentFractalType === 'julia-snakes' || currentFractalType === 'multibrot-julia' || currentFractalType === 'burning-ship-julia' || currentFractalType === 'tricorn-julia' || currentFractalType === 'phoenix-julia' || currentFractalType === 'lambda-julia' || currentFractalType === 'hybrid-julia';
+  const isJuliaType = currentFractalType === 'julia' || currentFractalType === 'julia-snakes' || currentFractalType === 'multibrot-julia' || currentFractalType === 'burning-ship-julia' || currentFractalType === 'tricorn-julia' || currentFractalType === 'phoenix-julia' || currentFractalType === 'lambda-julia' || currentFractalType === 'hybrid-julia' || currentFractalType === 'magnet';
   const juliaCX = isJuliaType ? Math.round(params.juliaC.x * 10000) / 10000 : 0;
   const juliaCY = isJuliaType ? Math.round(params.juliaC.y * 10000) / 10000 : 0;
   // Use display dimensions (not render dimensions affected by pixel ratio) for cache key
@@ -662,7 +662,7 @@ function setupUI() {
   });
 
   // Initialize Julia controls state based on current fractal type
-  const isJulia = currentFractalType === 'julia' || currentFractalType === 'julia-snakes' || currentFractalType === 'multibrot-julia' || currentFractalType === 'burning-ship-julia' || currentFractalType === 'tricorn-julia' || currentFractalType === 'phoenix-julia' || currentFractalType === 'lambda-julia' || currentFractalType === 'hybrid-julia';
+  const isJulia = currentFractalType === 'julia' || currentFractalType === 'julia-snakes' || currentFractalType === 'multibrot-julia' || currentFractalType === 'burning-ship-julia' || currentFractalType === 'tricorn-julia' || currentFractalType === 'phoenix-julia' || currentFractalType === 'lambda-julia' || currentFractalType === 'hybrid-julia' || currentFractalType === 'magnet';
   juliaCReal.disabled = !isJulia;
   juliaCImag.disabled = !isJulia;
   if (isJulia) {
@@ -743,14 +743,6 @@ function setupUI() {
     // Clear frame cache when fractal type changes
     clearFrameCache();
 
-    // Clear the canvas before switching fractals
-    if (regl && canvas) {
-      regl.clear({
-        color: [0, 0, 0, 1],
-        depth: 1,
-      });
-    }
-
     // Load the new fractal module
     try {
       await loadFractal(currentFractalType);
@@ -764,7 +756,7 @@ function setupUI() {
     }
 
     // Enable/disable Julia controls based on fractal type
-    const isJulia = currentFractalType === 'julia' || currentFractalType === 'julia-snakes' || currentFractalType === 'multibrot-julia' || currentFractalType === 'burning-ship-julia' || currentFractalType === 'tricorn-julia' || currentFractalType === 'phoenix-julia' || currentFractalType === 'lambda-julia' || currentFractalType === 'hybrid-julia';
+    const isJulia = currentFractalType === 'julia' || currentFractalType === 'julia-snakes' || currentFractalType === 'multibrot-julia' || currentFractalType === 'burning-ship-julia' || currentFractalType === 'tricorn-julia' || currentFractalType === 'phoenix-julia' || currentFractalType === 'lambda-julia' || currentFractalType === 'hybrid-julia' || currentFractalType === 'magnet';
     juliaCReal.disabled = !isJulia;
     juliaCImag.disabled = !isJulia;
     if (isJulia) {
@@ -778,6 +770,9 @@ function setupUI() {
     // (will be overridden by fractal-specific values below if needed)
     params.xScale = 1.0;
     params.yScale = 1.0;
+    
+    // Track whether iterations were explicitly set for this fractal type
+    let iterationsExplicitlySet = false;
     
     if (currentFractalType === 'burning-ship') {
       // Burning Ship - shows the ship upright
@@ -846,6 +841,7 @@ function setupUI() {
       params.offset.x = 0;
       params.offset.y = 0;
       params.iterations = 50;
+      iterationsExplicitlySet = true;
       if (iterationsSlider) iterationsSlider.value = 50;
       if (iterationsValue) iterationsValue.textContent = '50';
       const fullscreenIterationsNumberEl = document.getElementById('fullscreen-iterations-number');
@@ -859,6 +855,7 @@ function setupUI() {
       params.offset.x = 0;
       params.offset.y = 0;
       params.iterations = 50;
+      iterationsExplicitlySet = true;
       params.xScale = 0.5; // alpha = 0.55 (good default for interesting patterns)
       if (iterationsSlider) iterationsSlider.value = 50;
       if (iterationsValue) iterationsValue.textContent = '50';
@@ -874,6 +871,7 @@ function setupUI() {
       params.offset.x = 0;
       params.offset.y = 0;
       params.iterations = 50;
+      iterationsExplicitlySet = true;
       if (iterationsSlider) iterationsSlider.value = 50;
       if (iterationsValue) iterationsValue.textContent = '50';
       const fullscreenIterationsNumberEl = document.getElementById('fullscreen-iterations-number');
@@ -906,6 +904,7 @@ function setupUI() {
       params.offset.y = 0;
       // Set iterations to 25
       params.iterations = 25;
+      iterationsExplicitlySet = true;
       // Update iterations slider and value
       if (iterationsSlider) iterationsSlider.value = 25;
       if (iterationsValue) iterationsValue.textContent = '25';
@@ -930,6 +929,7 @@ function setupUI() {
       // Set monochrome color scheme and 40 iterations
       params.colorScheme = 'monochrome';
       params.iterations = 40;
+      iterationsExplicitlySet = true;
       // Update color scheme selector
       if (colorSchemeSelect) colorSchemeSelect.value = 'monochrome';
       // Update color scheme index for fullscreen cycling
@@ -962,6 +962,7 @@ function setupUI() {
       if (juliaCImagValue) juliaCImagValue.textContent = '0.5000';
       // Set iterations to 25
       params.iterations = 25;
+      iterationsExplicitlySet = true;
       // Update iterations slider and value
       if (iterationsSlider) iterationsSlider.value = 25;
       if (iterationsValue) iterationsValue.textContent = '25';
@@ -1011,6 +1012,7 @@ function setupUI() {
       // Set monochrome color scheme and 20 iterations
       params.colorScheme = 'monochrome';
       params.iterations = 20;
+      iterationsExplicitlySet = true;
       // Update color scheme selector
       if (colorSchemeSelect) colorSchemeSelect.value = 'monochrome';
       // Update color scheme index for fullscreen cycling
@@ -1044,6 +1046,7 @@ function setupUI() {
       // Set monochrome color scheme and 100 iterations (hybrid sets need more iterations)
       params.colorScheme = 'monochrome';
       params.iterations = 100;
+      iterationsExplicitlySet = true;
       // Update color scheme selector
       if (colorSchemeSelect) colorSchemeSelect.value = 'monochrome';
       // Update color scheme index for fullscreen cycling
@@ -1061,6 +1064,41 @@ function setupUI() {
       if (fullscreenIterationsNumberEl) {
         fullscreenIterationsNumberEl.textContent = '100';
       }
+    } else if (currentFractalType === 'magnet') {
+      // Magnet Fractal - iterated rational function
+      // Formula: z_new = (z^2 + (a-1)z) / (az + 1)
+      // Parameter 'a' is controlled by Julia C
+      // Use an interesting view with better parameters for visual appeal
+      params.zoom = 2.0;
+      params.offset.x = 0.2;
+      params.offset.y = -0.1;
+      // Use interesting complex parameter 'a' for magnet fractal
+      // Complex values create more interesting patterns than real-only values
+      // a = 1.2 + 0.8i produces beautiful magnetic patterns with spirals
+      params.juliaC.x = 1.2;
+      params.juliaC.y = 0.8;
+      // Update Julia C sliders
+      if (juliaCReal) juliaCReal.value = 1.2;
+      if (juliaCImag) juliaCImag.value = 0.8;
+      if (juliaCRealValue) juliaCRealValue.textContent = '1.2000';
+      if (juliaCImagValue) juliaCImagValue.textContent = '0.8000';
+      // Set iterations - higher for more detail
+      params.iterations = 100;
+      iterationsExplicitlySet = true;
+      if (iterationsSlider) iterationsSlider.value = 100;
+      if (iterationsValue) iterationsValue.textContent = '100';
+      const fullscreenIterationsNumberEl = document.getElementById('fullscreen-iterations-number');
+      if (fullscreenIterationsNumberEl) {
+        fullscreenIterationsNumberEl.textContent = '100';
+      }
+      // Use a vibrant color scheme by default
+      params.colorScheme = 'rainbow';
+      if (colorSchemeSelect) colorSchemeSelect.value = 'rainbow';
+      const newIndex = colorSchemes.indexOf('rainbow');
+      if (newIndex !== -1) {
+        currentColorSchemeIndex = newIndex;
+      }
+      updateColorPalettePreview();
     } else {
       // Default view for other fractals
       params.zoom = 1;
@@ -1068,8 +1106,28 @@ function setupUI() {
       params.offset.y = 0;
     }
     
-    // Always render immediately when switching fractals (regardless of auto-render setting)
-    renderFractalProgressive();
+    // Set default iterations to 200 if not explicitly set for this fractal type
+    if (!iterationsExplicitlySet) {
+      params.iterations = 200;
+      if (iterationsSlider) iterationsSlider.value = 200;
+      if (iterationsValue) iterationsValue.textContent = '200';
+      const fullscreenIterationsNumberEl = document.getElementById('fullscreen-iterations-number');
+      if (fullscreenIterationsNumberEl) {
+        fullscreenIterationsNumberEl.textContent = '200';
+      }
+    }
+    
+    // Render only if auto-render is enabled
+    if (autoRenderEnabled) {
+      // Clear the canvas before rendering the new fractal
+      if (regl && canvas) {
+        regl.clear({
+          color: [0, 0, 0, 1],
+          depth: 1,
+        });
+      }
+      renderFractalProgressive();
+    }
   });
 
   iterationsSlider.addEventListener('input', (e) => {
