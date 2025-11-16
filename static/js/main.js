@@ -1135,6 +1135,21 @@ function setupUI() {
         currentColorSchemeIndex = newIndex;
       }
       updateColorPalettePreview();
+    } else if (currentFractalType === 'carpenter-square') {
+      // Carpenter Square - default centered view with appropriate zoom
+      // Base is at (0, -0.6), tree grows upward
+      // Offset centers the view on the tree structure (positive offset shifts view right/up)
+      params.zoom = 0.5;
+      params.offset.x = 1.0;
+      params.offset.y = 0.5;
+      // Set Rainbow Double color scheme by default
+      params.colorScheme = 'rainbow5';
+      if (colorSchemeSelect) colorSchemeSelect.value = 'rainbow5';
+      const newIndex = colorSchemes.indexOf('rainbow5');
+      if (newIndex !== -1) {
+        currentColorSchemeIndex = newIndex;
+      }
+      updateColorPalettePreview();
     } else {
       // Default view for other fractals
       params.zoom = 1;
