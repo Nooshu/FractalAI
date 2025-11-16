@@ -1148,6 +1148,27 @@ function setupUI() {
       if (fullscreenIterationsNumberEl) {
         fullscreenIterationsNumberEl.textContent = '60';
       }
+    } else if (currentFractalType === 'snowflake-tiling') {
+      // Snowflake Tiling - default centered view with 40 iterations and Rainbow Double theme
+      params.zoom = 1;
+      params.offset.x = 0;
+      params.offset.y = 0;
+      params.iterations = 40;
+      iterationsExplicitlySet = true;
+      if (iterationsSlider) iterationsSlider.value = 40;
+      if (iterationsValue) iterationsValue.textContent = '40';
+      const fullscreenIterationsNumberEl = document.getElementById('fullscreen-iterations-number');
+      if (fullscreenIterationsNumberEl) {
+        fullscreenIterationsNumberEl.textContent = '40';
+      }
+      // Set Rainbow Double color scheme by default
+      params.colorScheme = 'rainbow5';
+      if (colorSchemeSelect) colorSchemeSelect.value = 'rainbow5';
+      const newIndex = colorSchemes.indexOf('rainbow5');
+      if (newIndex !== -1) {
+        currentColorSchemeIndex = newIndex;
+      }
+      updateColorPalettePreview();
     } else if (currentFractalType === 'recursive-polygon-splitting') {
       // Recursive Polygon Splitting - default centered view with rainbow color scheme
       params.zoom = 1;
