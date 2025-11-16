@@ -911,10 +911,10 @@ function setupUI() {
       params.offset.x = -0.003;
       params.offset.y = 0.0713;
     } else if (currentFractalType === 'newton') {
-      // Newton Fractal - default centered view showing the three roots
+      // Newton Fractal - initial render position
       params.zoom = 1;
-      params.offset.x = 0;
-      params.offset.y = 0;
+      params.offset.x = 0.238;
+      params.offset.y = 0.139;
       params.iterations = 50;
       iterationsExplicitlySet = true;
       if (iterationsSlider) iterationsSlider.value = 50;
@@ -924,11 +924,11 @@ function setupUI() {
         fullscreenIterationsNumberEl.textContent = '50';
       }
     } else if (currentFractalType === 'nova') {
-      // Nova Fractal - default centered view showing the three roots
+      // Nova Fractal - initial render position
       // Uses relaxed Newton's method with alpha parameter controlled by xScale
       params.zoom = 1;
-      params.offset.x = 0;
-      params.offset.y = 0;
+      params.offset.x = 0.135;
+      params.offset.y = 0.165;
       params.iterations = 50;
       iterationsExplicitlySet = true;
       params.xScale = 0.5; // alpha = 0.55 (good default for interesting patterns)
@@ -941,10 +941,10 @@ function setupUI() {
         fullscreenIterationsNumberEl.textContent = '50';
       }
     } else if (currentFractalType === 'halley') {
-      // Halley Fractal - default centered view showing the three roots
+      // Halley Fractal - initial render position
       params.zoom = 1;
-      params.offset.x = 0;
-      params.offset.y = 0;
+      params.offset.x = 0.25;
+      params.offset.y = 0.118;
       params.iterations = 50;
       iterationsExplicitlySet = true;
       if (iterationsSlider) iterationsSlider.value = 50;
