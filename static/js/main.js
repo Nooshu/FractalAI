@@ -1122,6 +1122,19 @@ function setupUI() {
         currentColorSchemeIndex = newIndex;
       }
       updateColorPalettePreview();
+    } else if (currentFractalType === 'recursive-polygon-splitting') {
+      // Recursive Polygon Splitting - default centered view with rainbow color scheme
+      params.zoom = 1;
+      params.offset.x = 0;
+      params.offset.y = 0;
+      // Set rainbow color scheme by default
+      params.colorScheme = 'rainbow';
+      if (colorSchemeSelect) colorSchemeSelect.value = 'rainbow';
+      const newIndex = colorSchemes.indexOf('rainbow');
+      if (newIndex !== -1) {
+        currentColorSchemeIndex = newIndex;
+      }
+      updateColorPalettePreview();
     } else {
       // Default view for other fractals
       params.zoom = 1;
