@@ -37,7 +37,8 @@ export class BenchmarkUI {
             <input type="number" id="benchmark-duration" value="3000" min="1000" max="10000" step="500">
           </label>
           <button id="benchmark-run" class="benchmark-btn">Run Benchmark</button>
-          <button id="benchmark-export" class="benchmark-btn" disabled>Export Results</button>
+          <button id="benchmark-export-json" class="benchmark-btn" disabled>Export JSON</button>
+          <button id="benchmark-export-txt" class="benchmark-btn" disabled>Export TXT</button>
         </div>
         <div id="benchmark-status" class="benchmark-status"></div>
         <div id="benchmark-results" class="benchmark-results"></div>
@@ -56,8 +57,12 @@ export class BenchmarkUI {
       this.runBenchmark();
     });
 
-    document.getElementById('benchmark-export').addEventListener('click', () => {
-      this.exportResults();
+    document.getElementById('benchmark-export-json').addEventListener('click', () => {
+      this.exportResults('json');
+    });
+
+    document.getElementById('benchmark-export-txt').addEventListener('click', () => {
+      this.exportResults('txt');
     });
 
     // Initially hidden
@@ -84,7 +89,8 @@ export class BenchmarkUI {
     const runBtn = document.getElementById('benchmark-run');
     const statusDiv = document.getElementById('benchmark-status');
     const resultsDiv = document.getElementById('benchmark-results');
-    const exportBtn = document.getElementById('benchmark-export');
+    const exportJsonBtn = document.getElementById('benchmark-export-json');
+    const exportTxtBtn = document.getElementById('benchmark-export-txt');
 
     const suiteName = suiteSelect.value;
     const duration = parseInt(durationInput.value, 10);
@@ -108,7 +114,8 @@ export class BenchmarkUI {
       if (result.success) {
         this.results = result.results;
         resultsDiv.innerHTML = `<pre>${result.report}</pre>`;
-        exportBtn.disabled = false;
+        exportJsonBtn.disabled = false;
+        exportTxtBtn.disabled = false;
         statusDiv.innerHTML = '<div class="benchmark-success">✓ Benchmark completed successfully</div>';
       } else {
         statusDiv.innerHTML = `<div class="benchmark-error">✗ Benchmark failed: ${result.error}</div>`;
@@ -124,18 +131,31 @@ export class BenchmarkUI {
     }
   }
 
-  exportResults() {
+  exportResults(format = 'json') {
     if (!this.results) {
       alert('No results to export. Run a benchmark first.');
       return;
     }
 
-    const json = this.runner.suite.exportResults();
-    const blob = new Blob([json], { type: 'application/json' });
+    let content, mimeType, extension, filename;
+
+    if (format === 'txt') {
+      content = this.runner.suite.formatReport();
+      mimeType = 'text/plain';
+      extension = 'txt';
+      filename = `benchmark-${Date.now()}.txt`;
+    } else {
+      content = this.runner.suite.exportResults();
+      mimeType = 'application/json';
+      extension = 'json';
+      filename = `benchmark-${Date.now()}.json`;
+    }
+
+    const blob = new Blob([content], { type: mimeType });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `benchmark-${Date.now()}.json`;
+    a.download = filename;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
