@@ -1135,6 +1135,19 @@ function setupUI() {
         currentColorSchemeIndex = newIndex;
       }
       updateColorPalettePreview();
+    } else if (currentFractalType === 'chair-tiling') {
+      // Chair Tiling - default centered view with 60 iterations
+      params.zoom = 1;
+      params.offset.x = 0;
+      params.offset.y = 0;
+      params.iterations = 60;
+      iterationsExplicitlySet = true;
+      if (iterationsSlider) iterationsSlider.value = 60;
+      if (iterationsValue) iterationsValue.textContent = '60';
+      const fullscreenIterationsNumberEl = document.getElementById('fullscreen-iterations-number');
+      if (fullscreenIterationsNumberEl) {
+        fullscreenIterationsNumberEl.textContent = '60';
+      }
     } else if (currentFractalType === 'recursive-polygon-splitting') {
       // Recursive Polygon Splitting - default centered view with rainbow color scheme
       params.zoom = 1;
