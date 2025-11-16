@@ -1306,6 +1306,21 @@ function setupUI() {
       params.zoom = 1.949;
       params.offset.x = 1.3925;
       params.offset.y = 1.0736;
+    } else if (currentFractalType === 'fractal-islands') {
+      // Fractal Islands - initial render position
+      params.zoom = 1;
+      params.offset.x = 2.63;
+      params.offset.y = 2.178;
+    } else if (currentFractalType === 'koch') {
+      // Koch Curve - initial render position
+      params.zoom = 3.095;
+      params.offset.x = -0.0082;
+      params.offset.y = 0.0351;
+    } else if (currentFractalType === 'quadratic-koch') {
+      // Quadratic Koch Curve - initial render position
+      params.zoom = 2.571;
+      params.offset.x = -0.0117;
+      params.offset.y = 0.088;
     } else {
       // Default view for other fractals
       params.zoom = 1;
