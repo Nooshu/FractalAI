@@ -885,11 +885,31 @@ function setupUI() {
       params.zoom = 1;
       params.offset.x = 0.299;
       params.offset.y = 0.148;
+    } else if (currentFractalType === 'gosper-curve') {
+      // Gosper Curve - initial render position
+      params.zoom = 2;
+      params.offset.x = 0.0723;
+      params.offset.y = 0.0598;
+    } else if (currentFractalType === 'hilbert-curve') {
+      // Hilbert Curve - initial render position
+      params.zoom = 3.015;
+      params.offset.x = -0.006;
+      params.offset.y = 0.0693;
+    } else if (currentFractalType === 'levy-c-curve') {
+      // Levy C-Curve - initial render position
+      params.zoom = 1.24;
+      params.offset.x = 0.0087;
+      params.offset.y = 0.1054;
+    } else if (currentFractalType === 'moore-curve') {
+      // Moore Curve - initial render position
+      params.zoom = 2.662;
+      params.offset.x = 0.0016;
+      params.offset.y = 0.1022;
     } else if (currentFractalType === 'peano-curve') {
-      // Peano Curve - default centered view
-      params.zoom = 1;
-      params.offset.x = 0;
-      params.offset.y = 0;
+      // Peano Curve - initial render position
+      params.zoom = 2.969;
+      params.offset.x = -0.003;
+      params.offset.y = 0.0713;
     } else if (currentFractalType === 'newton') {
       // Newton Fractal - default centered view showing the three roots
       params.zoom = 1;
@@ -942,11 +962,6 @@ function setupUI() {
       if (fullscreenIterationsNumberEl) {
         fullscreenIterationsNumberEl.textContent = '100';
       }
-    } else if (currentFractalType === 'hilbert-curve') {
-      // Hilbert Curve - default centered view
-      params.zoom = 1;
-      params.offset.x = 0;
-      params.offset.y = 0;
     } else if (currentFractalType === 'multibrot') {
       // Multibrot Set - default centered view with order 4 (cubic)
       // Note: xScale controls the multibrot order, not coordinate scaling
