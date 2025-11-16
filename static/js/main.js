@@ -856,15 +856,35 @@ function setupUI() {
       if (juliaCRealValue) juliaCRealValue.textContent = '-0.4000';
       if (juliaCImagValue) juliaCImagValue.textContent = '0.6000';
     } else if (currentFractalType === 'binary-dragon') {
-      // Binary Dragon - default centered view
+      // Binary Dragon - initial render position
       params.zoom = 1;
-      params.offset.x = 0;
-      params.offset.y = 0;
+      params.offset.x = 2.812;
+      params.offset.y = 0.009;
+    } else if (currentFractalType === 'dragon-lsystem') {
+      // Dragon L-System - initial render position
+      params.zoom = 0.666;
+      params.offset.x = 0.2164;
+      params.offset.y = 0.3085;
     } else if (currentFractalType === 'folded-paper-dragon') {
-      // Folded Paper Dragon - default centered view
+      // Folded Paper Dragon - initial render position
+      params.zoom = 2;
+      params.offset.x = -0.3009;
+      params.offset.y = -0.2052;
+    } else if (currentFractalType === 'heighway-dragon') {
+      // Heighway Dragon - initial render position
+      params.zoom = 2;
+      params.offset.x = 0.2257;
+      params.offset.y = -0.1287;
+    } else if (currentFractalType === 'terdragon') {
+      // Terdragon - initial render position
       params.zoom = 1;
-      params.offset.x = 0;
-      params.offset.y = 0;
+      params.offset.x = 0.167;
+      params.offset.y = 0.114;
+    } else if (currentFractalType === 'twindragon') {
+      // Twindragon - initial render position
+      params.zoom = 1;
+      params.offset.x = 0.299;
+      params.offset.y = 0.148;
     } else if (currentFractalType === 'peano-curve') {
       // Peano Curve - default centered view
       params.zoom = 1;
