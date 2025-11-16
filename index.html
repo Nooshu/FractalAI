@@ -124,56 +124,76 @@
               <div class="control">
                 <label for="fractal-type">Type</label>
                 <select id="fractal-type" class="styled-select">
-                  <option value="binary-dragon">Binary Dragon</option>
-                  <option value="box-variants">Box Fractal Variants</option>
-                  <option value="buffalo">Buffalo</option>
-                  <option value="burning-ship">Burning Ship</option>
-                  <option value="burning-ship-julia">Burning Ship Julia Set</option>
-                  <option value="cantor">Cantor Set</option>
-                  <option value="celtic-mandelbrot">Celtic Mandelbrot</option>
-                  <option value="cesaro">Cesàro Fractal</option>
-                  <option value="cross">Cross Fractal</option>
-                  <option value="fat-cantor">Fat Cantor Set</option>
-                  <option value="folded-paper-dragon">Folded Paper Dragon</option>
-                  <option value="h-tree-generalized">Generalized H-Tree</option>
-                  <option value="sierpinski-gasket">Generalised Sierpinski Gasket</option>
-                  <option value="h-tree">H-Tree</option>
-                  <option value="halley">Halley Fractal</option>
-                  <option value="heighway-dragon">Heighway Dragon</option>
-                  <option value="hilbert-curve">Hilbert Curve</option>
-                  <option value="hybrid-julia">Hybrid Julia Set</option>
-                  <option value="julia">Julia Set</option>
-                  <option value="julia-snakes">Julia Snakes</option>
-                  <option value="koch">Koch Snowflake</option>
-                  <option value="lambda-julia">Lambda Julia Set</option>
-                  <option value="mandelbrot" selected>Mandelbrot Set</option>
-                  <option value="magnet">Magnet Fractal</option>
-                  <option value="minkowski-sausage">Minkowski Sausage</option>
-                  <option value="multibrot">Multibrot Set</option>
-                  <option value="multibrot-julia">Multibrot Julia Sets</option>
-                  <option value="mutant-mandelbrot">Mutant Mandelbrot</option>
-                  <option value="nebulabrot">Nebulabrot</option>
-                  <option value="newton">Newton Fractal</option>
-                  <option value="nova">Nova Fractal</option>
-                  <option value="peano-curve">Peano Curve</option>
-                  <option value="phoenix-mandelbrot">Phoenix Mandelbrot</option>
-                  <option value="phoenix-julia">Phoenix Julia Set</option>
-                  <option value="popcorn">Popcorn</option>
-                  <option value="quadratic-koch">Quadratic Koch Island</option>
-                  <option value="random-cantor">Randomised Cantor Set</option>
-                  <option value="rose">Rose Window</option>
-                  <option value="sierpinski-arrowhead">Sierpinski Arrowhead Curve</option>
-                  <option value="sierpinski-carpet">Sierpinski Carpet</option>
-                  <option value="sierpinski-hexagon">Sierpinski Hexagon</option>
-                  <option value="sierpinski-pentagon">Sierpinski Pentagon</option>
-                  <option value="sierpinski">Sierpinski Triangle</option>
-                  <option value="smith-volterra-cantor">Smith-Volterra-Cantor Set</option>
-                  <option value="spider-set">Spider Set</option>
-                  <option value="terdragon">Terdragon</option>
-                  <option value="tricorn-julia">Tricorn Julia Set</option>
-                  <option value="twindragon">Twindragon</option>
-                  <option value="vicsek">Vicsek Snowflake</option>
-                    </select>
+                  <optgroup label="Mandelbrot Family">
+                    <option value="mandelbrot" selected>Mandelbrot Set</option>
+                    <option value="celtic-mandelbrot">Celtic Mandelbrot</option>
+                    <option value="multibrot">Multibrot Set</option>
+                    <option value="mutant-mandelbrot">Mutant Mandelbrot</option>
+                    <option value="phoenix-mandelbrot">Phoenix Mandelbrot</option>
+                    <option value="burning-ship">Burning Ship</option>
+                    <option value="nebulabrot">Nebulabrot</option>
+                  </optgroup>
+                  <optgroup label="Julia Sets">
+                    <option value="julia">Julia Set</option>
+                    <option value="julia-snakes">Julia Snakes</option>
+                    <option value="multibrot-julia">Multibrot Julia Sets</option>
+                    <option value="burning-ship-julia">Burning Ship Julia Set</option>
+                    <option value="tricorn-julia">Tricorn Julia Set</option>
+                    <option value="phoenix-julia">Phoenix Julia Set</option>
+                    <option value="lambda-julia">Lambda Julia Set</option>
+                    <option value="hybrid-julia">Hybrid Julia Set</option>
+                  </optgroup>
+                  <optgroup label="Sierpinski Family">
+                    <option value="sierpinski">Sierpinski Triangle</option>
+                    <option value="sierpinski-carpet">Sierpinski Carpet</option>
+                    <option value="sierpinski-gasket">Generalised Sierpinski Gasket</option>
+                    <option value="sierpinski-arrowhead">Sierpinski Arrowhead Curve</option>
+                    <option value="sierpinski-hexagon">Sierpinski Hexagon</option>
+                    <option value="sierpinski-pentagon">Sierpinski Pentagon</option>
+                  </optgroup>
+                  <optgroup label="Koch Family">
+                    <option value="koch">Koch Snowflake</option>
+                    <option value="quadratic-koch">Quadratic Koch Island</option>
+                  </optgroup>
+                  <optgroup label="Cantor Family">
+                    <option value="cantor">Cantor Set</option>
+                    <option value="fat-cantor">Fat Cantor Set</option>
+                    <option value="smith-volterra-cantor">Smith-Volterra-Cantor Set</option>
+                    <option value="random-cantor">Randomised Cantor Set</option>
+                  </optgroup>
+                  <optgroup label="Dragon Curves">
+                    <option value="heighway-dragon">Heighway Dragon</option>
+                    <option value="terdragon">Terdragon</option>
+                    <option value="twindragon">Twindragon</option>
+                    <option value="binary-dragon">Binary Dragon</option>
+                    <option value="folded-paper-dragon">Folded Paper Dragon</option>
+                  </optgroup>
+                  <optgroup label="Space-Filling Curves">
+                    <option value="hilbert-curve">Hilbert Curve</option>
+                    <option value="peano-curve">Peano Curve</option>
+                    <option value="moore-curve">Moore Curve</option>
+                    <option value="gosper-curve">Gosper Curve</option>
+                  </optgroup>
+                  <optgroup label="Root-Finding Fractals">
+                    <option value="newton">Newton Fractal</option>
+                    <option value="halley">Halley Fractal</option>
+                    <option value="nova">Nova Fractal</option>
+                  </optgroup>
+                  <optgroup label="Other Fractals">
+                    <option value="h-tree">H-Tree</option>
+                    <option value="h-tree-generalized">Generalized H-Tree</option>
+                    <option value="vicsek">Vicsek Snowflake</option>
+                    <option value="cross">Cross Fractal</option>
+                    <option value="rose">Rose Window</option>
+                    <option value="box-variants">Box Fractal Variants</option>
+                    <option value="minkowski-sausage">Minkowski Sausage</option>
+                    <option value="buffalo">Buffalo</option>
+                    <option value="popcorn">Popcorn</option>
+                    <option value="spider-set">Spider Set</option>
+                    <option value="magnet">Magnet Fractal</option>
+                    <option value="cesaro">Cesàro Fractal</option>
+                  </optgroup>
+                </select>
                 </div>
             </div>
           </div>
