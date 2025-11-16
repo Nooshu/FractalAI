@@ -855,15 +855,6 @@ function setupUI() {
       if (juliaCImag) juliaCImag.value = 0.6;
       if (juliaCRealValue) juliaCRealValue.textContent = '-0.4000';
       if (juliaCImagValue) juliaCImagValue.textContent = '0.6000';
-    } else if (currentFractalType === 'sierpinski-gasket') {
-      // Generalised Sierpinski Gasket - start with hexagon (xScale = 0.5)
-      params.zoom = 1;
-      params.offset.x = 0;
-      params.offset.y = 0;
-      params.xScale = 0.5; // 6 sides (hexagon)
-      // Update xScale slider
-      if (xScaleSlider) xScaleSlider.value = 0.5;
-      if (xScaleValue) xScaleValue.textContent = '0.5';
     } else if (currentFractalType === 'binary-dragon') {
       // Binary Dragon - default centered view
       params.zoom = 1;
@@ -1220,19 +1211,6 @@ function setupUI() {
         currentColorSchemeIndex = newIndex;
       }
       updateColorPalettePreview();
-    } else if (currentFractalType === 'recursive-polygon-splitting') {
-      // Recursive Polygon Splitting - default centered view with rainbow color scheme
-      params.zoom = 1;
-      params.offset.x = 0;
-      params.offset.y = 0;
-      // Set rainbow color scheme by default
-      params.colorScheme = 'rainbow';
-      if (colorSchemeSelect) colorSchemeSelect.value = 'rainbow';
-      const newIndex = colorSchemes.indexOf('rainbow');
-      if (newIndex !== -1) {
-        currentColorSchemeIndex = newIndex;
-      }
-      updateColorPalettePreview();
     } else if (currentFractalType === 'carpenter-square') {
       // Carpenter Square - default centered view with appropriate zoom
       // Base is at (0, -0.6), tree grows upward
@@ -1266,6 +1244,68 @@ function setupUI() {
         currentColorSchemeIndex = newIndex;
       }
       updateColorPalettePreview();
+    } else if (currentFractalType === 'sierpinski') {
+      // Sierpinski Triangle - initial render position
+      params.zoom = 1.772;
+      params.offset.x = 0.0089;
+      params.offset.y = 0.039;
+    } else if (currentFractalType === 'sierpinski-arrowhead') {
+      // Sierpinski Arrowhead - initial render position
+      params.zoom = 2;
+      params.offset.x = -0.002;
+      params.offset.y = -0.0211;
+    } else if (currentFractalType === 'sierpinski-carpet') {
+      // Sierpinski Carpet - initial render position
+      params.zoom = 1.456;
+      params.offset.x = 0.1169;
+      params.offset.y = 0.1266;
+    } else if (currentFractalType === 'sierpinski-gasket') {
+      // Sierpinski Gasket - initial render position
+      params.zoom = 1;
+      params.offset.x = 0.019;
+      params.offset.y = 0.144;
+      params.xScale = 0.5; // 6 sides (hexagon)
+      // Update xScale slider
+      if (xScaleSlider) xScaleSlider.value = 0.5;
+      if (xScaleValue) xScaleValue.textContent = '0.5';
+    } else if (currentFractalType === 'sierpinski-hexagon') {
+      // Sierpinski Hexagon - initial render position
+      params.zoom = 1.871;
+      params.offset.x = 0.0056;
+      params.offset.y = 0.0898;
+    } else if (currentFractalType === 'sierpinski-lsystem') {
+      // Sierpinski L-System - initial render position
+      params.zoom = 1.35;
+      params.offset.x = 0;
+      params.offset.y = 0;
+    } else if (currentFractalType === 'sierpinski-pentagon') {
+      // Sierpinski Pentagon - initial render position
+      params.zoom = 1.938;
+      params.offset.x = 0;
+      params.offset.y = 0;
+    } else if (currentFractalType === 'quadrilateral-subdivision') {
+      // Quadrilateral Subdivision - initial render position
+      params.zoom = 3.186;
+      params.offset.x = 0.9638;
+      params.offset.y = 0.6144;
+    } else if (currentFractalType === 'recursive-polygon-splitting') {
+      // Recursive Polygon Splitting - initial render position
+      params.zoom = 2;
+      params.offset.x = 1.4952;
+      params.offset.y = 1.059;
+      // Set rainbow color scheme by default
+      params.colorScheme = 'rainbow';
+      if (colorSchemeSelect) colorSchemeSelect.value = 'rainbow';
+      const newIndex = colorSchemes.indexOf('rainbow');
+      if (newIndex !== -1) {
+        currentColorSchemeIndex = newIndex;
+      }
+      updateColorPalettePreview();
+    } else if (currentFractalType === 'triangular-subdivision') {
+      // Triangular Subdivision - initial render position
+      params.zoom = 1.949;
+      params.offset.x = 1.3925;
+      params.offset.y = 1.0736;
     } else {
       // Default view for other fractals
       params.zoom = 1;
