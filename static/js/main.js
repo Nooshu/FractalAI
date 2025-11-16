@@ -802,6 +802,11 @@ function setupUI() {
       params.zoom = 1.2;
       params.offset.x = -0.5;
       params.offset.y = -0.6;
+    } else if (currentFractalType === 'tricorn') {
+      // Tricorn - similar view to Mandelbrot but inverted
+      params.zoom = 1;
+      params.offset.x = 0;
+      params.offset.y = 0;
     } else if (currentFractalType === 'celtic-mandelbrot') {
       // Celtic Mandelbrot - similar view to Burning Ship
       params.zoom = 1.2;
@@ -897,9 +902,18 @@ function setupUI() {
       iterationsExplicitlySet = true;
       if (iterationsSlider) iterationsSlider.value = 50;
       if (iterationsValue) iterationsValue.textContent = '50';
+    } else if (currentFractalType === 'barnsley-fern') {
+      // Barnsley Fern - best viewed from center, slightly zoomed out
+      params.zoom = 0.8;
+      params.offset.x = 0;
+      params.offset.y = -0.3;
+      params.iterations = 100;
+      iterationsExplicitlySet = true;
+      if (iterationsSlider) iterationsSlider.value = 100;
+      if (iterationsValue) iterationsValue.textContent = '100';
       const fullscreenIterationsNumberEl = document.getElementById('fullscreen-iterations-number');
       if (fullscreenIterationsNumberEl) {
-        fullscreenIterationsNumberEl.textContent = '50';
+        fullscreenIterationsNumberEl.textContent = '100';
       }
     } else if (currentFractalType === 'hilbert-curve') {
       // Hilbert Curve - default centered view
