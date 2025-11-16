@@ -1159,6 +1159,15 @@ function setupUI() {
         currentColorSchemeIndex = newIndex;
       }
       updateColorPalettePreview();
+    } else if (currentFractalType === 'levy-flights') {
+      // Lévy Flights - default rainbow vibrant color scheme
+      params.colorScheme = 'rainbow4';
+      if (colorSchemeSelect) colorSchemeSelect.value = 'rainbow4';
+      const newIndex = colorSchemes.indexOf('rainbow4');
+      if (newIndex !== -1) {
+        currentColorSchemeIndex = newIndex;
+      }
+      updateColorPalettePreview();
     } else {
       // Default view for other fractals
       params.zoom = 1;
