@@ -158,7 +158,7 @@ let params = {
 };
 
 // Initialize regl
-function init() {
+async function init() {
   canvas = document.getElementById('fractal-canvas');
   const container = canvas.parentElement;
 
@@ -250,6 +250,7 @@ function init() {
   setupCollapsibleSections();
   setupPanelToggle();
   setupCoordinateCopy();
+  setupShareFractal();
   updateCoordinateDisplay();
 
   // Initialize benchmark UI
@@ -280,12 +281,20 @@ function init() {
     currentFractalType = fractalTypeSelect.value;
   }
 
-  // Load initial fractal
-  loadFractal(currentFractalType).then(() => {
-    renderFractal();
-    updateCoordinateDisplay();
+  // Try to load fractal state from URL first
+  const loadedFromURL = await loadFractalFromURL();
+  
+  if (!loadedFromURL) {
+    // Load initial fractal if not loaded from URL
+    loadFractal(currentFractalType).then(() => {
+      renderFractal();
+      updateCoordinateDisplay();
+      animate();
+    });
+  } else {
+    // If loaded from URL, just start animation
     animate();
-  });
+  }
 }
 
 // Dynamically load a fractal module
@@ -3613,6 +3622,243 @@ function setupCoordinateCopy() {
       });
     });
   }
+}
+
+// Fractal state encoding/decoding for sharing
+function encodeFractalState() {
+  const state = {
+    t: currentFractalType, // type
+    c: params.colorScheme, // color scheme
+    z: Math.round(params.zoom * 10000) / 10000, // zoom
+    i: params.iterations, // iterations
+    ox: Math.round(params.offset.x * 100000) / 100000, // offset x
+    oy: Math.round(params.offset.y * 100000) / 100000, // offset y
+    xs: Math.round(params.xScale * 100) / 100, // x scale
+    ys: Math.round(params.yScale * 100) / 100, // y scale
+  };
+
+  // Add Julia parameters if it's a Julia type fractal
+  if (isJuliaType(currentFractalType)) {
+    state.jx = Math.round(params.juliaC.x * 100000) / 100000; // julia c real
+    state.jy = Math.round(params.juliaC.y * 100000) / 100000; // julia c imag
+  }
+
+  // Convert to base64 URL-safe string
+  const json = JSON.stringify(state);
+  return btoa(json).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+}
+
+function decodeFractalState(encoded) {
+  try {
+    // Decode base64 URL-safe string
+    let base64 = encoded.replace(/-/g, '+').replace(/_/g, '/');
+    // Add padding if needed
+    while (base64.length % 4) {
+      base64 += '=';
+    }
+    const json = atob(base64);
+    const state = JSON.parse(json);
+
+    return {
+      fractalType: state.t || 'mandelbrot',
+      colorScheme: state.c || 'classic',
+      zoom: state.z || 1,
+      iterations: state.i || 125,
+      offsetX: state.ox || 0,
+      offsetY: state.oy || 0,
+      xScale: state.xs || 1.0,
+      yScale: state.ys || 1.0,
+      juliaCX: state.jx,
+      juliaCY: state.jy,
+    };
+  } catch (error) {
+    console.error('Failed to decode fractal state:', error);
+    return null;
+  }
+}
+
+async function applyFractalState(state) {
+  if (!state) return false;
+
+  // Update fractal type first
+  if (state.fractalType && state.fractalType !== currentFractalType) {
+    currentFractalType = state.fractalType;
+    const fractalTypeSelect = document.getElementById('fractal-type');
+    if (fractalTypeSelect) {
+      fractalTypeSelect.value = currentFractalType;
+    }
+    await loadFractal(currentFractalType);
+  }
+
+  // Update parameters
+  if (state.zoom !== undefined) params.zoom = state.zoom;
+  if (state.iterations !== undefined) params.iterations = state.iterations;
+  if (state.colorScheme !== undefined) params.colorScheme = state.colorScheme;
+  if (state.offsetX !== undefined) params.offset.x = state.offsetX;
+  if (state.offsetY !== undefined) params.offset.y = state.offsetY;
+  if (state.xScale !== undefined) params.xScale = state.xScale;
+  if (state.yScale !== undefined) params.yScale = state.yScale;
+
+  // Update Julia parameters if provided
+  if (state.juliaCX !== undefined) params.juliaC.x = state.juliaCX;
+  if (state.juliaCY !== undefined) params.juliaC.y = state.juliaCY;
+
+  // Update UI controls
+  const iterationsSlider = document.getElementById('iterations');
+  const iterationsValue = document.getElementById('iterations-value');
+  const fullscreenIterationsNumber = document.getElementById('fullscreen-iterations-number');
+  if (iterationsSlider && state.iterations !== undefined) {
+    iterationsSlider.value = state.iterations;
+  }
+  if (iterationsValue && state.iterations !== undefined) {
+    iterationsValue.textContent = state.iterations;
+  }
+  if (fullscreenIterationsNumber && state.iterations !== undefined) {
+    fullscreenIterationsNumber.textContent = state.iterations;
+  }
+
+  const colorSchemeSelect = document.getElementById('color-scheme');
+  if (colorSchemeSelect && state.colorScheme !== undefined) {
+    colorSchemeSelect.value = state.colorScheme;
+  }
+
+  const xScaleSlider = document.getElementById('x-scale');
+  const xScaleValue = document.getElementById('x-scale-value');
+  if (xScaleSlider && state.xScale !== undefined) {
+    xScaleSlider.value = state.xScale;
+  }
+  if (xScaleValue && state.xScale !== undefined) {
+    xScaleValue.textContent = state.xScale.toFixed(1);
+  }
+
+  const yScaleSlider = document.getElementById('y-scale');
+  const yScaleValue = document.getElementById('y-scale-value');
+  if (yScaleSlider && state.yScale !== undefined) {
+    yScaleSlider.value = state.yScale;
+  }
+  if (yScaleValue && state.yScale !== undefined) {
+    yScaleValue.textContent = state.yScale.toFixed(1);
+  }
+
+  // Update Julia controls if applicable
+  if (isJuliaType(currentFractalType)) {
+    const juliaCRealSlider = document.getElementById('julia-c-real');
+    const juliaCRealValue = document.getElementById('julia-c-real-value');
+    if (juliaCRealSlider && state.juliaCX !== undefined) {
+      juliaCRealSlider.value = state.juliaCX;
+    }
+    if (juliaCRealValue && state.juliaCX !== undefined) {
+      juliaCRealValue.textContent = state.juliaCX.toFixed(4);
+    }
+
+    const juliaCImagSlider = document.getElementById('julia-c-imag');
+    const juliaCImagValue = document.getElementById('julia-c-imag-value');
+    if (juliaCImagSlider && state.juliaCY !== undefined) {
+      juliaCImagSlider.value = state.juliaCY;
+    }
+    if (juliaCImagValue && state.juliaCY !== undefined) {
+      juliaCImagValue.textContent = state.juliaCY.toFixed(4);
+    }
+  }
+
+  // Update coordinate display
+  updateCoordinateDisplay();
+
+  // Render the fractal
+  renderFractal();
+
+  return true;
+}
+
+function getShareableURL() {
+  const seed = encodeFractalState();
+  // Use origin and pathname to ensure we get a clean URL without existing query params
+  const url = new URL(window.location.origin + window.location.pathname);
+  url.searchParams.set('seed', seed);
+  return url.toString();
+}
+
+function getShareableSeed() {
+  return encodeFractalState();
+}
+
+function setupShareFractal() {
+  const shareBtn = document.getElementById('share-fractal-btn');
+  if (shareBtn) {
+    shareBtn.addEventListener('click', async () => {
+      const url = getShareableURL();
+      const seed = getShareableSeed();
+
+      // Try to copy URL first, fallback to seed
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        try {
+          await navigator.clipboard.writeText(url);
+          const originalText = shareBtn.innerHTML;
+          shareBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"></path></svg>Copied!';
+          shareBtn.style.background = 'var(--accent-blue)';
+
+          setTimeout(() => {
+            shareBtn.innerHTML = originalText;
+            shareBtn.style.background = '';
+          }, 2000);
+          return;
+        } catch (err) {
+          console.error('Failed to copy URL, trying seed:', err);
+          // Try copying seed as fallback
+          try {
+            await navigator.clipboard.writeText(seed);
+            const originalText = shareBtn.innerHTML;
+            shareBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"></path></svg>Copied Seed!';
+            shareBtn.style.background = 'var(--accent-blue)';
+
+            setTimeout(() => {
+              shareBtn.innerHTML = originalText;
+              shareBtn.style.background = '';
+            }, 2000);
+            return;
+          } catch (err2) {
+            console.error('Failed to copy seed:', err2);
+          }
+        }
+      }
+
+      // Final fallback: show alert with manual copy option
+      alert(`Failed to copy. Please copy manually:\n\nURL: ${url}\n\nSeed: ${seed}`);
+    });
+  }
+}
+
+async function loadFractalFromURL() {
+  const urlParams = new URLSearchParams(window.location.search);
+  let seed = urlParams.get('seed');
+
+  // Also check URL hash for seed (alternative format)
+  if (!seed && window.location.hash) {
+    const hash = window.location.hash.substring(1); // Remove #
+    // Check if hash looks like a seed (base64-like string)
+    if (hash.length > 10 && /^[A-Za-z0-9_-]+$/.test(hash)) {
+      seed = hash;
+    }
+  }
+
+  if (seed) {
+    // Decode the seed (it might be URL encoded)
+    try {
+      seed = decodeURIComponent(seed);
+    } catch (e) {
+      // If decoding fails, use the seed as-is
+    }
+    
+    const state = decodeFractalState(seed);
+    if (state) {
+      await applyFractalState(state);
+      return true;
+    } else {
+      console.warn('Failed to decode fractal state from URL seed:', seed);
+    }
+  }
+
+  return false;
 }
 
 // Initialize on load

@@ -351,19 +351,19 @@ body {
 
 /* Hide Coordinates panel */
 /* Modern browsers with :has() support - hides entire control div */
-.control:has(.coordinate-display) {
-  display: none !important;
+.side-panel .panel-content .section-content .control:has(.coordinate-display) {
+  display: none;
 }
 
 /* Fallback for older browsers: Hide coordinate display and label */
-.coordinate-display,
-.control-label:first-child + .coordinate-display {
-  display: none !important;
+.side-panel .panel-content .section-content .coordinate-display,
+.side-panel .panel-content .section-content .control-label:first-child + .coordinate-display {
+  display: none;
 }
 
 /* Hide the "Coordinates" label when it's in a control with coordinate-display */
-.control > .control-label:first-child:has(+ .coordinate-display) {
-  display: none !important;
+.side-panel .panel-content .section-content .control > .control-label:first-child:has(+ .coordinate-display) {
+  display: none;
 }
 
 .coordinate-row {
@@ -419,6 +419,58 @@ body {
 
 .copy-coords-btn svg {
   flex-shrink: 0;
+}
+
+/* Footer share button */
+.footer-share-btn {
+  width: 100%;
+  padding: 8px 16px;
+  background: var(--bg-hover);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all var(--transition-fast);
+  margin-top: 10px;
+}
+
+.footer-share-btn:hover {
+  background: var(--accent-blue-dim);
+  border-color: var(--accent-blue);
+  transform: translateY(-1px);
+}
+
+.footer-share-btn:active {
+  transform: translateY(0);
+}
+
+.footer-share-btn svg {
+  flex-shrink: 0;
+}
+
+/* Footer share button description - only show on hover, positioned above button */
+.footer-share-description {
+  opacity: 0;
+  max-height: 0;
+  overflow: hidden;
+  transition: opacity 0.2s ease, max-height 0.2s ease, margin-bottom 0.2s ease;
+  margin-bottom: 0;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  text-align: center;
+  line-height: 1.4;
+  padding: 0 10px;
+}
+
+.app-footer:has(#share-fractal-btn:hover) .footer-share-description {
+  opacity: 1;
+  max-height: 100px;
+  margin-bottom: 6px;
 }
 
 .control-description {
@@ -554,7 +606,7 @@ body {
   bottom: 0;
   left: 0;
   width: var(--panel-width);
-  padding: 12px 20px;
+  padding: 12px 20px 16px;
   background: linear-gradient(
     to top,
     var(--overlay-dark) 0%,
@@ -567,6 +619,8 @@ body {
   transition:
     transform var(--transition-normal),
     width var(--transition-normal);
+  display: flex;
+  flex-direction: column;
 }
 
 .app-footer p {
@@ -872,13 +926,13 @@ div.canvas-container:fullscreen > #info-panel {
   display: none;
 }
 
-body.is-fullscreen .top-action-bar #benchmark-toggle {
-  display: none !important;
+body.is-fullscreen .canvas-area .top-action-bar #benchmark-toggle {
+  display: none;
 }
 
 /* Hide sidebar in fullscreen mode */
-body.is-fullscreen .side-panel {
-  display: none !important;
+body.is-fullscreen .app-container .side-panel {
+  display: none;
   visibility: hidden;
   opacity: 0;
   pointer-events: none;
@@ -1043,23 +1097,23 @@ body.is-fullscreen .side-panel {
 }
 
 /* Hide footer in fullscreen mode */
-body.is-fullscreen .app-footer {
-  display: none !important;
+body.is-fullscreen .app-container .app-footer {
+  display: none;
   visibility: hidden;
   opacity: 0;
   pointer-events: none;
 }
 
 /* Fallback using :has() selector for browsers that support it */
-.app-container:has(.canvas-container:fullscreen) .side-panel {
-  display: none !important;
+.app-container:has(.canvas-container:fullscreen) .side-panel.side-panel {
+  display: none;
   visibility: hidden;
   opacity: 0;
   pointer-events: none;
 }
 
-.app-container:has(.canvas-container:fullscreen) .app-footer {
-  display: none !important;
+.app-container:has(.canvas-container:fullscreen) .app-footer.app-footer {
+  display: none;
   visibility: hidden;
   opacity: 0;
   pointer-events: none;
