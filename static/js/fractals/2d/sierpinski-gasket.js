@@ -147,7 +147,58 @@ const fractalFunction = `
     }
 `;
 
-const fragmentShader = createFragmentShader(fractalFunction);
+// Custom fragment shader matching sierpinski-hexagon approach but without uXScale in coordinates
+const fragmentShader = `
+    #ifdef GL_ES
+    precision mediump float;
+    #endif
+    
+    uniform float uTime;
+    uniform float uIterations;
+    uniform float uZoom;
+    uniform vec2 uOffset;
+    uniform vec2 uResolution;
+    uniform vec2 uJuliaC;
+    uniform sampler2D uPalette;
+    uniform float uXScale;
+    uniform float uYScale;
+    
+    varying vec2 vUv;
+    
+    ${fractalFunction}
+    
+    void main() {
+        vec2 uv = vUv;
+        
+        // Precompute aspect ratio and scale once
+        float aspect = uResolution.x / uResolution.y;
+        float scale = 4.0 / uZoom;
+        
+        // Optimize coordinate calculation
+        // Match standard shader approach: apply aspect to X, but don't apply uXScale
+        // uXScale is used to control number of polygon sides, not coordinate scaling
+        vec2 uvCentered = uv - 0.5;
+        vec2 c = vec2(
+            uvCentered.x * scale * aspect + uOffset.x,
+            uvCentered.y * scale * uYScale + uOffset.y
+        );
+        
+        float iterations = computeFractal(c);
+        
+        // Normalized iteration value for color lookup
+        float invIterations = 1.0 / uIterations;
+        float t = clamp(iterations * invIterations, 0.0, 1.0);
+        
+        // Texture-based palette lookup
+        vec3 color = texture2D(uPalette, vec2(t, 0.5)).rgb;
+        
+        // Points in the set are black - use step() to avoid branch
+        float isInSet = step(uIterations, iterations);
+        color = mix(color, vec3(0.0), isInSet);
+        
+        gl_FragColor = vec4(color, 1.0);
+    }
+`;
 
 export function render(regl, params, canvas) {
   // Generate palette texture for the current color scheme
