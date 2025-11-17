@@ -187,15 +187,16 @@ function init() {
   });
 
   // Check for WebGL2 support
+  // WebGL context check (logging removed)
   try {
     const gl = regl._gl;
     if (gl instanceof WebGL2RenderingContext) {
-      console.log('WebGL2 available - enhanced features enabled');
+      // WebGL2 available
     } else {
-      console.log('WebGL1 in use - still optimized for performance');
+      // WebGL1 in use
     }
   } catch {
-    console.log('WebGL context check completed');
+    // WebGL context check completed
   }
 
   // Function to update canvas size and pixel ratio
@@ -308,7 +309,6 @@ async function loadFractal(fractalType) {
 
     // Cache the module
     fractalCache.set(fractalType, module);
-    console.log(`Loaded fractal module: ${fractalType}`);
   } catch (error) {
     console.error(`Failed to load fractal: ${fractalType}`, error);
     // Fallback to mandelbrot if loading fails
@@ -775,10 +775,6 @@ function setupUI() {
     // Load the new fractal module
     try {
       await loadFractal(currentFractalType);
-      console.log(
-        `Fractal type changed to: ${currentFractalType}, module loaded:`,
-        !!currentFractalModule
-      );
     } catch (error) {
       console.error('Failed to load fractal on change:', error);
       return;
@@ -1608,10 +1604,6 @@ function setupUI() {
     // Always ensure the correct fractal module is loaded for the current type
     try {
       await loadFractal(currentFractalType);
-      console.log(
-        `Update button clicked for: ${currentFractalType}, module loaded:`,
-        !!currentFractalModule
-      );
     } catch (error) {
       console.error('Failed to load fractal on update:', error);
       return;
@@ -3373,20 +3365,6 @@ function zoomToSelection(startX, startY, endX, endY, canvasRect) {
     return;
   }
 
-  // Log zoom details for debugging
-  console.log('Zoom to selection:', {
-    selectionBox: { startX, startY, endX, endY },
-    displaySize: { width: displayWidth, height: displayHeight },
-    renderBufferSize: { width: rendererWidth, height: rendererHeight },
-    aspect: aspect,
-    fractalBounds: { x1: fractalX1, y1: fractalY1, x2: fractalX2, y2: fractalY2 },
-    selectionSize: { width, height },
-    center: { x: centerX, y: centerY },
-    oldZoom: params.zoom,
-    newZoom: clampedZoom,
-    zoomMultiplier: clampedZoom / params.zoom,
-  });
-
   // Update parameters
   params.zoom = clampedZoom;
   params.offset.x = centerX;
@@ -3530,8 +3508,6 @@ function renderFractal() {
     color: [0, 0, 0, 1],
     depth: 1,
   });
-
-  console.log(`Rendering fractal: ${currentFractalType}`);
 
   // Call the fractal's render function to create draw command
   drawFractal = currentFractalModule.render(regl, params, canvas);

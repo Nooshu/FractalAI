@@ -349,6 +349,23 @@ body {
   margin-top: 8px;
 }
 
+/* Hide Coordinates panel */
+/* Modern browsers with :has() support - hides entire control div */
+.control:has(.coordinate-display) {
+  display: none !important;
+}
+
+/* Fallback for older browsers: Hide coordinate display and label */
+.coordinate-display,
+.control-label:first-child + .coordinate-display {
+  display: none !important;
+}
+
+/* Hide the "Coordinates" label when it's in a control with coordinate-display */
+.control > .control-label:first-child:has(+ .coordinate-display) {
+  display: none !important;
+}
+
 .coordinate-row {
   display: flex;
   justify-content: space-between;

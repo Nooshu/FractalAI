@@ -250,8 +250,6 @@ export class BenchmarkSuite {
       colorScheme = 'classic',
     } = config;
 
-    console.log(`Running benchmark: ${fractalType} (${iterations} iter, zoom ${zoom})`);
-
     // Load fractal
     await this.loadFractal(fractalType);
 
@@ -309,7 +307,6 @@ export class BenchmarkSuite {
    */
   async runSuite(configs) {
     this.results = [];
-    console.log(`Running benchmark suite with ${configs.length} tests...`);
 
     for (const config of configs) {
       await this.runBenchmark(config);

@@ -134,39 +134,8 @@ const fragmentShader = `
     }
 `;
 
-// Track last logged parameters to avoid excessive logging during progressive rendering
-let lastLoggedParams = null;
-
 export function render(regl, params, canvas) {
   const paletteTexture = generatePaletteTexture(regl, params.colorScheme);
-  
-  // Add debugging: log parameters to console (only for first render or significant changes)
-  // Progressive rendering calls this multiple times with increasing iterations (20, 35, 50, etc.)
-  // So we only log when there's a significant change to avoid console spam
-  const shouldLog = !lastLoggedParams || 
-      Math.abs(lastLoggedParams.iterations - params.iterations) > 50 ||
-      lastLoggedParams.zoom !== params.zoom ||
-      lastLoggedParams.xScale !== params.xScale ||
-      lastLoggedParams.colorScheme !== params.colorScheme;
-  
-  if (shouldLog) {
-    console.log('[Barnsley Fern Debug]', {
-      iterations: params.iterations,
-      zoom: params.zoom,
-      offset: params.offset,
-      xScale: params.xScale,
-      yScale: params.yScale,
-      colorScheme: params.colorScheme,
-      canvasSize: { width: canvas.width, height: canvas.height },
-      note: 'Progressive rendering will increase iterations gradually'
-    });
-    lastLoggedParams = { 
-      iterations: params.iterations,
-      zoom: params.zoom,
-      xScale: params.xScale,
-      colorScheme: params.colorScheme
-    };
-  }
   
   const drawFractal = regl({
     frag: fragmentShader,
