@@ -184,8 +184,8 @@ export function render(regl, params, canvas) {
       pos.x *= uXScale;
       pos.y *= uYScale;
       
-      // Apply zoom and offset
-      pos = pos * uZoom + uOffset;
+      // Apply zoom and offset (inverted offset to match standard fractal panning behavior)
+      pos = pos * uZoom - uOffset;
       
       // Apply aspect ratio correction
       pos.x /= aspect;
