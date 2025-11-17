@@ -19,7 +19,11 @@
     "stylelint:fix": "stylelint \"**/*.css\" --fix",
     "check": "npm run lint && npm run format:check && npm run stylelint",
     "verify": "npm ci && npm audit --audit-level=moderate",
-    "audit": "npm audit"
+    "audit": "npm audit",
+    "test:visual": "playwright test",
+    "test:visual:update": "playwright test --update-snapshots",
+    "test:visual:ui": "playwright test --ui",
+    "test:visual:report": "playwright show-report"
   },
   "dependencies": {
     "regl": "2.1.1"
@@ -29,6 +33,7 @@
     "eslint": "9.39.1",
     "prettier": "3.6.2",
     "stylelint": "16.25.0",
-    "stylelint-config-standard": "39.0.1"
+    "stylelint-config-standard": "39.0.1",
+    "@playwright/test": "^1.48.0"
   }
 }

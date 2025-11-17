@@ -1,10 +1,31 @@
+# Dependencies
 node_modules/
+
+# Build output
 dist/
-.DS_Store
-*.log
-.vite/
+
+# Test results and screenshots
+test-results/
+tests/visual/**/*-snapshots/
+playwright-report/
+
+# Environment variables
 .env
 .env.local
-*.min.js
-*.min.css
 
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
