@@ -126,38 +126,52 @@ const fragmentShader = `
 `;
 
 export function render(regl, params, canvas) {
-  // Generate palette texture for the current color scheme
-  const paletteTexture = generatePaletteTexture(regl, params.colorScheme);
-
-  // Create or update the draw command
-  const drawFractal = regl({
+  // Create reusable draw command with dynamic uniforms
+  // This allows uniforms to be updated without recompiling the shader
+  const drawCommand = regl({
     vert: vertexShader,
     frag: fragmentShader,
     attributes: {
       position: [-1, -1, 1, -1, -1, 1, 1, 1], // Full-screen quad
     },
     uniforms: {
-      uTime: 0,
-      uIterations: params.iterations,
-      uZoom: params.zoom,
-      uOffset: [params.offset.x, params.offset.y],
-      uResolution: [canvas.width, canvas.height],
-      uJuliaC: [0, 0], // Not used for Multibrot
-      uPalette: paletteTexture,
-      uXScale: params.xScale,
-      uYScale: params.yScale,
+      uTime: regl.prop('uTime'),
+      uIterations: regl.prop('uIterations'),
+      uZoom: regl.prop('uZoom'),
+      uOffset: regl.prop('uOffset'),
+      uResolution: regl.prop('uResolution'),
+      uJuliaC: regl.prop('uJuliaC'),
+      uPalette: regl.prop('uPalette'),
+      uXScale: regl.prop('uXScale'),
+      uYScale: regl.prop('uYScale'),
     },
-    viewport: {
-      x: 0,
-      y: 0,
-      width: canvas.width,
-      height: canvas.height,
-    },
+    viewport: regl.prop('viewport'),
     count: 4,
     primitive: 'triangle strip',
   });
 
-  return drawFractal;
+  // Return function that updates uniforms and draws
+  return (uniformOverrides = {}) => {
+    const paletteTexture = generatePaletteTexture(regl, params.colorScheme);
+    
+    drawCommand({
+      uTime: uniformOverrides.uTime ?? 0,
+      uIterations: uniformOverrides.uIterations ?? params.iterations,
+      uZoom: uniformOverrides.uZoom ?? params.zoom,
+      uOffset: uniformOverrides.uOffset ?? [params.offset.x, params.offset.y],
+      uResolution: uniformOverrides.uResolution ?? [canvas.width, canvas.height],
+      uJuliaC: uniformOverrides.uJuliaC ?? [0, 0], // Not used for Multibrot
+      uPalette: uniformOverrides.uPalette ?? paletteTexture,
+      uXScale: uniformOverrides.uXScale ?? params.xScale,
+      uYScale: uniformOverrides.uYScale ?? params.yScale,
+      viewport: uniformOverrides.viewport ?? {
+        x: 0,
+        y: 0,
+        width: canvas.width,
+        height: canvas.height,
+      },
+    });
+  };
 }
 
 export const is2D = true;

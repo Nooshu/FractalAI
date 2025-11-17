@@ -9,11 +9,13 @@ let currentFractalType = 'mandelbrot';
 let lastTime = 0;
 let frameCount = 0;
 let fps = 0;
-let drawFractal = null; // Current regl draw command
+let drawFractal = null; // Current regl draw command (reusable with dynamic uniforms)
 let currentFractalModule = null; // Currently loaded fractal module
 let fractalCache = new Map(); // Cache for loaded fractal modules
 let needsRender = false; // Flag to indicate if a render is needed
 let isDisplayingCached = false; // Track if we're displaying a cached frame
+let cachedDrawCommandFactory = null; // Cached draw command factory (for reuse)
+let lastShaderHash = null; // Hash of last shader to detect shader changes
 
 // Render throttling for smooth interaction
 let renderScheduled = false;
@@ -302,6 +304,11 @@ async function loadFractal(fractalType) {
   // Check cache first
   if (fractalCache.has(fractalType)) {
     currentFractalModule = fractalCache.get(fractalType);
+    // Reset draw command cache when fractal type changes
+    if (fractalType !== currentFractalType) {
+      cachedDrawCommandFactory = null;
+      lastShaderHash = null;
+    }
     return;
   }
 
@@ -318,6 +325,10 @@ async function loadFractal(fractalType) {
 
     // Cache the module
     fractalCache.set(fractalType, module);
+    
+    // Reset draw command cache when fractal type changes
+    cachedDrawCommandFactory = null;
+    lastShaderHash = null;
   } catch (error) {
     console.error(`Failed to load fractal: ${fractalType}`, error);
     // Fallback to mandelbrot if loading fails
@@ -773,6 +784,8 @@ function setupUI() {
     // Clear previous fractal draw command
     drawFractal = null;
     cachedDrawCommand = null;
+    cachedDrawCommandFactory = null; // Clear cached factory to force recreation
+    lastShaderHash = null;
     isDisplayingCached = false;
 
     // Clear the cache for this fractal type to force a fresh load
@@ -1627,6 +1640,8 @@ function setupUI() {
     // Reset draw command to force recreation with new settings
     drawFractal = null;
     cachedDrawCommand = null;
+    cachedDrawCommandFactory = null; // Clear cached factory to force recreation
+    lastShaderHash = null;
     isDisplayingCached = false;
 
     // Clear the canvas before rendering new fractal
@@ -2967,8 +2982,8 @@ function setupUI() {
       cachedDrawCommand = null;
     }
 
-    // Recreate draw command with updated iterations
-    drawFractal = null;
+    // Note: With dynamic uniforms, we don't need to recreate the draw command
+    // The uniforms will be updated automatically on the next render
     // Re-render with updated iterations
     renderFractalProgressive();
   };
@@ -2995,8 +3010,9 @@ function setupUI() {
       cachedDrawCommand = null;
     }
 
-    // Recreate draw command with updated color scheme
-    drawFractal = null;
+    // Clear cached factory when color scheme changes (palette texture changes)
+    cachedDrawCommandFactory = null;
+    lastShaderHash = null;
     // Re-render with updated color scheme
     renderFractalProgressive();
   });
@@ -3518,10 +3534,19 @@ function renderFractal() {
     depth: 1,
   });
 
-  // Call the fractal's render function to create draw command
-  drawFractal = currentFractalModule.render(regl, params, canvas);
+  // Reuse draw command if available, otherwise create new one
+  // This avoids shader recompilation on every render
+  if (!cachedDrawCommandFactory || currentFractalType !== lastShaderHash) {
+    // Create new draw command factory (this compiles the shader once)
+    drawFractal = currentFractalModule.render(regl, params, canvas);
+    cachedDrawCommandFactory = drawFractal;
+    lastShaderHash = currentFractalType;
+  } else {
+    // Reuse existing draw command factory
+    drawFractal = cachedDrawCommandFactory;
+  }
 
-  // Execute the draw command
+  // Execute the draw command (with current params - uniforms updated dynamically)
   if (drawFractal) {
     drawFractal();
   }

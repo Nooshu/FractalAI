@@ -287,49 +287,70 @@ export function isJuliaType(fractalType) {
 
 /**
  * Creates a standard regl draw command for 2D shader-based fractals
+ * Uses dynamic uniforms via regl.prop() to allow reuse without recompilation
  * Reduces code duplication across fractal files
  * @param {Object} regl - The regl context
  * @param {Object} params - Render parameters
  * @param {HTMLCanvasElement} canvas - The canvas element
  * @param {string} fragmentShader - The fragment shader source
  * @param {Object} options - Optional overrides (vertexShader, juliaC, etc.)
- * @returns {Function} regl draw command
+ * @returns {Function} Draw function that accepts optional uniform overrides
  */
 export function createStandardDrawCommand(regl, params, canvas, fragmentShader, options = {}) {
-  const paletteTexture = generatePaletteTexture(regl, params.colorScheme);
   const vertexShaderSource = options.vertexShader || vertexShader;
-  const juliaC = options.juliaC !== undefined 
-    ? [options.juliaC.x, options.juliaC.y] 
-    : (isJuliaType(options.fractalType || '') 
-        ? [params.juliaC.x, params.juliaC.y] 
-        : [0, 0]);
-
-  return regl({
+  
+  // Create reusable draw command with dynamic uniforms using regl.prop()
+  // This allows uniforms to be updated without recompiling the shader
+  const drawCommand = regl({
     vert: vertexShaderSource,
     frag: fragmentShader,
     attributes: {
       position: [-1, -1, 1, -1, -1, 1, 1, 1], // Full-screen quad
     },
     uniforms: {
-      uTime: options.uTime ?? 0,
-      uIterations: params.iterations,
-      uZoom: params.zoom,
-      uOffset: [params.offset.x, params.offset.y],
-      uResolution: [canvas.width, canvas.height],
-      uJuliaC: juliaC,
-      uPalette: paletteTexture,
-      uXScale: params.xScale,
-      uYScale: params.yScale,
+      uTime: regl.prop('uTime'),
+      uIterations: regl.prop('uIterations'),
+      uZoom: regl.prop('uZoom'),
+      uOffset: regl.prop('uOffset'),
+      uResolution: regl.prop('uResolution'),
+      uJuliaC: regl.prop('uJuliaC'),
+      uPalette: regl.prop('uPalette'),
+      uXScale: regl.prop('uXScale'),
+      uYScale: regl.prop('uYScale'),
     },
-    viewport: {
-      x: 0,
-      y: 0,
-      width: canvas.width,
-      height: canvas.height,
-    },
+    viewport: regl.prop('viewport'),
     count: 4,
     primitive: 'triangle strip',
   });
+
+  // Return a function that updates uniforms and draws
+  // This allows the draw command to be reused with different parameters
+  return (uniformOverrides = {}) => {
+    const paletteTexture = generatePaletteTexture(regl, params.colorScheme);
+    const juliaC = options.juliaC !== undefined 
+      ? [options.juliaC.x, options.juliaC.y] 
+      : (isJuliaType(options.fractalType || '') 
+          ? [params.juliaC.x, params.juliaC.y] 
+          : [0, 0]);
+
+    drawCommand({
+      uTime: uniformOverrides.uTime ?? options.uTime ?? 0,
+      uIterations: uniformOverrides.uIterations ?? params.iterations,
+      uZoom: uniformOverrides.uZoom ?? params.zoom,
+      uOffset: uniformOverrides.uOffset ?? [params.offset.x, params.offset.y],
+      uResolution: uniformOverrides.uResolution ?? [canvas.width, canvas.height],
+      uJuliaC: uniformOverrides.uJuliaC ?? juliaC,
+      uPalette: uniformOverrides.uPalette ?? paletteTexture,
+      uXScale: uniformOverrides.uXScale ?? params.xScale,
+      uYScale: uniformOverrides.uYScale ?? params.yScale,
+      viewport: uniformOverrides.viewport ?? {
+        x: 0,
+        y: 0,
+        width: canvas.width,
+        height: canvas.height,
+      },
+    });
+  };
 }
 
 // Color schemes (for CPU-side color calculations if needed)
