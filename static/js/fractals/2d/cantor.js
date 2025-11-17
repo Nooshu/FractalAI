@@ -1,4 +1,4 @@
-import { vertexShader, createFragmentShader, generatePaletteTexture } from '../utils.js';
+import { vertexShader, createFragmentShader, createStandardDrawCommand } from '../utils.js';
 
 const fractalFunction = `
     // Helper function to check if a point is in the Cantor set at a given level
@@ -100,38 +100,11 @@ const fractalFunction = `
 const fragmentShader = createFragmentShader(fractalFunction);
 
 export function render(regl, params, canvas) {
-  // Generate palette texture for the current color scheme
-  const paletteTexture = generatePaletteTexture(regl, params.colorScheme);
-
-  // Create or update the draw command
-  const drawFractal = regl({
-    vert: vertexShader,
-    frag: fragmentShader,
-    attributes: {
-      position: [-1, -1, 1, -1, -1, 1, 1, 1], // Full-screen quad
-    },
-    uniforms: {
-      uTime: 0,
-      uIterations: params.iterations,
-      uZoom: params.zoom,
-      uOffset: [params.offset.x, params.offset.y],
-      uResolution: [canvas.width, canvas.height],
-      uJuliaC: [0, 0], // Not used for Cantor set
-      uPalette: paletteTexture,
-      uXScale: params.xScale,
-      uYScale: params.yScale,
-    },
-    viewport: {
-      x: 0,
-      y: 0,
-      width: canvas.width,
-      height: canvas.height,
-    },
-    count: 4,
-    primitive: 'triangle strip',
+  // Use the optimized standard draw command with dynamic uniforms
+  return createStandardDrawCommand(regl, params, canvas, fragmentShader, {
+    fractalType: 'cantor',
+    juliaC: [0, 0], // Not used for Cantor set
   });
-
-  return drawFractal;
 }
 
 export const is2D = true;

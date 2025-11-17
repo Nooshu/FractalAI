@@ -135,49 +135,50 @@ const fragmentShader = `
 `;
 
 export function render(regl, params, canvas) {
-  const paletteTexture = generatePaletteTexture(regl, params.colorScheme);
-  
-  const drawFractal = regl({
+  // Create reusable draw command with dynamic uniforms
+  const drawCommand = regl({
+    vert: vertexShader,
     frag: fragmentShader,
-    vert: `
-      precision mediump float;
-      attribute vec2 position;
-      varying vec2 vUv;
-      void main() {
-        vUv = position;
-        gl_Position = vec4(position, 0, 1);
-      }
-    `,
     attributes: {
-      position: [
-        [-1, -1],
-        [1, -1],
-        [-1, 1],
-        [1, 1],
-      ],
+      position: [-1, -1, 1, -1, -1, 1, 1, 1],
     },
     uniforms: {
-      uResolution: [canvas.width, canvas.height],
-      uZoom: params.zoom,
-      uOffset: [params.offset.x, params.offset.y],
-      uIterations: params.iterations,
-      uPalette: paletteTexture,
-      uXScale: params.xScale,
-      uYScale: params.yScale,
-      // Debug uniform - can be used to visualize intermediate values
-      uDebug: 0.0, // 0 = normal, 1 = show density, 2 = show coordinates
+      uTime: regl.prop('uTime'),
+      uIterations: regl.prop('uIterations'),
+      uZoom: regl.prop('uZoom'),
+      uOffset: regl.prop('uOffset'),
+      uResolution: regl.prop('uResolution'),
+      uJuliaC: regl.prop('uJuliaC'),
+      uPalette: regl.prop('uPalette'),
+      uXScale: regl.prop('uXScale'),
+      uYScale: regl.prop('uYScale'),
     },
-    primitive: 'triangle strip',
+    viewport: regl.prop('viewport'),
     count: 4,
-    viewport: {
-      x: 0,
-      y: 0,
-      width: canvas.width,
-      height: canvas.height,
-    },
+    primitive: 'triangle strip',
   });
 
-  return drawFractal;
+  return (uniformOverrides = {}) => {
+    const paletteTexture = generatePaletteTexture(regl, params.colorScheme);
+    
+    drawCommand({
+      uTime: uniformOverrides.uTime ?? 0,
+      uIterations: uniformOverrides.uIterations ?? params.iterations,
+      uZoom: uniformOverrides.uZoom ?? params.zoom,
+      uOffset: uniformOverrides.uOffset ?? [params.offset.x, params.offset.y],
+      uResolution: uniformOverrides.uResolution ?? [canvas.width, canvas.height],
+      uJuliaC: uniformOverrides.uJuliaC ?? [0, 0],
+      uPalette: uniformOverrides.uPalette ?? paletteTexture,
+      uXScale: uniformOverrides.uXScale ?? params.xScale,
+      uYScale: uniformOverrides.uYScale ?? params.yScale,
+      viewport: uniformOverrides.viewport ?? {
+        x: 0,
+        y: 0,
+        width: canvas.width,
+        height: canvas.height,
+      },
+    });
+  };
 }
 
 export const is2D = true;

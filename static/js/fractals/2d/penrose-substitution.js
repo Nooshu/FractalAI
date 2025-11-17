@@ -121,47 +121,11 @@ float computeFractal(vec2 c) {
 const fragmentShader = createFragmentShader(fractalFunction);
 
 export function render(regl, params, canvas) {
-  const paletteTexture = generatePaletteTexture(regl, params.colorScheme);
-  
-  const drawFractal = regl({
-    frag: fragmentShader,
-    vert: `
-      precision mediump float;
-      attribute vec2 position;
-      varying vec2 vUv;
-      void main() {
-        vUv = position;
-        gl_Position = vec4(position, 0, 1);
-      }
-    `,
-    attributes: {
-      position: [
-        [-1, -1],
-        [1, -1],
-        [-1, 1],
-        [1, 1],
-      ],
-    },
-    uniforms: {
-      uResolution: [canvas.width, canvas.height],
-      uZoom: params.zoom,
-      uOffset: [params.offset.x, params.offset.y],
-      uIterations: params.iterations,
-      uPalette: paletteTexture,
-      uXScale: params.xScale,
-      uYScale: params.yScale,
-    },
-    primitive: 'triangle strip',
-    count: 4,
-    viewport: {
-      x: 0,
-      y: 0,
-      width: canvas.width,
-      height: canvas.height,
-    },
+  // Use the optimized standard draw command with dynamic uniforms
+  return createStandardDrawCommand(regl, params, canvas, fragmentShader, {
+    fractalType: 'penrose-substitution',
+    juliaC: [0, 0], // Not used
   });
-
-  return drawFractal;
 }
 
 export const is2D = true;
