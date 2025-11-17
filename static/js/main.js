@@ -956,9 +956,9 @@ function setupUI() {
       params.offset.y = 1.094;
     } else if (currentFractalType === 'barnsley-fern') {
       // Barnsley Fern - initial render position
-      params.zoom = 0.8;
-      params.offset.x = 3.488;
-      params.offset.y = 0.6632;
+      params.zoom = 1.403;
+      params.offset.x = 1.673;
+      params.offset.y = 1.9506;
       params.iterations = 100;
       iterationsExplicitlySet = true;
       if (iterationsSlider) iterationsSlider.value = 100;
