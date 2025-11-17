@@ -748,7 +748,7 @@ function setupUI() {
     const swatchWidth = width / numColors;
     for (let i = 0; i < numColors; i++) {
       const t = i / (numColors - 1);
-      
+
       // Use the same color computation function as utils.js
       const color = computeColorForScheme(t, schemeIndex);
 
@@ -799,10 +799,10 @@ function setupUI() {
     // (will be overridden by fractal-specific values below if needed)
     params.xScale = 1.0;
     params.yScale = 1.0;
-    
+
     // Track whether iterations were explicitly set for this fractal type
     let iterationsExplicitlySet = false;
-    
+
     if (currentFractalType === 'burning-ship') {
       // Burning Ship - initial render position
       params.zoom = 1.2;
@@ -1075,11 +1075,28 @@ function setupUI() {
       // yScale = 0.5 gives p.imag = (0.5 - 0.5) * 2 = 0.0
       params.xScale = 0.6; // p real = 0.2
       params.yScale = 0.5; // p imag = 0.0
+      // Set iterations to 25 by default
+      params.iterations = 25;
+      iterationsExplicitlySet = true;
+      if (iterationsSlider) iterationsSlider.value = 25;
+      if (iterationsValue) iterationsValue.textContent = '25';
+      const fullscreenIterationsNumberEl = document.getElementById('fullscreen-iterations-number');
+      if (fullscreenIterationsNumberEl) {
+        fullscreenIterationsNumberEl.textContent = '25';
+      }
       // Update scale sliders
       if (xScaleSlider) xScaleSlider.value = 0.6;
       if (xScaleValue) xScaleValue.textContent = '0.6';
       if (yScaleSlider) yScaleSlider.value = 0.5;
       if (yScaleValue) yScaleValue.textContent = '0.5';
+      // Set cosmic color scheme by default
+      params.colorScheme = 'cosmic';
+      if (colorSchemeSelect) colorSchemeSelect.value = 'cosmic';
+      const newIndex = colorSchemes.indexOf('cosmic');
+      if (newIndex !== -1) {
+        currentColorSchemeIndex = newIndex;
+      }
+      updateColorPalettePreview();
     } else if (currentFractalType === 'lambda-julia') {
       // Lambda Julia Set - initial render position
       params.zoom = 1;
@@ -1093,26 +1110,26 @@ function setupUI() {
       if (juliaCImag) juliaCImag.value = 0.5;
       if (juliaCRealValue) juliaCRealValue.textContent = '0.5000';
       if (juliaCImagValue) juliaCImagValue.textContent = '0.5000';
-      // Set monochrome color scheme and 20 iterations
-      params.colorScheme = 'monochrome';
-      params.iterations = 20;
+      // Set cosmic color scheme and 25 iterations
+      params.colorScheme = 'cosmic';
+      params.iterations = 25;
       iterationsExplicitlySet = true;
       // Update color scheme selector
-      if (colorSchemeSelect) colorSchemeSelect.value = 'monochrome';
+      if (colorSchemeSelect) colorSchemeSelect.value = 'cosmic';
       // Update color scheme index for fullscreen cycling
-      const newIndex = colorSchemes.indexOf('monochrome');
+      const newIndex = colorSchemes.indexOf('cosmic');
       if (newIndex !== -1) {
         currentColorSchemeIndex = newIndex;
       }
       // Update palette preview
       updateColorPalettePreview();
       // Update iterations slider and value
-      if (iterationsSlider) iterationsSlider.value = 20;
-      if (iterationsValue) iterationsValue.textContent = '20';
+      if (iterationsSlider) iterationsSlider.value = 25;
+      if (iterationsValue) iterationsValue.textContent = '25';
       // Update fullscreen iterations number
       const fullscreenIterationsNumberEl = document.getElementById('fullscreen-iterations-number');
       if (fullscreenIterationsNumberEl) {
-        fullscreenIterationsNumberEl.textContent = '20';
+        fullscreenIterationsNumberEl.textContent = '25';
       }
     } else if (currentFractalType === 'hybrid-julia') {
       // Hybrid Julia Set - initial render position
@@ -1185,6 +1202,15 @@ function setupUI() {
       params.zoom = 3.2;
       params.offset.x = 0.9382;
       params.offset.y = 0.7956;
+      // Set iterations to 25 by default
+      params.iterations = 25;
+      iterationsExplicitlySet = true;
+      if (iterationsSlider) iterationsSlider.value = 25;
+      if (iterationsValue) iterationsValue.textContent = '25';
+      const fullscreenIterationsNumberEl = document.getElementById('fullscreen-iterations-number');
+      if (fullscreenIterationsNumberEl) {
+        fullscreenIterationsNumberEl.textContent = '25';
+      }
       // Set Rainbow Double color scheme by default
       params.colorScheme = 'rainbow5';
       if (colorSchemeSelect) colorSchemeSelect.value = 'rainbow5';
@@ -1198,13 +1224,14 @@ function setupUI() {
       params.zoom = 4;
       params.offset.x = 0.77;
       params.offset.y = 0.502;
-      params.iterations = 60;
+      // Set iterations to 25 by default
+      params.iterations = 25;
       iterationsExplicitlySet = true;
-      if (iterationsSlider) iterationsSlider.value = 60;
-      if (iterationsValue) iterationsValue.textContent = '60';
+      if (iterationsSlider) iterationsSlider.value = 25;
+      if (iterationsValue) iterationsValue.textContent = '25';
       const fullscreenIterationsNumberEl = document.getElementById('fullscreen-iterations-number');
       if (fullscreenIterationsNumberEl) {
-        fullscreenIterationsNumberEl.textContent = '60';
+        fullscreenIterationsNumberEl.textContent = '25';
       }
     } else if (currentFractalType === 'snowflake-tiling') {
       // Snowflake Tiling - initial render position
@@ -1258,6 +1285,15 @@ function setupUI() {
       params.zoom = 1;
       params.offset.x = 2.9559;
       params.offset.y = 2.7137;
+      // Set iterations to 25 by default
+      params.iterations = 25;
+      iterationsExplicitlySet = true;
+      if (iterationsSlider) iterationsSlider.value = 25;
+      if (iterationsValue) iterationsValue.textContent = '25';
+      const fullscreenIterationsNumberEl = document.getElementById('fullscreen-iterations-number');
+      if (fullscreenIterationsNumberEl) {
+        fullscreenIterationsNumberEl.textContent = '25';
+      }
       // Set Rainbow Double color scheme by default
       params.colorScheme = 'rainbow5';
       if (colorSchemeSelect) colorSchemeSelect.value = 'rainbow5';
@@ -1293,6 +1329,15 @@ function setupUI() {
       params.zoom = 1.772;
       params.offset.x = 0.0089;
       params.offset.y = 0.039;
+      // Set iterations to 25 by default
+      params.iterations = 25;
+      iterationsExplicitlySet = true;
+      if (iterationsSlider) iterationsSlider.value = 25;
+      if (iterationsValue) iterationsValue.textContent = '25';
+      const fullscreenIterationsNumberEl = document.getElementById('fullscreen-iterations-number');
+      if (fullscreenIterationsNumberEl) {
+        fullscreenIterationsNumberEl.textContent = '25';
+      }
     } else if (currentFractalType === 'sierpinski-arrowhead') {
       // Sierpinski Arrowhead - initial render position
       params.zoom = 2;
@@ -1445,11 +1490,29 @@ function setupUI() {
       params.zoom = 4;
       params.offset.x = 0.7834;
       params.offset.y = 0.5579;
+      // Set iterations to 25 by default
+      params.iterations = 25;
+      iterationsExplicitlySet = true;
+      if (iterationsSlider) iterationsSlider.value = 25;
+      if (iterationsValue) iterationsValue.textContent = '25';
+      const fullscreenIterationsNumberEl = document.getElementById('fullscreen-iterations-number');
+      if (fullscreenIterationsNumberEl) {
+        fullscreenIterationsNumberEl.textContent = '25';
+      }
     } else if (currentFractalType === 'rauzy') {
       // Rauzy - initial render position
       params.zoom = 4;
       params.offset.x = 0.7877;
       params.offset.y = 0.6103;
+      // Set iterations to 25 by default
+      params.iterations = 25;
+      iterationsExplicitlySet = true;
+      if (iterationsSlider) iterationsSlider.value = 25;
+      if (iterationsValue) iterationsValue.textContent = '25';
+      const fullscreenIterationsNumberEl = document.getElementById('fullscreen-iterations-number');
+      if (fullscreenIterationsNumberEl) {
+        fullscreenIterationsNumberEl.textContent = '25';
+      }
     } else if (currentFractalType === 'spider-set') {
       // Spider Set - initial render position
       params.zoom = 2;
@@ -1466,10 +1529,10 @@ function setupUI() {
       params.offset.x = 0;
       params.offset.y = 0;
     }
-    
+
     // Update coordinate display after setting positions
     updateCoordinateDisplay();
-    
+
     // Set default iterations to 200 if not explicitly set for this fractal type
     if (!iterationsExplicitlySet) {
       params.iterations = 200;
@@ -1480,7 +1543,7 @@ function setupUI() {
         fullscreenIterationsNumberEl.textContent = '200';
       }
     }
-    
+
     // Render only if auto-render is enabled
     if (autoRenderEnabled) {
       // Clear the canvas before rendering the new fractal
@@ -1600,7 +1663,7 @@ function setupUI() {
     params.offset.x = 0;
     params.offset.y = 0;
     updateCoordinateDisplay();
-    
+
     // Reset scale parameters based on fractal type
     // Some fractals have specific default scales
     if (currentFractalType === 'multibrot') {
@@ -1619,10 +1682,10 @@ function setupUI() {
       if (xScaleSlider) xScaleSlider.value = 1.0;
       if (xScaleValue) xScaleValue.textContent = '1.0';
     }
-    
+
     if (yScaleSlider) yScaleSlider.value = params.yScale;
     if (yScaleValue) yScaleValue.textContent = params.yScale.toFixed(1);
-    
+
     renderFractal();
   });
 
@@ -1644,7 +1707,7 @@ function setupUI() {
       // Determine which button was clicked (regular or fullscreen)
       const button = event?.target?.closest('button') || screenshotBtn;
       const originalHTML = button.innerHTML;
-      
+
       // Show visual feedback that screenshot is being captured
       button.innerHTML = '<span>Capturing...</span>';
       button.disabled = true;
@@ -2228,11 +2291,11 @@ function setupUI() {
           { sides: 10, name: 'Decagon' },   // xScale = 1.167
           { sides: 12, name: 'Dodecagon' }, // xScale = 1.5
         ];
-        
+
         const polygonType = polygonTypes[Math.floor(Math.random() * polygonTypes.length)];
         // Convert sides to xScale: xScale = (sides - 3) / 6
         const xScale = (polygonType.sides - 3) / 6.0;
-        
+
         const interestingLocations = [
           { x: 0, y: 0, zoom: 1 }, // Full overview
           { x: 0, y: 0.4, zoom: 2.5 }, // Top region
@@ -2245,18 +2308,18 @@ function setupUI() {
           { x: 0.25, y: 0.15, zoom: 6 }, // Deep zoom
           { x: -0.25, y: 0.15, zoom: 6 }, // Deep zoom left
         ];
-        
+
         const location =
           interestingLocations[Math.floor(Math.random() * interestingLocations.length)];
         const zoom = location.zoom * (0.8 + Math.random() * 0.4);
-        
+
         // Update xScale slider
         const xScaleSlider = document.getElementById('x-scale');
         const xScaleValue = document.getElementById('x-scale-value');
         if (xScaleSlider) xScaleSlider.value = xScale;
         if (xScaleValue) xScaleValue.textContent = xScale.toFixed(1);
         params.xScale = xScale;
-        
+
         return {
           offset: { x: location.x, y: location.y },
           zoom: zoom,
@@ -2418,7 +2481,7 @@ function setupUI() {
           { name: 'Checkerboard-2', xScale: 1.1 },
           { name: 'H-Pattern', xScale: 1.3 },
         ];
-        
+
         const interestingLocations = [
           { x: 0, y: 0, zoom: 1 }, // Full overview
           { x: 0, y: 0, zoom: 3 }, // Center detail
@@ -2431,12 +2494,12 @@ function setupUI() {
           { x: 0.15, y: 0.15, zoom: 9 }, // Deep zoom
           { x: 0, y: 0, zoom: 2 }, // Medium zoom
         ];
-        
+
         const pattern = patterns[Math.floor(Math.random() * patterns.length)];
         const location =
           interestingLocations[Math.floor(Math.random() * interestingLocations.length)];
         const zoom = location.zoom * (0.8 + Math.random() * 0.4);
-        
+
         return {
           offset: { x: location.x, y: location.y },
           zoom: zoom,
@@ -2483,7 +2546,7 @@ function setupUI() {
           { rotation: 0.3, scale: 0.5 }, // Slight rotation, very tight
           { rotation: 1.5, scale: 1.5 }, // Large rotation, loose scaling
         ];
-        
+
         const interestingLocations = [
           { x: 0, y: 0, zoom: 1 }, // Full overview
           { x: 0, y: 0, zoom: 2 }, // Center detail
@@ -2496,12 +2559,12 @@ function setupUI() {
           { x: -0.15, y: 0.15, zoom: 7 }, // Very deep zoom
           { x: 0, y: 0, zoom: 1.5 }, // Medium zoom center
         ];
-        
+
         const config = configurations[Math.floor(Math.random() * configurations.length)];
         const location =
           interestingLocations[Math.floor(Math.random() * interestingLocations.length)];
         const zoom = location.zoom * (0.8 + Math.random() * 0.4);
-        
+
         return {
           offset: { x: location.x, y: location.y },
           zoom: zoom,
@@ -3538,7 +3601,7 @@ function updateCoordinateDisplay() {
   const zoomEl = document.getElementById('coord-zoom');
   const offsetXEl = document.getElementById('coord-offset-x');
   const offsetYEl = document.getElementById('coord-offset-y');
-  
+
   if (zoomEl && offsetXEl && offsetYEl) {
     // Round to reasonable precision for display
     zoomEl.textContent = Math.round(params.zoom * 1000) / 1000;
@@ -3555,15 +3618,15 @@ function setupCoordinateCopy() {
       const zoom = Math.round(params.zoom * 1000) / 1000;
       const offsetX = Math.round(params.offset.x * 10000) / 10000;
       const offsetY = Math.round(params.offset.y * 10000) / 10000;
-      
+
       const coordsText = `fractal: ${currentFractalType}, zoom: ${zoom}, offsetX: ${offsetX}, offsetY: ${offsetY}`;
-      
+
       navigator.clipboard.writeText(coordsText).then(() => {
         // Show feedback
         const originalText = copyBtn.innerHTML;
         copyBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"></path></svg>Copied!';
         copyBtn.style.background = 'var(--accent-blue)';
-        
+
         setTimeout(() => {
           copyBtn.innerHTML = originalText;
           copyBtn.style.background = '';
