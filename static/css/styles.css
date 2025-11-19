@@ -195,6 +195,11 @@ body {
   margin-bottom: 0;
 }
 
+/* Add padding below y-axis slider to prevent footer overlap */
+.control:has(#y-scale) {
+  margin-bottom: 25px; /* 20px default + 5px extra */
+}
+
 .control label {
   display: flex;
   justify-content: space-between;

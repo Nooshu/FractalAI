@@ -148,23 +148,22 @@ export function render(regl, params, canvas) {
       float scale = 4.0 / uZoom;
       
       // Transform vertex position to match the standard fractal coordinate system
+      // For line-based fractals, maintain aspect ratio correctly
       vec2 fractalCoord = position;
       vec2 relative = fractalCoord - uOffset;
       
-      // Convert to UV space (inverse of fragment shader transformation)
-      vec2 uv = vec2(
-        relative.x / (scale * aspect * uXScale) + 0.5,
-        relative.y / (scale * uYScale) + 0.5
+      // Scale uniformly (same factor for x and y) to preserve shape
+      vec2 scaled = vec2(
+        relative.x / (scale * uXScale),
+        relative.y / (scale * uYScale)
       );
       
-      // Convert UV (0-1) to clip space (-1 to 1)
-      vec2 clipSpace = (uv - 0.5) * 2.0;
+      // Apply aspect ratio correction to maintain shape across different window sizes
+      // Divide x by aspect to compensate for wider screens, preserving the curve's proportions
+      scaled.x /= aspect;
       
-      // The fragment shader's aspect is already in the x coordinate,
-      // so we need to divide by aspect to get proper clip space
-      clipSpace.x /= aspect;
-      
-      gl_Position = vec4(clipSpace, 0.0, 1.0);
+      // Convert to clip space (-1 to 1) by multiplying by 2.0
+      gl_Position = vec4(scaled * 2.0, 0.0, 1.0);
       vPosition = position;
     }
   `;

@@ -3722,12 +3722,19 @@ async function applyFractalState(state) {
   if (!state) return false;
 
   // Update fractal type first
-  if (state.fractalType && state.fractalType !== currentFractalType) {
-    currentFractalType = state.fractalType;
+  if (state.fractalType) {
     const fractalTypeSelect = document.getElementById('fractal-type');
     if (fractalTypeSelect) {
-      fractalTypeSelect.value = currentFractalType;
+      fractalTypeSelect.value = state.fractalType;
     }
+    
+    // Always load the fractal module if type changed or if module is not loaded
+    if (state.fractalType !== currentFractalType || !currentFractalModule) {
+      currentFractalType = state.fractalType;
+      await loadFractal(currentFractalType);
+    }
+  } else if (!currentFractalModule) {
+    // If no fractal type in state but module not loaded, load default
     await loadFractal(currentFractalType);
   }
 
