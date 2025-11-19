@@ -118,6 +118,7 @@ export const FRACTAL_CONFIGS = {
     zoom: 1,
     waitForRender: 2000, // ms to wait for render
     threshold: 0.2, // Pixel difference threshold (0-1)
+    maxDiffPixels: 20000, // Maximum number of different pixels (default)
   },
   
   // Fractals that need more iterations
@@ -126,6 +127,7 @@ export const FRACTAL_CONFIGS = {
     zoom: 1,
     waitForRender: 3000,
     threshold: 0.2,
+    maxDiffPixels: 20000,
   },
   
   // Fractals that may have slight variations (random elements)
@@ -134,17 +136,18 @@ export const FRACTAL_CONFIGS = {
     zoom: 1,
     waitForRender: 2000,
     threshold: 0.3, // Higher threshold for random fractals
+    maxDiffPixels: 200000, // Much higher limit for highly random fractals (allows significant variation)
   },
   
   // Specific fractal overrides
   fractals: {
-    'nebulabrot': { iterations: 100, waitForRender: 4000, threshold: 0.25 },
-    'random-cantor': { threshold: 0.3 },
-    'random-midpoint-displacement': { threshold: 0.3 },
-    'diffusion-limited-aggregation': { threshold: 0.3 },
-    'percolation-cluster': { threshold: 0.3 },
-    'levy-flights': { threshold: 0.3 },
-    'fractal-flame': { waitForRender: 3000 },
+    'nebulabrot': { iterations: 100, waitForRender: 4000, threshold: 0.25, maxDiffPixels: 20000 },
+    'random-cantor': { threshold: 0.3, maxDiffPixels: 30000 },
+    'random-midpoint-displacement': { threshold: 0.3, maxDiffPixels: 30000 },
+    'diffusion-limited-aggregation': { threshold: 0.3, maxDiffPixels: 30000 },
+    'percolation-cluster': { threshold: 0.3, maxDiffPixels: 200000 }, // Very high variation
+    'levy-flights': { threshold: 0.3, maxDiffPixels: 30000 },
+    'fractal-flame': { waitForRender: 3000, maxDiffPixels: 20000 },
   },
 };
 

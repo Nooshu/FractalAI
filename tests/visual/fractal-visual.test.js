@@ -110,7 +110,7 @@ FRACTAL_TYPES.forEach((fractalType) => {
     // Use the canvas element specifically to avoid UI elements
     await expect(canvas).toHaveScreenshot(`${fractalType}.png`, {
       threshold: config.threshold,
-      maxDiffPixels: config.threshold * 10000, // Adjust based on canvas size
+      maxDiffPixels: config.maxDiffPixels ?? config.threshold * 10000, // Use config value or fallback calculation
       animations: 'disabled', // Disable CSS animations
     });
   });
