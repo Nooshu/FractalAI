@@ -55,20 +55,6 @@
   Cache-Control: public, max-age=3600
   Content-Type: application/manifest+json; charset=utf-8
 
-# Fonts - long cache with immutable (fonts rarely change)
-/*.woff
-  Cache-Control: public, max-age=31536000, immutable
-  Accept-Ranges: bytes
-/*.woff2
-  Cache-Control: public, max-age=31536000, immutable
-  Accept-Ranges: bytes
-/*.ttf
-  Cache-Control: public, max-age=31536000, immutable
-  Accept-Ranges: bytes
-/*.otf
-  Cache-Control: public, max-age=31536000, immutable
-  Accept-Ranges: bytes
-
 # Assets directory - apply to all assets
 /assets/*
   Cache-Control: public, max-age=31536000, must-revalidate, stale-while-revalidate=86400
