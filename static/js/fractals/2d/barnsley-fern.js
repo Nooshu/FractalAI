@@ -1,4 +1,4 @@
-import { generatePaletteTexture, createFragmentShader } from '../utils.js';
+import { generatePaletteTexture } from '../utils.js';
 
 const fractalFunction = `
 // Barnsley Fern - Iterated Function System (IFS)

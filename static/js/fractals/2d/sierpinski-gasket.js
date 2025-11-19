@@ -1,4 +1,4 @@
-import { vertexShader, createFragmentShader, generatePaletteTexture } from '../utils.js';
+import { vertexShader, generatePaletteTexture } from '../utils.js';
 
 const fractalFunction = `
     // Generalised Sierpinski Gasket

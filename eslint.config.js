@@ -26,9 +26,12 @@ export default [
         HTMLCanvasElement: 'readonly',
         ResizeObserver: 'readonly',
         URL: 'readonly',
+        URLSearchParams: 'readonly',
         Blob: 'readonly',
         WebGL2RenderingContext: 'readonly',
         performance: 'readonly',
+        btoa: 'readonly',
+        atob: 'readonly',
         // ES2021 globals
         Promise: 'readonly',
         Symbol: 'readonly',
@@ -43,6 +46,22 @@ export default [
       'no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
       'no-console': 'off',
       'no-debugger': 'warn',
+    },
+  },
+  {
+    // Node.js environment for test files and config files
+    files: ['**/*.test.js', '**/playwright.config.js', '**/vite.config.js', 'tests/**/*.js'],
+    languageOptions: {
+      globals: {
+        process: 'readonly',
+        __dirname: 'readonly',
+        __filename: 'readonly',
+        Buffer: 'readonly',
+        global: 'readonly',
+        module: 'readonly',
+        require: 'readonly',
+        exports: 'readonly',
+      },
     },
   },
   {

@@ -932,15 +932,18 @@ function setupUI() {
       // Nova Fractal - initial render position
       // Uses relaxed Newton's method with alpha parameter controlled by xScale
       params.zoom = 1;
-      params.offset.x = 0.135;
-      params.offset.y = 0.165;
+      params.offset.x = 0.238;
+      params.offset.y = 0.139;
       params.iterations = 50;
       iterationsExplicitlySet = true;
-      params.xScale = 0.5; // alpha = 0.55 (good default for interesting patterns)
+      params.xScale = 1.0; // Set to 1.0 to match Newton and Halley
+      params.yScale = 1.0; // Set to 1.0 to match Newton and Halley
       if (iterationsSlider) iterationsSlider.value = 50;
       if (iterationsValue) iterationsValue.textContent = '50';
-      if (xScaleSlider) xScaleSlider.value = 0.5;
-      if (xScaleValue) xScaleValue.textContent = '0.5';
+      if (xScaleSlider) xScaleSlider.value = 1.0;
+      if (xScaleValue) xScaleValue.textContent = '1.0';
+      if (yScaleSlider) yScaleSlider.value = 1.0;
+      if (yScaleValue) yScaleValue.textContent = '1.0';
       const fullscreenIterationsNumberEl = document.getElementById('fullscreen-iterations-number');
       if (fullscreenIterationsNumberEl) {
         fullscreenIterationsNumberEl.textContent = '50';
@@ -3845,7 +3848,7 @@ async function loadFractalFromURL() {
     // Decode the seed (it might be URL encoded)
     try {
       seed = decodeURIComponent(seed);
-    } catch (e) {
+    } catch {
       // If decoding fails, use the seed as-is
     }
     

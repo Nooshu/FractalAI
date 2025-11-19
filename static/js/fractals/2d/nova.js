@@ -73,8 +73,10 @@ const fractalFunction = `
         // z_new = z - alpha * (z^3 - 1) / (3z^2)
         
         // Alpha (relaxation parameter) controlled by uXScale
-        // Map uXScale (0-1) to alpha (0.1-1.0) for interesting effects
-        float alpha = 0.1 + uXScale * 0.9;
+        // Map uXScale (0-2) to alpha (0.1-1.0) for interesting effects
+        // Default uXScale = 1.0 maps to alpha = 0.55 (typical Nova value)
+        // This ensures Nova is different from Newton even when xScale = 1.0
+        float alpha = 0.1 + clamp(uXScale, 0.0, 2.0) * 0.45;
         
         vec2 z = c;
         float convergenceThreshold = 0.0001;
