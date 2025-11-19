@@ -13,6 +13,14 @@ export default defineConfig({
   },
   plugins: [
     {
+      name: 'inject-build-year',
+      transformIndexHtml(html) {
+        // Replace {{BUILD_YEAR}} placeholder with current year at build time
+        const currentYear = new Date().getFullYear();
+        return html.replace(/\{\{BUILD_YEAR\}\}/g, currentYear.toString());
+      },
+    },
+    {
       name: 'copy-cloudflare-files',
       closeBundle() {
         // Copy _routes.json to dist directory for Cloudflare Pages

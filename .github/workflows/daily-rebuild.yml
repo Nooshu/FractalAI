@@ -1,0 +1,32 @@
+name: Daily Rebuild
+
+on:
+  schedule:
+    # Run daily at midnight UTC (00:00 UTC every day)
+    # Cron format: minute hour day-of-month month day-of-week
+    - cron: '0 0 * * *'
+  workflow_dispatch: # Allow manual triggering
+
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Required to push commits
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+
+      - name: Create empty commit to trigger rebuild
+        run: |
+          git commit --allow-empty -m "chore: daily rebuild - $(date -u +'%Y-%m-%d')"
+          git push
+
