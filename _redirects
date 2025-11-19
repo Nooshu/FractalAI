@@ -1,0 +1,3 @@
+# Block source maps from being served
+/*.map 404
+
