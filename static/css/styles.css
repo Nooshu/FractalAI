@@ -19,6 +19,7 @@
 
   /* Layout Constants */
   --panel-width: 360px;
+  --footer-height: 0px; /* Will be calculated dynamically */
 
   /* Common RGBA Values */
   --overlay-dark: rgb(0 0 0 / 70%);
@@ -107,7 +108,7 @@ body {
   flex: 1;
   overflow: hidden auto;
   padding: 8px 0;
-  padding-bottom: 80px; /* Add padding to prevent footer overlap */
+  padding-bottom: var(--footer-height, 120px); /* Dynamically matches footer height */
 }
 
 .panel-content::-webkit-scrollbar {
@@ -677,6 +678,9 @@ body {
     width var(--transition-normal);
   display: flex;
   flex-direction: column;
+  /* Use CSS to calculate and set footer height */
+  height: fit-content;
+  min-height: fit-content;
 }
 
 .app-footer p {
@@ -684,6 +688,12 @@ body {
   font-size: 0.85rem;
   color: var(--text-secondary);
   text-align: center;
+}
+
+.footer-license {
+  margin-top: 8px !important;
+  font-size: 0.75rem !important;
+  opacity: 0.8;
 }
 
 .app-footer a {
