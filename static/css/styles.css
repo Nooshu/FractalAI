@@ -426,6 +426,40 @@ body {
   flex-shrink: 0;
 }
 
+/* Wikipedia Link */
+.wikipedia-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: var(--bg-hover);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-primary);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all var(--transition-fast);
+  margin-top: 8px;
+  width: 100%;
+  justify-content: center;
+}
+
+.wikipedia-link:hover {
+  background: var(--accent-blue-dim);
+  border-color: var(--accent-blue);
+  color: white;
+  transform: translateY(-1px);
+}
+
+.wikipedia-link:active {
+  transform: translateY(0);
+}
+
+.wikipedia-link svg {
+  flex-shrink: 0;
+}
+
 /* Footer share button */
 .footer-share-btn {
   width: 100%;
