@@ -5,8 +5,9 @@ node_modules/
 dist/
 
 # Test results and screenshots
+# Note: Baseline snapshots in tests/visual/**/*-snapshots/ should be committed
+# Only ignore actual test results and artifacts
 test-results/
-tests/visual/**/*-snapshots/
 playwright-report/
 
 # Environment variables

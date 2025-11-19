@@ -32,10 +32,20 @@ FRACTAL_TYPES.forEach((fractalType) => {
     const fractalSelect = page.locator('#fractal-type');
     await fractalSelect.selectOption(fractalType);
     
+    // Check if auto-render is enabled - if not, click update button to render
+    const autoRender = page.locator('#auto-render');
+    const isAutoRenderChecked = await autoRender.isChecked();
+    
+    if (!isAutoRenderChecked) {
+      // Auto-render is disabled, so we need to manually trigger rendering
+      const updateBtn = page.locator('#update-fractal');
+      await updateBtn.click();
+    }
+    
     // Wait for fractal to load (check for loading bar to disappear)
     const loadingBar = page.locator('.loading-bar');
     try {
-      await loadingBar.waitFor({ state: 'hidden', timeout: 5000 });
+      await loadingBar.waitFor({ state: 'hidden', timeout: 10000 });
     } catch {
       // Loading bar might not exist or already hidden
     }
@@ -46,11 +56,15 @@ FRACTAL_TYPES.forEach((fractalType) => {
       await iterationsSlider.fill(config.iterations.toString());
       
       // Trigger update if auto-render is disabled
-      const autoRender = page.locator('#auto-render');
-      const isChecked = await autoRender.isChecked();
-      if (!isChecked) {
+      if (!isAutoRenderChecked) {
         const updateBtn = page.locator('#update-fractal');
         await updateBtn.click();
+        // Wait for loading bar again after iteration change
+        try {
+          await loadingBar.waitFor({ state: 'hidden', timeout: 10000 });
+        } catch {
+          // Loading bar might not exist or already hidden
+        }
       }
     }
     
@@ -60,6 +74,11 @@ FRACTAL_TYPES.forEach((fractalType) => {
     
     // Additional wait for any animations or progressive rendering
     await page.waitForTimeout(500);
+    
+    // Hide top action bar buttons and FPS meter for clean screenshots
+    await page.addStyleTag({
+      content: '.top-action-bar { display: none !important; } #fps { display: none !important; }'
+    });
     
     // Ensure canvas is fully rendered by checking for stable image
     // We'll take multiple screenshots and compare to ensure stability
