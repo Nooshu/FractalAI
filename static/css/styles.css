@@ -290,6 +290,25 @@ body {
   appearance: none;
 }
 
+/* Keyboard accessibility - visible focus indicator */
+.styled-slider:focus-visible {
+  outline: 2px solid var(--accent-blue);
+  outline-offset: 4px;
+}
+
+/* Screen reader only text */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
 .styled-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
@@ -475,28 +494,43 @@ body {
   align-items: center;
   gap: 2px;
   padding: 10px 16px;
-  background: var(--bg-hover);
-  border: 1px solid var(--border-color);
+  background: var(--button-bg);
+  border: 1px solid var(--overlay-light);
   border-radius: 8px;
   color: var(--text-primary);
   text-decoration: none;
   font-size: 0.9rem;
   font-weight: 500;
-  transition: all var(--transition-fast);
+  transition: all 0.2s ease;
   margin-top: 8px;
   width: 100%;
   justify-content: center;
+  outline: none;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 30%);
 }
 
 .wikipedia-link:hover {
-  background: var(--accent-blue-dim);
+  background: rgb(74 158 255 / 90%);
   border-color: var(--accent-blue);
   color: white;
   transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgb(74 158 255 / 30%);
 }
 
 .wikipedia-link:active {
   transform: translateY(0);
+  background: rgb(58 122 199 / 95%);
+  border-color: var(--accent-blue-dim);
+}
+
+/* Keyboard accessibility - visible focus indicator */
+.wikipedia-link:focus-visible {
+  outline: 2px solid var(--accent-blue);
+  outline-offset: 2px;
+  background: rgb(74 158 255 / 90%);
+  border-color: var(--accent-blue);
+  color: white;
+  box-shadow: 0 0 0 4px rgba(74, 158, 255, 0.2), 0 4px 12px rgb(74 158 255 / 30%);
 }
 
 .wikipedia-link svg {
@@ -597,6 +631,16 @@ body {
   opacity: 1;
 }
 
+/* Keep action bar visible when buttons are focused */
+.canvas-area .top-action-bar:has(.top-action-btn:focus-visible) {
+  opacity: 1;
+}
+
+/* Keep action bar visible when buttons are focused */
+.canvas-area .top-action-bar:has(.top-action-btn:focus-visible) {
+  opacity: 1;
+}
+
 .top-action-btn {
   display: flex;
   align-items: center;
@@ -618,6 +662,16 @@ body {
 
 .top-action-btn svg {
   flex-shrink: 0;
+}
+
+/* Keyboard accessibility - visible focus indicator */
+.top-action-btn:focus-visible {
+  outline: 2px solid var(--accent-blue);
+  outline-offset: 2px;
+  background: rgb(74 158 255 / 90%);
+  border-color: var(--accent-blue);
+  color: white;
+  box-shadow: 0 0 0 4px rgba(74, 158, 255, 0.2), 0 4px 12px rgb(74 158 255 / 30%);
 }
 
 .top-action-btn:hover {
@@ -901,6 +955,7 @@ body {
   pointer-events: auto;
   box-shadow: 0 4px 12px rgb(0 0 0 / 40%);
   position: relative;
+  outline: none;
 }
 
 .fullscreen-control-btn:hover {
@@ -915,6 +970,17 @@ body {
   transform: scale(0.95);
   background: rgb(58 122 199 / 95%);
   border-color: var(--accent-blue-dim);
+}
+
+/* Keyboard accessibility - visible focus indicator */
+.fullscreen-control-btn:focus-visible {
+  outline: 2px solid var(--accent-blue);
+  outline-offset: 3px;
+  background: rgb(74 158 255 / 90%);
+  border-color: var(--accent-blue);
+  color: white;
+  transform: scale(1.1);
+  box-shadow: 0 0 0 4px rgba(74, 158, 255, 0.3), 0 6px 20px rgb(74 158 255 / 50%);
 }
 
 .fullscreen-random-number {

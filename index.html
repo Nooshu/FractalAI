@@ -511,7 +511,13 @@
                   step="0.1"
                   value="1.0"
                   class="styled-slider"
+                  aria-label="X Axis scale"
+                  aria-valuemin="0.1"
+                  aria-valuemax="3"
+                  aria-valuenow="1.0"
+                  aria-valuetext="1.0"
                 />
+                <span class="sr-only" id="x-scale-announce" aria-live="polite" aria-atomic="true"></span>
               </div>
               <div class="control">
                 <label for="y-scale">
@@ -526,7 +532,13 @@
                   step="0.1"
                   value="1.0"
                   class="styled-slider"
+                  aria-label="Y Axis scale"
+                  aria-valuemin="0.1"
+                  aria-valuemax="3"
+                  aria-valuenow="1.0"
+                  aria-valuetext="1.0"
                 />
+                <span class="sr-only" id="y-scale-announce" aria-live="polite" aria-atomic="true"></span>
               </div>
             </div>
           </div>
@@ -581,7 +593,7 @@
 
         <!-- Top Action Bar -->
         <div class="top-action-bar">
-          <button id="update-fractal" class="top-action-btn">
+          <button id="update-fractal" class="top-action-btn" aria-label="Render fractal">
             <svg
               width="18"
               height="18"
@@ -589,6 +601,7 @@
               fill="none"
               stroke="currentColor"
               stroke-width="2"
+              aria-hidden="true"
             >
               <path
                 d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"
@@ -596,7 +609,7 @@
             </svg>
             Render
           </button>
-          <button id="reset-view" class="top-action-btn">
+          <button id="reset-view" class="top-action-btn" aria-label="Reset view to default">
             <svg
               width="18"
               height="18"
@@ -604,13 +617,14 @@
               fill="none"
               stroke="currentColor"
               stroke-width="2"
+              aria-hidden="true"
             >
               <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
               <path d="M3 3v5h5" />
             </svg>
             Reset View
           </button>
-          <button id="screenshot" class="top-action-btn">
+          <button id="screenshot" class="top-action-btn" aria-label="Take screenshot">
             <svg
               width="18"
               height="18"
@@ -618,6 +632,7 @@
               fill="none"
               stroke="currentColor"
               stroke-width="2"
+              aria-hidden="true"
             >
               <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
               <circle cx="8.5" cy="8.5" r="1.5"></circle>
@@ -625,7 +640,7 @@
             </svg>
             Screenshot
           </button>
-          <button id="fullscreen" class="top-action-btn">
+          <button id="fullscreen" class="top-action-btn" aria-label="Toggle fullscreen">
             <svg
               width="18"
               height="18"
@@ -633,6 +648,7 @@
               fill="none"
               stroke="currentColor"
               stroke-width="2"
+              aria-hidden="true"
             >
               <path
                 d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"

@@ -1076,10 +1076,14 @@ function setupUI() {
       params.yScale = 1.0; // Set to 1.0 to match Newton and Halley
       if (iterationsSlider) iterationsSlider.value = 50;
       if (iterationsValue) iterationsValue.textContent = '50';
-      if (xScaleSlider) xScaleSlider.value = 1.0;
-      if (xScaleValue) xScaleValue.textContent = '1.0';
-      if (yScaleSlider) yScaleSlider.value = 1.0;
-      if (yScaleValue) yScaleValue.textContent = '1.0';
+      if (xScaleSlider) {
+        xScaleSlider.value = 1.0;
+        updateSliderAccessibility(xScaleSlider, xScaleValue, xScaleAnnounce, 1.0, 'X Axis', false);
+      }
+      if (yScaleSlider) {
+        yScaleSlider.value = 1.0;
+        updateSliderAccessibility(yScaleSlider, yScaleValue, yScaleAnnounce, 1.0, 'Y Axis', false);
+      }
       const fullscreenIterationsNumberEl = document.getElementById('fullscreen-iterations-number');
       if (fullscreenIterationsNumberEl) {
         fullscreenIterationsNumberEl.textContent = '50';
@@ -1120,10 +1124,14 @@ function setupUI() {
       params.xScale = 0.25; // Order 4 (2 + 0.25 * 8 = 4) - only affects order, not coordinates
       params.yScale = 1.0; // Ensure yScale is 1.0 for proper aspect ratio
       // Update sliders
-      if (xScaleSlider) xScaleSlider.value = 0.25;
-      if (xScaleValue) xScaleValue.textContent = '0.25';
-      if (yScaleSlider) yScaleSlider.value = 1.0;
-      if (yScaleValue) yScaleValue.textContent = '1.0';
+      if (xScaleSlider) {
+        xScaleSlider.value = 0.25;
+        updateSliderAccessibility(xScaleSlider, xScaleValue, xScaleAnnounce, 0.25, 'X Axis', false);
+      }
+      if (yScaleSlider) {
+        yScaleSlider.value = 1.0;
+        updateSliderAccessibility(yScaleSlider, yScaleValue, yScaleAnnounce, 1.0, 'Y Axis', false);
+      }
     } else if (currentFractalType === 'multibrot-julia') {
       // Multibrot Julia Set - default centered view with order 4 (cubic)
       // Note: xScale controls the multibrot order, not coordinate scaling
@@ -1229,10 +1237,14 @@ function setupUI() {
         fullscreenIterationsNumberEl.textContent = '25';
       }
       // Update scale sliders
-      if (xScaleSlider) xScaleSlider.value = 0.6;
-      if (xScaleValue) xScaleValue.textContent = '0.6';
-      if (yScaleSlider) yScaleSlider.value = 0.5;
-      if (yScaleValue) yScaleValue.textContent = '0.5';
+      if (xScaleSlider) {
+        xScaleSlider.value = 0.6;
+        updateSliderAccessibility(xScaleSlider, xScaleValue, xScaleAnnounce, 0.6, 'X Axis', false);
+      }
+      if (yScaleSlider) {
+        yScaleSlider.value = 0.5;
+        updateSliderAccessibility(yScaleSlider, yScaleValue, yScaleAnnounce, 0.5, 'Y Axis', false);
+      }
       // Set cosmic color scheme by default
       params.colorScheme = 'cosmic';
       if (colorSchemeSelect) colorSchemeSelect.value = 'cosmic';
@@ -1736,16 +1748,64 @@ function setupUI() {
     triggerAutoRender();
   });
 
+  // Get aria-live announcement elements
+  const xScaleAnnounce = document.getElementById('x-scale-announce');
+  const yScaleAnnounce = document.getElementById('y-scale-announce');
+
+  // Function to update slider accessibility and announce value
+  function updateSliderAccessibility(slider, valueElement, announceElement, value, label, announce = true) {
+    const formattedValue = value.toFixed(1);
+    valueElement.textContent = formattedValue;
+    if (slider) {
+      slider.setAttribute('aria-valuenow', formattedValue);
+      slider.setAttribute('aria-valuetext', formattedValue);
+    }
+    
+    // Announce to screen readers (only when user is interacting)
+    if (announce && announceElement) {
+      announceElement.textContent = `${label} scale set to ${formattedValue}`;
+      // Clear after announcement to allow re-announcement of same value
+      setTimeout(() => {
+        announceElement.textContent = '';
+      }, 1000);
+    }
+  }
+
   xScaleSlider.addEventListener('input', (e) => {
-    params.xScale = parseFloat(e.target.value);
-    xScaleValue.textContent = params.xScale.toFixed(1);
+    const value = parseFloat(e.target.value);
+    params.xScale = value;
+    updateSliderAccessibility(xScaleSlider, xScaleValue, xScaleAnnounce, value, 'X Axis');
     triggerAutoRender();
   });
 
   yScaleSlider.addEventListener('input', (e) => {
-    params.yScale = parseFloat(e.target.value);
-    yScaleValue.textContent = params.yScale.toFixed(1);
+    const value = parseFloat(e.target.value);
+    params.yScale = value;
+    updateSliderAccessibility(yScaleSlider, yScaleValue, yScaleAnnounce, value, 'Y Axis');
     triggerAutoRender();
+  });
+
+  // Ensure y-axis slider scrolls into view when focused via keyboard
+  yScaleSlider.addEventListener('focus', () => {
+    // Use requestAnimationFrame to ensure DOM is updated
+    requestAnimationFrame(() => {
+      const panelContent = yScaleSlider.closest('.panel-content');
+      if (panelContent) {
+        const sliderRect = yScaleSlider.getBoundingClientRect();
+        const panelRect = panelContent.getBoundingClientRect();
+        const footer = document.querySelector('.app-footer');
+        const footerHeight = footer ? footer.offsetHeight : 120;
+        
+        // Calculate if slider is hidden behind footer
+        const viewportBottom = panelRect.bottom - footerHeight - 20; // 20px padding
+        
+        if (sliderRect.bottom > viewportBottom) {
+          // Calculate how much to scroll
+          const scrollAmount = sliderRect.bottom - viewportBottom + 20; // Extra padding
+          panelContent.scrollTop += scrollAmount;
+        }
+      }
+    });
   });
 
   updateFractalBtn.addEventListener('click', async () => {
@@ -1809,22 +1869,30 @@ function setupUI() {
     if (currentFractalType === 'multibrot') {
       params.xScale = 0.25; // Order 4 for multibrot (only affects order, not coordinates)
       params.yScale = 1.0;
-      if (xScaleSlider) xScaleSlider.value = 0.25;
-      if (xScaleValue) xScaleValue.textContent = '0.25';
+      if (xScaleSlider) {
+        xScaleSlider.value = 0.25;
+        updateSliderAccessibility(xScaleSlider, xScaleValue, xScaleAnnounce, 0.25, 'X Axis', false);
+      }
     } else if (currentFractalType === 'sierpinski-gasket') {
       params.xScale = 0.5; // Hexagon for sierpinski gasket
       params.yScale = 1.0;
-      if (xScaleSlider) xScaleSlider.value = 0.5;
-      if (xScaleValue) xScaleValue.textContent = '0.5';
+      if (xScaleSlider) {
+        xScaleSlider.value = 0.5;
+        updateSliderAccessibility(xScaleSlider, xScaleValue, xScaleAnnounce, 0.5, 'X Axis', false);
+      }
     } else {
       params.xScale = 1.0;
       params.yScale = 1.0;
-      if (xScaleSlider) xScaleSlider.value = 1.0;
-      if (xScaleValue) xScaleValue.textContent = '1.0';
+      if (xScaleSlider) {
+        xScaleSlider.value = 1.0;
+        updateSliderAccessibility(xScaleSlider, xScaleValue, xScaleAnnounce, 1.0, 'X Axis', false);
+      }
     }
 
-    if (yScaleSlider) yScaleSlider.value = params.yScale;
-    if (yScaleValue) yScaleValue.textContent = params.yScale.toFixed(1);
+    if (yScaleSlider) {
+      yScaleSlider.value = params.yScale;
+      updateSliderAccessibility(yScaleSlider, yScaleValue, yScaleAnnounce, params.yScale, 'Y Axis', false);
+    }
 
     renderFractal();
   });
@@ -2456,8 +2524,10 @@ function setupUI() {
         // Update xScale slider
         const xScaleSlider = document.getElementById('x-scale');
         const xScaleValue = document.getElementById('x-scale-value');
-        if (xScaleSlider) xScaleSlider.value = xScale;
-        if (xScaleValue) xScaleValue.textContent = xScale.toFixed(1);
+        if (xScaleSlider) {
+          xScaleSlider.value = xScale;
+          updateSliderAccessibility(xScaleSlider, xScaleValue, xScaleAnnounce, xScale, 'X Axis', false);
+        }
         params.xScale = xScale;
 
         return {
@@ -3873,20 +3943,30 @@ async function applyFractalState(state) {
 
   const xScaleSlider = document.getElementById('x-scale');
   const xScaleValue = document.getElementById('x-scale-value');
+  const xScaleAnnounce = document.getElementById('x-scale-announce');
   if (xScaleSlider && state.xScale !== undefined) {
     xScaleSlider.value = state.xScale;
-  }
-  if (xScaleValue && state.xScale !== undefined) {
-    xScaleValue.textContent = state.xScale.toFixed(1);
+    // Update accessibility attributes without announcing (programmatic change)
+    if (xScaleValue && xScaleAnnounce) {
+      const formattedValue = state.xScale.toFixed(1);
+      xScaleValue.textContent = formattedValue;
+      xScaleSlider.setAttribute('aria-valuenow', formattedValue);
+      xScaleSlider.setAttribute('aria-valuetext', formattedValue);
+    }
   }
 
   const yScaleSlider = document.getElementById('y-scale');
   const yScaleValue = document.getElementById('y-scale-value');
+  const yScaleAnnounce = document.getElementById('y-scale-announce');
   if (yScaleSlider && state.yScale !== undefined) {
     yScaleSlider.value = state.yScale;
-  }
-  if (yScaleValue && state.yScale !== undefined) {
-    yScaleValue.textContent = state.yScale.toFixed(1);
+    // Update accessibility attributes without announcing (programmatic change)
+    if (yScaleValue && yScaleAnnounce) {
+      const formattedValue = state.yScale.toFixed(1);
+      yScaleValue.textContent = formattedValue;
+      yScaleSlider.setAttribute('aria-valuenow', formattedValue);
+      yScaleSlider.setAttribute('aria-valuetext', formattedValue);
+    }
   }
 
   // Update Julia controls if applicable
