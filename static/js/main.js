@@ -1,6 +1,7 @@
 import createRegl from 'regl';
 import { getColorSchemeIndex, computeColorForScheme, isJuliaType } from './fractals/utils.js';
 import { BenchmarkUI, addBenchmarkButton } from './performance/ui.js';
+import { CONFIG } from './core/config.js';
 
 // Application state
 let regl = null;
@@ -710,26 +711,63 @@ function setupUI() {
   }
 
   // Color scheme cycling (shared between main UI and fullscreen controls)
-  const colorSchemes = [
-    'classic',
-    'fire',
-    'ocean',
-    'rainbow',
-    'rainbow2',
-    'rainbow3',
-    'rainbow4',
-    'rainbow5',
-    'rainbow6',
-    'monochrome',
-    'forest',
-    'sunset',
-    'purple',
-    'cyan',
-    'gold',
-    'ice',
-    'neon',
-    'cosmic',
-  ];
+  // Use CONFIG as the single source of truth for color schemes
+  const colorSchemes = CONFIG.colors.schemes;
+  
+  // Populate color scheme dropdown dynamically from CONFIG
+  if (colorSchemeSelect) {
+    // Clear existing options (keep the first one as placeholder if needed)
+    colorSchemeSelect.innerHTML = '';
+    
+    // Helper function to format scheme names for display
+    const formatSchemeName = (scheme) => {
+      const nameMap = {
+        'classic': 'Classic',
+        'fire': 'Fire',
+        'ocean': 'Ocean',
+        'rainbow': 'Rainbow',
+        'rainbow2': 'Rainbow Pastel',
+        'rainbow3': 'Rainbow Dark',
+        'rainbow4': 'Rainbow Vibrant',
+        'rainbow5': 'Rainbow Double',
+        'rainbow6': 'Rainbow Shifted',
+        'monochrome': 'Monochrome',
+        'forest': 'Forest',
+        'sunset': 'Sunset',
+        'purple': 'Purple',
+        'cyan': 'Cyan',
+        'gold': 'Gold',
+        'ice': 'Ice',
+        'neon': 'Neon',
+        'cosmic': 'Cosmic',
+        'aurora': 'Aurora',
+        'coral': 'Coral',
+        'autumn': 'Autumn',
+        'midnight': 'Midnight',
+        'emerald': 'Emerald',
+        'rosegold': 'Rose Gold',
+        'electric': 'Electric',
+        'vintage': 'Vintage',
+        'tropical': 'Tropical',
+        'galaxy': 'Galaxy',
+      };
+      return nameMap[scheme] || scheme.charAt(0).toUpperCase() + scheme.slice(1);
+    };
+    
+    // Add all schemes from CONFIG
+    colorSchemes.forEach((scheme) => {
+      const option = document.createElement('option');
+      option.value = scheme;
+      option.textContent = formatSchemeName(scheme);
+      colorSchemeSelect.appendChild(option);
+    });
+    
+    // Set the current value
+    if (params.colorScheme) {
+      colorSchemeSelect.value = params.colorScheme;
+    }
+  }
+  
   let currentColorSchemeIndex = colorSchemes.indexOf(params.colorScheme);
   if (currentColorSchemeIndex === -1) currentColorSchemeIndex = 0;
 
@@ -916,10 +954,10 @@ function setupUI() {
       params.offset.x = -0.003;
       params.offset.y = 0.0713;
     } else if (currentFractalType === 'newton') {
-      // Newton Fractal - initial render position
+      // Newton Fractal - initial render position (matches reset view)
       params.zoom = 1;
-      params.offset.x = 0.238;
-      params.offset.y = 0.139;
+      params.offset.x = 0;
+      params.offset.y = 0;
       params.iterations = 50;
       iterationsExplicitlySet = true;
       if (iterationsSlider) iterationsSlider.value = 50;
@@ -929,11 +967,11 @@ function setupUI() {
         fullscreenIterationsNumberEl.textContent = '50';
       }
     } else if (currentFractalType === 'nova') {
-      // Nova Fractal - initial render position
+      // Nova Fractal - initial render position (matches reset view)
       // Uses relaxed Newton's method with alpha parameter controlled by xScale
       params.zoom = 1;
-      params.offset.x = 0.238;
-      params.offset.y = 0.139;
+      params.offset.x = 0;
+      params.offset.y = 0;
       params.iterations = 50;
       iterationsExplicitlySet = true;
       params.xScale = 1.0; // Set to 1.0 to match Newton and Halley
@@ -949,10 +987,10 @@ function setupUI() {
         fullscreenIterationsNumberEl.textContent = '50';
       }
     } else if (currentFractalType === 'halley') {
-      // Halley Fractal - initial render position
+      // Halley Fractal - initial render position (matches reset view)
       params.zoom = 1;
-      params.offset.x = 0.25;
-      params.offset.y = 0.118;
+      params.offset.x = 0;
+      params.offset.y = 0;
       params.iterations = 50;
       iterationsExplicitlySet = true;
       if (iterationsSlider) iterationsSlider.value = 50;

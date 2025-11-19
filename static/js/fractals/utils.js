@@ -130,6 +130,166 @@ export function computeColorForScheme(t, schemeIndex) {
           b: Math.min(1.0, b * sparkle),
         };
       }
+    case 18: // aurora - Northern lights (greens, blues, purples)
+      {
+        // Aurora borealis: green to cyan to purple
+        const phase = t * 2.0;
+        if (phase < 1.0) {
+          // Green to cyan transition
+          const p = phase;
+          return {
+            r: 0.1 + p * 0.2,
+            g: 0.3 + p * 0.5,
+            b: 0.2 + p * 0.6,
+          };
+        } else {
+          // Cyan to purple transition
+          const p = phase - 1.0;
+          return {
+            r: 0.3 + p * 0.5,
+            g: 0.8 - p * 0.3,
+            b: 0.8 + p * 0.2,
+          };
+        }
+      }
+    case 19: // coral - Coral reef (tropical blues, corals, teals)
+      {
+        // Tropical coral reef: deep blue to teal to coral pink
+        const phase1 = Math.min(t * 3.0, 1.0);
+        const phase2 = Math.max(0.0, Math.min((t - 0.33) * 3.0, 1.0));
+        const phase3 = Math.max(0.0, (t - 0.66) * 3.0);
+        
+        return {
+          r: phase1 * 0.1 + phase2 * 0.3 + phase3 * 1.0,
+          g: phase1 * 0.4 + phase2 * 0.8 + phase3 * 0.6,
+          b: phase1 * 0.8 + phase2 * 0.7 + phase3 * 0.5,
+        };
+      }
+    case 20: // autumn - Warm autumn colors (oranges, reds, yellows)
+      {
+        // Autumn: deep red to orange to golden yellow
+        const phase1 = Math.min(t * 2.0, 1.0);
+        const phase2 = Math.max(0.0, (t - 0.5) * 2.0);
+        
+        return {
+          r: 0.3 + phase1 * 0.5 + phase2 * 0.2,
+          g: 0.1 + phase1 * 0.3 + phase2 * 0.6,
+          b: 0.0 + phase1 * 0.1 + phase2 * 0.1,
+        };
+      }
+    case 21: // midnight - Deep blues, purples, magentas
+      {
+        // Midnight: deep navy to purple to magenta
+        const phase1 = Math.min(t * 2.0, 1.0);
+        const phase2 = Math.max(0.0, (t - 0.5) * 2.0);
+        
+        return {
+          r: 0.05 + phase1 * 0.3 + phase2 * 0.65,
+          g: 0.05 + phase1 * 0.2 + phase2 * 0.3,
+          b: 0.2 + phase1 * 0.5 + phase2 * 0.3,
+        };
+      }
+    case 22: // emerald - Rich greens with gold accents
+      {
+        // Emerald: dark green to bright emerald to gold
+        const phase1 = Math.min(t * 2.0, 1.0);
+        const phase2 = Math.max(0.0, (t - 0.5) * 2.0);
+        
+        return {
+          r: 0.0 + phase1 * 0.1 + phase2 * 0.8,
+          g: 0.2 + phase1 * 0.7 + phase2 * 0.6,
+          b: 0.1 + phase1 * 0.4 + phase2 * 0.1,
+        };
+      }
+    case 23: // rosegold - Pink, rose, gold tones
+      {
+        // Rose gold: soft pink to rose to gold
+        const phase1 = Math.min(t * 2.0, 1.0);
+        const phase2 = Math.max(0.0, (t - 0.5) * 2.0);
+        
+        return {
+          r: 0.3 + phase1 * 0.5 + phase2 * 0.2,
+          g: 0.2 + phase1 * 0.3 + phase2 * 0.5,
+          b: 0.2 + phase1 * 0.2 + phase2 * 0.1,
+        };
+      }
+    case 24: // electric - Bright neon colors
+      {
+        // Electric: vibrant neon colors cycling through spectrum
+        const hue = ((t * 360 + 180) % 360) / 360; // Shifted for electric feel
+        const sat = 1.0;
+        const light = 0.5;
+        
+        return {
+          r: Math.max(0, Math.min(1, light + sat * Math.cos(hue * 6.28 + 0.0) * 1.2)),
+          g: Math.max(0, Math.min(1, light + sat * Math.cos(hue * 6.28 + 2.09) * 1.2)),
+          b: Math.max(0, Math.min(1, light + sat * Math.cos(hue * 6.28 + 4.18) * 1.2)),
+        };
+      }
+    case 25: // vintage - Muted pastels
+      {
+        // Vintage: muted pastels with sepia tones
+        const hue = ((t * 360 + 30) % 360) / 360; // Warm shift
+        const sat = 0.4; // Low saturation
+        const light = 0.7; // High lightness
+        
+        return {
+          r: light + sat * Math.cos(hue * 6.28 + 0.0) * 0.5,
+          g: light + sat * Math.cos(hue * 6.28 + 2.09) * 0.5,
+          b: light + sat * Math.cos(hue * 6.28 + 4.18) * 0.5,
+        };
+      }
+    case 26: // tropical - Bright vibrant colors
+      {
+        // Tropical: bright cyan, magenta, yellow
+        const phase = t * 3.0;
+        if (phase < 1.0) {
+          // Cyan to magenta
+          const p = phase;
+          return {
+            r: 0.0 + p * 1.0,
+            g: 1.0 - p * 0.3,
+            b: 1.0 - p * 0.5,
+          };
+        } else if (phase < 2.0) {
+          // Magenta to yellow
+          const p = phase - 1.0;
+          return {
+            r: 1.0,
+            g: 0.7 + p * 0.3,
+            b: 0.5 - p * 0.5,
+          };
+        } else {
+          // Yellow to cyan
+          const p = phase - 2.0;
+          return {
+            r: 1.0 - p * 1.0,
+            g: 1.0,
+            b: 0.0 + p * 1.0,
+          };
+        }
+      }
+    case 27: // galaxy - Deep space with bright stars (different from cosmic)
+      {
+        // Galaxy: deep indigo to violet to bright white stars
+        const darkBase = 0.02;
+        const phase1 = Math.min(t * 2.5, 1.0);
+        const phase2 = Math.max(0.0, (t - 0.4) * 1.67);
+        
+        // Deep indigo/violet base
+        const r = darkBase + phase1 * 0.4 + phase2 * 0.6;
+        const g = darkBase + phase1 * 0.2 + phase2 * 0.8;
+        const b = darkBase + phase1 * 0.6 + phase2 * 1.0;
+        
+        // Bright star sparkle effect
+        const sparkle = Math.sin(t * Math.PI * 12.0) * 0.15 + 0.85;
+        
+        return {
+          r: Math.min(1.0, r * sparkle),
+          g: Math.min(1.0, g * sparkle),
+          b: Math.min(1.0, b * sparkle),
+        };
+      }
     default: // classic (scheme == 0)
       return { r: t * 0.5, g: t, b: Math.min(t * 1.5, 1) };
   }
@@ -361,6 +521,16 @@ export function getColorSchemeIndex(scheme) {
     'rainbow5',
     'rainbow6',
     'cosmic',
+    'aurora',
+    'coral',
+    'autumn',
+    'midnight',
+    'emerald',
+    'rosegold',
+    'electric',
+    'vintage',
+    'tropical',
+    'galaxy',
   ];
   return schemes.indexOf(scheme);
 }
