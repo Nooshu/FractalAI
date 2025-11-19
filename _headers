@@ -1,37 +1,49 @@
-# HTML files - short cache with revalidation
+# HTML files - short cache with stale-while-revalidate for better performance
 /*.html
-  Cache-Control: public, max-age=0, must-revalidate
+  Cache-Control: public, max-age=0, must-revalidate, stale-while-revalidate=86400
   X-Content-Type-Options: nosniff
   X-Frame-Options: DENY
-  X-XSS-Protection: 1; mode=block
   Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=()
+  Cross-Origin-Opener-Policy: same-origin
+  Accept-Ranges: bytes
 
 # CSS files - cache with revalidation (no immutable)
 /*.css
-  Cache-Control: public, max-age=31536000, must-revalidate
+  Cache-Control: public, max-age=31536000, must-revalidate, stale-while-revalidate=86400
   Content-Type: text/css; charset=utf-8
+  Accept-Ranges: bytes
 
 # JavaScript files - cache with revalidation (no immutable)
 /*.js
-  Cache-Control: public, max-age=31536000, must-revalidate
+  Cache-Control: public, max-age=31536000, must-revalidate, stale-while-revalidate=86400
   Content-Type: application/javascript; charset=utf-8
   X-Content-Type-Options: nosniff
+  Accept-Ranges: bytes
 
-# Images - long cache
+# Images - long cache with immutable-like behavior
 /*.png
-  Cache-Control: public, max-age=31536000
+  Cache-Control: public, max-age=31536000, immutable
+  Accept-Ranges: bytes
 /*.jpg
-  Cache-Control: public, max-age=31536000
+  Cache-Control: public, max-age=31536000, immutable
+  Accept-Ranges: bytes
 /*.jpeg
-  Cache-Control: public, max-age=31536000
+  Cache-Control: public, max-age=31536000, immutable
+  Accept-Ranges: bytes
 /*.gif
-  Cache-Control: public, max-age=31536000
+  Cache-Control: public, max-age=31536000, immutable
+  Accept-Ranges: bytes
 /*.svg
-  Cache-Control: public, max-age=31536000
+  Cache-Control: public, max-age=31536000, immutable
+  Content-Type: image/svg+xml; charset=utf-8
+  Accept-Ranges: bytes
 /*.webp
-  Cache-Control: public, max-age=31536000
+  Cache-Control: public, max-age=31536000, immutable
+  Accept-Ranges: bytes
 /*.ico
-  Cache-Control: public, max-age=31536000
+  Cache-Control: public, max-age=31536000, immutable
+  Accept-Ranges: bytes
 
 # Web manifest and other JSON files
 /*.json
@@ -43,17 +55,22 @@
   Cache-Control: public, max-age=3600
   Content-Type: application/manifest+json; charset=utf-8
 
-# Fonts - long cache
+# Fonts - long cache with immutable (fonts rarely change)
 /*.woff
-  Cache-Control: public, max-age=31536000
+  Cache-Control: public, max-age=31536000, immutable
+  Accept-Ranges: bytes
 /*.woff2
-  Cache-Control: public, max-age=31536000
+  Cache-Control: public, max-age=31536000, immutable
+  Accept-Ranges: bytes
 /*.ttf
-  Cache-Control: public, max-age=31536000
+  Cache-Control: public, max-age=31536000, immutable
+  Accept-Ranges: bytes
 /*.otf
-  Cache-Control: public, max-age=31536000
+  Cache-Control: public, max-age=31536000, immutable
+  Accept-Ranges: bytes
 
 # Assets directory - apply to all assets
 /assets/*
-  Cache-Control: public, max-age=31536000, must-revalidate
+  Cache-Control: public, max-age=31536000, must-revalidate, stale-while-revalidate=86400
+  Accept-Ranges: bytes
 
