@@ -126,7 +126,7 @@ body {
   border-radius: 4px;
 }
 
-.panel-content::-webkit-scrollbar-thumb:hover {
+.panel-content:hover::-webkit-scrollbar-thumb {
   background: #4a4a4a;
 }
 
