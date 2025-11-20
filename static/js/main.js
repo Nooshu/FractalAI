@@ -792,6 +792,164 @@ function setupControls() {
   });
 }
 
+// Function to get initial render position for a fractal type
+function getInitialRenderPosition(fractalType) {
+  switch (fractalType) {
+    case 'burning-ship':
+      return { zoom: 1.2, offset: { x: -0.2924, y: -0.2544 } };
+    case 'tricorn':
+      return { zoom: 1, offset: { x: 0, y: 0 } };
+    case 'celtic-mandelbrot':
+      return { zoom: 1.2, offset: { x: -0.4868, y: 0.1464 } };
+    case 'mutant-mandelbrot':
+      return { zoom: 1, offset: { x: -0.536, y: 0.006 } };
+    case 'phoenix-mandelbrot':
+      return { zoom: 1, offset: { x: -0.514, y: 0.01 } };
+    case 'buffalo':
+      return { zoom: 1.2, offset: { x: -0.1592, y: 0.5616 } };
+    case 'popcorn':
+      return { zoom: 1, offset: { x: 0.173, y: 0.114 } };
+    case 'rose':
+      return { zoom: 1, offset: { x: 0.132, y: 0.139 } };
+    case 'julia-snakes':
+      return { zoom: 1, offset: { x: 0, y: 0 } };
+    case 'binary-dragon':
+      return { zoom: 1, offset: { x: 2.812, y: 0.009 } };
+    case 'dragon-lsystem':
+      return { zoom: 0.666, offset: { x: 0.2164, y: 0.3085 } };
+    case 'folded-paper-dragon':
+      return { zoom: 2, offset: { x: -0.3009, y: -0.2052 } };
+    case 'heighway-dragon':
+      return { zoom: 2, offset: { x: 0.2257, y: -0.1287 } };
+    case 'terdragon':
+      return { zoom: 1, offset: { x: 0.167, y: 0.114 } };
+    case 'twindragon':
+      return { zoom: 1, offset: { x: 0.299, y: 0.148 } };
+    case 'gosper-curve':
+      return { zoom: 2, offset: { x: 0.0723, y: 0.0598 } };
+    case 'hilbert-curve':
+      return { zoom: 3.015, offset: { x: -0.006, y: 0.0693 } };
+    case 'levy-c-curve':
+      return { zoom: 1.24, offset: { x: 0.0087, y: 0.1054 } };
+    case 'moore-curve':
+      return { zoom: 2.662, offset: { x: 0.0016, y: 0.1022 } };
+    case 'peano-curve':
+      return { zoom: 2.969, offset: { x: -0.003, y: 0.0713 } };
+    case 'newton':
+      return { zoom: 1, offset: { x: 0, y: 0 } };
+    case 'nova':
+      return { zoom: 1, offset: { x: 0, y: 0 } };
+    case 'halley':
+      return { zoom: 1, offset: { x: 0, y: 0 } };
+    case 'plant':
+      return { zoom: 0.59, offset: { x: 0.003, y: 1.094 } };
+    case 'barnsley-fern':
+      return { zoom: 1.403, offset: { x: 1.673, y: 1.9506 } };
+    case 'multibrot':
+      return { zoom: 1, offset: { x: 0, y: 0 } };
+    case 'multibrot-julia':
+      return { zoom: 1, offset: { x: 0, y: 0 } };
+    case 'burning-ship-julia':
+      return { zoom: 1, offset: { x: 0, y: 0 } };
+    case 'tricorn-julia':
+      return { zoom: 1, offset: { x: 0, y: 0 } };
+    case 'phoenix-julia':
+      return { zoom: 0.605, offset: { x: 0.0284, y: 0.0611 } };
+    case 'lambda-julia':
+      return { zoom: 1, offset: { x: 0.734, y: 0.24 } };
+    case 'hybrid-julia':
+      return { zoom: 1, offset: { x: 0.194, y: 0.242 } };
+    case 'magnet':
+      return { zoom: 2, offset: { x: 0.338, y: -0.048 } };
+    case 'amman-tiling':
+      return { zoom: 3.2, offset: { x: 0.9382, y: 0.7956 } };
+    case 'chair-tiling':
+      return { zoom: 4, offset: { x: 0.77, y: 0.502 } };
+    case 'snowflake-tiling':
+      return { zoom: 4, offset: { x: 0.7616, y: 0.516 } };
+    case 'domino-substitution':
+      return { zoom: 8.8, offset: { x: 0.3353, y: 0.2999 } };
+    case 'pinwheel-tiling':
+      return { zoom: 1, offset: { x: 2.46, y: 1.631 } };
+    case 'carpenter-square':
+      return { zoom: 1, offset: { x: 2.9559, y: 2.7137 } };
+    case 'diffusion-limited-aggregation':
+      return { zoom: 0.197, offset: { x: 1.2026, y: 0.9662 } };
+    case 'sierpinski':
+      return { zoom: 1.772, offset: { x: 0.0089, y: 0.039 } };
+    case 'sierpinski-arrowhead':
+      return { zoom: 2, offset: { x: -0.002, y: -0.0211 } };
+    case 'sierpinski-carpet':
+      return { zoom: 1.456, offset: { x: 0.1169, y: 0.1266 } };
+    case 'sierpinski-gasket':
+      return { zoom: 1, offset: { x: 0.019, y: 0.144 } };
+    case 'sierpinski-hexagon':
+      return { zoom: 1.871, offset: { x: 0.0056, y: 0.0898 } };
+    case 'sierpinski-lsystem':
+      return { zoom: 1.35, offset: { x: 0, y: 0 } };
+    case 'sierpinski-pentagon':
+      return { zoom: 1.938, offset: { x: 0, y: 0 } };
+    case 'quadrilateral-subdivision':
+      return { zoom: 3.186, offset: { x: 0.9638, y: 0.6144 } };
+    case 'recursive-polygon-splitting':
+      return { zoom: 2, offset: { x: 1.4952, y: 1.059 } };
+    case 'triangular-subdivision':
+      return { zoom: 1.949, offset: { x: 1.3925, y: 1.0736 } };
+    case 'fractal-islands':
+      return { zoom: 1, offset: { x: 2.63, y: 2.178 } };
+    case 'koch':
+      return { zoom: 3.095, offset: { x: -0.0082, y: 0.0351 } };
+    case 'quadratic-koch':
+      return { zoom: 2.571, offset: { x: -0.0117, y: 0.088 } };
+    case 'cantor':
+      return { zoom: 1, offset: { x: -0.015, y: 0.331 } };
+    case 'cantor-dust-base-expansion':
+      return { zoom: 1, offset: { x: 2.978, y: 2.04 } };
+    case 'cantor-dust-circular':
+      return { zoom: 2.597, offset: { x: 1.1991, y: 0.9663 } };
+    case 'fat-cantor':
+      return { zoom: 1, offset: { x: -0.001, y: 0.102 } };
+    case 'smith-volterra-cantor':
+      return { zoom: 1, offset: { x: -0.001, y: 0.047 } };
+    case 'random-cantor':
+      return { zoom: 1, offset: { x: 0, y: 0.075 } };
+    case 'apollonian-gasket':
+      return { zoom: 2, offset: { x: 1.3446, y: 1.0435 } };
+    case 'h-tree':
+      return { zoom: 2, offset: { x: 0.1054, y: 0.0943 } };
+    case 'h-tree-generalized':
+      return { zoom: 2, offset: { x: 0.0928, y: 0.0537 } };
+    case 'vicsek':
+      return { zoom: 2, offset: { x: 1.4429, y: 1.1241 } };
+    case 'cross':
+      return { zoom: 2, offset: { x: 1.2376, y: 0.986 } };
+    case 'fractal-flame':
+      return { zoom: 2, offset: { x: 1.5885, y: 1.0331 } };
+    case 'recursive-circle-removal':
+      return { zoom: 3.294, offset: { x: 0.9156, y: 0.747 } };
+    case 'box-variants':
+      return { zoom: 2, offset: { x: 1.4905, y: 1.1342 } };
+    case 'minkowski-sausage':
+      return { zoom: 3.191, offset: { x: 0.0067, y: 0.0534 } };
+    case 'penrose-substitution':
+      return { zoom: 4, offset: { x: 0.7834, y: 0.5579 } };
+    case 'rauzy':
+      return { zoom: 4, offset: { x: 0.7877, y: 0.6103 } };
+    case 'spider-set':
+      return { zoom: 2, offset: { x: -0.7682, y: 0.0595 } };
+    case 'cesaro':
+      return { zoom: 3.032, offset: { x: 0.0808, y: 0.0587 } };
+    case 'julia':
+      return { zoom: 1, offset: { x: 0, y: 0 } };
+    case 'mandelbrot':
+      return { zoom: 1, offset: { x: 0, y: 0 } };
+    case 'nebulabrot':
+      return { zoom: 1, offset: { x: 0, y: 0 } };
+    default:
+      return { zoom: 1, offset: { x: 0, y: 0 } };
+  }
+}
+
 function setupUI() {
   const fractalTypeSelect = document.getElementById('fractal-type');
   const iterationsSlider = document.getElementById('iterations');
@@ -986,50 +1144,41 @@ function setupUI() {
     // (will be overridden by fractal-specific values below if needed)
     params.xScale = 1.0;
     params.yScale = 1.0;
+    // Update scale sliders to match params
+    if (xScaleSlider) {
+      xScaleSlider.value = 1.0;
+      updateSliderAccessibility(xScaleSlider, xScaleValue, xScaleAnnounce, 1.0, 'X Axis', false);
+    }
+    if (yScaleSlider) {
+      yScaleSlider.value = 1.0;
+      updateSliderAccessibility(yScaleSlider, yScaleValue, yScaleAnnounce, 1.0, 'Y Axis', false);
+    }
 
     // Track whether iterations were explicitly set for this fractal type
     let iterationsExplicitlySet = false;
 
+    // Get initial render position for this fractal type
+    const initialPosition = getInitialRenderPosition(currentFractalType);
+    params.zoom = initialPosition.zoom;
+    params.offset.x = initialPosition.offset.x;
+    params.offset.y = initialPosition.offset.y;
+
     if (currentFractalType === 'burning-ship') {
-      // Burning Ship - initial render position
-      params.zoom = 1.2;
-      params.offset.x = -0.2924;
-      params.offset.y = -0.2544;
+      // Burning Ship - additional settings (position set by getInitialRenderPosition)
     } else if (currentFractalType === 'tricorn') {
-      // Tricorn - similar view to Mandelbrot but inverted
-      params.zoom = 1;
-      params.offset.x = 0;
-      params.offset.y = 0;
+      // Tricorn - similar view to Mandelbrot but inverted (position set by getInitialRenderPosition)
     } else if (currentFractalType === 'celtic-mandelbrot') {
-      // Celtic Mandelbrot - initial render position
-      params.zoom = 1.2;
-      params.offset.x = -0.4868;
-      params.offset.y = 0.1464;
+      // Celtic Mandelbrot - additional settings (position set by getInitialRenderPosition)
     } else if (currentFractalType === 'mutant-mandelbrot') {
-      // Mutant Mandelbrot - initial render position
-      params.zoom = 1;
-      params.offset.x = -0.536;
-      params.offset.y = 0.006;
+      // Mutant Mandelbrot - additional settings (position set by getInitialRenderPosition)
     } else if (currentFractalType === 'phoenix-mandelbrot') {
-      // Phoenix Mandelbrot - initial render position
-      params.zoom = 1;
-      params.offset.x = -0.514;
-      params.offset.y = 0.01;
+      // Phoenix Mandelbrot - additional settings (position set by getInitialRenderPosition)
     } else if (currentFractalType === 'buffalo') {
-      // Buffalo - initial render position
-      params.zoom = 1.2;
-      params.offset.x = -0.1592;
-      params.offset.y = 0.5616;
+      // Buffalo - additional settings (position set by getInitialRenderPosition)
     } else if (currentFractalType === 'popcorn') {
-      // Popcorn fractal - initial render position
-      params.zoom = 1;
-      params.offset.x = 0.173;
-      params.offset.y = 0.114;
+      // Popcorn fractal - additional settings (position set by getInitialRenderPosition)
     } else if (currentFractalType === 'rose') {
-      // Rose window fractal - initial render position
-      params.zoom = 1;
-      params.offset.x = 0.132;
-      params.offset.y = 0.139;
+      // Rose window fractal - additional settings (position set by getInitialRenderPosition)
     } else if (currentFractalType === 'julia-snakes') {
       // Julia Snakes - set good default C value for snake-like patterns
       params.zoom = 1;
@@ -1043,65 +1192,29 @@ function setupUI() {
       if (juliaCRealValue) juliaCRealValue.textContent = '-0.4000';
       if (juliaCImagValue) juliaCImagValue.textContent = '0.6000';
     } else if (currentFractalType === 'binary-dragon') {
-      // Binary Dragon - initial render position
-      params.zoom = 1;
-      params.offset.x = 2.812;
-      params.offset.y = 0.009;
+      // Binary Dragon - additional settings (position set by getInitialRenderPosition)
     } else if (currentFractalType === 'dragon-lsystem') {
-      // Dragon L-System - initial render position
-      params.zoom = 0.666;
-      params.offset.x = 0.2164;
-      params.offset.y = 0.3085;
+      // Dragon L-System - additional settings (position set by getInitialRenderPosition)
     } else if (currentFractalType === 'folded-paper-dragon') {
-      // Folded Paper Dragon - initial render position
-      params.zoom = 2;
-      params.offset.x = -0.3009;
-      params.offset.y = -0.2052;
+      // Folded Paper Dragon - additional settings (position set by getInitialRenderPosition)
     } else if (currentFractalType === 'heighway-dragon') {
-      // Heighway Dragon - initial render position
-      params.zoom = 2;
-      params.offset.x = 0.2257;
-      params.offset.y = -0.1287;
+      // Heighway Dragon - additional settings (position set by getInitialRenderPosition)
     } else if (currentFractalType === 'terdragon') {
-      // Terdragon - initial render position
-      params.zoom = 1;
-      params.offset.x = 0.167;
-      params.offset.y = 0.114;
+      // Terdragon - additional settings (position set by getInitialRenderPosition)
     } else if (currentFractalType === 'twindragon') {
-      // Twindragon - initial render position
-      params.zoom = 1;
-      params.offset.x = 0.299;
-      params.offset.y = 0.148;
+      // Twindragon - additional settings (position set by getInitialRenderPosition)
     } else if (currentFractalType === 'gosper-curve') {
-      // Gosper Curve - initial render position
-      params.zoom = 2;
-      params.offset.x = 0.0723;
-      params.offset.y = 0.0598;
+      // Gosper Curve - additional settings (position set by getInitialRenderPosition)
     } else if (currentFractalType === 'hilbert-curve') {
-      // Hilbert Curve - initial render position
-      params.zoom = 3.015;
-      params.offset.x = -0.006;
-      params.offset.y = 0.0693;
+      // Hilbert Curve - additional settings (position set by getInitialRenderPosition)
     } else if (currentFractalType === 'levy-c-curve') {
-      // Levy C-Curve - initial render position
-      params.zoom = 1.24;
-      params.offset.x = 0.0087;
-      params.offset.y = 0.1054;
+      // Levy C-Curve - additional settings (position set by getInitialRenderPosition)
     } else if (currentFractalType === 'moore-curve') {
-      // Moore Curve - initial render position
-      params.zoom = 2.662;
-      params.offset.x = 0.0016;
-      params.offset.y = 0.1022;
+      // Moore Curve - additional settings (position set by getInitialRenderPosition)
     } else if (currentFractalType === 'peano-curve') {
-      // Peano Curve - initial render position
-      params.zoom = 2.969;
-      params.offset.x = -0.003;
-      params.offset.y = 0.0713;
+      // Peano Curve - additional settings (position set by getInitialRenderPosition)
     } else if (currentFractalType === 'newton') {
-      // Newton Fractal - initial render position (matches reset view)
-      params.zoom = 1;
-      params.offset.x = 0;
-      params.offset.y = 0;
+      // Newton Fractal - additional settings (position set by getInitialRenderPosition)
       params.iterations = 50;
       iterationsExplicitlySet = true;
       if (iterationsSlider) iterationsSlider.value = 50;
@@ -1111,11 +1224,8 @@ function setupUI() {
         fullscreenIterationsNumberEl.textContent = '50';
       }
     } else if (currentFractalType === 'nova') {
-      // Nova Fractal - initial render position (matches reset view)
+      // Nova Fractal - additional settings (position set by getInitialRenderPosition)
       // Uses relaxed Newton's method with alpha parameter controlled by xScale
-      params.zoom = 1;
-      params.offset.x = 0;
-      params.offset.y = 0;
       params.iterations = 50;
       iterationsExplicitlySet = true;
       params.xScale = 1.0; // Set to 1.0 to match Newton and Halley
@@ -1135,24 +1245,15 @@ function setupUI() {
         fullscreenIterationsNumberEl.textContent = '50';
       }
     } else if (currentFractalType === 'halley') {
-      // Halley Fractal - initial render position (matches reset view)
-      params.zoom = 1;
-      params.offset.x = 0;
-      params.offset.y = 0;
+      // Halley Fractal - additional settings (position set by getInitialRenderPosition)
       params.iterations = 50;
       iterationsExplicitlySet = true;
       if (iterationsSlider) iterationsSlider.value = 50;
       if (iterationsValue) iterationsValue.textContent = '50';
     } else if (currentFractalType === 'plant') {
-      // Plant - initial render position
-      params.zoom = 0.59;
-      params.offset.x = 0.003;
-      params.offset.y = 1.094;
+      // Plant - additional settings (position set by getInitialRenderPosition)
     } else if (currentFractalType === 'barnsley-fern') {
-      // Barnsley Fern - initial render position
-      params.zoom = 1.403;
-      params.offset.x = 1.673;
-      params.offset.y = 1.9506;
+      // Barnsley Fern - additional settings (position set by getInitialRenderPosition)
       params.iterations = 100;
       iterationsExplicitlySet = true;
       if (iterationsSlider) iterationsSlider.value = 100;
@@ -1164,9 +1265,7 @@ function setupUI() {
     } else if (currentFractalType === 'multibrot') {
       // Multibrot Set - default centered view with order 4 (cubic)
       // Note: xScale controls the multibrot order, not coordinate scaling
-      params.zoom = 1;
-      params.offset.x = 0;
-      params.offset.y = 0;
+      // Position set by getInitialRenderPosition
       params.xScale = 0.25; // Order 4 (2 + 0.25 * 8 = 4) - only affects order, not coordinates
       params.yScale = 1.0; // Ensure yScale is 1.0 for proper aspect ratio
       // Update sliders
@@ -1181,9 +1280,7 @@ function setupUI() {
     } else if (currentFractalType === 'multibrot-julia') {
       // Multibrot Julia Set - default centered view with order 4 (cubic)
       // Note: xScale controls the multibrot order, not coordinate scaling
-      params.zoom = 1;
-      params.offset.x = 0;
-      params.offset.y = 0;
+      // Position set by getInitialRenderPosition
       // Set iterations to 25
       params.iterations = 25;
       iterationsExplicitlySet = true;
@@ -1197,9 +1294,7 @@ function setupUI() {
       }
     } else if (currentFractalType === 'burning-ship-julia') {
       // Burning Ship Julia Set - default centered view
-      params.zoom = 1;
-      params.offset.x = 0;
-      params.offset.y = 0;
+      // Position set by getInitialRenderPosition
       // Use interesting C values for Burning Ship Julia
       params.juliaC.x = -0.5;
       params.juliaC.y = -0.5;
@@ -1231,9 +1326,7 @@ function setupUI() {
       }
     } else if (currentFractalType === 'tricorn-julia') {
       // Tricorn Julia Set - default centered view
-      params.zoom = 1;
-      params.offset.x = 0;
-      params.offset.y = 0;
+      // Position set by getInitialRenderPosition
       // Use interesting C values for Tricorn Julia
       params.juliaC.x = -0.5;
       params.juliaC.y = 0.5;
@@ -1254,10 +1347,7 @@ function setupUI() {
         fullscreenIterationsNumberEl.textContent = '25';
       }
     } else if (currentFractalType === 'phoenix-julia') {
-      // Phoenix Julia Set - initial render position
-      params.zoom = 0.605;
-      params.offset.x = 0.0284;
-      params.offset.y = 0.0611;
+      // Phoenix Julia Set - additional settings (position set by getInitialRenderPosition)
       // Use interesting C values for Phoenix Julia
       params.juliaC.x = -0.5;
       params.juliaC.y = 0.0;
@@ -1300,10 +1390,7 @@ function setupUI() {
       }
       updateColorPalettePreview();
     } else if (currentFractalType === 'lambda-julia') {
-      // Lambda Julia Set - initial render position
-      params.zoom = 1;
-      params.offset.x = 0.734;
-      params.offset.y = 0.24;
+      // Lambda Julia Set - additional settings (position set by getInitialRenderPosition)
       // Use interesting λ values for Lambda Julia (λ = 0.5 + 0.5i)
       params.juliaC.x = 0.5;
       params.juliaC.y = 0.5;
@@ -1334,10 +1421,7 @@ function setupUI() {
         fullscreenIterationsNumberEl.textContent = '25';
       }
     } else if (currentFractalType === 'hybrid-julia') {
-      // Hybrid Julia Set - initial render position
-      params.zoom = 1;
-      params.offset.x = 0.194;
-      params.offset.y = 0.242;
+      // Hybrid Julia Set - additional settings (position set by getInitialRenderPosition)
       // Use interesting c values for Hybrid Julia
       params.juliaC.x = -0.4;
       params.juliaC.y = 0.6;
@@ -1368,10 +1452,7 @@ function setupUI() {
         fullscreenIterationsNumberEl.textContent = '100';
       }
     } else if (currentFractalType === 'magnet') {
-      // Magnet Fractal - initial render position
-      params.zoom = 2;
-      params.offset.x = 0.338;
-      params.offset.y = -0.048;
+      // Magnet Fractal - additional settings (position set by getInitialRenderPosition)
       // Use interesting complex parameter 'a' for magnet fractal
       // Complex values create more interesting patterns than real-only values
       // a = 1.2 + 0.8i produces beautiful magnetic patterns with spirals
@@ -1400,10 +1481,7 @@ function setupUI() {
       }
       updateColorPalettePreview();
     } else if (currentFractalType === 'amman-tiling') {
-      // Amman Tiling - initial render position
-      params.zoom = 3.2;
-      params.offset.x = 0.9382;
-      params.offset.y = 0.7956;
+      // Amman Tiling - additional settings (position set by getInitialRenderPosition)
       // Set iterations to 25 by default
       params.iterations = 25;
       iterationsExplicitlySet = true;
@@ -1422,10 +1500,7 @@ function setupUI() {
       }
       updateColorPalettePreview();
     } else if (currentFractalType === 'chair-tiling') {
-      // Chair Tiling - initial render position
-      params.zoom = 4;
-      params.offset.x = 0.77;
-      params.offset.y = 0.502;
+      // Chair Tiling - additional settings (position set by getInitialRenderPosition)
       // Set iterations to 25 by default
       params.iterations = 25;
       iterationsExplicitlySet = true;
@@ -1436,10 +1511,7 @@ function setupUI() {
         fullscreenIterationsNumberEl.textContent = '25';
       }
     } else if (currentFractalType === 'snowflake-tiling') {
-      // Snowflake Tiling - initial render position
-      params.zoom = 4;
-      params.offset.x = 0.7616;
-      params.offset.y = 0.516;
+      // Snowflake Tiling - additional settings (position set by getInitialRenderPosition)
       params.iterations = 40;
       iterationsExplicitlySet = true;
       if (iterationsSlider) iterationsSlider.value = 40;
@@ -1457,10 +1529,7 @@ function setupUI() {
       }
       updateColorPalettePreview();
     } else if (currentFractalType === 'domino-substitution') {
-      // Domino Substitution - initial render position
-      params.zoom = 8.8;
-      params.offset.x = 0.3353;
-      params.offset.y = 0.2999;
+      // Domino Substitution - additional settings (position set by getInitialRenderPosition)
       params.iterations = 40;
       iterationsExplicitlySet = true;
       if (iterationsSlider) iterationsSlider.value = 40;
@@ -1478,15 +1547,9 @@ function setupUI() {
       }
       updateColorPalettePreview();
     } else if (currentFractalType === 'pinwheel-tiling') {
-      // Pinwheel Tiling - initial render position
-      params.zoom = 1;
-      params.offset.x = 2.46;
-      params.offset.y = 1.631;
+      // Pinwheel Tiling - additional settings (position set by getInitialRenderPosition)
     } else if (currentFractalType === 'carpenter-square') {
-      // Carpenter Square - initial render position
-      params.zoom = 1;
-      params.offset.x = 2.9559;
-      params.offset.y = 2.7137;
+      // Carpenter Square - additional settings (position set by getInitialRenderPosition)
       // Set iterations to 25 by default
       params.iterations = 25;
       iterationsExplicitlySet = true;
@@ -1505,10 +1568,7 @@ function setupUI() {
       }
       updateColorPalettePreview();
     } else if (currentFractalType === 'diffusion-limited-aggregation') {
-      // Diffusion Limited Aggregation - initial render position
-      params.zoom = 0.197;
-      params.offset.x = 1.2026;
-      params.offset.y = 0.9662;
+      // Diffusion Limited Aggregation - additional settings (position set by getInitialRenderPosition)
       // Default rainbow color scheme
       params.colorScheme = 'rainbow';
       if (colorSchemeSelect) colorSchemeSelect.value = 'rainbow';
@@ -1527,10 +1587,7 @@ function setupUI() {
       }
       updateColorPalettePreview();
     } else if (currentFractalType === 'sierpinski') {
-      // Sierpinski Triangle - initial render position
-      params.zoom = 1.772;
-      params.offset.x = 0.0089;
-      params.offset.y = 0.039;
+      // Sierpinski Triangle - additional settings (position set by getInitialRenderPosition)
       // Set iterations to 25 by default
       params.iterations = 25;
       iterationsExplicitlySet = true;
@@ -1541,49 +1598,25 @@ function setupUI() {
         fullscreenIterationsNumberEl.textContent = '25';
       }
     } else if (currentFractalType === 'sierpinski-arrowhead') {
-      // Sierpinski Arrowhead - initial render position
-      params.zoom = 2;
-      params.offset.x = -0.002;
-      params.offset.y = -0.0211;
+      // Sierpinski Arrowhead - additional settings (position set by getInitialRenderPosition)
     } else if (currentFractalType === 'sierpinski-carpet') {
-      // Sierpinski Carpet - initial render position
-      params.zoom = 1.456;
-      params.offset.x = 0.1169;
-      params.offset.y = 0.1266;
+      // Sierpinski Carpet - additional settings (position set by getInitialRenderPosition)
     } else if (currentFractalType === 'sierpinski-gasket') {
-      // Sierpinski Gasket - initial render position
-      params.zoom = 1;
-      params.offset.x = 0.019;
-      params.offset.y = 0.144;
+      // Sierpinski Gasket - additional settings (position set by getInitialRenderPosition)
       params.xScale = 0.5; // 6 sides (hexagon)
       // Update xScale slider
       if (xScaleSlider) xScaleSlider.value = 0.5;
       if (xScaleValue) xScaleValue.textContent = '0.5';
     } else if (currentFractalType === 'sierpinski-hexagon') {
-      // Sierpinski Hexagon - initial render position
-      params.zoom = 1.871;
-      params.offset.x = 0.0056;
-      params.offset.y = 0.0898;
+      // Sierpinski Hexagon - additional settings (position set by getInitialRenderPosition)
     } else if (currentFractalType === 'sierpinski-lsystem') {
-      // Sierpinski L-System - initial render position
-      params.zoom = 1.35;
-      params.offset.x = 0;
-      params.offset.y = 0;
+      // Sierpinski L-System - additional settings (position set by getInitialRenderPosition)
     } else if (currentFractalType === 'sierpinski-pentagon') {
-      // Sierpinski Pentagon - initial render position
-      params.zoom = 1.938;
-      params.offset.x = 0;
-      params.offset.y = 0;
+      // Sierpinski Pentagon - additional settings (position set by getInitialRenderPosition)
     } else if (currentFractalType === 'quadrilateral-subdivision') {
-      // Quadrilateral Subdivision - initial render position
-      params.zoom = 3.186;
-      params.offset.x = 0.9638;
-      params.offset.y = 0.6144;
+      // Quadrilateral Subdivision - additional settings (position set by getInitialRenderPosition)
     } else if (currentFractalType === 'recursive-polygon-splitting') {
-      // Recursive Polygon Splitting - initial render position
-      params.zoom = 2;
-      params.offset.x = 1.4952;
-      params.offset.y = 1.059;
+      // Recursive Polygon Splitting - additional settings (position set by getInitialRenderPosition)
       // Set rainbow color scheme by default
       params.colorScheme = 'rainbow';
       if (colorSchemeSelect) colorSchemeSelect.value = 'rainbow';
@@ -1593,105 +1626,45 @@ function setupUI() {
       }
       updateColorPalettePreview();
     } else if (currentFractalType === 'triangular-subdivision') {
-      // Triangular Subdivision - initial render position
-      params.zoom = 1.949;
-      params.offset.x = 1.3925;
-      params.offset.y = 1.0736;
+      // Triangular Subdivision - additional settings (position set by getInitialRenderPosition)
     } else if (currentFractalType === 'fractal-islands') {
-      // Fractal Islands - initial render position
-      params.zoom = 1;
-      params.offset.x = 2.63;
-      params.offset.y = 2.178;
+      // Fractal Islands - additional settings (position set by getInitialRenderPosition)
     } else if (currentFractalType === 'koch') {
-      // Koch Curve - initial render position
-      params.zoom = 3.095;
-      params.offset.x = -0.0082;
-      params.offset.y = 0.0351;
+      // Koch Curve - additional settings (position set by getInitialRenderPosition)
     } else if (currentFractalType === 'quadratic-koch') {
-      // Quadratic Koch Curve - initial render position
-      params.zoom = 2.571;
-      params.offset.x = -0.0117;
-      params.offset.y = 0.088;
+      // Quadratic Koch Curve - additional settings (position set by getInitialRenderPosition)
     } else if (currentFractalType === 'cantor') {
-      // Cantor Set - initial render position
-      params.zoom = 1;
-      params.offset.x = -0.015;
-      params.offset.y = 0.331;
+      // Cantor Set - additional settings (position set by getInitialRenderPosition)
     } else if (currentFractalType === 'cantor-dust-base-expansion') {
-      // Cantor Dust Base Expansion - initial render position
-      params.zoom = 1;
-      params.offset.x = 2.978;
-      params.offset.y = 2.04;
+      // Cantor Dust Base Expansion - additional settings (position set by getInitialRenderPosition)
     } else if (currentFractalType === 'cantor-dust-circular') {
-      // Cantor Dust Circular - initial render position
-      params.zoom = 2.597;
-      params.offset.x = 1.1991;
-      params.offset.y = 0.9663;
+      // Cantor Dust Circular - additional settings (position set by getInitialRenderPosition)
     } else if (currentFractalType === 'fat-cantor') {
-      // Fat Cantor Set - initial render position
-      params.zoom = 1;
-      params.offset.x = -0.001;
-      params.offset.y = 0.102;
+      // Fat Cantor Set - additional settings (position set by getInitialRenderPosition)
     } else if (currentFractalType === 'smith-volterra-cantor') {
-      // Smith-Volterra-Cantor Set - initial render position
-      params.zoom = 1;
-      params.offset.x = -0.001;
-      params.offset.y = 0.047;
+      // Smith-Volterra-Cantor Set - additional settings (position set by getInitialRenderPosition)
     } else if (currentFractalType === 'random-cantor') {
-      // Random Cantor Set - initial render position
-      params.zoom = 1;
-      params.offset.x = 0;
-      params.offset.y = 0.075;
+      // Random Cantor Set - additional settings (position set by getInitialRenderPosition)
     } else if (currentFractalType === 'apollonian-gasket') {
-      // Apollonian Gasket - initial render position
-      params.zoom = 2;
-      params.offset.x = 1.3446;
-      params.offset.y = 1.0435;
+      // Apollonian Gasket - additional settings (position set by getInitialRenderPosition)
     } else if (currentFractalType === 'h-tree') {
-      // H-Tree - initial render position
-      params.zoom = 2;
-      params.offset.x = 0.1054;
-      params.offset.y = 0.0943;
+      // H-Tree - additional settings (position set by getInitialRenderPosition)
     } else if (currentFractalType === 'h-tree-generalized') {
-      // H-Tree Generalized - initial render position
-      params.zoom = 2;
-      params.offset.x = 0.0928;
-      params.offset.y = 0.0537;
+      // H-Tree Generalized - additional settings (position set by getInitialRenderPosition)
     } else if (currentFractalType === 'vicsek') {
-      // Vicsek - initial render position
-      params.zoom = 2;
-      params.offset.x = 1.4429;
-      params.offset.y = 1.1241;
+      // Vicsek - additional settings (position set by getInitialRenderPosition)
     } else if (currentFractalType === 'cross') {
-      // Cross - initial render position
-      params.zoom = 2;
-      params.offset.x = 1.2376;
-      params.offset.y = 0.986;
+      // Cross - additional settings (position set by getInitialRenderPosition)
     } else if (currentFractalType === 'fractal-flame') {
-      // Fractal Flame - initial render position
-      params.zoom = 2;
-      params.offset.x = 1.5885;
-      params.offset.y = 1.0331;
+      // Fractal Flame - additional settings (position set by getInitialRenderPosition)
     } else if (currentFractalType === 'recursive-circle-removal') {
-      // Recursive Circle Removal - initial render position
-      params.zoom = 3.294;
-      params.offset.x = 0.9156;
-      params.offset.y = 0.747;
+      // Recursive Circle Removal - additional settings (position set by getInitialRenderPosition)
     } else if (currentFractalType === 'box-variants') {
-      // Box Variants - initial render position
-      params.zoom = 2;
-      params.offset.x = 1.4905;
-      params.offset.y = 1.1342;
+      // Box Variants - additional settings (position set by getInitialRenderPosition)
     } else if (currentFractalType === 'minkowski-sausage') {
-      // Minkowski Sausage - initial render position
-      params.zoom = 3.191;
-      params.offset.x = 0.0067;
-      params.offset.y = 0.0534;
+      // Minkowski Sausage - additional settings (position set by getInitialRenderPosition)
     } else if (currentFractalType === 'penrose-substitution') {
-      // Penrose Substitution - initial render position
-      params.zoom = 4;
-      params.offset.x = 0.7834;
-      params.offset.y = 0.5579;
+      // Penrose Substitution - additional settings (position set by getInitialRenderPosition)
       // Set iterations to 25 by default
       params.iterations = 25;
       iterationsExplicitlySet = true;
@@ -1702,10 +1675,7 @@ function setupUI() {
         fullscreenIterationsNumberEl.textContent = '25';
       }
     } else if (currentFractalType === 'rauzy') {
-      // Rauzy - initial render position
-      params.zoom = 4;
-      params.offset.x = 0.7877;
-      params.offset.y = 0.6103;
+      // Rauzy - additional settings (position set by getInitialRenderPosition)
       // Set iterations to 25 by default
       params.iterations = 25;
       iterationsExplicitlySet = true;
@@ -1716,21 +1686,11 @@ function setupUI() {
         fullscreenIterationsNumberEl.textContent = '25';
       }
     } else if (currentFractalType === 'spider-set') {
-      // Spider Set - initial render position
-      params.zoom = 2;
-      params.offset.x = -0.7682;
-      params.offset.y = 0.0595;
+      // Spider Set - additional settings (position set by getInitialRenderPosition)
     } else if (currentFractalType === 'cesaro') {
-      // Cesaro - initial render position
-      params.zoom = 3.032;
-      params.offset.x = 0.0808;
-      params.offset.y = 0.0587;
-    } else {
-      // Default view for other fractals
-      params.zoom = 1;
-      params.offset.x = 0;
-      params.offset.y = 0;
+      // Cesaro - additional settings (position set by getInitialRenderPosition)
     }
+    // Default view is handled by getInitialRenderPosition function
 
     // Update coordinate display after setting positions
     updateCoordinateDisplay();
@@ -1914,14 +1874,15 @@ function setupUI() {
   });
 
   resetViewBtn.addEventListener('click', () => {
-    // Reset zoom and offset
-    params.zoom = 1;
-    params.offset.x = 0;
-    params.offset.y = 0;
+    // Reset zoom and offset to initial render position for this fractal type
+    const initialPosition = getInitialRenderPosition(currentFractalType);
+    params.zoom = initialPosition.zoom;
+    params.offset.x = initialPosition.offset.x;
+    params.offset.y = initialPosition.offset.y;
     updateCoordinateDisplay();
 
-    // Reset scale parameters based on fractal type
-    // Some fractals have specific default scales
+    // Reset scale parameters and other settings based on fractal type
+    // Some fractals have specific default scales and other parameters
     if (currentFractalType === 'multibrot') {
       params.xScale = 0.25; // Order 4 for multibrot (only affects order, not coordinates)
       params.yScale = 1.0;
@@ -1936,6 +1897,42 @@ function setupUI() {
         xScaleSlider.value = 0.5;
         updateSliderAccessibility(xScaleSlider, xScaleValue, xScaleAnnounce, 0.5, 'X Axis', false);
       }
+    } else if (currentFractalType === 'phoenix-julia') {
+      // Phoenix Julia Set - reset all initial parameters
+      // Phoenix parameter defaults (xScale and yScale control the Phoenix parameter p)
+      params.xScale = 0.6; // p real = 0.2
+      params.yScale = 0.5; // p imag = 0.0
+      if (xScaleSlider) {
+        xScaleSlider.value = 0.6;
+        updateSliderAccessibility(xScaleSlider, xScaleValue, xScaleAnnounce, 0.6, 'X Axis', false);
+      }
+      if (yScaleSlider) {
+        yScaleSlider.value = 0.5;
+        updateSliderAccessibility(yScaleSlider, yScaleValue, yScaleAnnounce, 0.5, 'Y Axis', false);
+      }
+      // Reset Julia C values
+      params.juliaC.x = -0.5;
+      params.juliaC.y = 0.0;
+      if (juliaCReal) juliaCReal.value = -0.5;
+      if (juliaCImag) juliaCImag.value = 0.0;
+      if (juliaCRealValue) juliaCRealValue.textContent = '-0.5000';
+      if (juliaCImagValue) juliaCImagValue.textContent = '0.0000';
+      // Reset iterations
+      params.iterations = 25;
+      if (iterationsSlider) iterationsSlider.value = 25;
+      if (iterationsValue) iterationsValue.textContent = '25';
+      const fullscreenIterationsNumberEl = document.getElementById('fullscreen-iterations-number');
+      if (fullscreenIterationsNumberEl) {
+        fullscreenIterationsNumberEl.textContent = '25';
+      }
+      // Reset color scheme
+      params.colorScheme = 'cosmic';
+      if (colorSchemeSelect) colorSchemeSelect.value = 'cosmic';
+      const newIndex = colorSchemes.indexOf('cosmic');
+      if (newIndex !== -1) {
+        currentColorSchemeIndex = newIndex;
+      }
+      updateColorPalettePreview();
     } else {
       params.xScale = 1.0;
       params.yScale = 1.0;
@@ -1945,7 +1942,7 @@ function setupUI() {
       }
     }
 
-    if (yScaleSlider) {
+    if (yScaleSlider && currentFractalType !== 'phoenix-julia') {
       yScaleSlider.value = params.yScale;
       updateSliderAccessibility(yScaleSlider, yScaleValue, yScaleAnnounce, params.yScale, 'Y Axis', false);
     }
