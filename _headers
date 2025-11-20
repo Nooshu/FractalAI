@@ -1,3 +1,9 @@
+# Service Worker - never cache (critical for updates)
+/sw.js
+  Cache-Control: no-cache, no-store, must-revalidate, max-age=0
+  Pragma: no-cache
+  Expires: 0
+
 # HTML files - short cache with stale-while-revalidate for better performance
 /*.html
   Cache-Control: public, max-age=0, must-revalidate, stale-while-revalidate=86400

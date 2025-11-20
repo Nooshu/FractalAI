@@ -1,5 +1,5 @@
 import { defineConfig } from 'vite';
-import { copyFileSync } from 'fs';
+import { copyFileSync, readFileSync, writeFileSync } from 'fs';
 import { resolve } from 'path';
 
 export default defineConfig({
@@ -38,7 +38,21 @@ export default defineConfig({
           resolve(__dirname, '_redirects'),
           resolve(__dirname, 'dist', '_redirects')
         );
+        // Process and copy service worker with cache version
+        const swPath = resolve(__dirname, 'public', 'sw.js');
+        const swDest = resolve(__dirname, 'dist', 'sw.js');
+        try {
+          // Generate cache version based on timestamp
+          const cacheVersion = `v${Date.now()}`;
+          let swContent = readFileSync(swPath, 'utf-8');
+          swContent = swContent.replace(/\{\{CACHE_VERSION\}\}/g, cacheVersion);
+          writeFileSync(swDest, swContent);
+          console.log(`[Service Worker] Copied with cache version: ${cacheVersion}`);
+        } catch (err) {
+          console.warn('Service worker not found, skipping copy');
+        }
       },
     },
   ],
+  publicDir: 'public',
 });

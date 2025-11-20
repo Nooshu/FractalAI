@@ -1,21 +1,25 @@
 {
-  "name": "MyWebSite",
-  "short_name": "MySite",
+  "name": "FractalAI - 2D Fractal Generator",
+  "short_name": "FractalAI",
+  "description": "A web-based fractal generator using regl and WebGL",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#1a1a1a",
+  "background_color": "#0f0f0f",
   "icons": [
     {
-      "src": "/web-app-manifest-192x192.png",
+      "src": "/static/images/web-app-manifest-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "maskable"
+      "purpose": "any maskable"
     },
     {
-      "src": "/web-app-manifest-512x512.png",
+      "src": "/static/images/web-app-manifest-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "maskable"
+      "purpose": "any maskable"
     }
-  ],
-  "theme_color": "#ffffff",
-  "background_color": "#ffffff",
-  "display": "standalone"
+  ]
 }
