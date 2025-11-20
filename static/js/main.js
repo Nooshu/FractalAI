@@ -7,9 +7,9 @@ import { CONFIG } from './core/config.js';
 let regl = null;
 let canvas = null;
 let currentFractalType = 'mandelbrot';
-let lastTime = 0;
 let frameCount = 0;
 let fps = 0;
+let fpsIntervalId = null;
 let drawFractal = null; // Current regl draw command
 let currentFractalModule = null; // Currently loaded fractal module
 let fractalCache = new Map(); // Cache for loaded fractal modules
@@ -414,10 +414,12 @@ async function init() {
     loadFractal(currentFractalType).then(() => {
       renderFractal();
       updateCoordinateDisplay();
+      initFPSInterval();
       animate();
     });
   } else {
     // If loaded from URL, just start animation
+    initFPSInterval();
     animate();
   }
 }
@@ -3808,17 +3810,8 @@ function renderFractal() {
 function animate() {
   requestAnimationFrame(animate);
 
-  // Calculate FPS
+  // Increment frame counter (FPS calculation moved to separate interval)
   frameCount++;
-  const currentTime = performance.now();
-  if (currentTime >= lastTime + 1000) {
-    fps = frameCount;
-    frameCount = 0;
-    lastTime = currentTime;
-    if (domCache.fps) {
-      domCache.fps.textContent = `FPS: ${fps}`;
-    }
-  }
 
   // Only render when necessary:
   // 1. When progressive rendering is active (needs continuous updates)
@@ -3842,6 +3835,26 @@ function animate() {
       }
     }
   }
+}
+
+/**
+ * Initialize FPS calculation interval
+ * Runs once per second to calculate and display FPS
+ */
+function initFPSInterval() {
+  // Clear any existing interval
+  if (fpsIntervalId !== null) {
+    clearInterval(fpsIntervalId);
+  }
+
+  // Calculate and display FPS once per second
+  fpsIntervalId = setInterval(() => {
+    fps = frameCount;
+    frameCount = 0;
+    if (domCache.fps) {
+      domCache.fps.textContent = `FPS: ${fps}`;
+    }
+  }, 1000);
 }
 
 // Update coordinate display
