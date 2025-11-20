@@ -813,9 +813,20 @@ function setupUI() {
   // Auto-render functionality
   let autoRenderEnabled = false;
 
+  // Throttled render function for slider updates
+  // Updates UI immediately but throttles render calls to reduce unnecessary renders
+  let renderTimeoutId = null;
   const triggerAutoRender = () => {
     if (autoRenderEnabled) {
-      renderFractalProgressive();
+      // Cancel any pending render
+      if (renderTimeoutId !== null) {
+        cancelAnimationFrame(renderTimeoutId);
+      }
+      // Schedule render for next animation frame (~16ms at 60fps)
+      renderTimeoutId = requestAnimationFrame(() => {
+        renderFractalProgressive();
+        renderTimeoutId = null;
+      });
     }
   };
 
@@ -1747,12 +1758,14 @@ function setupUI() {
 
   iterationsSlider.addEventListener('input', (e) => {
     params.iterations = parseInt(e.target.value);
+    // Update UI immediately for responsiveness
     iterationsValue.textContent = params.iterations;
     // Update fullscreen iterations number
     const fullscreenIterationsNumberEl = document.getElementById('fullscreen-iterations-number');
     if (fullscreenIterationsNumberEl) {
       fullscreenIterationsNumberEl.textContent = params.iterations;
     }
+    // Throttled render
     triggerAutoRender();
   });
 
@@ -1770,13 +1783,17 @@ function setupUI() {
 
   juliaCReal.addEventListener('input', (e) => {
     params.juliaC.x = parseFloat(e.target.value);
+    // Update UI immediately for responsiveness
     juliaCRealValue.textContent = params.juliaC.x.toFixed(4);
+    // Throttled render
     triggerAutoRender();
   });
 
   juliaCImag.addEventListener('input', (e) => {
     params.juliaC.y = parseFloat(e.target.value);
+    // Update UI immediately for responsiveness
     juliaCImagValue.textContent = params.juliaC.y.toFixed(4);
+    // Throttled render
     triggerAutoRender();
   });
 
@@ -1806,14 +1823,18 @@ function setupUI() {
   xScaleSlider.addEventListener('input', (e) => {
     const value = parseFloat(e.target.value);
     params.xScale = value;
+    // Update UI immediately for responsiveness
     updateSliderAccessibility(xScaleSlider, xScaleValue, xScaleAnnounce, value, 'X Axis');
+    // Throttled render
     triggerAutoRender();
   });
 
   yScaleSlider.addEventListener('input', (e) => {
     const value = parseFloat(e.target.value);
     params.yScale = value;
+    // Update UI immediately for responsiveness
     updateSliderAccessibility(yScaleSlider, yScaleValue, yScaleAnnounce, value, 'Y Axis');
+    // Throttled render
     triggerAutoRender();
   });
 
