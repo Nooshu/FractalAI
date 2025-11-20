@@ -61,6 +61,8 @@ body {
   transition:
     transform var(--transition-normal),
     width var(--transition-normal);
+  will-change: transform, width;
+  contain: layout style paint;
 }
 
 .side-panel.hidden {
@@ -192,6 +194,7 @@ body {
   color: var(--text-secondary);
   transition: transform 0.3s ease;
   flex-shrink: 0;
+  will-change: transform;
 }
 
 .section-header.collapsed .chevron {
@@ -205,6 +208,8 @@ body {
     max-height 0.3s ease,
     padding 0.3s ease;
   padding: 0 20px;
+  will-change: max-height;
+  contain: layout style;
 }
 
 .section-content.active {
@@ -319,6 +324,7 @@ body {
   cursor: pointer;
   transition: all 0.2s ease;
   box-shadow: 0 2px 8px rgb(74 158 255 / 40%);
+  will-change: transform;
 }
 
 .styled-slider::-webkit-slider-thumb:hover {
@@ -335,6 +341,7 @@ body {
   cursor: pointer;
   transition: all 0.2s ease;
   box-shadow: 0 2px 8px rgb(74 158 255 / 40%);
+  will-change: transform;
 }
 
 .styled-slider::-moz-range-thumb:hover {
@@ -474,6 +481,10 @@ body {
   margin-top: 8px;
 }
 
+.copy-coords-btn {
+  will-change: transform;
+}
+
 .copy-coords-btn:hover {
   background: var(--accent-blue-dim);
   border-color: var(--accent-blue);
@@ -507,6 +518,7 @@ body {
   justify-content: center;
   outline: none;
   box-shadow: 0 2px 8px rgb(0 0 0 / 30%);
+  will-change: transform;
 }
 
 .wikipedia-link:hover {
@@ -553,6 +565,7 @@ body {
   gap: 6px;
   transition: all var(--transition-fast);
   margin-top: 10px;
+  will-change: transform;
 }
 
 .footer-share-btn:hover {
@@ -617,6 +630,8 @@ body {
   pointer-events: none;
   opacity: 1;
   transition: opacity 0.3s ease;
+  will-change: opacity;
+  contain: layout style paint;
 }
 
 .top-action-bar #benchmark-toggle {
@@ -658,6 +673,7 @@ body {
   pointer-events: auto;
   backdrop-filter: blur(10px);
   box-shadow: 0 2px 8px rgb(0 0 0 / 30%);
+  will-change: transform;
 }
 
 .top-action-btn svg {
@@ -724,6 +740,7 @@ body {
   transition: all var(--transition-fast);
   backdrop-filter: blur(10px);
   box-shadow: 0 4px 12px rgb(0 0 0 / 30%);
+  will-change: transform;
 }
 
 .show-panel-btn:hover {
@@ -760,6 +777,8 @@ body {
   /* Use CSS to calculate and set footer height */
   height: fit-content;
   min-height: fit-content;
+  will-change: transform, width;
+  contain: layout style paint;
 }
 
 .app-footer p {
@@ -807,6 +826,10 @@ body {
   transition: transform 0.2s ease;
 }
 
+.github-link svg {
+  will-change: transform;
+}
+
 .github-link:hover svg {
   transform: scale(1.1);
 }
@@ -826,6 +849,7 @@ body {
   position: relative;
   overflow: hidden;
   transition: width var(--transition-normal);
+  contain: layout style;
 }
 
 .canvas-container {
@@ -833,6 +857,7 @@ body {
   position: relative;
   background: #000;
   overflow: hidden;
+  contain: layout style paint;
 }
 
 #fractal-canvas {
@@ -840,6 +865,8 @@ body {
   width: 100%;
   height: 100%;
   cursor: grab;
+  will-change: contents;
+  contain: strict;
 }
 
 #fractal-canvas:active {
@@ -855,6 +882,8 @@ body {
   display: none;
   z-index: 100;
   box-shadow: 0 0 10px rgb(74 158 255 / 50%);
+  will-change: transform;
+  contain: layout style paint;
 }
 
 .selection-box.active {
@@ -894,6 +923,8 @@ body {
   z-index: 1000;
   pointer-events: none;
   box-shadow: 0 0 12px rgb(74 158 255 / 80%);
+  will-change: width, opacity, background-position;
+  contain: layout style paint;
 }
 
 .loading-bar.active {
@@ -956,6 +987,7 @@ body {
   box-shadow: 0 4px 12px rgb(0 0 0 / 40%);
   position: relative;
   outline: none;
+  will-change: transform;
 }
 
 .fullscreen-control-btn:hover {
@@ -1111,6 +1143,8 @@ body.is-fullscreen .app-container .side-panel {
   z-index: 10000;
   display: none;
   overflow: hidden;
+  will-change: transform, opacity;
+  contain: layout style paint;
 }
 
 .benchmark-header {
@@ -1199,6 +1233,10 @@ body.is-fullscreen .app-container .side-panel {
   font-weight: 600;
   cursor: pointer;
   transition: all var(--transition-fast);
+}
+
+.benchmark-btn {
+  will-change: transform;
 }
 
 .benchmark-btn:hover:not(:disabled) {
