@@ -327,7 +327,7 @@ body {
   will-change: transform;
 }
 
-.styled-slider::-webkit-slider-thumb:hover {
+.styled-slider:hover::-webkit-slider-thumb {
   transform: scale(1.15);
   box-shadow: 0 2px 12px rgb(74 158 255 / 60%);
 }
@@ -344,7 +344,7 @@ body {
   will-change: transform;
 }
 
-.styled-slider::-moz-range-thumb:hover {
+.styled-slider:hover::-moz-range-thumb {
   transform: scale(1.15);
   box-shadow: 0 2px 12px rgb(74 158 255 / 60%);
 }
