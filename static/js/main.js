@@ -280,7 +280,7 @@ function updateWikipediaLink() {
 async function init() {
   // Initialize DOM cache first
   initDOMCache();
-  
+
   canvas = document.getElementById('fractal-canvas');
   const container = canvas.parentElement;
 
@@ -403,13 +403,13 @@ async function init() {
   if (fractalTypeSelect && fractalTypeSelect.value) {
     currentFractalType = fractalTypeSelect.value;
   }
-  
+
   // Initialize Wikipedia link
   updateWikipediaLink();
 
   // Try to load fractal state from URL first
   const loadedFromURL = await loadFractalFromURL();
-  
+
   if (!loadedFromURL) {
     // Load initial fractal if not loaded from URL
     loadFractal(currentFractalType).then(() => {
@@ -856,12 +856,12 @@ function setupUI() {
   // Color scheme cycling (shared between main UI and fullscreen controls)
   // Use CONFIG as the single source of truth for color schemes
   const colorSchemes = CONFIG.colors.schemes;
-  
+
   // Populate color scheme dropdown dynamically from CONFIG
   if (colorSchemeSelect) {
     // Clear existing options (keep the first one as placeholder if needed)
     colorSchemeSelect.innerHTML = '';
-    
+
     // Helper function to format scheme names for display
     const formatSchemeName = (scheme) => {
       const nameMap = {
@@ -896,7 +896,7 @@ function setupUI() {
       };
       return nameMap[scheme] || scheme.charAt(0).toUpperCase() + scheme.slice(1);
     };
-    
+
     // Add all schemes from CONFIG
     colorSchemes.forEach((scheme) => {
       const option = document.createElement('option');
@@ -904,13 +904,13 @@ function setupUI() {
       option.textContent = formatSchemeName(scheme);
       colorSchemeSelect.appendChild(option);
     });
-    
+
     // Set the current value
     if (params.colorScheme) {
       colorSchemeSelect.value = params.colorScheme;
     }
   }
-  
+
   let currentColorSchemeIndex = colorSchemes.indexOf(params.colorScheme);
   if (currentColorSchemeIndex === -1) currentColorSchemeIndex = 0;
 
@@ -1812,7 +1812,7 @@ function setupUI() {
       slider.setAttribute('aria-valuenow', formattedValue);
       slider.setAttribute('aria-valuetext', formattedValue);
     }
-    
+
     // Announce to screen readers (only when user is interacting)
     if (announce && announceElement) {
       announceElement.textContent = `${label} scale set to ${formattedValue}`;
@@ -1851,10 +1851,10 @@ function setupUI() {
         const panelRect = panelContent.getBoundingClientRect();
         const footer = document.querySelector('.app-footer');
         const footerHeight = footer ? footer.offsetHeight : 120;
-        
+
         // Calculate if slider is hidden behind footer
         const viewportBottom = panelRect.bottom - footerHeight - 20; // 20px padding
-        
+
         if (sliderRect.bottom > viewportBottom) {
           // Calculate how much to scroll
           const scrollAmount = sliderRect.bottom - viewportBottom + 20; // Extra padding
@@ -2164,6 +2164,88 @@ function setupUI() {
     return (hasVariation || hasMidRange) && notAllBlank && notAllBlack;
   }
 
+  // Helper function to remove duplicate points and replace with new random ones
+  function removeDuplicatePoints(locations, fractalType) {
+    const seen = new Set();
+    const unique = [];
+
+    for (let i = 0; i < locations.length; i++) {
+      const loc = locations[i];
+      // Create a key from x, y, and zoom (rounded to avoid floating point issues)
+      const key = `${loc.x.toFixed(6)},${loc.y.toFixed(6)},${loc.zoom.toFixed(2)}`;
+
+      if (seen.has(key)) {
+        // Duplicate found - generate a new random interesting point
+        const newPoint = generateRandomInterestingPoint(fractalType, seen);
+        unique.push(newPoint);
+        const newKey = `${newPoint.x.toFixed(6)},${newPoint.y.toFixed(6)},${newPoint.zoom.toFixed(2)}`;
+        seen.add(newKey);
+      } else {
+        seen.add(key);
+        unique.push(loc);
+      }
+    }
+
+    return unique;
+  }
+
+  // Generate a random interesting point for a fractal type
+  function generateRandomInterestingPoint(fractalType, excludeSet) {
+    let attempts = 0;
+    let newPoint;
+
+    do {
+      // Generate random point based on fractal type
+      switch (fractalType) {
+        case 'mandelbrot':
+        case 'burning-ship':
+        case 'buffalo':
+        case 'multibrot':
+          newPoint = {
+            x: -2 + Math.random() * 2.5,
+            y: -1.25 + Math.random() * 2.5,
+            zoom: 1 + Math.random() * 1000,
+          };
+          break;
+        case 'julia':
+        case 'julia-snakes':
+          newPoint = {
+            x: -1 + Math.random() * 2,
+            y: -1 + Math.random() * 2,
+            zoom: 1 + Math.random() * 5,
+          };
+          break;
+        case 'mutant-mandelbrot':
+          newPoint = {
+            x: -1 + Math.random() * 2,
+            y: -1 + Math.random() * 2,
+            zoom: 1 + Math.random() * 5,
+          };
+          break;
+        default:
+          // For geometric fractals, use smaller ranges
+          newPoint = {
+            x: -0.5 + Math.random() * 1,
+            y: -0.5 + Math.random() * 1,
+            zoom: 1 + Math.random() * 15,
+          };
+      }
+
+      const key = `${newPoint.x.toFixed(6)},${newPoint.y.toFixed(6)},${newPoint.zoom.toFixed(2)}`;
+      if (!excludeSet.has(key)) {
+        return newPoint;
+      }
+      attempts++;
+    } while (attempts < 100); // Prevent infinite loop
+
+    // Fallback if we can't generate a unique point
+    return {
+      x: -0.5 + Math.random() * 1,
+      y: -0.5 + Math.random() * 1,
+      zoom: 1 + Math.random() * 10,
+    };
+  }
+
   // Function to generate random interesting coordinates and zoom for each fractal type
   function getRandomInterestingView() {
     const fractalType = currentFractalType;
@@ -2171,7 +2253,7 @@ function setupUI() {
     switch (fractalType) {
       case 'mandelbrot': {
         // Interesting Mandelbrot locations (curated list of known interesting areas)
-        const interestingLocations = [
+        let interestingLocations = [
           { x: -0.75, y: 0.1, zoom: 50 }, // Seahorse valley
           { x: -0.5, y: 0.5, zoom: 100 }, // Top bulb
           { x: 0.0, y: 0.0, zoom: 1 }, // Center
@@ -2183,6 +2265,7 @@ function setupUI() {
           { x: -0.235125, y: 0.827215, zoom: 400 }, // Another interesting area
           { x: 0.286932, y: 0.008287, zoom: 250 }, // Right side detail
         ];
+        interestingLocations = removeDuplicatePoints(interestingLocations, 'mandelbrot');
 
         // Try up to 10 times to find a valid interesting view
         for (let attempt = 0; attempt < 10; attempt++) {
@@ -2206,7 +2289,7 @@ function setupUI() {
 
       case 'multibrot': {
         // Multibrot Set - interesting areas with low zoom levels to avoid CPU overload
-        const interestingLocations = [
+        let interestingLocations = [
           { x: 0.0, y: 0.0, zoom: 1 }, // Center - full view
           { x: -0.5, y: 0.0, zoom: 2 }, // Left of center
           { x: 0.5, y: 0.0, zoom: 2 }, // Right of center
@@ -2223,6 +2306,7 @@ function setupUI() {
           { x: 0.6, y: 0.2, zoom: 5 }, // Right side detail
           { x: -0.2, y: 0.6, zoom: 5 }, // Top detail
         ];
+        interestingLocations = removeDuplicatePoints(interestingLocations, 'multibrot');
 
         // Try up to 10 times to find a valid interesting view
         for (let attempt = 0; attempt < 10; attempt++) {
@@ -2246,7 +2330,7 @@ function setupUI() {
 
       case 'mutant-mandelbrot': {
         // Mutant Mandelbrot - interesting areas with coordinate transformations
-        const interestingLocations = [
+        let interestingLocations = [
           { x: 0, y: 0, zoom: 1 }, // Center - see overall mutant structure
           { x: 0.5, y: 0.5, zoom: 2 }, // Upper right quadrant
           { x: -0.5, y: -0.5, zoom: 2 }, // Lower left quadrant
@@ -2258,6 +2342,7 @@ function setupUI() {
           { x: 0.1, y: -0.1, zoom: 4 }, // Lower right detail
           { x: 0, y: 0, zoom: 2 }, // Closer center view
         ];
+        interestingLocations = removeDuplicatePoints(interestingLocations, 'mutant-mandelbrot');
 
         const location =
           interestingLocations[Math.floor(Math.random() * interestingLocations.length)];
@@ -2270,7 +2355,7 @@ function setupUI() {
 
       case 'julia': {
         // Random interesting Julia C values and corresponding views
-        const interestingJuliaSets = [
+        let interestingJuliaSets = [
           { cReal: -0.7269, cImag: 0.1889, x: 0, y: 0, zoom: 1.5 },
           { cReal: -0.8, cImag: 0.156, x: 0, y: 0, zoom: 2 },
           { cReal: 0.285, cImag: 0.01, x: 0, y: 0, zoom: 1.5 },
@@ -2281,6 +2366,30 @@ function setupUI() {
           { cReal: -0.70176, cImag: -0.3842, x: 0, y: 0, zoom: 2 },
           { cReal: 0.0, cImag: 0.8, x: 0, y: 0, zoom: 2.5 },
         ];
+        // Check for duplicates based on x, y, zoom, cReal, and cImag
+        const seenJulia = new Set();
+        const uniqueJulia = [];
+        for (let i = 0; i < interestingJuliaSets.length; i++) {
+          const js = interestingJuliaSets[i];
+          const key = `${js.x.toFixed(6)},${js.y.toFixed(6)},${js.zoom.toFixed(2)},${js.cReal.toFixed(6)},${js.cImag.toFixed(6)}`;
+          if (seenJulia.has(key)) {
+            // Duplicate found - generate new random Julia set
+            const newPoint = generateRandomInterestingPoint('julia', seenJulia);
+            uniqueJulia.push({
+              cReal: -1 + Math.random() * 2,
+              cImag: -1 + Math.random() * 2,
+              x: newPoint.x,
+              y: newPoint.y,
+              zoom: newPoint.zoom,
+            });
+            const newKey = `${newPoint.x.toFixed(6)},${newPoint.y.toFixed(6)},${newPoint.zoom.toFixed(2)},${uniqueJulia[uniqueJulia.length - 1].cReal.toFixed(6)},${uniqueJulia[uniqueJulia.length - 1].cImag.toFixed(6)}`;
+            seenJulia.add(newKey);
+          } else {
+            seenJulia.add(key);
+            uniqueJulia.push(js);
+          }
+        }
+        interestingJuliaSets = uniqueJulia;
 
         // Try up to 10 times to find a valid interesting view
         for (let attempt = 0; attempt < 10; attempt++) {
@@ -2333,7 +2442,7 @@ function setupUI() {
 
       case 'julia-snakes': {
         // Julia Snakes - C values that create snake-like patterns
-        const interestingSnakeSets = [
+        let interestingSnakeSets = [
           { cReal: -0.4, cImag: 0.6, x: 0, y: 0, zoom: 1.5 },
           { cReal: -0.162, cImag: 1.04, x: 0, y: 0, zoom: 2 },
           { cReal: -0.54, cImag: 0.54, x: 0, y: 0, zoom: 1.8 },
@@ -2345,6 +2454,30 @@ function setupUI() {
           { cReal: -0.355, cImag: 0.355, x: 0.1, y: 0.1, zoom: 2.5 },
           { cReal: -0.45, cImag: 0.6, x: 0, y: 0, zoom: 1.8 },
         ];
+        // Check for duplicates based on x, y, zoom, cReal, and cImag
+        const seenSnakes = new Set();
+        const uniqueSnakes = [];
+        for (let i = 0; i < interestingSnakeSets.length; i++) {
+          const ss = interestingSnakeSets[i];
+          const key = `${ss.x.toFixed(6)},${ss.y.toFixed(6)},${ss.zoom.toFixed(2)},${ss.cReal.toFixed(6)},${ss.cImag.toFixed(6)}`;
+          if (seenSnakes.has(key)) {
+            // Duplicate found - generate new random snake set
+            const newPoint = generateRandomInterestingPoint('julia-snakes', seenSnakes);
+            uniqueSnakes.push({
+              cReal: -1 + Math.random() * 2,
+              cImag: -1 + Math.random() * 2,
+              x: newPoint.x,
+              y: newPoint.y,
+              zoom: newPoint.zoom,
+            });
+            const newKey = `${newPoint.x.toFixed(6)},${newPoint.y.toFixed(6)},${newPoint.zoom.toFixed(2)},${uniqueSnakes[uniqueSnakes.length - 1].cReal.toFixed(6)},${uniqueSnakes[uniqueSnakes.length - 1].cImag.toFixed(6)}`;
+            seenSnakes.add(newKey);
+          } else {
+            seenSnakes.add(key);
+            uniqueSnakes.push(ss);
+          }
+        }
+        interestingSnakeSets = uniqueSnakes;
 
         const snakeSet =
           interestingSnakeSets[Math.floor(Math.random() * interestingSnakeSets.length)];
@@ -2370,7 +2503,7 @@ function setupUI() {
 
       case 'burning-ship': {
         // Interesting Burning Ship locations (curated list of known interesting areas)
-        const interestingLocations = [
+        let interestingLocations = [
           { x: -0.5, y: -0.6, zoom: 1.2 }, // Main ship view
           { x: -1.75, y: -0.03, zoom: 100 }, // Bow detail
           { x: -1.62, y: 0.0, zoom: 250 }, // Right antenna
@@ -2382,6 +2515,7 @@ function setupUI() {
           { x: -0.9, y: -0.3, zoom: 200 }, // Central structures
           { x: -1.72, y: -0.025, zoom: 400 }, // Intricate bow patterns
         ];
+        interestingLocations = removeDuplicatePoints(interestingLocations, 'burning-ship');
 
         for (let attempt = 0; attempt < 10; attempt++) {
           const location =
@@ -2402,7 +2536,7 @@ function setupUI() {
 
       case 'buffalo': {
         // Buffalo is the vertical mirror of Burning Ship, so use flipped y coordinates
-        const interestingLocations = [
+        let interestingLocations = [
           { x: -0.5, y: 0.6, zoom: 1.2 }, // Main buffalo view (flipped ship)
           { x: -1.75, y: 0.03, zoom: 100 }, // Bow detail (flipped)
           { x: -1.62, y: 0.0, zoom: 250 }, // Right antenna
@@ -2414,6 +2548,7 @@ function setupUI() {
           { x: -0.9, y: 0.3, zoom: 200 }, // Central structures (flipped)
           { x: -1.72, y: 0.025, zoom: 400 }, // Intricate bow patterns (flipped)
         ];
+        interestingLocations = removeDuplicatePoints(interestingLocations, 'buffalo');
 
         for (let attempt = 0; attempt < 10; attempt++) {
           const location =
@@ -2447,7 +2582,7 @@ function setupUI() {
 
       case 'sierpinski-arrowhead': {
         // Sierpinski arrowhead curve - interesting views of the curve
-        const interestingLocations = [
+        let interestingLocations = [
           { x: 0, y: 0, zoom: 1 }, // Full overview
           { x: 0, y: -0.2, zoom: 2 }, // Bottom detail
           { x: -0.2, y: 0.1, zoom: 3 }, // Left side curve
@@ -2459,6 +2594,7 @@ function setupUI() {
           { x: -0.15, y: 0, zoom: 6 }, // Left detail zoom
           { x: 0.15, y: 0, zoom: 6 }, // Right detail zoom
         ];
+        interestingLocations = removeDuplicatePoints(interestingLocations, 'sierpinski-arrowhead');
 
         const location =
           interestingLocations[Math.floor(Math.random() * interestingLocations.length)];
@@ -2471,7 +2607,7 @@ function setupUI() {
 
       case 'sierpinski-carpet': {
         // Sierpinski carpet - zoom into edge details and corners
-        const interestingLocations = [
+        let interestingLocations = [
           { x: 0, y: 0, zoom: 1 }, // Full overview
           { x: 0.33, y: 0.33, zoom: 3 }, // Upper right quadrant
           { x: -0.33, y: 0.33, zoom: 3 }, // Upper left quadrant
@@ -2483,6 +2619,7 @@ function setupUI() {
           { x: 0.11, y: 0.33, zoom: 12 }, // Edge detail
           { x: -0.15, y: 0.15, zoom: 15 }, // Very deep zoom
         ];
+        interestingLocations = removeDuplicatePoints(interestingLocations, 'sierpinski-carpet');
 
         const location =
           interestingLocations[Math.floor(Math.random() * interestingLocations.length)];
@@ -2495,7 +2632,7 @@ function setupUI() {
 
       case 'sierpinski-pentagon': {
         // Sierpinski pentagon - zoom into vertices and edge details
-        const interestingLocations = [
+        let interestingLocations = [
           { x: 0, y: 0, zoom: 1 }, // Full overview
           { x: 0, y: 0.4, zoom: 2.5 }, // Top vertex region
           { x: 0.38, y: 0.12, zoom: 3 }, // Upper right vertex
@@ -2507,6 +2644,7 @@ function setupUI() {
           { x: -0.3, y: 0.2, zoom: 6 }, // Deep zoom upper left
           { x: 0, y: -0.3, zoom: 8 }, // Deep zoom bottom
         ];
+        interestingLocations = removeDuplicatePoints(interestingLocations, 'sierpinski-pentagon');
 
         const location =
           interestingLocations[Math.floor(Math.random() * interestingLocations.length)];
@@ -2519,7 +2657,7 @@ function setupUI() {
 
       case 'sierpinski-hexagon': {
         // Sierpinski hexagon - zoom into vertices and edge details
-        const interestingLocations = [
+        let interestingLocations = [
           { x: 0, y: 0, zoom: 1 }, // Full overview
           { x: 0, y: 0.42, zoom: 2.5 }, // Top vertex region
           { x: 0.36, y: 0.21, zoom: 3 }, // Upper right vertex
@@ -2531,6 +2669,7 @@ function setupUI() {
           { x: 0.3, y: 0.15, zoom: 6 }, // Deep zoom upper right
           { x: -0.3, y: 0.15, zoom: 6 }, // Deep zoom upper left
         ];
+        interestingLocations = removeDuplicatePoints(interestingLocations, 'sierpinski-hexagon');
 
         const location =
           interestingLocations[Math.floor(Math.random() * interestingLocations.length)];
@@ -2560,7 +2699,7 @@ function setupUI() {
         // Convert sides to xScale: xScale = (sides - 3) / 6
         const xScale = (polygonType.sides - 3) / 6.0;
 
-        const interestingLocations = [
+        let interestingLocations = [
           { x: 0, y: 0, zoom: 1 }, // Full overview
           { x: 0, y: 0.4, zoom: 2.5 }, // Top region
           { x: 0.35, y: 0.2, zoom: 3 }, // Upper right
@@ -2572,6 +2711,7 @@ function setupUI() {
           { x: 0.25, y: 0.15, zoom: 6 }, // Deep zoom
           { x: -0.25, y: 0.15, zoom: 6 }, // Deep zoom left
         ];
+        interestingLocations = removeDuplicatePoints(interestingLocations, 'sierpinski-gasket');
 
         const location =
           interestingLocations[Math.floor(Math.random() * interestingLocations.length)];
@@ -2594,7 +2734,7 @@ function setupUI() {
 
       case 'koch': {
         // Koch snowflake - zoom into interesting edge details
-        const interestingLocations = [
+        let interestingLocations = [
           { x: 0, y: 0.5, zoom: 4 }, // Top peak
           { x: -0.4, y: -0.25, zoom: 5 }, // Bottom left edge
           { x: 0.4, y: -0.25, zoom: 5 }, // Bottom right edge
@@ -2606,6 +2746,7 @@ function setupUI() {
           { x: 0.2, y: 0.3, zoom: 12 }, // Upper right detail
           { x: 0, y: -0.2, zoom: 15 }, // Bottom center detail
         ];
+        interestingLocations = removeDuplicatePoints(interestingLocations, 'koch');
 
         const location =
           interestingLocations[Math.floor(Math.random() * interestingLocations.length)];
@@ -2618,7 +2759,7 @@ function setupUI() {
 
       case 'quadratic-koch': {
         // Quadratic Koch island - zoom into interesting square wave patterns
-        const interestingLocations = [
+        let interestingLocations = [
           { x: 0, y: 0, zoom: 1 }, // Full overview
           { x: 0, y: 0.5, zoom: 3 }, // Top edge
           { x: 0.5, y: 0, zoom: 3 }, // Right edge
@@ -2630,6 +2771,7 @@ function setupUI() {
           { x: -0.35, y: -0.35, zoom: 5 }, // Bottom-left corner
           { x: 0, y: 0, zoom: 2 }, // Medium zoom center
         ];
+        interestingLocations = removeDuplicatePoints(interestingLocations, 'quadratic-koch');
 
         const location =
           interestingLocations[Math.floor(Math.random() * interestingLocations.length)];
@@ -2642,7 +2784,7 @@ function setupUI() {
 
       case 'minkowski-sausage': {
         // Minkowski sausage - zoom into rectangular protrusions
-        const interestingLocations = [
+        let interestingLocations = [
           { x: 0, y: 0, zoom: 1 }, // Full overview
           { x: 0, y: 0.5, zoom: 3 }, // Top edge bulge
           { x: 0.5, y: 0, zoom: 3 }, // Right edge bulge
@@ -2654,6 +2796,7 @@ function setupUI() {
           { x: -0.4, y: -0.4, zoom: 5 }, // Bottom-left corner detail
           { x: 0, y: 0, zoom: 2.5 }, // Medium zoom center
         ];
+        interestingLocations = removeDuplicatePoints(interestingLocations, 'minkowski-sausage');
 
         const location =
           interestingLocations[Math.floor(Math.random() * interestingLocations.length)];
@@ -2666,7 +2809,7 @@ function setupUI() {
 
       case 'cesaro': {
         // Cesàro fractal - zoom into zigzag patterns
-        const interestingLocations = [
+        let interestingLocations = [
           { x: 0, y: 0, zoom: 1 }, // Full overview
           { x: 0, y: 0.5, zoom: 3 }, // Top edge detail
           { x: 0.5, y: 0, zoom: 3 }, // Right edge detail
@@ -2690,7 +2833,7 @@ function setupUI() {
 
       case 'vicsek': {
         // Vicsek snowflake - zoom into cross patterns
-        const interestingLocations = [
+        let interestingLocations = [
           { x: 0, y: 0, zoom: 1 }, // Full overview showing cross
           { x: 0, y: 0, zoom: 3 }, // Center cross detail
           { x: 0.33, y: 0, zoom: 4 }, // Right arm
@@ -2714,7 +2857,7 @@ function setupUI() {
 
       case 'cross': {
         // Cross fractal (T-square) - zoom into removed quadrants
-        const interestingLocations = [
+        let interestingLocations = [
           { x: 0, y: 0, zoom: 1 }, // Full overview
           { x: 0.25, y: 0.25, zoom: 2 }, // Top-right missing corner
           { x: 0.5, y: 0.5, zoom: 3 }, // Deep into top-right region
@@ -2748,7 +2891,7 @@ function setupUI() {
           { name: 'H-Pattern', xScale: 1.3 },
         ];
 
-        const interestingLocations = [
+        let interestingLocations = [
           { x: 0, y: 0, zoom: 1 }, // Full overview
           { x: 0, y: 0, zoom: 3 }, // Center detail
           { x: 0.33, y: 0, zoom: 4 }, // Right side
@@ -2760,6 +2903,7 @@ function setupUI() {
           { x: 0.15, y: 0.15, zoom: 9 }, // Deep zoom
           { x: 0, y: 0, zoom: 2 }, // Medium zoom
         ];
+        interestingLocations = removeDuplicatePoints(interestingLocations, 'box-variants');
 
         const pattern = patterns[Math.floor(Math.random() * patterns.length)];
         const location =
@@ -2775,7 +2919,7 @@ function setupUI() {
 
       case 'h-tree': {
         // H-tree fractal - zoom into branch points
-        const interestingLocations = [
+        let interestingLocations = [
           { x: 0, y: 0, zoom: 1 }, // Full overview
           { x: 0, y: 0, zoom: 2 }, // Center H
           { x: -0.2, y: 0.2, zoom: 3 }, // Top-left branch
@@ -2813,7 +2957,7 @@ function setupUI() {
           { rotation: 1.5, scale: 1.5 }, // Large rotation, loose scaling
         ];
 
-        const interestingLocations = [
+        let interestingLocations = [
           { x: 0, y: 0, zoom: 1 }, // Full overview
           { x: 0, y: 0, zoom: 2 }, // Center detail
           { x: -0.2, y: 0.2, zoom: 3 }, // Top-left branch
@@ -2825,6 +2969,7 @@ function setupUI() {
           { x: -0.15, y: 0.15, zoom: 7 }, // Very deep zoom
           { x: 0, y: 0, zoom: 1.5 }, // Medium zoom center
         ];
+        interestingLocations = removeDuplicatePoints(interestingLocations, 'h-tree-generalized');
 
         const config = configurations[Math.floor(Math.random() * configurations.length)];
         const location =
@@ -2840,7 +2985,7 @@ function setupUI() {
 
       case 'heighway-dragon': {
         // Heighway dragon curve - zoom into dragon's body
-        const interestingLocations = [
+        let interestingLocations = [
           { x: 0, y: 0, zoom: 1 }, // Full dragon view
           { x: 0, y: 0, zoom: 2 }, // Center detail
           { x: 0.2, y: 0, zoom: 3 }, // Right side of dragon
@@ -2864,7 +3009,7 @@ function setupUI() {
 
       case 'twindragon': {
         // Twindragon curve - zoom into the tiled dragon pattern
-        const interestingLocations = [
+        let interestingLocations = [
           { x: 0, y: 0, zoom: 1 }, // Full twindragon view
           { x: 0, y: 0, zoom: 2 }, // Center detail
           { x: 0.25, y: 0, zoom: 3 }, // Right dragon
@@ -2888,7 +3033,7 @@ function setupUI() {
 
       case 'terdragon': {
         // Terdragon curve - zoom into the three-dragon tiled pattern
-        const interestingLocations = [
+        let interestingLocations = [
           { x: 0, y: 0, zoom: 1 }, // Full terdragon view
           { x: 0, y: 0, zoom: 2 }, // Center detail
           { x: 0.2, y: 0.1, zoom: 3 }, // First dragon region
@@ -2912,7 +3057,7 @@ function setupUI() {
 
       case 'binary-dragon': {
         // Binary Dragon curve - zoom into the binary pattern
-        const interestingLocations = [
+        let interestingLocations = [
           { x: 0, y: 0, zoom: 1 }, // Full binary dragon view
           { x: 0, y: 0, zoom: 2 }, // Center detail
           { x: 0.2, y: 0.1, zoom: 3 }, // Right region
@@ -2936,7 +3081,7 @@ function setupUI() {
 
       case 'folded-paper-dragon': {
         // Folded Paper Dragon curve - zoom into the paper-folding pattern
-        const interestingLocations = [
+        let interestingLocations = [
           { x: 0, y: 0, zoom: 1 }, // Full folded paper dragon view
           { x: 0, y: 0, zoom: 2 }, // Center detail
           { x: 0.2, y: 0.1, zoom: 3 }, // Right region
@@ -2960,7 +3105,7 @@ function setupUI() {
 
       case 'peano-curve': {
         // Peano Curve - zoom into the space-filling pattern
-        const interestingLocations = [
+        let interestingLocations = [
           { x: 0, y: 0, zoom: 1 }, // Full Peano curve view
           { x: 0, y: 0, zoom: 2 }, // Center detail
           { x: 0.2, y: 0.2, zoom: 3 }, // Upper right quadrant
@@ -2984,7 +3129,7 @@ function setupUI() {
 
       case 'hilbert-curve': {
         // Hilbert Curve - zoom into the space-filling pattern
-        const interestingLocations = [
+        let interestingLocations = [
           { x: 0, y: 0, zoom: 1 }, // Full Hilbert curve view
           { x: 0, y: 0, zoom: 2 }, // Center detail
           { x: 0.2, y: 0.2, zoom: 3 }, // Upper right quadrant
@@ -3008,7 +3153,7 @@ function setupUI() {
 
       case 'popcorn': {
         // Popcorn fractal - interesting chaotic regions
-        const interestingLocations = [
+        let interestingLocations = [
           { x: 0, y: 0, zoom: 1 }, // Center view
           { x: 0.5, y: 0.5, zoom: 2 }, // Upper right quadrant
           { x: -0.5, y: -0.5, zoom: 2 }, // Lower left quadrant
@@ -3020,6 +3165,7 @@ function setupUI() {
           { x: -0.6, y: 0.1, zoom: 4 }, // Left region detail
           { x: 0.4, y: -0.6, zoom: 4 }, // Bottom right detail
         ];
+        interestingLocations = removeDuplicatePoints(interestingLocations, 'popcorn');
 
         const location =
           interestingLocations[Math.floor(Math.random() * interestingLocations.length)];
@@ -3032,7 +3178,7 @@ function setupUI() {
 
       case 'rose': {
         // Rose window fractal - symmetric petal patterns
-        const interestingLocations = [
+        let interestingLocations = [
           { x: 0, y: 0, zoom: 1 }, // Center view - full rose
           { x: 0, y: 0, zoom: 2 }, // Closer center view
           { x: 0.3, y: 0, zoom: 3 }, // Right petal detail
@@ -3044,6 +3190,7 @@ function setupUI() {
           { x: 0.2, y: -0.2, zoom: 4 }, // Lower right detail
           { x: 0, y: 0, zoom: 5 }, // Deep center zoom
         ];
+        interestingLocations = removeDuplicatePoints(interestingLocations, 'rose');
 
         const location =
           interestingLocations[Math.floor(Math.random() * interestingLocations.length)];
@@ -3056,7 +3203,7 @@ function setupUI() {
 
       case 'cantor': {
         // Cantor set - best viewed with specific zoom levels to see the structure
-        const interestingLocations = [
+        let interestingLocations = [
           { x: 0, y: 0.5, zoom: 1 }, // Full overview
           { x: 0, y: 0.3, zoom: 1.5 }, // Upper levels detail
           { x: 0, y: 0, zoom: 2 }, // Mid-level focus
@@ -3080,7 +3227,7 @@ function setupUI() {
 
       case 'fat-cantor': {
         // Fat Cantor set - similar views to regular Cantor but showing fatter segments
-        const interestingLocations = [
+        let interestingLocations = [
           { x: 0, y: 0.5, zoom: 1 }, // Full overview
           { x: 0, y: 0.3, zoom: 1.5 }, // Upper levels detail
           { x: 0, y: 0, zoom: 2 }, // Mid-level focus
@@ -3104,7 +3251,7 @@ function setupUI() {
 
       case 'smith-volterra-cantor': {
         // Smith-Volterra-Cantor set - measure 1/2 set with decreasing removed intervals
-        const interestingLocations = [
+        let interestingLocations = [
           { x: 0, y: 0.5, zoom: 1 }, // Full overview
           { x: 0, y: 0.3, zoom: 1.5 }, // Upper levels detail
           { x: 0, y: 0, zoom: 2 }, // Mid-level focus
@@ -3128,7 +3275,7 @@ function setupUI() {
 
       case 'random-cantor': {
         // Randomised Cantor set - uses random removal ratios for organic patterns
-        const interestingLocations = [
+        let interestingLocations = [
           { x: 0, y: 0.5, zoom: 1 }, // Full overview
           { x: 0, y: 0.3, zoom: 1.5 }, // Upper levels detail
           { x: 0, y: 0, zoom: 2 }, // Mid-level focus
@@ -3959,7 +4106,7 @@ async function applyFractalState(state) {
     if (fractalTypeSelect) {
       fractalTypeSelect.value = state.fractalType;
     }
-    
+
     // Always load the fractal module if type changed or if module is not loaded
     if (state.fractalType !== currentFractalType || !currentFractalModule) {
       currentFractalType = state.fractalType;
@@ -3969,7 +4116,7 @@ async function applyFractalState(state) {
     // If no fractal type in state but module not loaded, load default
     await loadFractal(currentFractalType);
   }
-  
+
   // Update Wikipedia link
   updateWikipediaLink();
 
@@ -4141,7 +4288,7 @@ async function loadFractalFromURL() {
     } catch {
       // If decoding fails, use the seed as-is
     }
-    
+
     const state = decodeFractalState(seed);
     if (state) {
       await applyFractalState(state);
@@ -4183,18 +4330,18 @@ function setupFooterHeightTracking() {
   const footer = document.querySelector('.app-footer');
   const shareButton = document.getElementById('share-fractal-btn');
   const shareDescription = document.querySelector('.footer-share-description');
-  
+
   if (footer) {
     // Observe the footer itself
     footerObserver.observe(footer);
-    
+
     // Also observe the share description element to catch its size changes
     if (shareDescription) {
       footerObserver.observe(shareDescription);
     }
-    
+
     updateFooterHeight();
-    
+
     // Update height when share button is hovered (description appears)
     // Use requestAnimationFrame to catch the transition mid-way
     if (shareButton) {
@@ -4206,7 +4353,7 @@ function setupFooterHeightTracking() {
           setTimeout(updateFooterHeight, 250);
         });
       };
-      
+
       shareButton.addEventListener('mouseenter', updateOnHover, { passive: true });
       shareButton.addEventListener('mouseleave', updateOnHover, { passive: true });
     }
