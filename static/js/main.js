@@ -31,6 +31,29 @@ let frameCache = new Map();
 const MAX_CACHE_SIZE = 10; // Maximum number of cached frames
 let cachedDrawCommand = null; // Draw command for displaying cached frames
 
+// DOM element cache for frequently accessed elements
+const domCache = {
+  // Coordinate display
+  coordZoom: null,
+  coordOffsetX: null,
+  coordOffsetY: null,
+  copyCoordsBtn: null,
+  // FPS display
+  fps: null,
+  // Loading bar
+  loadingBar: null,
+};
+
+// Initialize DOM cache
+function initDOMCache() {
+  domCache.coordZoom = document.getElementById('coord-zoom');
+  domCache.coordOffsetX = document.getElementById('coord-offset-x');
+  domCache.coordOffsetY = document.getElementById('coord-offset-y');
+  domCache.copyCoordsBtn = document.getElementById('copy-coords-btn');
+  domCache.fps = document.getElementById('fps');
+  domCache.loadingBar = document.getElementById('loading-bar');
+}
+
 // Function to calculate pixel ratio based on zoom level
 // Higher zoom = higher pixel ratio for better quality
 function calculatePixelRatio() {
@@ -255,6 +278,9 @@ function updateWikipediaLink() {
 
 // Initialize regl
 async function init() {
+  // Initialize DOM cache first
+  initDOMCache();
+  
   canvas = document.getElementById('fractal-canvas');
   const container = canvas.parentElement;
 
@@ -3343,19 +3369,17 @@ function setupPanelToggle() {
 }
 
 function showLoadingBar() {
-  const loadingBar = document.getElementById('loading-bar');
-  if (loadingBar) {
-    loadingBar.classList.remove('active');
+  if (domCache.loadingBar) {
+    domCache.loadingBar.classList.remove('active');
     // Force reflow to reset animation
-    void loadingBar.offsetWidth;
-    loadingBar.classList.add('active');
+    void domCache.loadingBar.offsetWidth;
+    domCache.loadingBar.classList.add('active');
   }
 }
 
 function hideLoadingBar() {
-  const loadingBar = document.getElementById('loading-bar');
-  if (loadingBar) {
-    loadingBar.classList.remove('active');
+  if (domCache.loadingBar) {
+    domCache.loadingBar.classList.remove('active');
   }
 }
 
@@ -3770,9 +3794,8 @@ function animate() {
     fps = frameCount;
     frameCount = 0;
     lastTime = currentTime;
-    const fpsElement = document.getElementById('fps');
-    if (fpsElement) {
-      fpsElement.textContent = `FPS: ${fps}`;
+    if (domCache.fps) {
+      domCache.fps.textContent = `FPS: ${fps}`;
     }
   }
 
@@ -3802,21 +3825,17 @@ function animate() {
 
 // Update coordinate display
 function updateCoordinateDisplay() {
-  const zoomEl = document.getElementById('coord-zoom');
-  const offsetXEl = document.getElementById('coord-offset-x');
-  const offsetYEl = document.getElementById('coord-offset-y');
-
-  if (zoomEl && offsetXEl && offsetYEl) {
+  if (domCache.coordZoom && domCache.coordOffsetX && domCache.coordOffsetY) {
     // Round to reasonable precision for display
-    zoomEl.textContent = Math.round(params.zoom * 1000) / 1000;
-    offsetXEl.textContent = Math.round(params.offset.x * 10000) / 10000;
-    offsetYEl.textContent = Math.round(params.offset.y * 10000) / 10000;
+    domCache.coordZoom.textContent = Math.round(params.zoom * 1000) / 1000;
+    domCache.coordOffsetX.textContent = Math.round(params.offset.x * 10000) / 10000;
+    domCache.coordOffsetY.textContent = Math.round(params.offset.y * 10000) / 10000;
   }
 }
 
 // Copy coordinates to clipboard
 function setupCoordinateCopy() {
-  const copyBtn = document.getElementById('copy-coords-btn');
+  const copyBtn = domCache.copyCoordsBtn;
   if (copyBtn) {
     copyBtn.addEventListener('click', () => {
       const zoom = Math.round(params.zoom * 1000) / 1000;
