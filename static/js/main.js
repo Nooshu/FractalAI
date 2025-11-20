@@ -13,6 +13,7 @@ let fps = 0;
 let drawFractal = null; // Current regl draw command
 let currentFractalModule = null; // Currently loaded fractal module
 let fractalCache = new Map(); // Cache for loaded fractal modules
+let isLoadingFractal = false; // Track if a fractal is currently being loaded
 let needsRender = false; // Flag to indicate if a render is needed
 let isDisplayingCached = false; // Track if we're displaying a cached frame
 
@@ -400,9 +401,11 @@ async function loadFractal(fractalType) {
   // Check cache first
   if (fractalCache.has(fractalType)) {
     currentFractalModule = fractalCache.get(fractalType);
+    currentFractalType = fractalType; // Ensure currentFractalType is updated
     return;
   }
 
+  isLoadingFractal = true;
   try {
     // All fractals are 2D, load from 2d folder
     const module = await import(`./fractals/2d/${fractalType}.js`);
@@ -413,6 +416,7 @@ async function loadFractal(fractalType) {
     }
 
     currentFractalModule = module;
+    currentFractalType = fractalType; // Ensure currentFractalType is updated
 
     // Cache the module
     fractalCache.set(fractalType, module);
@@ -425,6 +429,8 @@ async function loadFractal(fractalType) {
     } else {
       throw error; // Re-throw if mandelbrot also fails
     }
+  } finally {
+    isLoadingFractal = false;
   }
 }
 
@@ -3681,7 +3687,11 @@ function cacheCurrentFrame() {
 
 function renderFractal() {
   if (!currentFractalModule) {
-    console.warn('No fractal module loaded');
+    // Only warn if we're not currently loading a fractal
+    // This prevents false warnings during initialization
+    if (!isLoadingFractal) {
+      console.warn('No fractal module loaded');
+    }
     hideLoadingBar();
     return;
   }
