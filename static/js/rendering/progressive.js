@@ -16,7 +16,7 @@ export class ProgressiveRenderer {
     this.state = state;
     this.frameCache = frameCache;
     this.renderer = renderer;
-    this.progressiveRenderTimeout = null;
+    this.progressiveRenderAnimationFrame = null;
   }
 
   /**
@@ -62,9 +62,9 @@ export class ProgressiveRenderer {
     this.state.cachedDrawCommand = null;
 
     // Cancel any existing progressive render
-    if (this.progressiveRenderTimeout) {
-      clearTimeout(this.progressiveRenderTimeout);
-      this.progressiveRenderTimeout = null;
+    if (this.progressiveRenderAnimationFrame !== null) {
+      cancelAnimationFrame(this.progressiveRenderAnimationFrame);
+      this.progressiveRenderAnimationFrame = null;
     }
 
     const targetIterations = params.iterations;
@@ -112,11 +112,8 @@ export class ProgressiveRenderer {
         }
         this.state.needsRender = false;
 
-        // Schedule next step
-        this.progressiveRenderTimeout = setTimeout(
-          progressiveStep,
-          CONFIG.rendering.progressiveDelayMs
-        );
+        // Schedule next step using requestAnimationFrame for smooth rendering aligned with display refresh
+        this.progressiveRenderAnimationFrame = requestAnimationFrame(progressiveStep);
       } else {
         this.state.isProgressiveRendering = false;
         // Cache the fully rendered frame
@@ -125,20 +122,17 @@ export class ProgressiveRenderer {
       }
     };
 
-    // Start progressive rendering after a short delay
-    this.progressiveRenderTimeout = setTimeout(
-      progressiveStep,
-      CONFIG.rendering.progressiveDelayMs
-    );
+    // Start progressive rendering using requestAnimationFrame for smooth rendering aligned with display refresh
+    this.progressiveRenderAnimationFrame = requestAnimationFrame(progressiveStep);
   }
 
   /**
    * Cancel progressive rendering
    */
   cancel() {
-    if (this.progressiveRenderTimeout) {
-      clearTimeout(this.progressiveRenderTimeout);
-      this.progressiveRenderTimeout = null;
+    if (this.progressiveRenderAnimationFrame !== null) {
+      cancelAnimationFrame(this.progressiveRenderAnimationFrame);
+      this.progressiveRenderAnimationFrame = null;
       this.state.isProgressiveRendering = false;
     }
   }

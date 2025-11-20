@@ -21,7 +21,7 @@ let isDisplayingCached = false; // Track if we're displaying a cached frame
 let renderScheduled = false;
 
 // Progressive rendering state
-let progressiveRenderTimeout = null;
+let progressiveRenderAnimationFrame = null;
 let currentProgressiveIterations = 0;
 let targetIterations = 0;
 let isProgressiveRendering = false;
@@ -361,8 +361,9 @@ async function init() {
       clearTimeout(resizeTimeout);
     }
     clearFrameCache();
-    if (progressiveRenderTimeout) {
-      clearTimeout(progressiveRenderTimeout);
+    if (progressiveRenderAnimationFrame !== null) {
+      cancelAnimationFrame(progressiveRenderAnimationFrame);
+      progressiveRenderAnimationFrame = null;
     }
   });
 
@@ -3191,9 +3192,9 @@ function setupUI() {
     }
 
     // Cancel any ongoing progressive rendering
-    if (progressiveRenderTimeout) {
-      clearTimeout(progressiveRenderTimeout);
-      progressiveRenderTimeout = null;
+    if (progressiveRenderAnimationFrame !== null) {
+      cancelAnimationFrame(progressiveRenderAnimationFrame);
+      progressiveRenderAnimationFrame = null;
       isProgressiveRendering = false;
     }
 
@@ -3427,9 +3428,9 @@ function renderFractalProgressive(startIterations = null) {
   cachedDrawCommand = null;
 
   // Cancel any existing progressive render
-  if (progressiveRenderTimeout) {
-    clearTimeout(progressiveRenderTimeout);
-    progressiveRenderTimeout = null;
+  if (progressiveRenderAnimationFrame !== null) {
+    cancelAnimationFrame(progressiveRenderAnimationFrame);
+    progressiveRenderAnimationFrame = null;
   }
 
   targetIterations = params.iterations;
@@ -3482,8 +3483,8 @@ function renderFractalProgressive(startIterations = null) {
       }
       needsRender = false; // Progressive rendering handles its own renders
 
-      // Schedule next step
-      progressiveRenderTimeout = setTimeout(progressiveStep, 16); // ~60fps
+      // Schedule next step using requestAnimationFrame for smooth rendering aligned with display refresh
+      progressiveRenderAnimationFrame = requestAnimationFrame(progressiveStep);
     } else {
       isProgressiveRendering = false;
       // Cache the fully rendered frame
@@ -3492,8 +3493,8 @@ function renderFractalProgressive(startIterations = null) {
     }
   };
 
-  // Start progressive rendering after a short delay
-  progressiveRenderTimeout = setTimeout(progressiveStep, 16);
+  // Start progressive rendering using requestAnimationFrame for smooth rendering aligned with display refresh
+  progressiveRenderAnimationFrame = requestAnimationFrame(progressiveStep);
 }
 
 // Zoom into a selection box area
@@ -3766,9 +3767,9 @@ function renderFractal() {
   cachedDrawCommand = null;
 
   // Cancel progressive rendering if active
-  if (progressiveRenderTimeout) {
-    clearTimeout(progressiveRenderTimeout);
-    progressiveRenderTimeout = null;
+  if (progressiveRenderAnimationFrame !== null) {
+    cancelAnimationFrame(progressiveRenderAnimationFrame);
+    progressiveRenderAnimationFrame = null;
     isProgressiveRendering = false;
   }
 
