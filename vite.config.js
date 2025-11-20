@@ -16,6 +16,25 @@ export default defineConfig({
   },
   plugins: [
     {
+      name: 'exclude-cloudflare-files',
+      enforce: 'pre', // Run before Vite's import analysis plugin
+      load(id) {
+        // Prevent Vite from trying to parse Cloudflare config files
+        // Check both relative and absolute paths
+        const normalizedId = id.replace(/\\/g, '/');
+        if (normalizedId.includes('/_headers') || 
+            normalizedId.includes('/_redirects') || 
+            normalizedId.includes('/_routes.json') ||
+            normalizedId.endsWith('_headers') ||
+            normalizedId.endsWith('_redirects') ||
+            normalizedId.endsWith('_routes.json')) {
+          // Return empty module to prevent parsing errors
+          return 'export default {}';
+        }
+        return null;
+      },
+    },
+    {
       name: 'inject-build-year',
       transformIndexHtml(html) {
         // Replace {{BUILD_YEAR}} placeholder with current year at build time
