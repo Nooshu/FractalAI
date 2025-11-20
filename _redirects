@@ -1,3 +1,2 @@
-# Block source maps from being served
-/*.map 404
+# Source maps are disabled in production builds, so no redirect needed
 

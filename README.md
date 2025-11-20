@@ -65,7 +65,7 @@ This project is configured for deployment on Cloudflare Pages using the v3 build
    - Select your Git provider and repository
 
 2. Configure build settings:
-   - **Build command**: `npm run build`
+   - **Build command**: `npm run build` (⚠️ Do NOT use `npm install && npm run build` - Cloudflare Pages already runs `npm clean-install` automatically)
    - **Build output directory**: `dist`
    - **Root directory**: `/` (leave empty or use `/`)
    - **Node version**: `24` (or higher)

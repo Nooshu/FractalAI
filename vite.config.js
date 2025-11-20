@@ -9,7 +9,10 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    sourcemap: true,
+    sourcemap: false, // Disable source maps in production for faster builds and smaller output
+    minify: 'esbuild', // Use esbuild for faster minification
+    cssMinify: true, // Minify CSS
+    reportCompressedSize: false, // Skip compressed size reporting for faster builds
   },
   plugins: [
     {
