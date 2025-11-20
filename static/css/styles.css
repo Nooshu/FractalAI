@@ -651,11 +651,6 @@ body {
   opacity: 1;
 }
 
-/* Keep action bar visible when buttons are focused */
-.canvas-area .top-action-bar:has(.top-action-btn:focus-visible) {
-  opacity: 1;
-}
-
 .top-action-btn {
   display: flex;
   align-items: center;
