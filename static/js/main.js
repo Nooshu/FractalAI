@@ -348,7 +348,7 @@ async function init() {
   };
 
   // Handle window resize
-  window.addEventListener('resize', handleResize);
+  window.addEventListener('resize', handleResize, { passive: true });
 
   // Use ResizeObserver for more accurate container size tracking
   const resizeObserver = new ResizeObserver(handleResize);
@@ -604,7 +604,7 @@ function setupControls() {
       lastMouseY = e.clientY;
       scheduleRender(); // Use throttled render for smooth panning
     }
-  });
+  }, { passive: true });
 
   // Use window mouseup so dragging stops even if mouse is outside canvas
   window.addEventListener('mouseup', (e) => {
@@ -653,14 +653,14 @@ function setupControls() {
         canvas.style.cursor = 'grab';
       }
     }
-  });
+  }, { passive: true });
 
   // Also handle mouse leave to reset cursor if drag ends
   canvas.addEventListener('mouseleave', () => {
     if (!isDragging && !isSelecting) {
       canvas.style.cursor = 'grab';
     }
-  });
+  }, { passive: true });
 
   // Update cursor based on modifier keys (consolidated handler)
   const updateCursor = (shiftKey) => {
@@ -673,7 +673,7 @@ function setupControls() {
     if (!isDragging && !isSelecting) {
       updateCursor(e.shiftKey);
     }
-  });
+  }, { passive: true });
 
   // Handle keydown/keyup to update cursor
   window.addEventListener('keydown', (e) => {
@@ -4206,8 +4206,8 @@ function setupFooterHeightTracking() {
         });
       };
       
-      shareButton.addEventListener('mouseenter', updateOnHover);
-      shareButton.addEventListener('mouseleave', updateOnHover);
+      shareButton.addEventListener('mouseenter', updateOnHover, { passive: true });
+      shareButton.addEventListener('mouseleave', updateOnHover, { passive: true });
     }
   }
 }
