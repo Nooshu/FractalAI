@@ -1254,13 +1254,13 @@ function setupUI() {
       // Plant - additional settings (position set by getInitialRenderPosition)
     } else if (currentFractalType === 'barnsley-fern') {
       // Barnsley Fern - additional settings (position set by getInitialRenderPosition)
-      params.iterations = 100;
+      params.iterations = 15;
       iterationsExplicitlySet = true;
-      if (iterationsSlider) iterationsSlider.value = 100;
-      if (iterationsValue) iterationsValue.textContent = '100';
+      if (iterationsSlider) iterationsSlider.value = 15;
+      if (iterationsValue) iterationsValue.textContent = '15';
       const fullscreenIterationsNumberEl = document.getElementById('fullscreen-iterations-number');
       if (fullscreenIterationsNumberEl) {
-        fullscreenIterationsNumberEl.textContent = '100';
+        fullscreenIterationsNumberEl.textContent = '15';
       }
     } else if (currentFractalType === 'multibrot') {
       // Multibrot Set - default centered view with order 4 (cubic)
