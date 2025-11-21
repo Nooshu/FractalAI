@@ -142,7 +142,7 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    iterations: 25,
+    iterations: 240,
     xScale: 1.0,
     yScale: 1.0,
     colorScheme: 'midnight',
