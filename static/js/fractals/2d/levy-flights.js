@@ -180,3 +180,21 @@ export function render(regl, params, canvas) {
 
 export const is2D = true;
 
+/**
+ * Configuration for Levy Flights fractal
+ */
+export const config = {
+  initialSettings: {
+    colorScheme: 'autumn',
+  },
+  initialPosition: {
+    zoom: 1,
+    offset: { x: 0, y: 0 },
+  },
+  interestingPoints: [],
+  fallbackPosition: {
+    offset: { x: 0, y: 0 },
+    zoom: 1,
+  },
+};
+

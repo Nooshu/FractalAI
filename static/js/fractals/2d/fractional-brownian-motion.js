@@ -162,3 +162,21 @@ export function render(regl, params, canvas) {
 
 export const is2D = true;
 
+/**
+ * Configuration for Fractional Brownian Motion fractal
+ */
+export const config = {
+  initialSettings: {
+    colorScheme: 'rainbow2', // Rainbow Pastel
+  },
+  initialPosition: {
+    zoom: 1,
+    offset: { x: 0, y: 0 },
+  },
+  interestingPoints: [],
+  fallbackPosition: {
+    offset: { x: 0, y: 0 },
+    zoom: 1,
+  },
+};
+

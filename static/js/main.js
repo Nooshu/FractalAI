@@ -1692,6 +1692,41 @@ function setupUI() {
     }
     // Default view is handled by getInitialRenderPosition function
 
+    // Apply config's initialSettings if available (theme and iterations)
+    // Apply AFTER all hardcoded blocks so config takes precedence
+    const fractalConfig = currentFractalModule?.config;
+    if (fractalConfig?.initialSettings) {
+      const settings = fractalConfig.initialSettings;
+
+      // Apply iterations if specified
+      if (settings.iterations !== undefined) {
+        params.iterations = settings.iterations;
+        iterationsExplicitlySet = true;
+        if (iterationsSlider) iterationsSlider.value = settings.iterations;
+        if (iterationsValue) iterationsValue.textContent = settings.iterations.toString();
+        const fullscreenIterationsNumberEl = document.getElementById('fullscreen-iterations-number');
+        if (fullscreenIterationsNumberEl) {
+          fullscreenIterationsNumberEl.textContent = settings.iterations.toString();
+        }
+      }
+
+      // Apply colorScheme if specified
+      if (settings.colorScheme !== undefined) {
+        params.colorScheme = settings.colorScheme;
+        if (colorSchemeSelect) {
+          colorSchemeSelect.value = settings.colorScheme;
+        }
+        const newIndex = colorSchemes.indexOf(settings.colorScheme);
+        if (newIndex !== -1) {
+          currentColorSchemeIndex = newIndex;
+        }
+        updateColorPalettePreview();
+        // Clear draw command to force regeneration with new palette
+        drawFractal = null;
+        cachedDrawCommand = null;
+      }
+    }
+
     // Update coordinate display after setting positions
     updateCoordinateDisplay();
 

@@ -137,3 +137,24 @@ export function render(regl, params, canvas) {
 
 export const is2D = true;
 
+/**
+ * Configuration for Cross fractal
+ */
+export const config = {
+  initialSettings: {
+    iterations: 25,
+    xScale: 1.0,
+    yScale: 1.0,
+    colorScheme: 'midnight',
+  },
+  initialPosition: {
+    zoom: 1,
+    offset: { x: 0, y: 0 },
+  },
+  interestingPoints: [],
+  fallbackPosition: {
+    offset: { x: 0, y: 0 },
+    zoom: 1,
+  },
+};
+

@@ -219,3 +219,21 @@ export function render(regl, params, canvas) {
 
 export const is2D = true;
 
+/**
+ * Configuration for Fractal Flame fractal
+ */
+export const config = {
+  initialSettings: {
+    colorScheme: 'rainbow6', // Rainbow Shifted
+  },
+  initialPosition: {
+    zoom: 1,
+    offset: { x: 0, y: 0 },
+  },
+  interestingPoints: [],
+  fallbackPosition: {
+    offset: { x: 0, y: 0 },
+    zoom: 1,
+  },
+};
+

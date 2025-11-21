@@ -165,3 +165,21 @@ export function render(regl, params, canvas) {
 
 export const is2D = true;
 
+/**
+ * Configuration for Minkowski Sausage fractal
+ */
+export const config = {
+  initialSettings: {
+    colorScheme: 'vintage',
+  },
+  initialPosition: {
+    zoom: 1,
+    offset: { x: 0, y: 0 },
+  },
+  interestingPoints: [],
+  fallbackPosition: {
+    offset: { x: 0, y: 0 },
+    zoom: 1,
+  },
+};
+
