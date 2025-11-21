@@ -1027,11 +1027,11 @@ function setupUI() {
         'fire': 'Fire',
         'ocean': 'Ocean',
         'rainbow': 'Rainbow',
-        'rainbow2': 'Rainbow Pastel',
-        'rainbow3': 'Rainbow Dark',
-        'rainbow4': 'Rainbow Vibrant',
-        'rainbow5': 'Rainbow Double',
-        'rainbow6': 'Rainbow Shifted',
+        'rainbow-pastel': 'Rainbow Pastel',
+        'rainbow-dark': 'Rainbow Dark',
+        'rainbow-vibrant': 'Rainbow Vibrant',
+        'rainbow-double': 'Rainbow Double',
+        'rainbow-shifted': 'Rainbow Shifted',
         'monochrome': 'Monochrome',
         'forest': 'Forest',
         'sunset': 'Sunset',
@@ -1492,9 +1492,9 @@ function setupUI() {
         fullscreenIterationsNumberEl.textContent = '25';
       }
       // Set Rainbow Double color scheme by default
-      params.colorScheme = 'rainbow5';
-      if (colorSchemeSelect) colorSchemeSelect.value = 'rainbow5';
-      const newIndex = colorSchemes.indexOf('rainbow5');
+      params.colorScheme = 'rainbow-double';
+      if (colorSchemeSelect) colorSchemeSelect.value = 'rainbow-double';
+      const newIndex = colorSchemes.indexOf('rainbow-double');
       if (newIndex !== -1) {
         currentColorSchemeIndex = newIndex;
       }
@@ -1521,9 +1521,9 @@ function setupUI() {
         fullscreenIterationsNumberEl.textContent = '40';
       }
       // Set Rainbow Double color scheme by default
-      params.colorScheme = 'rainbow5';
-      if (colorSchemeSelect) colorSchemeSelect.value = 'rainbow5';
-      const newIndex = colorSchemes.indexOf('rainbow5');
+      params.colorScheme = 'rainbow-double';
+      if (colorSchemeSelect) colorSchemeSelect.value = 'rainbow-double';
+      const newIndex = colorSchemes.indexOf('rainbow-double');
       if (newIndex !== -1) {
         currentColorSchemeIndex = newIndex;
       }
@@ -1539,9 +1539,9 @@ function setupUI() {
         fullscreenIterationsNumberEl.textContent = '40';
       }
       // Set Rainbow Double color scheme by default
-      params.colorScheme = 'rainbow5';
-      if (colorSchemeSelect) colorSchemeSelect.value = 'rainbow5';
-      const newIndex = colorSchemes.indexOf('rainbow5');
+      params.colorScheme = 'rainbow-double';
+      if (colorSchemeSelect) colorSchemeSelect.value = 'rainbow-double';
+      const newIndex = colorSchemes.indexOf('rainbow-double');
       if (newIndex !== -1) {
         currentColorSchemeIndex = newIndex;
       }
@@ -1560,9 +1560,9 @@ function setupUI() {
         fullscreenIterationsNumberEl.textContent = '25';
       }
       // Set Rainbow Double color scheme by default
-      params.colorScheme = 'rainbow5';
-      if (colorSchemeSelect) colorSchemeSelect.value = 'rainbow5';
-      const newIndex = colorSchemes.indexOf('rainbow5');
+      params.colorScheme = 'rainbow-double';
+      if (colorSchemeSelect) colorSchemeSelect.value = 'rainbow-double';
+      const newIndex = colorSchemes.indexOf('rainbow-double');
       if (newIndex !== -1) {
         currentColorSchemeIndex = newIndex;
       }
@@ -1579,9 +1579,9 @@ function setupUI() {
       updateColorPalettePreview();
     } else if (currentFractalType === 'levy-flights') {
       // Lévy Flights - default rainbow vibrant color scheme
-      params.colorScheme = 'rainbow4';
-      if (colorSchemeSelect) colorSchemeSelect.value = 'rainbow4';
-      const newIndex = colorSchemes.indexOf('rainbow4');
+      params.colorScheme = 'rainbow-vibrant';
+      if (colorSchemeSelect) colorSchemeSelect.value = 'rainbow-vibrant';
+      const newIndex = colorSchemes.indexOf('rainbow-vibrant');
       if (newIndex !== -1) {
         currentColorSchemeIndex = newIndex;
       }

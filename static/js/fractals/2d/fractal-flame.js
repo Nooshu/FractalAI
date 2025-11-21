@@ -224,7 +224,7 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'rainbow6', // Rainbow Shifted
+    colorScheme: 'rainbow-shifted', // Rainbow Shifted
   },
   initialPosition: {
     zoom: 1,

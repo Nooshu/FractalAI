@@ -118,7 +118,7 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'rainbow4', // Rainbow Vibrant
+    colorScheme: 'rainbow-vibrant', // Rainbow Vibrant
   },
   initialPosition: {
     zoom: 1,

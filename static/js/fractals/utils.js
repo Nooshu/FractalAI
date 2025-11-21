@@ -31,7 +31,7 @@ export function computeColorForScheme(t, schemeIndex) {
           b: 0.5 + 0.5 * Math.cos(hue * 6.28 + 4.18),
         };
       }
-    case 12: // rainbow2 - pastel
+    case 12: // rainbow-pastel
       {
         const hue = ((t * 360) % 360) / 360;
         const sat = 0.6;
@@ -42,7 +42,7 @@ export function computeColorForScheme(t, schemeIndex) {
           b: light + sat * Math.cos(hue * 6.28 + 4.18),
         };
       }
-    case 13: // rainbow3 - dark
+    case 13: // rainbow-dark
       {
         const hue = ((t * 360) % 360) / 360;
         const sat = 1.0;
@@ -53,7 +53,7 @@ export function computeColorForScheme(t, schemeIndex) {
           b: light + sat * Math.cos(hue * 6.28 + 4.18),
         };
       }
-    case 14: // rainbow4 - vibrant
+    case 14: // rainbow-vibrant
       {
         const hue = ((t * 360) % 360) / 360;
         const sat = 1.2;
@@ -64,7 +64,7 @@ export function computeColorForScheme(t, schemeIndex) {
           b: Math.max(0, Math.min(1, light + sat * Math.cos(hue * 6.28 + 4.18))),
         };
       }
-    case 15: // rainbow5 - double
+    case 15: // rainbow-double
       {
         const hue = ((t * 720) % 360) / 360;
         return {
@@ -73,7 +73,7 @@ export function computeColorForScheme(t, schemeIndex) {
           b: 0.5 + 0.5 * Math.cos(hue * 6.28 + 4.18),
         };
       }
-    case 16: // rainbow6 - shifted
+    case 16: // rainbow-shifted
       {
         const hue = ((t * 360 + 60) % 360) / 360;
         return {
@@ -515,11 +515,11 @@ export function getColorSchemeIndex(scheme) {
     'gold',
     'ice',
     'neon',
-    'rainbow2',
-    'rainbow3',
-    'rainbow4',
-    'rainbow5',
-    'rainbow6',
+    'rainbow-pastel',
+    'rainbow-dark',
+    'rainbow-vibrant',
+    'rainbow-double',
+    'rainbow-shifted',
     'cosmic',
     'aurora',
     'coral',

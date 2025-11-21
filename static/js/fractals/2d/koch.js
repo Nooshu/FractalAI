@@ -175,33 +175,33 @@ export function render(regl, params, canvas) {
             return vec3(0.5 + 0.5 * cos(hue * 6.28 + 0.0),
                        0.5 + 0.5 * cos(hue * 6.28 + 2.09),
                        0.5 + 0.5 * cos(hue * 6.28 + 4.18));
-        } else if (scheme == 12) { // rainbow2 - pastel
+        } else if (scheme == 12) { // rainbow-pastel
             float hue = mod(t * 360.0, 360.0) / 360.0;
             float sat = 0.6;
             float light = 0.7;
             return vec3(light + sat * cos(hue * 6.28 + 0.0),
                        light + sat * cos(hue * 6.28 + 2.09),
                        light + sat * cos(hue * 6.28 + 4.18));
-        } else if (scheme == 13) { // rainbow3 - dark
+        } else if (scheme == 13) { // rainbow-dark
             float hue = mod(t * 360.0, 360.0) / 360.0;
             float sat = 1.0;
             float light = 0.3;
             return vec3(light + sat * cos(hue * 6.28 + 0.0),
                        light + sat * cos(hue * 6.28 + 2.09),
                        light + sat * cos(hue * 6.28 + 4.18));
-        } else if (scheme == 14) { // rainbow4 - vibrant
+        } else if (scheme == 14) { // rainbow-vibrant
             float hue = mod(t * 360.0, 360.0) / 360.0;
             float sat = 1.2;
             float light = 0.4;
             return vec3(clamp(light + sat * cos(hue * 6.28 + 0.0), 0.0, 1.0),
                        clamp(light + sat * cos(hue * 6.28 + 2.09), 0.0, 1.0),
                        clamp(light + sat * cos(hue * 6.28 + 4.18), 0.0, 1.0));
-        } else if (scheme == 15) { // rainbow5 - double
+        } else if (scheme == 15) { // rainbow-double
             float hue = mod(t * 720.0, 360.0) / 360.0;
             return vec3(0.5 + 0.5 * cos(hue * 6.28 + 0.0),
                        0.5 + 0.5 * cos(hue * 6.28 + 2.09),
                        0.5 + 0.5 * cos(hue * 6.28 + 4.18));
-        } else if (scheme == 16) { // rainbow6 - shifted
+        } else if (scheme == 16) { // rainbow-shifted
             float hue = mod(t * 360.0 + 60.0, 360.0) / 360.0;
             return vec3(0.5 + 0.5 * cos(hue * 6.28 + 0.0),
                        0.5 + 0.5 * cos(hue * 6.28 + 2.09),

@@ -154,7 +154,7 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'rainbow2',
+    colorScheme: 'rainbow-pastel',
   },
   initialPosition: {
     zoom: 1,
