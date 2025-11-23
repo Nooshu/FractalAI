@@ -879,39 +879,74 @@
 
     <script type="module" src="static/js/main.js"></script>
     <script>
-      // Register Service Worker for PWA
+      // Register Service Worker for PWA (disabled for localhost development)
       if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker
-            .register('/sw.js')
-            .then((registration) => {
-              console.log('[Service Worker] Registered:', registration.scope);
-              
-              // Check for updates periodically
-              setInterval(() => {
-                registration.update();
-              }, 60 * 60 * 1000); // Check every hour
-              
-              // Handle updates
-              registration.addEventListener('updatefound', () => {
-                const newWorker = registration.installing;
-                if (newWorker) {
-                  newWorker.addEventListener('statechange', () => {
-                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                      // New service worker available, prompt user to reload
-                      if (confirm('A new version is available! Reload to update?')) {
-                        newWorker.postMessage({ type: 'SKIP_WAITING' });
-                        window.location.reload();
+        const isLocalhost = window.location.hostname === 'localhost' || 
+                           window.location.hostname === '127.0.0.1' || 
+                           window.location.hostname === '';
+        
+        if (!isLocalhost) {
+          window.addEventListener('load', () => {
+            navigator.serviceWorker
+              .register('/sw.js')
+              .then((registration) => {
+                console.log('[Service Worker] Registered:', registration.scope);
+                
+                // Check for updates periodically
+                setInterval(() => {
+                  registration.update();
+                }, 60 * 60 * 1000); // Check every hour
+                
+                // Handle updates
+                registration.addEventListener('updatefound', () => {
+                  const newWorker = registration.installing;
+                  if (newWorker) {
+                    newWorker.addEventListener('statechange', () => {
+                      if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                        // New service worker available, prompt user to reload
+                        if (confirm('A new version is available! Reload to update?')) {
+                          newWorker.postMessage({ type: 'SKIP_WAITING' });
+                          window.location.reload();
+                        }
                       }
-                    }
-                  });
+                    });
+                  }
+                });
+              })
+              .catch((error) => {
+                console.error('[Service Worker] Registration failed:', error);
+              });
+          });
+        } else {
+          console.log('[Service Worker] Disabled for localhost development');
+          
+          // Unregister any existing service workers on localhost
+          navigator.serviceWorker.getRegistrations().then((registrations) => {
+            for (const registration of registrations) {
+              registration.unregister().then((success) => {
+                if (success) {
+                  console.log('[Service Worker] Unregistered existing service worker');
                 }
               });
-            })
-            .catch((error) => {
-              console.error('[Service Worker] Registration failed:', error);
+            }
+          });
+          
+          // Clear all caches on localhost
+          if ('caches' in window) {
+            caches.keys().then((cacheNames) => {
+              return Promise.all(
+                cacheNames.map((cacheName) => {
+                  console.log('[Service Worker] Deleting cache:', cacheName);
+                  return caches.delete(cacheName);
+                })
+              );
+            }).then(() => {
+              console.log('[Service Worker] All caches cleared');
+            }).catch((error) => {
+              console.error('[Service Worker] Error clearing caches:', error);
             });
-        });
+          }
+        }
       }
     </script>
   </body>
