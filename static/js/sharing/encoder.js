@@ -3,6 +3,8 @@
  * Encodes fractal parameters into a URL-safe base64 string
  */
 
+import { isJuliaType } from '../fractals/utils.js';
+
 /**
  * Encode fractal state to a shareable string
  * @param {string} fractalType - Current fractal type
@@ -22,8 +24,7 @@ export function encodeFractalState(fractalType, params) {
   };
 
   // Add Julia parameters if it's a Julia type fractal
-  const isJulia = fractalType.includes('julia') || fractalType === 'julia';
-  if (isJulia && params.juliaC) {
+  if (isJuliaType(fractalType) && params.juliaC) {
     state.jx = Math.round(params.juliaC.x * 100000) / 100000; // julia c real
     state.jy = Math.round(params.juliaC.y * 100000) / 100000; // julia c imag
   }
