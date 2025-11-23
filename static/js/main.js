@@ -598,7 +598,10 @@ function setupControls() {
       const deltaX = e.clientX - lastMouseX;
       const deltaY = e.clientY - lastMouseY;
       // Adjust sensitivity based on zoom level for better control
-      const sensitivity = 0.001 * params.zoom;
+      // Sensitivity decreases with zoom to allow precise panning at high zoom levels
+      // Base sensitivity of 0.001 works well at zoom 1, and scales inversely with zoom
+      const baseSensitivity = 0.001;
+      const sensitivity = baseSensitivity / params.zoom;
       params.offset.x -= deltaX * sensitivity;
       params.offset.y += deltaY * sensitivity;
       updateCoordinateDisplay();
