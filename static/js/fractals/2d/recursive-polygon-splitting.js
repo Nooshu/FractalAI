@@ -185,7 +185,7 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'rainbow',
+    colorScheme: 'electric',
   },
   initialPosition: {
     zoom: 2,

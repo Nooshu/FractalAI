@@ -226,12 +226,12 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    iterations: 30,
+    iterations: 50,
     colorScheme: 'galaxy',
   },
   initialPosition: {
-    zoom: 1,
-    offset: { x: 0, y: 0 },
+    zoom: 2.161,
+    offset: { x: 1.4592, y: 1.0659 },
   },
   interestingPoints: [],
   fallbackPosition: {

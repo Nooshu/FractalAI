@@ -242,7 +242,7 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'classic',
+    colorScheme: 'autumn',
     xScale: 0.5,
   },
   initialPosition: {

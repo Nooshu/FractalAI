@@ -186,7 +186,7 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'classic',
+    colorScheme: 'rainbow-double',
     iterations: 50,
   },
   initialPosition: {

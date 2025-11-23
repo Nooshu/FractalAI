@@ -530,6 +530,96 @@
               </div>
             </div>
           </div>
+
+          <!-- Debug Section -->
+          <div class="section" id="debug-section">
+            <button class="section-header" data-section="debug">
+              <svg
+                class="section-icon"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+              </svg>
+              <span>Debug Info</span>
+              <svg
+                class="chevron"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </button>
+            <div class="section-content">
+              <div class="control">
+                <label class="control-label">Fractal Name</label>
+                <div class="debug-row">
+                  <span class="debug-value" id="debug-fractal-name">-</span>
+                  <button class="debug-copy-btn" id="debug-copy-fractal-name" title="Copy fractal name">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div class="control">
+                <label class="control-label">Zoom</label>
+                <div class="debug-row">
+                  <span class="debug-value" id="debug-zoom">-</span>
+                  <button class="debug-copy-btn" id="debug-copy-zoom" title="Copy zoom value">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div class="control">
+                <label class="control-label">Offset X</label>
+                <div class="debug-row">
+                  <span class="debug-value" id="debug-offset-x">-</span>
+                  <button class="debug-copy-btn" id="debug-copy-offset-x" title="Copy X coordinate">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div class="control">
+                <label class="control-label">Offset Y</label>
+                <div class="debug-row">
+                  <span class="debug-value" id="debug-offset-y">-</span>
+                  <button class="debug-copy-btn" id="debug-copy-offset-y" title="Copy Y coordinate">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div class="control" style="margin-top: 12px;">
+                <button class="copy-coords-btn" id="debug-copy-all" title="Copy all debug info">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                  </svg>
+                  Copy All Debug Info
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </aside>
 

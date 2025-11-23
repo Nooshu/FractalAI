@@ -143,7 +143,8 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'classic',
+    colorScheme: 'galaxy',
+    iterations: 90,
   },
   initialPosition: {
     zoom: 2,

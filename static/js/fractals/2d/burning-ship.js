@@ -7,10 +7,10 @@ const fractalFunction = `
         vec2 z = vec2(0.0);
         float zx2 = 0.0;
         float zy2 = 0.0;
-        
+
         // Unroll first 8 iterations for better performance
         float abs_x, abs_y;
-        
+
         // Iteration 0
         zx2 = z.x * z.x;
         zy2 = z.y * z.y;
@@ -22,7 +22,7 @@ const fractalFunction = `
         abs_x = abs(z.x);
         abs_y = abs(z.y);
         z = vec2(abs_x * abs_x - abs_y * abs_y, 2.0 * abs_x * abs_y) + c;
-        
+
         // Iteration 1
         zx2 = z.x * z.x;
         zy2 = z.y * z.y;
@@ -34,7 +34,7 @@ const fractalFunction = `
         abs_x = abs(z.x);
         abs_y = abs(z.y);
         z = vec2(abs_x * abs_x - abs_y * abs_y, 2.0 * abs_x * abs_y) + c;
-        
+
         // Iteration 2
         zx2 = z.x * z.x;
         zy2 = z.y * z.y;
@@ -46,7 +46,7 @@ const fractalFunction = `
         abs_x = abs(z.x);
         abs_y = abs(z.y);
         z = vec2(abs_x * abs_x - abs_y * abs_y, 2.0 * abs_x * abs_y) + c;
-        
+
         // Iteration 3
         zx2 = z.x * z.x;
         zy2 = z.y * z.y;
@@ -58,7 +58,7 @@ const fractalFunction = `
         abs_x = abs(z.x);
         abs_y = abs(z.y);
         z = vec2(abs_x * abs_x - abs_y * abs_y, 2.0 * abs_x * abs_y) + c;
-        
+
         // Iteration 4
         zx2 = z.x * z.x;
         zy2 = z.y * z.y;
@@ -70,7 +70,7 @@ const fractalFunction = `
         abs_x = abs(z.x);
         abs_y = abs(z.y);
         z = vec2(abs_x * abs_x - abs_y * abs_y, 2.0 * abs_x * abs_y) + c;
-        
+
         // Iteration 5
         zx2 = z.x * z.x;
         zy2 = z.y * z.y;
@@ -82,7 +82,7 @@ const fractalFunction = `
         abs_x = abs(z.x);
         abs_y = abs(z.y);
         z = vec2(abs_x * abs_x - abs_y * abs_y, 2.0 * abs_x * abs_y) + c;
-        
+
         // Iteration 6
         zx2 = z.x * z.x;
         zy2 = z.y * z.y;
@@ -94,7 +94,7 @@ const fractalFunction = `
         abs_x = abs(z.x);
         abs_y = abs(z.y);
         z = vec2(abs_x * abs_x - abs_y * abs_y, 2.0 * abs_x * abs_y) + c;
-        
+
         // Iteration 7
         zx2 = z.x * z.x;
         zy2 = z.y * z.y;
@@ -106,15 +106,15 @@ const fractalFunction = `
         abs_x = abs(z.x);
         abs_y = abs(z.y);
         z = vec2(abs_x * abs_x - abs_y * abs_y, 2.0 * abs_x * abs_y) + c;
-        
+
         // Continue with loop for remaining iterations
         for (int i = 8; i < 200; i++) {
             if (i >= int(uIterations)) break;
-            
+
             // Calculate squared magnitudes
             zx2 = z.x * z.x;
             zy2 = z.y * z.y;
-            
+
             // Check for escape
             if (zx2 + zy2 > ESCAPE_RADIUS_SQ) {
                 // Smooth coloring using continuous escape
@@ -123,14 +123,14 @@ const fractalFunction = `
                 float nu = log(log_zn * INV_LOG2) * INV_LOG2;
                 return float(i) + 1.0 - nu;
             }
-            
+
             // Burning Ship formula: use absolute values before squaring
             // z = (|Re(z)| + i|Im(z)|)^2 + c
             abs_x = abs(z.x);
             abs_y = abs(z.y);
             z = vec2(abs_x * abs_x - abs_y * abs_y, 2.0 * abs_x * abs_y) + c;
         }
-        
+
         return uIterations;
     }
 `;

@@ -120,8 +120,8 @@ export const config = {
     colorScheme: 'coral',
   },
   initialPosition: {
-    zoom: 1,
-    offset: { x: 0, y: 0 },
+    zoom: 2,
+    offset: { x: -0.5473, y: 0.5336 },
   },
   interestingPoints: [],
   fallbackPosition: {

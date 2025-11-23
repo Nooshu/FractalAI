@@ -227,8 +227,8 @@ export const config = {
     colorScheme: 'rainbow-shifted', // Rainbow Shifted
   },
   initialPosition: {
-    zoom: 1,
-    offset: { x: 0, y: 0 },
+    zoom: 2,
+    offset: { x: 1.5954, y: 0.1599 },
   },
   interestingPoints: [],
   fallbackPosition: {

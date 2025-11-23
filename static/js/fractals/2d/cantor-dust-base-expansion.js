@@ -161,7 +161,8 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'classic',
+    colorScheme: 'ice',
+    iterations: 330,
   },
   initialPosition: {
     zoom: 1,

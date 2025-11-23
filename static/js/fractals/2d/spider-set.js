@@ -132,8 +132,8 @@ export const config = {
     colorScheme: 'rainbow-double',
   },
   initialPosition: {
-    zoom: 1,
-    offset: { x: 0, y: 0 },
+    zoom: 2,
+    offset: { x: -0.8279, y: 0.0139 },
   },
   interestingPoints: [],
   fallbackPosition: {

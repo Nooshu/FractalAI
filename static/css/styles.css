@@ -495,6 +495,48 @@ body {
   transform: translateY(0);
 }
 
+/* Debug Section */
+.debug-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.debug-value {
+  color: var(--accent-blue);
+  font-family: 'Courier New', monospace;
+  font-weight: 600;
+  font-size: 0.9rem;
+  flex: 1;
+  word-break: break-all;
+}
+
+.debug-copy-btn {
+  background: var(--bg-hover);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 6px 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.debug-copy-btn:hover {
+  background: var(--bg-control);
+  color: var(--text-primary);
+  border-color: var(--accent-blue);
+}
+
+.debug-copy-btn:active {
+  transform: scale(0.95);
+}
+
 .copy-coords-btn svg {
   flex-shrink: 0;
 }

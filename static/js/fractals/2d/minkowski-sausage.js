@@ -171,10 +171,11 @@ export const is2D = true;
 export const config = {
   initialSettings: {
     colorScheme: 'vintage',
+    iterations: 285,
   },
   initialPosition: {
-    zoom: 1,
-    offset: { x: 0, y: 0 },
+    zoom: 3.02,
+    offset: { x: 0.0044, y: 0.0381 },
   },
   interestingPoints: [],
   fallbackPosition: {

@@ -181,7 +181,7 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'rainbow-double',
+    colorScheme: 'cosmic',
     iterations: 25,
   },
   initialPosition: {

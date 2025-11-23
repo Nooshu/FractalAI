@@ -373,6 +373,7 @@ async function init() {
   setupCollapsibleSections();
   setupPanelToggle();
   setupCoordinateCopy();
+  setupDebugCopy();
   setupShareFractal();
   updateCoordinateDisplay();
 
@@ -1109,6 +1110,7 @@ function setupUI() {
   fractalTypeSelect.addEventListener('change', async (e) => {
     currentFractalType = e.target.value;
     updateWikipediaLink();
+    updateDebugDisplay();
 
     // Clear previous fractal draw command
     drawFractal = null;
@@ -1566,10 +1568,10 @@ function setupUI() {
 
   resetViewBtn.addEventListener('click', () => {
     // Reset zoom and offset to initial render position from config or fallback
-    const fractalConfig = currentFractalModule?.config;
+    const resetConfig = currentFractalModule?.config;
     let initialPosition;
-    if (fractalConfig?.initialPosition) {
-      initialPosition = fractalConfig.initialPosition;
+    if (resetConfig?.initialPosition) {
+      initialPosition = resetConfig.initialPosition;
     } else {
       initialPosition = getInitialRenderPosition(currentFractalType);
     }
@@ -1579,10 +1581,9 @@ function setupUI() {
     updateCoordinateDisplay();
 
     // Reset scale parameters and other settings from config
-    const fractalConfig = currentFractalModule?.config;
-    if (fractalConfig?.initialSettings) {
-      const settings = fractalConfig.initialSettings;
-      
+    if (resetConfig?.initialSettings) {
+      const settings = resetConfig.initialSettings;
+
       // Reset xScale from config or default to 1.0
       if (settings.xScale !== undefined) {
         params.xScale = settings.xScale;
@@ -1597,7 +1598,7 @@ function setupUI() {
           updateSliderAccessibility(xScaleSlider, xScaleValue, xScaleAnnounce, 1.0, 'X Axis', false);
         }
       }
-      
+
       // Reset yScale from config or default to 1.0
       if (settings.yScale !== undefined) {
         params.yScale = settings.yScale;
@@ -1612,7 +1613,7 @@ function setupUI() {
           updateSliderAccessibility(yScaleSlider, yScaleValue, yScaleAnnounce, 1.0, 'Y Axis', false);
         }
       }
-      
+
       // Reset juliaC from config if specified
       if (settings.juliaC !== undefined) {
         params.juliaC.x = settings.juliaC.x;
@@ -1622,7 +1623,7 @@ function setupUI() {
         if (juliaCRealValue) juliaCRealValue.textContent = settings.juliaC.x.toFixed(4);
         if (juliaCImagValue) juliaCImagValue.textContent = settings.juliaC.y.toFixed(4);
       }
-      
+
       // Reset iterations from config if specified
       if (settings.iterations !== undefined) {
         params.iterations = settings.iterations;
@@ -1633,7 +1634,7 @@ function setupUI() {
           fullscreenIterationsNumberEl.textContent = settings.iterations.toString();
         }
       }
-      
+
       // Reset color scheme from config if specified
       if (settings.colorScheme !== undefined) {
         params.colorScheme = settings.colorScheme;
@@ -3721,6 +3722,108 @@ function updateCoordinateDisplay() {
     domCache.coordOffsetX.textContent = Math.round(params.offset.x * 10000) / 10000;
     domCache.coordOffsetY.textContent = Math.round(params.offset.y * 10000) / 10000;
   }
+
+  // Update debug display
+  updateDebugDisplay();
+}
+
+// Update debug display
+function updateDebugDisplay() {
+  const debugFractalName = document.getElementById('debug-fractal-name');
+  const debugZoom = document.getElementById('debug-zoom');
+  const debugOffsetX = document.getElementById('debug-offset-x');
+  const debugOffsetY = document.getElementById('debug-offset-y');
+
+  if (debugFractalName) {
+    debugFractalName.textContent = currentFractalType || '-';
+  }
+  if (debugZoom) {
+    debugZoom.textContent = Math.round(params.zoom * 1000) / 1000;
+  }
+  if (debugOffsetX) {
+    debugOffsetX.textContent = Math.round(params.offset.x * 10000) / 10000;
+  }
+  if (debugOffsetY) {
+    debugOffsetY.textContent = Math.round(params.offset.y * 10000) / 10000;
+  }
+}
+
+// Setup debug copy buttons
+function setupDebugCopy() {
+  const copyFractalName = document.getElementById('debug-copy-fractal-name');
+  const copyZoom = document.getElementById('debug-copy-zoom');
+  const copyOffsetX = document.getElementById('debug-copy-offset-x');
+  const copyOffsetY = document.getElementById('debug-copy-offset-y');
+  const copyAll = document.getElementById('debug-copy-all');
+
+  if (copyFractalName) {
+    copyFractalName.addEventListener('click', () => {
+      navigator.clipboard.writeText(currentFractalType || '').then(() => {
+        showCopyFeedback(copyFractalName);
+      });
+    });
+  }
+
+  if (copyZoom) {
+    copyZoom.addEventListener('click', () => {
+      const zoom = Math.round(params.zoom * 1000) / 1000;
+      navigator.clipboard.writeText(zoom.toString()).then(() => {
+        showCopyFeedback(copyZoom);
+      });
+    });
+  }
+
+  if (copyOffsetX) {
+    copyOffsetX.addEventListener('click', () => {
+      const offsetX = Math.round(params.offset.x * 10000) / 10000;
+      navigator.clipboard.writeText(offsetX.toString()).then(() => {
+        showCopyFeedback(copyOffsetX);
+      });
+    });
+  }
+
+  if (copyOffsetY) {
+    copyOffsetY.addEventListener('click', () => {
+      const offsetY = Math.round(params.offset.y * 10000) / 10000;
+      navigator.clipboard.writeText(offsetY.toString()).then(() => {
+        showCopyFeedback(copyOffsetY);
+      });
+    });
+  }
+
+  if (copyAll) {
+    copyAll.addEventListener('click', () => {
+      const fractalName = currentFractalType || '-';
+      const zoom = Math.round(params.zoom * 1000) / 1000;
+      const offsetX = Math.round(params.offset.x * 10000) / 10000;
+      const offsetY = Math.round(params.offset.y * 10000) / 10000;
+
+      const allInfo = `Fractal: ${fractalName}\nZoom: ${zoom}\nOffset X: ${offsetX}\nOffset Y: ${offsetY}`;
+
+      navigator.clipboard.writeText(allInfo).then(() => {
+        const originalHTML = copyAll.innerHTML;
+        copyAll.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"></path></svg>Copied!';
+        copyAll.style.background = 'var(--accent-blue)';
+
+        setTimeout(() => {
+          copyAll.innerHTML = originalHTML;
+          copyAll.style.background = '';
+        }, 1000);
+      });
+    });
+  }
+}
+
+// Show copy feedback
+function showCopyFeedback(button) {
+  const originalHTML = button.innerHTML;
+  button.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"></path></svg>';
+  button.style.color = 'var(--accent-blue)';
+
+  setTimeout(() => {
+    button.innerHTML = originalHTML;
+    button.style.color = '';
+  }, 1000);
 }
 
 // Copy coordinates to clipboard
