@@ -249,7 +249,18 @@ export const config = {
     zoom: 1,
     offset: { x: 0.019, y: 0.144 },
   },
-  interestingPoints: [],
+  interestingPoints: [
+    { x: 0, y: 0, zoom: 1 }, // Full overview
+    { x: 0, y: 0.4, zoom: 2.5 }, // Top region
+    { x: 0.35, y: 0.2, zoom: 3 }, // Upper right
+    { x: 0.35, y: -0.2, zoom: 3 }, // Lower right
+    { x: 0, y: -0.4, zoom: 3 }, // Bottom
+    { x: -0.35, y: -0.2, zoom: 3 }, // Lower left
+    { x: -0.35, y: 0.2, zoom: 3 }, // Upper left
+    { x: 0, y: 0, zoom: 3.5 }, // Center detail
+    { x: 0.25, y: 0.15, zoom: 6 }, // Deep zoom
+    { x: -0.25, y: 0.15, zoom: 6 }, // Deep zoom left
+  ],
   fallbackPosition: {
     offset: { x: 0, y: 0 },
     zoom: 1,

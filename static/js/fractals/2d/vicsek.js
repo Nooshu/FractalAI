@@ -150,7 +150,18 @@ export const config = {
     zoom: 2,
     offset: { x: 1.4429, y: 1.1241 },
   },
-  interestingPoints: [],
+  interestingPoints: [
+    { x: 0, y: 0, zoom: 1 }, // Full overview showing cross
+    { x: 0, y: 0, zoom: 3 }, // Center cross detail
+    { x: 0.33, y: 0, zoom: 4 }, // Right arm
+    { x: -0.33, y: 0, zoom: 4 }, // Left arm
+    { x: 0, y: 0.33, zoom: 4 }, // Top arm
+    { x: 0, y: -0.33, zoom: 4 }, // Bottom arm
+    { x: 0.22, y: 0.22, zoom: 6 }, // Edge of center where cross meets
+    { x: -0.22, y: 0.22, zoom: 6 }, // Edge of center
+    { x: 0.11, y: 0.11, zoom: 9 }, // Deep zoom into self-similarity
+    { x: 0, y: 0, zoom: 2 }, // Medium zoom center
+  ],
   fallbackPosition: {
     offset: { x: 0, y: 0 },
     zoom: 1,

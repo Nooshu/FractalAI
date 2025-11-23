@@ -185,10 +185,21 @@ export const config = {
     zoom: 1.2,
     offset: { x: -0.2924, y: -0.2544 },
   },
-  interestingPoints: [],
+  interestingPoints: [
+    { x: -0.5, y: -0.6, zoom: 1.2 }, // Main ship view
+    { x: -1.75, y: -0.03, zoom: 100 }, // Bow detail
+    { x: -1.62, y: 0.0, zoom: 250 }, // Right antenna
+    { x: -1.755, y: -0.028, zoom: 500 }, // Deep bow zoom
+    { x: -1.7, y: 0.0, zoom: 80 }, // Side structures
+    { x: -0.4, y: -0.6, zoom: 150 }, // Hull detail
+    { x: -1.8, y: -0.0085, zoom: 300 }, // Fine bow structures
+    { x: -1.65, y: 0.0, zoom: 50 }, // Middle antenna
+    { x: -0.9, y: -0.3, zoom: 200 }, // Central structures
+    { x: -1.72, y: -0.025, zoom: 400 }, // Intricate bow patterns
+  ],
   fallbackPosition: {
-    offset: { x: 0, y: 0 },
-    zoom: 1,
+    offset: { x: -0.5, y: -0.6 },
+    zoom: 1.2,
   },
 };
 

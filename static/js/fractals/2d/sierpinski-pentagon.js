@@ -153,7 +153,18 @@ export const config = {
     zoom: 1.938,
     offset: { x: 0, y: 0 },
   },
-  interestingPoints: [],
+  interestingPoints: [
+    { x: 0, y: 0, zoom: 1 }, // Full overview
+    { x: 0, y: 0.4, zoom: 2.5 }, // Top vertex region
+    { x: 0.38, y: 0.12, zoom: 3 }, // Upper right vertex
+    { x: 0.24, y: -0.32, zoom: 3 }, // Lower right vertex
+    { x: -0.24, y: -0.32, zoom: 3 }, // Lower left vertex
+    { x: -0.38, y: 0.12, zoom: 3 }, // Upper left vertex
+    { x: 0, y: 0, zoom: 3.5 }, // Center detail
+    { x: 0.3, y: 0.2, zoom: 6 }, // Deep zoom upper right
+    { x: -0.3, y: 0.2, zoom: 6 }, // Deep zoom upper left
+    { x: 0, y: -0.3, zoom: 8 }, // Deep zoom bottom
+  ],
   fallbackPosition: {
     offset: { x: 0, y: 0 },
     zoom: 1,

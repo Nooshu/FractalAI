@@ -196,7 +196,18 @@ export const config = {
     zoom: 2,
     offset: { x: -0.002, y: -0.0211 },
   },
-  interestingPoints: [],
+  interestingPoints: [
+    { x: 0, y: 0, zoom: 1 }, // Full overview
+    { x: 0, y: -0.2, zoom: 2 }, // Bottom detail
+    { x: -0.2, y: 0.1, zoom: 3 }, // Left side curve
+    { x: 0.2, y: 0.1, zoom: 3 }, // Right side curve
+    { x: 0, y: 0.2, zoom: 4 }, // Top detail
+    { x: -0.3, y: -0.1, zoom: 5 }, // Lower left spiral
+    { x: 0.3, y: -0.1, zoom: 5 }, // Lower right spiral
+    { x: 0, y: 0, zoom: 2.5 }, // Closer center view
+    { x: -0.15, y: 0, zoom: 6 }, // Left detail zoom
+    { x: 0.15, y: 0, zoom: 6 }, // Right detail zoom
+  ],
   fallbackPosition: {
     offset: { x: 0, y: 0 },
     zoom: 1,

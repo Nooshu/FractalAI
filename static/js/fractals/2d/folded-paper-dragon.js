@@ -156,7 +156,18 @@ export const config = {
     zoom: 2,
     offset: { x: -0.3009, y: -0.2052 },
   },
-  interestingPoints: [],
+  interestingPoints: [
+    { x: 0, y: 0, zoom: 1 }, // Full folded paper dragon view
+    { x: 0, y: 0, zoom: 2 }, // Center detail
+    { x: 0.2, y: 0.1, zoom: 3 }, // Right region
+    { x: -0.2, y: 0.1, zoom: 3 }, // Left region
+    { x: 0.1, y: -0.2, zoom: 3 }, // Lower region
+    { x: 0.15, y: 0.15, zoom: 4 }, // Upper right detail
+    { x: -0.15, y: 0.15, zoom: 4 }, // Upper left detail
+    { x: 0.15, y: -0.15, zoom: 4 }, // Lower right detail
+    { x: 0.2, y: 0.1, zoom: 6 }, // Deep zoom
+    { x: 0, y: 0, zoom: 1.5 }, // Medium zoom center
+  ],
   fallbackPosition: {
     offset: { x: 0, y: 0 },
     zoom: 1,

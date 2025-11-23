@@ -384,7 +384,18 @@ export const config = {
     zoom: 3.095,
     offset: { x: -0.0082, y: 0.0351 },
   },
-  interestingPoints: [],
+  interestingPoints: [
+    { x: 0, y: 0.5, zoom: 4 }, // Top peak
+    { x: -0.4, y: -0.25, zoom: 5 }, // Bottom left edge
+    { x: 0.4, y: -0.25, zoom: 5 }, // Bottom right edge
+    { x: 0, y: 0.35, zoom: 8 }, // Upper tip detail
+    { x: -0.3, y: -0.15, zoom: 10 }, // Left side detail
+    { x: 0.3, y: -0.15, zoom: 10 }, // Right side detail
+    { x: 0, y: 0, zoom: 2 }, // Center overview
+    { x: -0.2, y: 0.3, zoom: 12 }, // Upper left detail
+    { x: 0.2, y: 0.3, zoom: 12 }, // Upper right detail
+    { x: 0, y: -0.2, zoom: 15 }, // Bottom center detail
+  ],
   fallbackPosition: {
     offset: { x: 0, y: 0 },
     zoom: 1,

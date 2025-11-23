@@ -175,9 +175,25 @@ export const config = {
     zoom: 1,
     offset: { x: 0, y: 0 },
   },
-  interestingPoints: [],
+  interestingPoints: [
+    { x: 0.0, y: 0.0, zoom: 1 }, // Center - full view
+    { x: -0.5, y: 0.0, zoom: 2 }, // Left of center
+    { x: 0.5, y: 0.0, zoom: 2 }, // Right of center
+    { x: 0.0, y: 0.5, zoom: 2 }, // Top of center
+    { x: 0.0, y: -0.5, zoom: 2 }, // Bottom of center
+    { x: -0.75, y: 0.0, zoom: 3 }, // Left side
+    { x: 0.75, y: 0.0, zoom: 3 }, // Right side
+    { x: 0.0, y: 0.75, zoom: 3 }, // Top
+    { x: -0.4, y: 0.4, zoom: 4 }, // Upper left quadrant
+    { x: 0.4, y: 0.4, zoom: 4 }, // Upper right quadrant
+    { x: -0.4, y: -0.4, zoom: 4 }, // Lower left quadrant
+    { x: 0.4, y: -0.4, zoom: 4 }, // Lower right quadrant
+    { x: -0.6, y: 0.2, zoom: 5 }, // Left side detail
+    { x: 0.6, y: 0.2, zoom: 5 }, // Right side detail
+    { x: -0.2, y: 0.6, zoom: 5 }, // Top detail
+  ],
   fallbackPosition: {
-    offset: { x: 0, y: 0 },
+    offset: { x: 0.0, y: 0.0 },
     zoom: 1,
   },
 };

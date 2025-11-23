@@ -124,7 +124,18 @@ export const config = {
     zoom: 1.456,
     offset: { x: 0.1169, y: 0.1266 },
   },
-  interestingPoints: [],
+  interestingPoints: [
+    { x: 0, y: 0, zoom: 1 }, // Full overview
+    { x: 0.33, y: 0.33, zoom: 3 }, // Upper right quadrant
+    { x: -0.33, y: 0.33, zoom: 3 }, // Upper left quadrant
+    { x: 0.33, y: -0.33, zoom: 3 }, // Lower right quadrant
+    { x: -0.33, y: -0.33, zoom: 3 }, // Lower left quadrant
+    { x: 0, y: 0, zoom: 4 }, // Center zoom
+    { x: 0.22, y: 0.22, zoom: 9 }, // Deep zoom upper right
+    { x: -0.22, y: -0.22, zoom: 9 }, // Deep zoom lower left
+    { x: 0.11, y: 0.33, zoom: 12 }, // Edge detail
+    { x: -0.15, y: 0.15, zoom: 15 }, // Very deep zoom
+  ],
   fallbackPosition: {
     offset: { x: 0, y: 0 },
     zoom: 1,

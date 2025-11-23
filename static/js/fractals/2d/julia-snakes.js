@@ -111,10 +111,23 @@ export const config = {
     zoom: 1,
     offset: { x: 0, y: 0 },
   },
-  interestingPoints: [],
+  interestingPoints: [
+    { x: 0, y: 0, zoom: 1.5, cReal: -0.4, cImag: 0.6 },
+    { x: 0, y: 0, zoom: 2, cReal: -0.162, cImag: 1.04 },
+    { x: 0, y: 0, zoom: 1.8, cReal: -0.54, cImag: 0.54 },
+    { x: 0, y: 0, zoom: 2, cReal: 0.285, cImag: 0.01 },
+    { x: 0, y: 0, zoom: 1.5, cReal: -0.7, cImag: 0.3 },
+    { x: 0.2, y: 0.2, zoom: 3, cReal: -0.39, cImag: 0.587 },
+    { x: 0, y: 0, zoom: 2.5, cReal: -0.194, cImag: 0.6557 },
+    { x: 0, y: 0, zoom: 2, cReal: -0.8, cImag: 0.156 },
+    { x: 0.1, y: 0.1, zoom: 2.5, cReal: -0.355, cImag: 0.355 },
+    { x: 0, y: 0, zoom: 1.8, cReal: -0.45, cImag: 0.6 },
+  ],
   fallbackPosition: {
     offset: { x: 0, y: 0 },
-    zoom: 1,
+    zoom: 1.5,
+    cReal: -0.4,
+    cImag: 0.6,
   },
 };
 

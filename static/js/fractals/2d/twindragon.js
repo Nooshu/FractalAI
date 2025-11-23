@@ -160,7 +160,18 @@ export const config = {
     zoom: 1,
     offset: { x: 0.299, y: 0.148 },
   },
-  interestingPoints: [],
+  interestingPoints: [
+    { x: 0, y: 0, zoom: 1 }, // Full twindragon view
+    { x: 0, y: 0, zoom: 2 }, // Center detail
+    { x: 0.25, y: 0, zoom: 3 }, // Right dragon
+    { x: -0.25, y: 0, zoom: 3 }, // Left side
+    { x: 0.15, y: 0.15, zoom: 4 }, // Upper right quadrant
+    { x: -0.15, y: 0.15, zoom: 4 }, // Upper left quadrant
+    { x: 0.15, y: -0.15, zoom: 4 }, // Lower right quadrant
+    { x: -0.15, y: -0.15, zoom: 4 }, // Lower left quadrant
+    { x: 0.2, y: 0.1, zoom: 6 }, // Deep zoom
+    { x: 0, y: 0, zoom: 1.5 }, // Medium zoom center
+  ],
   fallbackPosition: {
     offset: { x: 0, y: 0 },
     zoom: 1,

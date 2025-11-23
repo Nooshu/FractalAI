@@ -177,7 +177,18 @@ export const config = {
     zoom: 3.02,
     offset: { x: 0.0044, y: 0.0381 },
   },
-  interestingPoints: [],
+  interestingPoints: [
+    { x: 0, y: 0, zoom: 1 }, // Full overview
+    { x: 0, y: 0.5, zoom: 3 }, // Top edge bulge
+    { x: 0.5, y: 0, zoom: 3 }, // Right edge bulge
+    { x: 0, y: -0.5, zoom: 3 }, // Bottom edge bulge
+    { x: -0.5, y: 0, zoom: 3 }, // Left edge bulge
+    { x: 0.4, y: 0.4, zoom: 5 }, // Top-right corner detail
+    { x: -0.4, y: 0.4, zoom: 5 }, // Top-left corner detail
+    { x: 0.4, y: -0.4, zoom: 5 }, // Bottom-right corner detail
+    { x: -0.4, y: -0.4, zoom: 5 }, // Bottom-left corner detail
+    { x: 0, y: 0, zoom: 2.5 }, // Medium zoom center
+  ],
   fallbackPosition: {
     offset: { x: 0, y: 0 },
     zoom: 1,

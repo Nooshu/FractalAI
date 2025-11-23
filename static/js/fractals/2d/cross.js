@@ -151,7 +151,18 @@ export const config = {
     zoom: 2.928,
     offset: { x: 0.7305, y: 0.759 },
   },
-  interestingPoints: [],
+  interestingPoints: [
+    { x: 0, y: 0, zoom: 1 }, // Full overview
+    { x: 0.25, y: 0.25, zoom: 2 }, // Top-right missing corner
+    { x: 0.5, y: 0.5, zoom: 3 }, // Deep into top-right region
+    { x: 0.375, y: 0.375, zoom: 4 }, // Edge of removed region
+    { x: -0.25, y: -0.25, zoom: 3 }, // Bottom-left quadrant
+    { x: 0.25, y: -0.25, zoom: 3 }, // Bottom-right quadrant
+    { x: -0.25, y: 0.25, zoom: 3 }, // Top-left quadrant
+    { x: 0.5, y: 0.25, zoom: 5 }, // Right edge detail
+    { x: 0.25, y: 0.5, zoom: 5 }, // Top edge detail
+    { x: 0, y: 0, zoom: 2.5 }, // Medium zoom center
+  ],
   fallbackPosition: {
     offset: { x: 0, y: 0 },
     zoom: 1,

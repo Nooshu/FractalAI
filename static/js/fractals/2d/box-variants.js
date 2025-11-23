@@ -233,7 +233,18 @@ export const config = {
     zoom: 2.161,
     offset: { x: 1.4592, y: 1.0659 },
   },
-  interestingPoints: [],
+  interestingPoints: [
+    { x: 0, y: 0, zoom: 1 }, // Full overview
+    { x: 0, y: 0, zoom: 3 }, // Center detail
+    { x: 0.33, y: 0, zoom: 4 }, // Right side
+    { x: -0.33, y: 0, zoom: 4 }, // Left side
+    { x: 0, y: 0.33, zoom: 4 }, // Top side
+    { x: 0, y: -0.33, zoom: 4 }, // Bottom side
+    { x: 0.25, y: 0.25, zoom: 6 }, // Corner region
+    { x: -0.25, y: 0.25, zoom: 6 }, // Another corner
+    { x: 0.15, y: 0.15, zoom: 9 }, // Deep zoom
+    { x: 0, y: 0, zoom: 2 }, // Medium zoom
+  ],
   fallbackPosition: {
     offset: { x: 0, y: 0 },
     zoom: 1,

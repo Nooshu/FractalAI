@@ -173,7 +173,18 @@ export const config = {
     zoom: 2.571,
     offset: { x: -0.0117, y: 0.088 },
   },
-  interestingPoints: [],
+  interestingPoints: [
+    { x: 0, y: 0, zoom: 1 }, // Full overview
+    { x: 0, y: 0.5, zoom: 3 }, // Top edge
+    { x: 0.5, y: 0, zoom: 3 }, // Right edge
+    { x: 0, y: -0.5, zoom: 3 }, // Bottom edge
+    { x: -0.5, y: 0, zoom: 3 }, // Left edge
+    { x: 0.35, y: 0.35, zoom: 5 }, // Top-right corner
+    { x: -0.35, y: 0.35, zoom: 5 }, // Top-left corner
+    { x: 0.35, y: -0.35, zoom: 5 }, // Bottom-right corner
+    { x: -0.35, y: -0.35, zoom: 5 }, // Bottom-left corner
+    { x: 0, y: 0, zoom: 2 }, // Medium zoom center
+  ],
   fallbackPosition: {
     offset: { x: 0, y: 0 },
     zoom: 1,

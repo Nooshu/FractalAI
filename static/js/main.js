@@ -1958,7 +1958,193 @@ function setupUI() {
   // Function to generate random interesting coordinates and zoom for each fractal type
   function getRandomInterestingView() {
     const fractalType = currentFractalType;
+    const fractalConfig = currentFractalModule?.config;
 
+    // Check if fractal has interesting points defined in config
+    if (fractalConfig?.interestingPoints && fractalConfig.interestingPoints.length > 0) {
+      let interestingLocations = fractalConfig.interestingPoints;
+      
+      // Handle special cases that need additional logic
+      if (fractalType === 'sierpinski-gasket') {
+        // Generalised Sierpinski Gasket - randomly select polygon type
+        const polygonTypes = [
+          { sides: 3, name: 'Triangle' },   // xScale = 0.0
+          { sides: 4, name: 'Square' },     // xScale = 0.167
+          { sides: 5, name: 'Pentagon' },   // xScale = 0.333
+          { sides: 6, name: 'Hexagon' },    // xScale = 0.5
+          { sides: 7, name: 'Heptagon' },   // xScale = 0.667
+          { sides: 8, name: 'Octagon' },    // xScale = 0.833
+          { sides: 9, name: 'Nonagon' },    // xScale = 1.0
+          { sides: 10, name: 'Decagon' },   // xScale = 1.167
+          { sides: 12, name: 'Dodecagon' }, // xScale = 1.5
+        ];
+        const polygonType = polygonTypes[Math.floor(Math.random() * polygonTypes.length)];
+        const xScale = (polygonType.sides - 3) / 6.0;
+        
+        const location = interestingLocations[Math.floor(Math.random() * interestingLocations.length)];
+        const zoom = location.zoom * (0.8 + Math.random() * 0.4);
+        
+        // Update xScale slider
+        const xScaleSlider = document.getElementById('x-scale');
+        const xScaleValue = document.getElementById('x-scale-value');
+        if (xScaleSlider) {
+          xScaleSlider.value = xScale;
+          updateSliderAccessibility(xScaleSlider, xScaleValue, xScaleAnnounce, xScale, 'X Axis', false);
+        }
+        params.xScale = xScale;
+        
+        return {
+          offset: { x: location.x, y: location.y },
+          zoom: zoom,
+        };
+      }
+      
+      if (fractalType === 'box-variants') {
+        // Box fractal variants - randomly select pattern
+        const patterns = [
+          { name: 'Vicsek', xScale: 0.1 },
+          { name: 'Anti-Vicsek', xScale: 0.3 },
+          { name: 'Corners+Center', xScale: 0.5 },
+          { name: 'Diagonal', xScale: 0.7 },
+          { name: 'Checkerboard', xScale: 0.9 },
+          { name: 'Checkerboard-2', xScale: 1.1 },
+          { name: 'H-Pattern', xScale: 1.3 },
+        ];
+        const pattern = patterns[Math.floor(Math.random() * patterns.length)];
+        const location = interestingLocations[Math.floor(Math.random() * interestingLocations.length)];
+        const zoom = location.zoom * (0.8 + Math.random() * 0.4);
+        
+        params.xScale = pattern.xScale;
+        
+        return {
+          offset: { x: location.x, y: location.y },
+          zoom: zoom,
+        };
+      }
+      
+      if (fractalType === 'h-tree-generalized') {
+        // Generalized H-tree - randomly select rotation and scale
+        const configurations = [
+          { rotation: 0.0, scale: 1.0 }, // Classic H-tree
+          { rotation: 0.5, scale: 1.0 }, // Small rotation
+          { rotation: 1.0, scale: 1.0 }, // 45 degree rotation
+          { rotation: 1.5, scale: 1.0 }, // 67.5 degree rotation
+          { rotation: 2.0, scale: 1.0 }, // 90 degree rotation (windmill)
+          { rotation: 0.5, scale: 0.7 }, // Small rotation, tight scaling
+          { rotation: 1.0, scale: 0.7 }, // 45 degrees, tight scaling
+          { rotation: 1.0, scale: 1.3 }, // 45 degrees, loose scaling
+          { rotation: 0.3, scale: 0.5 }, // Slight rotation, very tight
+          { rotation: 1.5, scale: 1.5 }, // Large rotation, loose scaling
+        ];
+        const config = configurations[Math.floor(Math.random() * configurations.length)];
+        const location = interestingLocations[Math.floor(Math.random() * interestingLocations.length)];
+        const zoom = location.zoom * (0.8 + Math.random() * 0.4);
+        
+        params.xScale = config.rotation;
+        params.yScale = config.scale;
+        
+        return {
+          offset: { x: location.x, y: location.y },
+          zoom: zoom,
+        };
+      }
+      
+      // Handle Julia sets (julia, julia-snakes) - they have cReal and cImag
+      if (fractalType === 'julia' || fractalType === 'julia-snakes') {
+        // Try up to 10 times to find a valid interesting view
+        for (let attempt = 0; attempt < 10; attempt++) {
+          const juliaSet = interestingLocations[Math.floor(Math.random() * interestingLocations.length)];
+          const zoom = juliaSet.zoom * (0.8 + Math.random() * 0.4);
+          const offset = { x: juliaSet.x, y: juliaSet.y };
+          
+          // Temporarily set Julia C for validation
+          const oldJuliaC = { x: params.juliaC.x, y: params.juliaC.y };
+          if (juliaSet.cReal !== undefined && juliaSet.cImag !== undefined) {
+            params.juliaC.x = juliaSet.cReal;
+            params.juliaC.y = juliaSet.cImag;
+          }
+          
+          // Validate the view
+          if (isValidInterestingView(offset, zoom, fractalType)) {
+            // Update Julia C sliders if they exist
+            const juliaCReal = document.getElementById('julia-c-real');
+            const juliaCImag = document.getElementById('julia-c-imag');
+            const juliaCRealValue = document.getElementById('julia-c-real-value');
+            const juliaCImagValue = document.getElementById('julia-c-imag-value');
+            if (juliaCReal && juliaSet.cReal !== undefined) juliaCReal.value = juliaSet.cReal;
+            if (juliaCImag && juliaSet.cImag !== undefined) juliaCImag.value = juliaSet.cImag;
+            if (juliaCRealValue && juliaSet.cReal !== undefined) juliaCRealValue.textContent = juliaSet.cReal.toFixed(4);
+            if (juliaCImagValue && juliaSet.cImag !== undefined) juliaCImagValue.textContent = juliaSet.cImag.toFixed(4);
+            return { offset, zoom };
+          }
+          
+          // Restore old Julia C if validation failed
+          params.juliaC.x = oldJuliaC.x;
+          params.juliaC.y = oldJuliaC.y;
+        }
+        
+        // Fallback to first interesting point
+        const fallback = interestingLocations[0];
+        if (fallback.cReal !== undefined && fallback.cImag !== undefined) {
+          params.juliaC.x = fallback.cReal;
+          params.juliaC.y = fallback.cImag;
+          const juliaCReal = document.getElementById('julia-c-real');
+          const juliaCImag = document.getElementById('julia-c-imag');
+          const juliaCRealValue = document.getElementById('julia-c-real-value');
+          const juliaCImagValue = document.getElementById('julia-c-imag-value');
+          if (juliaCReal) juliaCReal.value = fallback.cReal;
+          if (juliaCImag) juliaCImag.value = fallback.cImag;
+          if (juliaCRealValue) juliaCRealValue.textContent = fallback.cReal.toFixed(4);
+          if (juliaCImagValue) juliaCImagValue.textContent = fallback.cImag.toFixed(4);
+        }
+        return {
+          offset: { x: fallback.x, y: fallback.y },
+          zoom: fallback.zoom,
+        };
+      }
+      
+      // For fractals that need validation (mandelbrot, multibrot, burning-ship, buffalo)
+      if (fractalType === 'mandelbrot' || fractalType === 'multibrot' || 
+          fractalType === 'burning-ship' || fractalType === 'buffalo') {
+        interestingLocations = removeDuplicatePoints(interestingLocations, fractalType);
+        
+        // Try up to 10 times to find a valid interesting view
+        for (let attempt = 0; attempt < 10; attempt++) {
+          const location = interestingLocations[Math.floor(Math.random() * interestingLocations.length)];
+          const zoomVariation = fractalType === 'multibrot' ? 0.2 : 0.4;
+          const zoom = location.zoom * (0.8 + Math.random() * zoomVariation);
+          const offset = { x: location.x, y: location.y };
+          
+          // Validate the view
+          if (isValidInterestingView(offset, zoom, fractalType)) {
+            return { offset, zoom };
+          }
+        }
+        
+        // Fallback to config's fallbackPosition or first interesting point
+        if (fractalConfig?.fallbackPosition) {
+          return {
+            offset: fractalConfig.fallbackPosition.offset,
+            zoom: fractalConfig.fallbackPosition.zoom,
+          };
+        }
+        const fallback = interestingLocations[0];
+        return {
+          offset: { x: fallback.x, y: fallback.y },
+          zoom: fallback.zoom,
+        };
+      }
+      
+      // Default: randomly select from interesting points
+      const location = interestingLocations[Math.floor(Math.random() * interestingLocations.length)];
+      const zoom = location.zoom * (0.8 + Math.random() * 0.4);
+      return {
+        offset: { x: location.x, y: location.y },
+        zoom: zoom,
+      };
+    }
+
+    // Fallback: use old switch statement for fractals without config
     switch (fractalType) {
       case 'mandelbrot': {
         // Interesting Mandelbrot locations (curated list of known interesting areas)

@@ -180,7 +180,18 @@ export const config = {
     zoom: 3.015,
     offset: { x: -0.006, y: 0.0693 },
   },
-  interestingPoints: [],
+  interestingPoints: [
+    { x: 0, y: 0, zoom: 1 }, // Full Hilbert curve view
+    { x: 0, y: 0, zoom: 2 }, // Center detail
+    { x: 0.2, y: 0.2, zoom: 3 }, // Upper right quadrant
+    { x: -0.2, y: 0.2, zoom: 3 }, // Upper left quadrant
+    { x: 0.2, y: -0.2, zoom: 3 }, // Lower right quadrant
+    { x: -0.2, y: -0.2, zoom: 3 }, // Lower left quadrant
+    { x: 0.15, y: 0.15, zoom: 4 }, // Deep zoom upper right
+    { x: -0.15, y: 0.15, zoom: 4 }, // Deep zoom upper left
+    { x: 0.15, y: -0.15, zoom: 4 }, // Deep zoom lower right
+    { x: 0, y: 0, zoom: 1.5 }, // Medium zoom center
+  ],
   fallbackPosition: {
     offset: { x: 0, y: 0 },
     zoom: 1,
