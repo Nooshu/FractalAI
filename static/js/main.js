@@ -5,6 +5,7 @@ import { CONFIG } from './core/config.js';
 import { FrameCache } from './core/frameCache.js';
 import { initLoadingBar, showLoadingBar, hideLoadingBar } from './ui/loading-bar.js';
 import { initFPSTracker, startFPSTracking, incrementFrameCount } from './performance/fps-tracker.js';
+import { cacheElement, getElement } from './core/dom-cache.js';
 
 // Application state
 let regl = null;
@@ -31,21 +32,13 @@ const MAX_CACHE_SIZE = 10; // Maximum number of cached frames
 let frameCache = new FrameCache(MAX_CACHE_SIZE);
 let cachedDrawCommand = null; // Draw command for displaying cached frames
 
-// DOM element cache for frequently accessed elements
-const domCache = {
-  // Coordinate display
-  coordZoom: null,
-  coordOffsetX: null,
-  coordOffsetY: null,
-  copyCoordsBtn: null,
-};
-
-// Initialize DOM cache
+// Initialize DOM cache and other modules
 function initDOMCache() {
-  domCache.coordZoom = document.getElementById('coord-zoom');
-  domCache.coordOffsetX = document.getElementById('coord-offset-x');
-  domCache.coordOffsetY = document.getElementById('coord-offset-y');
-  domCache.copyCoordsBtn = document.getElementById('copy-coords-btn');
+  // Cache coordinate display elements
+  cacheElement('coord-zoom');
+  cacheElement('coord-offset-x');
+  cacheElement('coord-offset-y');
+  cacheElement('copy-coords-btn');
   // Initialize loading bar module
   initLoadingBar();
   // Initialize FPS tracker module
@@ -3799,11 +3792,14 @@ function animate() {
 
 // Update coordinate display
 function updateCoordinateDisplay() {
-  if (domCache.coordZoom && domCache.coordOffsetX && domCache.coordOffsetY) {
+  const coordZoom = getElement('coord-zoom');
+  const coordOffsetX = getElement('coord-offset-x');
+  const coordOffsetY = getElement('coord-offset-y');
+  if (coordZoom && coordOffsetX && coordOffsetY) {
     // Round to reasonable precision for display
-    domCache.coordZoom.textContent = Math.round(params.zoom * 1000) / 1000;
-    domCache.coordOffsetX.textContent = Math.round(params.offset.x * 10000) / 10000;
-    domCache.coordOffsetY.textContent = Math.round(params.offset.y * 10000) / 10000;
+    coordZoom.textContent = Math.round(params.zoom * 1000) / 1000;
+    coordOffsetX.textContent = Math.round(params.offset.x * 10000) / 10000;
+    coordOffsetY.textContent = Math.round(params.offset.y * 10000) / 10000;
   }
 
   // Update debug display
@@ -3911,7 +3907,7 @@ function showCopyFeedback(button) {
 
 // Copy coordinates to clipboard
 function setupCoordinateCopy() {
-  const copyBtn = domCache.copyCoordsBtn;
+  const copyBtn = getElement('copy-coords-btn');
   if (copyBtn) {
     copyBtn.addEventListener('click', () => {
       const zoom = Math.round(params.zoom * 1000) / 1000;
