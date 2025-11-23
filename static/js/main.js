@@ -3,6 +3,7 @@ import { getColorSchemeIndex, computeColorForScheme, isJuliaType } from './fract
 import { BenchmarkUI, addBenchmarkButton } from './performance/ui.js';
 import { CONFIG } from './core/config.js';
 import { FrameCache } from './core/frameCache.js';
+import { initLoadingBar, showLoadingBar, hideLoadingBar } from './ui/loading-bar.js';
 
 // Application state
 let regl = null;
@@ -41,8 +42,6 @@ const domCache = {
   copyCoordsBtn: null,
   // FPS display
   fps: null,
-  // Loading bar
-  loadingBar: null,
 };
 
 // Initialize DOM cache
@@ -52,7 +51,8 @@ function initDOMCache() {
   domCache.coordOffsetY = document.getElementById('coord-offset-y');
   domCache.copyCoordsBtn = document.getElementById('copy-coords-btn');
   domCache.fps = document.getElementById('fps');
-  domCache.loadingBar = document.getElementById('loading-bar');
+  // Initialize loading bar module
+  initLoadingBar();
 }
 
 // Function to calculate pixel ratio based on zoom level
@@ -3367,20 +3367,6 @@ function setupPanelToggle() {
   });
 }
 
-function showLoadingBar() {
-  if (domCache.loadingBar) {
-    domCache.loadingBar.classList.remove('active');
-    // Force reflow to reset animation
-    void domCache.loadingBar.offsetWidth;
-    domCache.loadingBar.classList.add('active');
-  }
-}
-
-function hideLoadingBar() {
-  if (domCache.loadingBar) {
-    domCache.loadingBar.classList.remove('active');
-  }
-}
 
 function renderFractalProgressive(startIterations = null) {
   if (!currentFractalModule || !currentFractalModule.render || !regl) {
