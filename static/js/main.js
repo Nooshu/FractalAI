@@ -2,6 +2,7 @@ import createRegl from 'regl';
 import { getColorSchemeIndex, computeColorForScheme, isJuliaType } from './fractals/utils.js';
 import { BenchmarkUI, addBenchmarkButton } from './performance/ui.js';
 import { CONFIG } from './core/config.js';
+import { FrameCache } from './core/frameCache.js';
 
 // Application state
 let regl = null;
@@ -27,8 +28,8 @@ let targetIterations = 0;
 let isProgressiveRendering = false;
 
 // Frame cache for rendered fractals
-let frameCache = new Map();
 const MAX_CACHE_SIZE = 10; // Maximum number of cached frames
+let frameCache = new FrameCache(MAX_CACHE_SIZE);
 let cachedDrawCommand = null; // Draw command for displaying cached frames
 
 // DOM element cache for frequently accessed elements
@@ -82,77 +83,6 @@ function updatePixelRatio() {
 
 // Global function to update renderer size (needed for fullscreen and double-click)
 let updateRendererSize = null;
-
-// Generate cache key from view parameters
-// Optimized: cache DOM element reference and use template literal
-let cachedCanvasElement = null;
-function generateCacheKey() {
-  if (!canvas) return null;
-
-  // Cache canvas element reference
-  if (!cachedCanvasElement) {
-    cachedCanvasElement = canvas;
-  }
-
-  // Round values to avoid floating point precision issues
-  const zoom = Math.round(params.zoom * 1000) / 1000;
-  const offsetX = Math.round(params.offset.x * 10000) / 10000;
-  const offsetY = Math.round(params.offset.y * 10000) / 10000;
-  const iterations = params.iterations;
-  const colorScheme = params.colorScheme;
-  const xScale = Math.round(params.xScale * 100) / 100;
-  const yScale = Math.round(params.yScale * 100) / 100;
-  const isJulia = isJuliaType(currentFractalType);
-  const juliaCX = isJulia ? Math.round(params.juliaC.x * 10000) / 10000 : 0;
-  const juliaCY = isJulia ? Math.round(params.juliaC.y * 10000) / 10000 : 0;
-  // Use display dimensions (not render dimensions affected by pixel ratio) for cache key
-  // This ensures cache hits even when pixel ratio changes
-  const container = canvas.parentElement;
-  const rect = container.getBoundingClientRect();
-  const width = Math.round(rect.width || container.clientWidth || 800);
-  const height = Math.round(rect.height || container.clientHeight || 600);
-
-  // Use template literal for better performance
-  return `${currentFractalType}_${zoom}_${offsetX}_${offsetY}_${iterations}_${colorScheme}_${xScale}_${yScale}_${juliaCX}_${juliaCY}_${width}_${height}`;
-}
-
-// Check if current view is cached
-function getCachedFrame() {
-  const key = generateCacheKey();
-  if (!key) return null;
-  const cached = frameCache.get(key);
-  // Verify the cached framebuffer exists
-  if (cached && cached.framebuffer && regl) {
-    return cached;
-  }
-  return null;
-}
-
-// Store rendered frame in cache
-function cacheFrame(framebuffer) {
-  const key = generateCacheKey();
-
-  // Limit cache size - remove oldest entries if cache is full
-  if (frameCache.size >= MAX_CACHE_SIZE) {
-    // Remove first (oldest) entry
-    const firstKey = frameCache.keys().next().value;
-    const oldEntry = frameCache.get(firstKey);
-    if (oldEntry && oldEntry.framebuffer) {
-      oldEntry.framebuffer.destroy();
-    }
-    frameCache.delete(firstKey);
-  }
-
-  frameCache.set(key, { framebuffer, timestamp: Date.now() });
-}
-
-// Clear frame cache
-function clearFrameCache() {
-  for (const [, entry] of frameCache.entries()) {
-    if (entry.framebuffer) entry.framebuffer.destroy();
-  }
-  frameCache.clear();
-}
 
 // Throttled render function - batches multiple render requests
 function scheduleRender() {
@@ -360,7 +290,7 @@ async function init() {
     if (resizeTimeout) {
       clearTimeout(resizeTimeout);
     }
-    clearFrameCache();
+    frameCache.clear();
     if (progressiveRenderAnimationFrame !== null) {
       cancelAnimationFrame(progressiveRenderAnimationFrame);
       progressiveRenderAnimationFrame = null;
@@ -1124,7 +1054,7 @@ function setupUI() {
     fractalCache.delete(currentFractalType);
 
     // Clear frame cache when fractal type changes
-    clearFrameCache();
+    frameCache.clear();
 
     // Load the new fractal module
     try {
@@ -1794,7 +1724,7 @@ function setupUI() {
     const samplePoints = 9; // 3x3 grid
     const iterations = params.iterations;
     // Cache canvas dimensions
-    const canvasEl = cachedCanvasElement || canvas;
+    const canvasEl = canvas;
     const aspect = canvasEl.width / canvasEl.height;
     const scale = 4.0 / zoom;
     const scaleXAspect = scale * aspect * params.xScale;
@@ -1966,7 +1896,7 @@ function setupUI() {
     // Check if fractal has interesting points defined in config
     if (fractalConfig?.interestingPoints && fractalConfig.interestingPoints.length > 0) {
       let interestingLocations = fractalConfig.interestingPoints;
-      
+
       // Handle special cases that need additional logic
       if (fractalType === 'sierpinski-gasket') {
         // Generalised Sierpinski Gasket - randomly select polygon type
@@ -1983,10 +1913,10 @@ function setupUI() {
         ];
         const polygonType = polygonTypes[Math.floor(Math.random() * polygonTypes.length)];
         const xScale = (polygonType.sides - 3) / 6.0;
-        
+
         const location = interestingLocations[Math.floor(Math.random() * interestingLocations.length)];
         const zoom = location.zoom * (0.8 + Math.random() * 0.4);
-        
+
         // Update xScale slider
         const xScaleSlider = document.getElementById('x-scale');
         const xScaleValue = document.getElementById('x-scale-value');
@@ -1995,13 +1925,13 @@ function setupUI() {
           updateSliderAccessibility(xScaleSlider, xScaleValue, xScaleAnnounce, xScale, 'X Axis', false);
         }
         params.xScale = xScale;
-        
+
         return {
           offset: { x: location.x, y: location.y },
           zoom: zoom,
         };
       }
-      
+
       if (fractalType === 'box-variants') {
         // Box fractal variants - randomly select pattern
         const patterns = [
@@ -2016,15 +1946,15 @@ function setupUI() {
         const pattern = patterns[Math.floor(Math.random() * patterns.length)];
         const location = interestingLocations[Math.floor(Math.random() * interestingLocations.length)];
         const zoom = location.zoom * (0.8 + Math.random() * 0.4);
-        
+
         params.xScale = pattern.xScale;
-        
+
         return {
           offset: { x: location.x, y: location.y },
           zoom: zoom,
         };
       }
-      
+
       if (fractalType === 'h-tree-generalized') {
         // Generalized H-tree - randomly select rotation and scale
         const configurations = [
@@ -2042,16 +1972,16 @@ function setupUI() {
         const config = configurations[Math.floor(Math.random() * configurations.length)];
         const location = interestingLocations[Math.floor(Math.random() * interestingLocations.length)];
         const zoom = location.zoom * (0.8 + Math.random() * 0.4);
-        
+
         params.xScale = config.rotation;
         params.yScale = config.scale;
-        
+
         return {
           offset: { x: location.x, y: location.y },
           zoom: zoom,
         };
       }
-      
+
       // Handle Julia sets (julia, julia-snakes) - they have cReal and cImag
       if (fractalType === 'julia' || fractalType === 'julia-snakes') {
         // Try up to 10 times to find a valid interesting view
@@ -2059,14 +1989,14 @@ function setupUI() {
           const juliaSet = interestingLocations[Math.floor(Math.random() * interestingLocations.length)];
           const zoom = juliaSet.zoom * (0.8 + Math.random() * 0.4);
           const offset = { x: juliaSet.x, y: juliaSet.y };
-          
+
           // Temporarily set Julia C for validation
           const oldJuliaC = { x: params.juliaC.x, y: params.juliaC.y };
           if (juliaSet.cReal !== undefined && juliaSet.cImag !== undefined) {
             params.juliaC.x = juliaSet.cReal;
             params.juliaC.y = juliaSet.cImag;
           }
-          
+
           // Validate the view
           if (isValidInterestingView(offset, zoom, fractalType)) {
             // Update Julia C sliders if they exist
@@ -2080,12 +2010,12 @@ function setupUI() {
             if (juliaCImagValue && juliaSet.cImag !== undefined) juliaCImagValue.textContent = juliaSet.cImag.toFixed(4);
             return { offset, zoom };
           }
-          
+
           // Restore old Julia C if validation failed
           params.juliaC.x = oldJuliaC.x;
           params.juliaC.y = oldJuliaC.y;
         }
-        
+
         // Fallback to first interesting point
         const fallback = interestingLocations[0];
         if (fallback.cReal !== undefined && fallback.cImag !== undefined) {
@@ -2105,25 +2035,25 @@ function setupUI() {
           zoom: fallback.zoom,
         };
       }
-      
+
       // For fractals that need validation (mandelbrot, multibrot, burning-ship, buffalo)
-      if (fractalType === 'mandelbrot' || fractalType === 'multibrot' || 
+      if (fractalType === 'mandelbrot' || fractalType === 'multibrot' ||
           fractalType === 'burning-ship' || fractalType === 'buffalo') {
         interestingLocations = removeDuplicatePoints(interestingLocations, fractalType);
-        
+
         // Try up to 10 times to find a valid interesting view
         for (let attempt = 0; attempt < 10; attempt++) {
           const location = interestingLocations[Math.floor(Math.random() * interestingLocations.length)];
           const zoomVariation = fractalType === 'multibrot' ? 0.2 : 0.4;
           const zoom = location.zoom * (0.8 + Math.random() * zoomVariation);
           const offset = { x: location.x, y: location.y };
-          
+
           // Validate the view
           if (isValidInterestingView(offset, zoom, fractalType)) {
             return { offset, zoom };
           }
         }
-        
+
         // Fallback to config's fallbackPosition or first interesting point
         if (fractalConfig?.fallbackPosition) {
           return {
@@ -2137,7 +2067,7 @@ function setupUI() {
           zoom: fallback.zoom,
         };
       }
-      
+
       // Default: randomly select from interesting points
       const location = interestingLocations[Math.floor(Math.random() * interestingLocations.length)];
       const zoom = location.zoom * (0.8 + Math.random() * 0.4);
@@ -3228,7 +3158,7 @@ function setupUI() {
     }
 
     // Clear frame cache since we're changing to a new view
-    clearFrameCache();
+    frameCache.clear();
 
     // Clear cached display if we're showing one
     if (isDisplayingCached) {
@@ -3459,7 +3389,7 @@ function renderFractalProgressive(startIterations = null) {
   }
 
   // Check cache first - if we have a cached frame, use it immediately
-  const cached = getCachedFrame();
+  const cached = frameCache.getCachedFrame(canvas, currentFractalType, params, regl);
   if (cached && cached.framebuffer) {
     // Display cached frame
     displayCachedFrame(cached.framebuffer);
@@ -3775,7 +3705,7 @@ function cacheCurrentFrame() {
   });
 
   // Store in cache
-  cacheFrame(framebuffer);
+  frameCache.cacheFrame(canvas, currentFractalType, params, framebuffer);
 }
 
 function renderFractal() {
@@ -3799,7 +3729,7 @@ function renderFractal() {
   }
 
   // Check cache first
-  const cached = getCachedFrame();
+  const cached = frameCache.getCachedFrame(canvas, currentFractalType, params, regl);
   if (cached && cached.framebuffer) {
     displayCachedFrame(cached.framebuffer);
     hideLoadingBar();
