@@ -141,3 +141,21 @@ export function render(regl, params, canvas) {
 
 export const is2D = true;
 
+/**
+ * Configuration for Sierpinski Hexagon fractal
+ */
+export const config = {
+  initialSettings: {
+    colorScheme: 'classic',
+  },
+  initialPosition: {
+    zoom: 1.871,
+    offset: { x: 0.0056, y: 0.0898 },
+  },
+  interestingPoints: [],
+  fallbackPosition: {
+    offset: { x: 0, y: 0 },
+    zoom: 1,
+  },
+};
+

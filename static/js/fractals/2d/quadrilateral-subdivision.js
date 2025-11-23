@@ -147,3 +147,21 @@ export function render(regl, params, canvas) {
 
 export const is2D = true;
 
+/**
+ * Configuration for Quadrilateral Subdivision fractal
+ */
+export const config = {
+  initialSettings: {
+    colorScheme: 'classic',
+  },
+  initialPosition: {
+    zoom: 3.186,
+    offset: { x: 0.9638, y: 0.6144 },
+  },
+  interestingPoints: [],
+  fallbackPosition: {
+    offset: { x: 0, y: 0 },
+    zoom: 1,
+  },
+};
+

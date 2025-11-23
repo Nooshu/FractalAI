@@ -181,3 +181,21 @@ export function render(regl, params, canvas) {
 
 export const is2D = true;
 
+/**
+ * Configuration for Apollonian Gasket fractal
+ */
+export const config = {
+  initialSettings: {
+    colorScheme: 'classic',
+  },
+  initialPosition: {
+    zoom: 2,
+    offset: { x: 1.3446, y: 1.0435 },
+  },
+  interestingPoints: [],
+  fallbackPosition: {
+    offset: { x: 0, y: 0 },
+    zoom: 1,
+  },
+};
+

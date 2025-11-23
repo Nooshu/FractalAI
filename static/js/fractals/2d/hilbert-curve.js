@@ -169,3 +169,21 @@ export function render(regl, params, canvas) {
 
 export const is2D = true;
 
+/**
+ * Configuration for Hilbert Curve fractal
+ */
+export const config = {
+  initialSettings: {
+    colorScheme: 'classic',
+  },
+  initialPosition: {
+    zoom: 3.015,
+    offset: { x: -0.006, y: 0.0693 },
+  },
+  interestingPoints: [],
+  fallbackPosition: {
+    offset: { x: 0, y: 0 },
+    zoom: 1,
+  },
+};
+

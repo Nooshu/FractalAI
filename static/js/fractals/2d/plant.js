@@ -322,3 +322,21 @@ export function render(regl, params, canvas) {
 
 export const is2D = true;
 
+/**
+ * Configuration for Plant fractal
+ */
+export const config = {
+  initialSettings: {
+    colorScheme: 'forest',
+  },
+  initialPosition: {
+    zoom: 0.59,
+    offset: { x: 0.003, y: 1.094 },
+  },
+  interestingPoints: [],
+  fallbackPosition: {
+    offset: { x: 0, y: 0 },
+    zoom: 1,
+  },
+};
+

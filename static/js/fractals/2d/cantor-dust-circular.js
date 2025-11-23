@@ -133,3 +133,21 @@ export function render(regl, params, canvas) {
 
 export const is2D = true;
 
+/**
+ * Configuration for Cantor Dust Circular fractal
+ */
+export const config = {
+  initialSettings: {
+    colorScheme: 'classic',
+  },
+  initialPosition: {
+    zoom: 2.597,
+    offset: { x: 1.1991, y: 0.9663 },
+  },
+  interestingPoints: [],
+  fallbackPosition: {
+    offset: { x: 0, y: 0 },
+    zoom: 1,
+  },
+};
+

@@ -1157,11 +1157,51 @@ function setupUI() {
     // Track whether iterations were explicitly set for this fractal type
     let iterationsExplicitlySet = false;
 
-    // Get initial render position for this fractal type
-    const initialPosition = getInitialRenderPosition(currentFractalType);
+    // Get initial render position from config if available, otherwise use fallback function
+    const fractalConfig = currentFractalModule?.config;
+    let initialPosition;
+    if (fractalConfig?.initialPosition) {
+      initialPosition = fractalConfig.initialPosition;
+    } else {
+      // Fallback to hardcoded positions for fractals without config
+      initialPosition = getInitialRenderPosition(currentFractalType);
+    }
     params.zoom = initialPosition.zoom;
     params.offset.x = initialPosition.offset.x;
     params.offset.y = initialPosition.offset.y;
+
+    // Apply config's initialSettings early (can be overridden by specific fractal blocks below)
+    if (fractalConfig?.initialSettings) {
+      const settings = fractalConfig.initialSettings;
+
+      // Apply iterations if specified
+      if (settings.iterations !== undefined) {
+        params.iterations = settings.iterations;
+        iterationsExplicitlySet = true;
+        if (iterationsSlider) iterationsSlider.value = settings.iterations;
+        if (iterationsValue) iterationsValue.textContent = settings.iterations.toString();
+        const fullscreenIterationsNumberEl = document.getElementById('fullscreen-iterations-number');
+        if (fullscreenIterationsNumberEl) {
+          fullscreenIterationsNumberEl.textContent = settings.iterations.toString();
+        }
+      }
+
+      // Apply colorScheme if specified
+      if (settings.colorScheme !== undefined) {
+        params.colorScheme = settings.colorScheme;
+        if (colorSchemeSelect) {
+          colorSchemeSelect.value = settings.colorScheme;
+        }
+        const newIndex = colorSchemes.indexOf(settings.colorScheme);
+        if (newIndex !== -1) {
+          currentColorSchemeIndex = newIndex;
+        }
+        updateColorPalettePreview();
+        // Clear draw command to force regeneration with new palette
+        drawFractal = null;
+        cachedDrawCommand = null;
+      }
+    }
 
     if (currentFractalType === 'burning-ship') {
       // Burning Ship - additional settings (position set by getInitialRenderPosition)
@@ -1690,42 +1730,8 @@ function setupUI() {
     } else if (currentFractalType === 'cesaro') {
       // Cesaro - additional settings (position set by getInitialRenderPosition)
     }
-    // Default view is handled by getInitialRenderPosition function
-
-    // Apply config's initialSettings if available (theme and iterations)
-    // Apply AFTER all hardcoded blocks so config takes precedence
-    const fractalConfig = currentFractalModule?.config;
-    if (fractalConfig?.initialSettings) {
-      const settings = fractalConfig.initialSettings;
-
-      // Apply iterations if specified
-      if (settings.iterations !== undefined) {
-        params.iterations = settings.iterations;
-        iterationsExplicitlySet = true;
-        if (iterationsSlider) iterationsSlider.value = settings.iterations;
-        if (iterationsValue) iterationsValue.textContent = settings.iterations.toString();
-        const fullscreenIterationsNumberEl = document.getElementById('fullscreen-iterations-number');
-        if (fullscreenIterationsNumberEl) {
-          fullscreenIterationsNumberEl.textContent = settings.iterations.toString();
-        }
-      }
-
-      // Apply colorScheme if specified
-      if (settings.colorScheme !== undefined) {
-        params.colorScheme = settings.colorScheme;
-        if (colorSchemeSelect) {
-          colorSchemeSelect.value = settings.colorScheme;
-        }
-        const newIndex = colorSchemes.indexOf(settings.colorScheme);
-        if (newIndex !== -1) {
-          currentColorSchemeIndex = newIndex;
-        }
-        updateColorPalettePreview();
-        // Clear draw command to force regeneration with new palette
-        drawFractal = null;
-        cachedDrawCommand = null;
-      }
-    }
+    // Default view is handled by config.initialPosition or getInitialRenderPosition function
+    // Config settings are applied early above, but can be overridden by specific fractal blocks above
 
     // Update coordinate display after setting positions
     updateCoordinateDisplay();

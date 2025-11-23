@@ -182,3 +182,21 @@ export function render(regl, params, canvas) {
 
 export const is2D = true;
 
+/**
+ * Configuration for Barnsley Fern fractal
+ */
+export const config = {
+  initialSettings: {
+    colorScheme: 'forest',
+  },
+  initialPosition: {
+    zoom: 1.403,
+    offset: { x: 1.673, y: 1.9506 },
+  },
+  interestingPoints: [],
+  fallbackPosition: {
+    offset: { x: 0, y: 0 },
+    zoom: 1,
+  },
+};
+

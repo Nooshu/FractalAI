@@ -171,3 +171,21 @@ export function render(regl, params, canvas) {
 
 export const is2D = true;
 
+/**
+ * Configuration for Hybrid Julia fractal
+ */
+export const config = {
+  initialSettings: {
+    colorScheme: 'monochrome',
+  },
+  initialPosition: {
+    zoom: 1,
+    offset: { x: 0.194, y: 0.242 },
+  },
+  interestingPoints: [],
+  fallbackPosition: {
+    offset: { x: 0, y: 0 },
+    zoom: 1,
+  },
+};
+

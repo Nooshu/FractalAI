@@ -180,3 +180,21 @@ export function render(regl, params, canvas) {
 
 export const is2D = true;
 
+/**
+ * Configuration for Recursive Polygon Splitting fractal
+ */
+export const config = {
+  initialSettings: {
+    colorScheme: 'rainbow',
+  },
+  initialPosition: {
+    zoom: 2,
+    offset: { x: 1.4952, y: 1.059 },
+  },
+  interestingPoints: [],
+  fallbackPosition: {
+    offset: { x: 0, y: 0 },
+    zoom: 1,
+  },
+};
+

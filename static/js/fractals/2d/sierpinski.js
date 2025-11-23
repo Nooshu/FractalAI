@@ -107,3 +107,21 @@ export function render(regl, params, canvas) {
 }
 
 export const is2D = true;
+
+/**
+ * Configuration for Sierpinski fractal
+ */
+export const config = {
+  initialSettings: {
+    colorScheme: 'classic',
+  },
+  initialPosition: {
+    zoom: 1.772,
+    offset: { x: 0.0089, y: 0.039 },
+  },
+  interestingPoints: [],
+  fallbackPosition: {
+    offset: { x: 0, y: 0 },
+    zoom: 1,
+  },
+};

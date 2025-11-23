@@ -244,3 +244,21 @@ export function render(regl, params, canvas) {
 
 export const is2D = true;
 
+/**
+ * Configuration for Diffusion Limited Aggregation fractal
+ */
+export const config = {
+  initialSettings: {
+    colorScheme: 'rainbow',
+  },
+  initialPosition: {
+    zoom: 0.197,
+    offset: { x: 1.2026, y: 0.9662 },
+  },
+  interestingPoints: [],
+  fallbackPosition: {
+    offset: { x: 0, y: 0 },
+    zoom: 1,
+  },
+};
+

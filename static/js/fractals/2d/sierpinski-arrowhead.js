@@ -184,3 +184,21 @@ export function render(regl, params, canvas) {
 }
 
 export const is2D = true;
+
+/**
+ * Configuration for Sierpinski Arrowhead fractal
+ */
+export const config = {
+  initialSettings: {
+    colorScheme: 'classic',
+  },
+  initialPosition: {
+    zoom: 2,
+    offset: { x: -0.002, y: -0.0211 },
+  },
+  interestingPoints: [],
+  fallbackPosition: {
+    offset: { x: 0, y: 0 },
+    zoom: 1,
+  },
+};

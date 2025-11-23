@@ -176,3 +176,21 @@ export function render(regl, params, canvas) {
 
 export const is2D = true;
 
+/**
+ * Configuration for Amman Tiling fractal
+ */
+export const config = {
+  initialSettings: {
+    colorScheme: 'rainbow-double',
+  },
+  initialPosition: {
+    zoom: 3.2,
+    offset: { x: 0.9382, y: 0.7956 },
+  },
+  interestingPoints: [],
+  fallbackPosition: {
+    offset: { x: 0, y: 0 },
+    zoom: 1,
+  },
+};
+

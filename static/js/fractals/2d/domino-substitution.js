@@ -173,3 +173,21 @@ export function render(regl, params, canvas) {
 
 export const is2D = true;
 
+/**
+ * Configuration for Domino Substitution fractal
+ */
+export const config = {
+  initialSettings: {
+    colorScheme: 'rainbow-double',
+  },
+  initialPosition: {
+    zoom: 8.8,
+    offset: { x: 0.3353, y: 0.2999 },
+  },
+  interestingPoints: [],
+  fallbackPosition: {
+    offset: { x: 0, y: 0 },
+    zoom: 1,
+  },
+};
+

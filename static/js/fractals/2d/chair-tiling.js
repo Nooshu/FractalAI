@@ -185,3 +185,21 @@ export function render(regl, params, canvas) {
 
 export const is2D = true;
 
+/**
+ * Configuration for Chair Tiling fractal
+ */
+export const config = {
+  initialSettings: {
+    colorScheme: 'rainbow-double',
+  },
+  initialPosition: {
+    zoom: 4,
+    offset: { x: 0.77, y: 0.502 },
+  },
+  interestingPoints: [],
+  fallbackPosition: {
+    offset: { x: 0, y: 0 },
+    zoom: 1,
+  },
+};
+

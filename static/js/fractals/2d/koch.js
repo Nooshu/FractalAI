@@ -372,3 +372,21 @@ export function render(regl, params, canvas) {
 }
 
 export const is2D = true;
+
+/**
+ * Configuration for Koch Snowflake fractal
+ */
+export const config = {
+  initialSettings: {
+    colorScheme: 'ice',
+  },
+  initialPosition: {
+    zoom: 3.095,
+    offset: { x: -0.0082, y: 0.0351 },
+  },
+  interestingPoints: [],
+  fallbackPosition: {
+    offset: { x: 0, y: 0 },
+    zoom: 1,
+  },
+};

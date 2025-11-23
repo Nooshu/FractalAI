@@ -171,3 +171,21 @@ export function render(regl, params, canvas) {
 
 export const is2D = true;
 
+/**
+ * Configuration for Carpenter Square fractal
+ */
+export const config = {
+  initialSettings: {
+    colorScheme: 'rainbow-double',
+  },
+  initialPosition: {
+    zoom: 1,
+    offset: { x: 2.9559, y: 2.7137 },
+  },
+  interestingPoints: [],
+  fallbackPosition: {
+    offset: { x: 0, y: 0 },
+    zoom: 1,
+  },
+};
+

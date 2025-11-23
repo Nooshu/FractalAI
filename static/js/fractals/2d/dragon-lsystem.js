@@ -380,3 +380,21 @@ export function render(regl, params, canvas) {
 
 export const is2D = true;
 
+/**
+ * Configuration for Dragon L-System fractal
+ */
+export const config = {
+  initialSettings: {
+    colorScheme: 'tropical',
+  },
+  initialPosition: {
+    zoom: 0.666,
+    offset: { x: 0.2164, y: 0.3085 },
+  },
+  interestingPoints: [],
+  fallbackPosition: {
+    offset: { x: 0, y: 0 },
+    zoom: 1,
+  },
+};
+

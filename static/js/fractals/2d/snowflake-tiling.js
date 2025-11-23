@@ -191,3 +191,21 @@ export function render(regl, params, canvas) {
 
 export const is2D = true;
 
+/**
+ * Configuration for Snowflake Tiling fractal
+ */
+export const config = {
+  initialSettings: {
+    colorScheme: 'rainbow-double',
+  },
+  initialPosition: {
+    zoom: 4,
+    offset: { x: 0.7616, y: 0.516 },
+  },
+  interestingPoints: [],
+  fallbackPosition: {
+    offset: { x: 0, y: 0 },
+    zoom: 1,
+  },
+};
+

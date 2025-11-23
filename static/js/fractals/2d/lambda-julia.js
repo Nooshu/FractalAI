@@ -128,3 +128,21 @@ export function render(regl, params, canvas) {
 
 export const is2D = true;
 
+/**
+ * Configuration for Lambda Julia fractal
+ */
+export const config = {
+  initialSettings: {
+    colorScheme: 'cosmic',
+  },
+  initialPosition: {
+    zoom: 1,
+    offset: { x: 0.734, y: 0.24 },
+  },
+  interestingPoints: [],
+  fallbackPosition: {
+    offset: { x: 0, y: 0 },
+    zoom: 1,
+  },
+};
+
