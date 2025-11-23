@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { encodeFractalState } from '../../static/js/sharing/encoder.js';
 import { decodeFractalState } from '../../static/js/sharing/decoder.js';
 
@@ -68,13 +68,21 @@ describe('encodeFractalState and decodeFractalState', () => {
   });
 
   it('should handle invalid encoded strings', () => {
+    // Suppress expected error log
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     const decoded = decodeFractalState('invalid-seed!!!');
     expect(decoded).toBeNull();
+    expect(consoleErrorSpy).toHaveBeenCalled();
+    consoleErrorSpy.mockRestore();
   });
 
   it('should handle empty encoded strings', () => {
+    // Suppress expected error log
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     const decoded = decodeFractalState('');
     expect(decoded).toBeNull();
+    expect(consoleErrorSpy).toHaveBeenCalled();
+    consoleErrorSpy.mockRestore();
   });
 
   it('should produce URL-safe strings', () => {
