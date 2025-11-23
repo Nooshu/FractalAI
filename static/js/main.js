@@ -6,7 +6,8 @@ import { FrameCache } from './core/frameCache.js';
 import { initLoadingBar, showLoadingBar, hideLoadingBar } from './ui/loading-bar.js';
 import { initFPSTracker, startFPSTracking, incrementFrameCount } from './performance/fps-tracker.js';
 import { cacheElement } from './core/dom-cache.js';
-import { updateAllDisplays, setupCoordinateCopy, setupDebugCopy } from './ui/coordinate-display.js';
+import { updateCoordinateDisplay as updateCoordDisplay, setupCoordinateCopy } from './ui/coordinate-display.js';
+import { updateDebugDisplay, setupDebugCopy } from './ui/debug-display.js';
 
 // Application state
 let regl = null;
@@ -297,7 +298,7 @@ async function init() {
   setupCoordinateCopy(() => currentFractalType, () => params);
   setupDebugCopy(() => currentFractalType, () => params);
   setupShareFractal();
-  updateAllDisplays(currentFractalType, params);
+  updateCoordinateDisplay();
 
   // Initialize benchmark UI
   const benchmarkUI = new BenchmarkUI(
@@ -3792,9 +3793,10 @@ function animate() {
 }
 
 
-// Wrapper function to update coordinate display (for backward compatibility)
+// Wrapper function to update both coordinate and debug displays (for backward compatibility)
 function updateCoordinateDisplay() {
-  updateAllDisplays(currentFractalType, params);
+  updateCoordDisplay(params);
+  updateDebugDisplay(currentFractalType, params);
 }
 
 // Fractal state encoding/decoding for sharing
