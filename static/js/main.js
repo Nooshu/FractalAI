@@ -5,7 +5,8 @@ import { CONFIG } from './core/config.js';
 import { FrameCache } from './core/frameCache.js';
 import { initLoadingBar, showLoadingBar, hideLoadingBar } from './ui/loading-bar.js';
 import { initFPSTracker, startFPSTracking, incrementFrameCount } from './performance/fps-tracker.js';
-import { cacheElement, getElement } from './core/dom-cache.js';
+import { cacheElement } from './core/dom-cache.js';
+import { updateAllDisplays, setupCoordinateCopy, setupDebugCopy } from './ui/coordinate-display.js';
 
 // Application state
 let regl = null;
@@ -292,10 +293,11 @@ async function init() {
   setupUI();
   setupCollapsibleSections();
   setupPanelToggle();
-  setupCoordinateCopy();
-  setupDebugCopy();
+  // Setup coordinate display with getter functions
+  setupCoordinateCopy(() => currentFractalType, () => params);
+  setupDebugCopy(() => currentFractalType, () => params);
   setupShareFractal();
-  updateCoordinateDisplay();
+  updateAllDisplays(currentFractalType, params);
 
   // Initialize benchmark UI
   const benchmarkUI = new BenchmarkUI(
@@ -1033,7 +1035,7 @@ function setupUI() {
   fractalTypeSelect.addEventListener('change', async (e) => {
     currentFractalType = e.target.value;
     updateWikipediaLink();
-    updateDebugDisplay();
+    updateCoordinateDisplay();
 
     // Clear previous fractal draw command
     drawFractal = null;
@@ -3790,148 +3792,9 @@ function animate() {
 }
 
 
-// Update coordinate display
+// Wrapper function to update coordinate display (for backward compatibility)
 function updateCoordinateDisplay() {
-  const coordZoom = getElement('coord-zoom');
-  const coordOffsetX = getElement('coord-offset-x');
-  const coordOffsetY = getElement('coord-offset-y');
-  if (coordZoom && coordOffsetX && coordOffsetY) {
-    // Round to reasonable precision for display
-    coordZoom.textContent = Math.round(params.zoom * 1000) / 1000;
-    coordOffsetX.textContent = Math.round(params.offset.x * 10000) / 10000;
-    coordOffsetY.textContent = Math.round(params.offset.y * 10000) / 10000;
-  }
-
-  // Update debug display
-  updateDebugDisplay();
-}
-
-// Update debug display
-function updateDebugDisplay() {
-  const debugFractalName = document.getElementById('debug-fractal-name');
-  const debugZoom = document.getElementById('debug-zoom');
-  const debugOffsetX = document.getElementById('debug-offset-x');
-  const debugOffsetY = document.getElementById('debug-offset-y');
-
-  if (debugFractalName) {
-    debugFractalName.textContent = currentFractalType || '-';
-  }
-  if (debugZoom) {
-    debugZoom.textContent = Math.round(params.zoom * 1000) / 1000;
-  }
-  if (debugOffsetX) {
-    debugOffsetX.textContent = Math.round(params.offset.x * 10000) / 10000;
-  }
-  if (debugOffsetY) {
-    debugOffsetY.textContent = Math.round(params.offset.y * 10000) / 10000;
-  }
-}
-
-// Setup debug copy buttons
-function setupDebugCopy() {
-  const copyFractalName = document.getElementById('debug-copy-fractal-name');
-  const copyZoom = document.getElementById('debug-copy-zoom');
-  const copyOffsetX = document.getElementById('debug-copy-offset-x');
-  const copyOffsetY = document.getElementById('debug-copy-offset-y');
-  const copyAll = document.getElementById('debug-copy-all');
-
-  if (copyFractalName) {
-    copyFractalName.addEventListener('click', () => {
-      navigator.clipboard.writeText(currentFractalType || '').then(() => {
-        showCopyFeedback(copyFractalName);
-      });
-    });
-  }
-
-  if (copyZoom) {
-    copyZoom.addEventListener('click', () => {
-      const zoom = Math.round(params.zoom * 1000) / 1000;
-      navigator.clipboard.writeText(zoom.toString()).then(() => {
-        showCopyFeedback(copyZoom);
-      });
-    });
-  }
-
-  if (copyOffsetX) {
-    copyOffsetX.addEventListener('click', () => {
-      const offsetX = Math.round(params.offset.x * 10000) / 10000;
-      navigator.clipboard.writeText(offsetX.toString()).then(() => {
-        showCopyFeedback(copyOffsetX);
-      });
-    });
-  }
-
-  if (copyOffsetY) {
-    copyOffsetY.addEventListener('click', () => {
-      const offsetY = Math.round(params.offset.y * 10000) / 10000;
-      navigator.clipboard.writeText(offsetY.toString()).then(() => {
-        showCopyFeedback(copyOffsetY);
-      });
-    });
-  }
-
-  if (copyAll) {
-    copyAll.addEventListener('click', () => {
-      const fractalName = currentFractalType || '-';
-      const zoom = Math.round(params.zoom * 1000) / 1000;
-      const offsetX = Math.round(params.offset.x * 10000) / 10000;
-      const offsetY = Math.round(params.offset.y * 10000) / 10000;
-
-      const allInfo = `Fractal: ${fractalName}\nZoom: ${zoom}\nOffset X: ${offsetX}\nOffset Y: ${offsetY}`;
-
-      navigator.clipboard.writeText(allInfo).then(() => {
-        const originalHTML = copyAll.innerHTML;
-        copyAll.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"></path></svg>Copied!';
-        copyAll.style.background = 'var(--accent-blue)';
-
-        setTimeout(() => {
-          copyAll.innerHTML = originalHTML;
-          copyAll.style.background = '';
-        }, 1000);
-      });
-    });
-  }
-}
-
-// Show copy feedback
-function showCopyFeedback(button) {
-  const originalHTML = button.innerHTML;
-  button.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"></path></svg>';
-  button.style.color = 'var(--accent-blue)';
-
-  setTimeout(() => {
-    button.innerHTML = originalHTML;
-    button.style.color = '';
-  }, 1000);
-}
-
-// Copy coordinates to clipboard
-function setupCoordinateCopy() {
-  const copyBtn = getElement('copy-coords-btn');
-  if (copyBtn) {
-    copyBtn.addEventListener('click', () => {
-      const zoom = Math.round(params.zoom * 1000) / 1000;
-      const offsetX = Math.round(params.offset.x * 10000) / 10000;
-      const offsetY = Math.round(params.offset.y * 10000) / 10000;
-
-      const coordsText = `fractal: ${currentFractalType}, zoom: ${zoom}, offsetX: ${offsetX}, offsetY: ${offsetY}`;
-
-      navigator.clipboard.writeText(coordsText).then(() => {
-        // Show feedback
-        const originalText = copyBtn.innerHTML;
-        copyBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"></path></svg>Copied!';
-        copyBtn.style.background = 'var(--accent-blue)';
-
-        setTimeout(() => {
-          copyBtn.innerHTML = originalText;
-          copyBtn.style.background = '';
-        }, 2000);
-      }).catch(err => {
-        console.error('Failed to copy coordinates:', err);
-        alert('Failed to copy coordinates. Please copy manually:\n' + coordsText);
-      });
-    });
-  }
+  updateAllDisplays(currentFractalType, params);
 }
 
 // Fractal state encoding/decoding for sharing
