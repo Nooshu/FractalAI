@@ -197,6 +197,7 @@ export const is2D = true;
 export const config = {
   initialSettings: {
     colorScheme: 'rainbow-double',
+    iterations: 40,
   },
   initialPosition: {
     zoom: 4,

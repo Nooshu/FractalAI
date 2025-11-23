@@ -188,6 +188,7 @@ export const is2D = true;
 export const config = {
   initialSettings: {
     colorScheme: 'forest',
+    iterations: 15,
   },
   initialPosition: {
     zoom: 1.403,

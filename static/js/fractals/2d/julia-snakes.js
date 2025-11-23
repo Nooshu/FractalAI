@@ -104,7 +104,8 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'classic',
+    colorScheme: 'midnight',
+    juliaC: { x: -0.4, y: 0.6 },
   },
   initialPosition: {
     zoom: 1,

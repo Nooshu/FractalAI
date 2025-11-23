@@ -176,7 +176,9 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'monochrome',
+    colorScheme: 'ocean',
+    iterations: 100,
+    juliaC: { x: -0.4, y: 0.6 },
   },
   initialPosition: {
     zoom: 1,

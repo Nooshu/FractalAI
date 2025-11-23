@@ -195,7 +195,9 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'rainbow-double',
+    colorScheme: 'rainbow',
+    iterations: 100,
+    juliaC: { x: 1.2, y: 0.8 },
   },
   initialPosition: {
     zoom: 1,

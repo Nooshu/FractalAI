@@ -243,6 +243,7 @@ export const is2D = true;
 export const config = {
   initialSettings: {
     colorScheme: 'classic',
+    xScale: 0.5,
   },
   initialPosition: {
     zoom: 1,

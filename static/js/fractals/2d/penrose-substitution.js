@@ -172,10 +172,11 @@ export const is2D = true;
 export const config = {
   initialSettings: {
     colorScheme: 'galaxy',
+    iterations: 25,
   },
   initialPosition: {
-    zoom: 1,
-    offset: { x: 0, y: 0 },
+    zoom: 4,
+    offset: { x: 0.7834, y: 0.5579 },
   },
   interestingPoints: [],
   fallbackPosition: {

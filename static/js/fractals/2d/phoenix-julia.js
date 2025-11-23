@@ -132,7 +132,11 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'classic',
+    colorScheme: 'cosmic',
+    iterations: 25,
+    juliaC: { x: -0.5, y: 0.0 },
+    xScale: 0.6,
+    yScale: 0.5,
   },
   initialPosition: {
     zoom: 0.605,

@@ -1170,7 +1170,7 @@ function setupUI() {
     params.offset.x = initialPosition.offset.x;
     params.offset.y = initialPosition.offset.y;
 
-    // Apply config's initialSettings early (can be overridden by specific fractal blocks below)
+    // Apply config's initialSettings - all parameters come from config files
     if (fractalConfig?.initialSettings) {
       const settings = fractalConfig.initialSettings;
 
@@ -1201,6 +1201,36 @@ function setupUI() {
         drawFractal = null;
         cachedDrawCommand = null;
       }
+
+      // Apply juliaC if specified (for Julia set fractals)
+      if (settings.juliaC !== undefined) {
+        params.juliaC.x = settings.juliaC.x;
+        params.juliaC.y = settings.juliaC.y;
+        if (juliaCReal) juliaCReal.value = settings.juliaC.x;
+        if (juliaCImag) juliaCImag.value = settings.juliaC.y;
+        if (juliaCRealValue) juliaCRealValue.textContent = settings.juliaC.x.toFixed(4);
+        if (juliaCImagValue) juliaCImagValue.textContent = settings.juliaC.y.toFixed(4);
+      }
+
+      // Apply xScale if specified
+      if (settings.xScale !== undefined) {
+        params.xScale = settings.xScale;
+        if (xScaleSlider) {
+          xScaleSlider.value = settings.xScale;
+          updateSliderAccessibility(xScaleSlider, xScaleValue, xScaleAnnounce, settings.xScale, 'X Axis', false);
+        }
+        if (xScaleValue) xScaleValue.textContent = settings.xScale.toString();
+      }
+
+      // Apply yScale if specified
+      if (settings.yScale !== undefined) {
+        params.yScale = settings.yScale;
+        if (yScaleSlider) {
+          yScaleSlider.value = settings.yScale;
+          updateSliderAccessibility(yScaleSlider, yScaleValue, yScaleAnnounce, settings.yScale, 'Y Axis', false);
+        }
+        if (yScaleValue) yScaleValue.textContent = settings.yScale.toString();
+      }
     }
 
     if (currentFractalType === 'burning-ship') {
@@ -1220,17 +1250,7 @@ function setupUI() {
     } else if (currentFractalType === 'rose') {
       // Rose window fractal - additional settings (position set by getInitialRenderPosition)
     } else if (currentFractalType === 'julia-snakes') {
-      // Julia Snakes - set good default C value for snake-like patterns
-      params.zoom = 1;
-      params.offset.x = 0;
-      params.offset.y = 0;
-      params.juliaC.x = -0.4;
-      params.juliaC.y = 0.6;
-      // Update Julia C sliders
-      if (juliaCReal) juliaCReal.value = -0.4;
-      if (juliaCImag) juliaCImag.value = 0.6;
-      if (juliaCRealValue) juliaCRealValue.textContent = '-0.4000';
-      if (juliaCImagValue) juliaCImagValue.textContent = '0.6000';
+      // Julia Snakes - settings come from config
     } else if (currentFractalType === 'binary-dragon') {
       // Binary Dragon - additional settings (position set by getInitialRenderPosition)
     } else if (currentFractalType === 'dragon-lsystem') {
@@ -1254,399 +1274,55 @@ function setupUI() {
     } else if (currentFractalType === 'peano-curve') {
       // Peano Curve - additional settings (position set by getInitialRenderPosition)
     } else if (currentFractalType === 'newton') {
-      // Newton Fractal - additional settings (position set by getInitialRenderPosition)
-      params.iterations = 50;
-      iterationsExplicitlySet = true;
-      if (iterationsSlider) iterationsSlider.value = 50;
-      if (iterationsValue) iterationsValue.textContent = '50';
-      const fullscreenIterationsNumberEl = document.getElementById('fullscreen-iterations-number');
-      if (fullscreenIterationsNumberEl) {
-        fullscreenIterationsNumberEl.textContent = '50';
-      }
+      // Newton Fractal - settings come from config
     } else if (currentFractalType === 'nova') {
-      // Nova Fractal - additional settings (position set by getInitialRenderPosition)
-      // Uses relaxed Newton's method with alpha parameter controlled by xScale
-      params.iterations = 50;
-      iterationsExplicitlySet = true;
-      params.xScale = 1.0; // Set to 1.0 to match Newton and Halley
-      params.yScale = 1.0; // Set to 1.0 to match Newton and Halley
-      if (iterationsSlider) iterationsSlider.value = 50;
-      if (iterationsValue) iterationsValue.textContent = '50';
-      if (xScaleSlider) {
-        xScaleSlider.value = 1.0;
-        updateSliderAccessibility(xScaleSlider, xScaleValue, xScaleAnnounce, 1.0, 'X Axis', false);
-      }
-      if (yScaleSlider) {
-        yScaleSlider.value = 1.0;
-        updateSliderAccessibility(yScaleSlider, yScaleValue, yScaleAnnounce, 1.0, 'Y Axis', false);
-      }
-      const fullscreenIterationsNumberEl = document.getElementById('fullscreen-iterations-number');
-      if (fullscreenIterationsNumberEl) {
-        fullscreenIterationsNumberEl.textContent = '50';
-      }
+      // Nova Fractal - settings come from config
     } else if (currentFractalType === 'halley') {
-      // Halley Fractal - additional settings (position set by getInitialRenderPosition)
-      params.iterations = 50;
-      iterationsExplicitlySet = true;
-      if (iterationsSlider) iterationsSlider.value = 50;
-      if (iterationsValue) iterationsValue.textContent = '50';
+      // Halley Fractal - settings come from config
     } else if (currentFractalType === 'plant') {
       // Plant - additional settings (position set by getInitialRenderPosition)
     } else if (currentFractalType === 'barnsley-fern') {
-      // Barnsley Fern - additional settings (position set by getInitialRenderPosition)
-      params.iterations = 15;
-      iterationsExplicitlySet = true;
-      if (iterationsSlider) iterationsSlider.value = 15;
-      if (iterationsValue) iterationsValue.textContent = '15';
-      const fullscreenIterationsNumberEl = document.getElementById('fullscreen-iterations-number');
-      if (fullscreenIterationsNumberEl) {
-        fullscreenIterationsNumberEl.textContent = '15';
-      }
+      // Barnsley Fern - settings come from config
     } else if (currentFractalType === 'multibrot') {
-      // Multibrot Set - default centered view with order 4 (cubic)
-      // Note: xScale controls the multibrot order, not coordinate scaling
-      // Position set by getInitialRenderPosition
-      params.xScale = 0.25; // Order 4 (2 + 0.25 * 8 = 4) - only affects order, not coordinates
-      params.yScale = 1.0; // Ensure yScale is 1.0 for proper aspect ratio
-      // Update sliders
-      if (xScaleSlider) {
-        xScaleSlider.value = 0.25;
-        updateSliderAccessibility(xScaleSlider, xScaleValue, xScaleAnnounce, 0.25, 'X Axis', false);
-      }
-      if (yScaleSlider) {
-        yScaleSlider.value = 1.0;
-        updateSliderAccessibility(yScaleSlider, yScaleValue, yScaleAnnounce, 1.0, 'Y Axis', false);
-      }
+      // Multibrot Set - settings come from config
     } else if (currentFractalType === 'multibrot-julia') {
-      // Multibrot Julia Set - default centered view with order 4 (cubic)
-      // Note: xScale controls the multibrot order, not coordinate scaling
-      // Position set by getInitialRenderPosition
-      // Set iterations to 25
-      params.iterations = 25;
-      iterationsExplicitlySet = true;
-      // Update iterations slider and value
-      if (iterationsSlider) iterationsSlider.value = 25;
-      if (iterationsValue) iterationsValue.textContent = '25';
-      // Update fullscreen iterations number
-      const fullscreenIterationsNumberEl = document.getElementById('fullscreen-iterations-number');
-      if (fullscreenIterationsNumberEl) {
-        fullscreenIterationsNumberEl.textContent = '25';
-      }
+      // Multibrot Julia Set - settings come from config
     } else if (currentFractalType === 'burning-ship-julia') {
-      // Burning Ship Julia Set - default centered view
-      // Position set by getInitialRenderPosition
-      // Use interesting C values for Burning Ship Julia
-      params.juliaC.x = -0.5;
-      params.juliaC.y = -0.5;
-      // Update Julia C sliders
-      if (juliaCReal) juliaCReal.value = -0.5;
-      if (juliaCImag) juliaCImag.value = -0.5;
-      if (juliaCRealValue) juliaCRealValue.textContent = '-0.5000';
-      if (juliaCImagValue) juliaCImagValue.textContent = '-0.5000';
-      // Set monochrome color scheme and 40 iterations
-      params.colorScheme = 'monochrome';
-      params.iterations = 40;
-      iterationsExplicitlySet = true;
-      // Update color scheme selector
-      if (colorSchemeSelect) colorSchemeSelect.value = 'monochrome';
-      // Update color scheme index for fullscreen cycling
-      const newIndex = colorSchemes.indexOf('monochrome');
-      if (newIndex !== -1) {
-        currentColorSchemeIndex = newIndex;
-      }
-      // Update palette preview
-      updateColorPalettePreview();
-      // Update iterations slider and value
-      if (iterationsSlider) iterationsSlider.value = 40;
-      if (iterationsValue) iterationsValue.textContent = '40';
-      // Update fullscreen iterations number
-      const fullscreenIterationsNumberEl = document.getElementById('fullscreen-iterations-number');
-      if (fullscreenIterationsNumberEl) {
-        fullscreenIterationsNumberEl.textContent = '40';
-      }
+      // Burning Ship Julia Set - settings come from config
     } else if (currentFractalType === 'tricorn-julia') {
-      // Tricorn Julia Set - default centered view
-      // Position set by getInitialRenderPosition
-      // Use interesting C values for Tricorn Julia
-      params.juliaC.x = -0.5;
-      params.juliaC.y = 0.5;
-      // Update Julia C sliders
-      if (juliaCReal) juliaCReal.value = -0.5;
-      if (juliaCImag) juliaCImag.value = 0.5;
-      if (juliaCRealValue) juliaCRealValue.textContent = '-0.5000';
-      if (juliaCImagValue) juliaCImagValue.textContent = '0.5000';
-      // Set iterations to 25
-      params.iterations = 25;
-      iterationsExplicitlySet = true;
-      // Update iterations slider and value
-      if (iterationsSlider) iterationsSlider.value = 25;
-      if (iterationsValue) iterationsValue.textContent = '25';
-      // Update fullscreen iterations number
-      const fullscreenIterationsNumberEl = document.getElementById('fullscreen-iterations-number');
-      if (fullscreenIterationsNumberEl) {
-        fullscreenIterationsNumberEl.textContent = '25';
-      }
+      // Tricorn Julia Set - settings come from config
     } else if (currentFractalType === 'phoenix-julia') {
-      // Phoenix Julia Set - additional settings (position set by getInitialRenderPosition)
-      // Use interesting C values for Phoenix Julia
-      params.juliaC.x = -0.5;
-      params.juliaC.y = 0.0;
-      // Update Julia C sliders
-      if (juliaCReal) juliaCReal.value = -0.5;
-      if (juliaCImag) juliaCImag.value = 0.0;
-      if (juliaCRealValue) juliaCRealValue.textContent = '-0.5000';
-      if (juliaCImagValue) juliaCImagValue.textContent = '0.0000';
-      // Phoenix parameter defaults (xScale and yScale control the Phoenix parameter p)
-      // p = ((xScale - 0.5) * 2.0, (yScale - 0.5) * 2.0)
-      // Set to non-zero values to show Phoenix effects (p = 0.2, 0.0)
-      // xScale = 0.6 gives p.real = (0.6 - 0.5) * 2 = 0.2
-      // yScale = 0.5 gives p.imag = (0.5 - 0.5) * 2 = 0.0
-      params.xScale = 0.6; // p real = 0.2
-      params.yScale = 0.5; // p imag = 0.0
-      // Set iterations to 25 by default
-      params.iterations = 25;
-      iterationsExplicitlySet = true;
-      if (iterationsSlider) iterationsSlider.value = 25;
-      if (iterationsValue) iterationsValue.textContent = '25';
-      const fullscreenIterationsNumberEl = document.getElementById('fullscreen-iterations-number');
-      if (fullscreenIterationsNumberEl) {
-        fullscreenIterationsNumberEl.textContent = '25';
-      }
-      // Update scale sliders
-      if (xScaleSlider) {
-        xScaleSlider.value = 0.6;
-        updateSliderAccessibility(xScaleSlider, xScaleValue, xScaleAnnounce, 0.6, 'X Axis', false);
-      }
-      if (yScaleSlider) {
-        yScaleSlider.value = 0.5;
-        updateSliderAccessibility(yScaleSlider, yScaleValue, yScaleAnnounce, 0.5, 'Y Axis', false);
-      }
-      // Set cosmic color scheme by default
-      params.colorScheme = 'cosmic';
-      if (colorSchemeSelect) colorSchemeSelect.value = 'cosmic';
-      const newIndex = colorSchemes.indexOf('cosmic');
-      if (newIndex !== -1) {
-        currentColorSchemeIndex = newIndex;
-      }
-      updateColorPalettePreview();
+      // Phoenix Julia Set - settings come from config
     } else if (currentFractalType === 'lambda-julia') {
-      // Lambda Julia Set - additional settings (position set by getInitialRenderPosition)
-      // Use interesting λ values for Lambda Julia (λ = 0.5 + 0.5i)
-      params.juliaC.x = 0.5;
-      params.juliaC.y = 0.5;
-      // Update Julia C sliders
-      if (juliaCReal) juliaCReal.value = 0.5;
-      if (juliaCImag) juliaCImag.value = 0.5;
-      if (juliaCRealValue) juliaCRealValue.textContent = '0.5000';
-      if (juliaCImagValue) juliaCImagValue.textContent = '0.5000';
-      // Set cosmic color scheme and 25 iterations
-      params.colorScheme = 'cosmic';
-      params.iterations = 25;
-      iterationsExplicitlySet = true;
-      // Update color scheme selector
-      if (colorSchemeSelect) colorSchemeSelect.value = 'cosmic';
-      // Update color scheme index for fullscreen cycling
-      const newIndex = colorSchemes.indexOf('cosmic');
-      if (newIndex !== -1) {
-        currentColorSchemeIndex = newIndex;
-      }
-      // Update palette preview
-      updateColorPalettePreview();
-      // Update iterations slider and value
-      if (iterationsSlider) iterationsSlider.value = 25;
-      if (iterationsValue) iterationsValue.textContent = '25';
-      // Update fullscreen iterations number
-      const fullscreenIterationsNumberEl = document.getElementById('fullscreen-iterations-number');
-      if (fullscreenIterationsNumberEl) {
-        fullscreenIterationsNumberEl.textContent = '25';
-      }
+      // Lambda Julia Set - settings come from config
     } else if (currentFractalType === 'hybrid-julia') {
-      // Hybrid Julia Set - additional settings (position set by getInitialRenderPosition)
-      // Use interesting c values for Hybrid Julia
-      params.juliaC.x = -0.4;
-      params.juliaC.y = 0.6;
-      // Update Julia C sliders
-      if (juliaCReal) juliaCReal.value = -0.4;
-      if (juliaCImag) juliaCImag.value = 0.6;
-      if (juliaCRealValue) juliaCRealValue.textContent = '-0.4000';
-      if (juliaCImagValue) juliaCImagValue.textContent = '0.6000';
-      // Set monochrome color scheme and 100 iterations (hybrid sets need more iterations)
-      params.colorScheme = 'monochrome';
-      params.iterations = 100;
-      iterationsExplicitlySet = true;
-      // Update color scheme selector
-      if (colorSchemeSelect) colorSchemeSelect.value = 'monochrome';
-      // Update color scheme index for fullscreen cycling
-      const newIndex = colorSchemes.indexOf('monochrome');
-      if (newIndex !== -1) {
-        currentColorSchemeIndex = newIndex;
-      }
-      // Update palette preview
-      updateColorPalettePreview();
-      // Update iterations slider and value
-      if (iterationsSlider) iterationsSlider.value = 100;
-      if (iterationsValue) iterationsValue.textContent = '100';
-      // Update fullscreen iterations number
-      const fullscreenIterationsNumberEl = document.getElementById('fullscreen-iterations-number');
-      if (fullscreenIterationsNumberEl) {
-        fullscreenIterationsNumberEl.textContent = '100';
-      }
+      // Hybrid Julia Set - settings come from config
     } else if (currentFractalType === 'magnet') {
-      // Magnet Fractal - additional settings (position set by getInitialRenderPosition)
-      // Use interesting complex parameter 'a' for magnet fractal
-      // Complex values create more interesting patterns than real-only values
-      // a = 1.2 + 0.8i produces beautiful magnetic patterns with spirals
-      params.juliaC.x = 1.2;
-      params.juliaC.y = 0.8;
-      // Update Julia C sliders
-      if (juliaCReal) juliaCReal.value = 1.2;
-      if (juliaCImag) juliaCImag.value = 0.8;
-      if (juliaCRealValue) juliaCRealValue.textContent = '1.2000';
-      if (juliaCImagValue) juliaCImagValue.textContent = '0.8000';
-      // Set iterations - higher for more detail
-      params.iterations = 100;
-      iterationsExplicitlySet = true;
-      if (iterationsSlider) iterationsSlider.value = 100;
-      if (iterationsValue) iterationsValue.textContent = '100';
-      const fullscreenIterationsNumberEl = document.getElementById('fullscreen-iterations-number');
-      if (fullscreenIterationsNumberEl) {
-        fullscreenIterationsNumberEl.textContent = '100';
-      }
-      // Use a vibrant color scheme by default
-      params.colorScheme = 'rainbow';
-      if (colorSchemeSelect) colorSchemeSelect.value = 'rainbow';
-      const newIndex = colorSchemes.indexOf('rainbow');
-      if (newIndex !== -1) {
-        currentColorSchemeIndex = newIndex;
-      }
-      updateColorPalettePreview();
+      // Magnet Fractal - settings come from config
     } else if (currentFractalType === 'amman-tiling') {
-      // Amman Tiling - additional settings (position set by getInitialRenderPosition)
-      // Set iterations to 25 by default
-      params.iterations = 25;
-      iterationsExplicitlySet = true;
-      if (iterationsSlider) iterationsSlider.value = 25;
-      if (iterationsValue) iterationsValue.textContent = '25';
-      const fullscreenIterationsNumberEl = document.getElementById('fullscreen-iterations-number');
-      if (fullscreenIterationsNumberEl) {
-        fullscreenIterationsNumberEl.textContent = '25';
-      }
-      // Set Rainbow Double color scheme by default
-      params.colorScheme = 'rainbow-double';
-      if (colorSchemeSelect) colorSchemeSelect.value = 'rainbow-double';
-      const newIndex = colorSchemes.indexOf('rainbow-double');
-      if (newIndex !== -1) {
-        currentColorSchemeIndex = newIndex;
-      }
-      updateColorPalettePreview();
+      // Amman Tiling - settings come from config
     } else if (currentFractalType === 'chair-tiling') {
-      // Chair Tiling - additional settings (position set by getInitialRenderPosition)
-      // Set iterations to 25 by default
-      params.iterations = 25;
-      iterationsExplicitlySet = true;
-      if (iterationsSlider) iterationsSlider.value = 25;
-      if (iterationsValue) iterationsValue.textContent = '25';
-      const fullscreenIterationsNumberEl = document.getElementById('fullscreen-iterations-number');
-      if (fullscreenIterationsNumberEl) {
-        fullscreenIterationsNumberEl.textContent = '25';
-      }
+      // Chair Tiling - settings come from config
     } else if (currentFractalType === 'snowflake-tiling') {
-      // Snowflake Tiling - additional settings (position set by getInitialRenderPosition)
-      params.iterations = 40;
-      iterationsExplicitlySet = true;
-      if (iterationsSlider) iterationsSlider.value = 40;
-      if (iterationsValue) iterationsValue.textContent = '40';
-      const fullscreenIterationsNumberEl = document.getElementById('fullscreen-iterations-number');
-      if (fullscreenIterationsNumberEl) {
-        fullscreenIterationsNumberEl.textContent = '40';
-      }
-      // Set Rainbow Double color scheme by default
-      params.colorScheme = 'rainbow-double';
-      if (colorSchemeSelect) colorSchemeSelect.value = 'rainbow-double';
-      const newIndex = colorSchemes.indexOf('rainbow-double');
-      if (newIndex !== -1) {
-        currentColorSchemeIndex = newIndex;
-      }
-      updateColorPalettePreview();
+      // Snowflake Tiling - settings come from config
     } else if (currentFractalType === 'domino-substitution') {
-      // Domino Substitution - additional settings (position set by getInitialRenderPosition)
-      params.iterations = 40;
-      iterationsExplicitlySet = true;
-      if (iterationsSlider) iterationsSlider.value = 40;
-      if (iterationsValue) iterationsValue.textContent = '40';
-      const fullscreenIterationsNumberEl = document.getElementById('fullscreen-iterations-number');
-      if (fullscreenIterationsNumberEl) {
-        fullscreenIterationsNumberEl.textContent = '40';
-      }
-      // Set Rainbow Double color scheme by default
-      params.colorScheme = 'rainbow-double';
-      if (colorSchemeSelect) colorSchemeSelect.value = 'rainbow-double';
-      const newIndex = colorSchemes.indexOf('rainbow-double');
-      if (newIndex !== -1) {
-        currentColorSchemeIndex = newIndex;
-      }
-      updateColorPalettePreview();
+      // Domino Substitution - settings come from config
     } else if (currentFractalType === 'pinwheel-tiling') {
       // Pinwheel Tiling - additional settings (position set by getInitialRenderPosition)
     } else if (currentFractalType === 'carpenter-square') {
-      // Carpenter Square - additional settings (position set by getInitialRenderPosition)
-      // Set iterations to 25 by default
-      params.iterations = 25;
-      iterationsExplicitlySet = true;
-      if (iterationsSlider) iterationsSlider.value = 25;
-      if (iterationsValue) iterationsValue.textContent = '25';
-      const fullscreenIterationsNumberEl = document.getElementById('fullscreen-iterations-number');
-      if (fullscreenIterationsNumberEl) {
-        fullscreenIterationsNumberEl.textContent = '25';
-      }
-      // Set Rainbow Double color scheme by default
-      params.colorScheme = 'rainbow-double';
-      if (colorSchemeSelect) colorSchemeSelect.value = 'rainbow-double';
-      const newIndex = colorSchemes.indexOf('rainbow-double');
-      if (newIndex !== -1) {
-        currentColorSchemeIndex = newIndex;
-      }
-      updateColorPalettePreview();
+      // Carpenter Square - settings come from config
     } else if (currentFractalType === 'diffusion-limited-aggregation') {
-      // Diffusion Limited Aggregation - additional settings (position set by getInitialRenderPosition)
-      // Default rainbow color scheme
-      params.colorScheme = 'rainbow';
-      if (colorSchemeSelect) colorSchemeSelect.value = 'rainbow';
-      const newIndex = colorSchemes.indexOf('rainbow');
-      if (newIndex !== -1) {
-        currentColorSchemeIndex = newIndex;
-      }
-      updateColorPalettePreview();
+      // Diffusion Limited Aggregation - settings come from config
     } else if (currentFractalType === 'levy-flights') {
-      // Lévy Flights - default rainbow vibrant color scheme
-      params.colorScheme = 'rainbow-vibrant';
-      if (colorSchemeSelect) colorSchemeSelect.value = 'rainbow-vibrant';
-      const newIndex = colorSchemes.indexOf('rainbow-vibrant');
-      if (newIndex !== -1) {
-        currentColorSchemeIndex = newIndex;
-      }
-      updateColorPalettePreview();
+      // Lévy Flights - settings come from config
     } else if (currentFractalType === 'sierpinski') {
-      // Sierpinski Triangle - additional settings (position set by getInitialRenderPosition)
-      // Set iterations to 25 by default
-      params.iterations = 25;
-      iterationsExplicitlySet = true;
-      if (iterationsSlider) iterationsSlider.value = 25;
-      if (iterationsValue) iterationsValue.textContent = '25';
-      const fullscreenIterationsNumberEl = document.getElementById('fullscreen-iterations-number');
-      if (fullscreenIterationsNumberEl) {
-        fullscreenIterationsNumberEl.textContent = '25';
-      }
+      // Sierpinski Triangle - settings come from config
     } else if (currentFractalType === 'sierpinski-arrowhead') {
       // Sierpinski Arrowhead - additional settings (position set by getInitialRenderPosition)
     } else if (currentFractalType === 'sierpinski-carpet') {
       // Sierpinski Carpet - additional settings (position set by getInitialRenderPosition)
     } else if (currentFractalType === 'sierpinski-gasket') {
-      // Sierpinski Gasket - additional settings (position set by getInitialRenderPosition)
-      params.xScale = 0.5; // 6 sides (hexagon)
-      // Update xScale slider
-      if (xScaleSlider) xScaleSlider.value = 0.5;
-      if (xScaleValue) xScaleValue.textContent = '0.5';
+      // Sierpinski Gasket - settings come from config
     } else if (currentFractalType === 'sierpinski-hexagon') {
       // Sierpinski Hexagon - additional settings (position set by getInitialRenderPosition)
     } else if (currentFractalType === 'sierpinski-lsystem') {
@@ -1656,15 +1332,7 @@ function setupUI() {
     } else if (currentFractalType === 'quadrilateral-subdivision') {
       // Quadrilateral Subdivision - additional settings (position set by getInitialRenderPosition)
     } else if (currentFractalType === 'recursive-polygon-splitting') {
-      // Recursive Polygon Splitting - additional settings (position set by getInitialRenderPosition)
-      // Set rainbow color scheme by default
-      params.colorScheme = 'rainbow';
-      if (colorSchemeSelect) colorSchemeSelect.value = 'rainbow';
-      const newIndex = colorSchemes.indexOf('rainbow');
-      if (newIndex !== -1) {
-        currentColorSchemeIndex = newIndex;
-      }
-      updateColorPalettePreview();
+      // Recursive Polygon Splitting - settings come from config
     } else if (currentFractalType === 'triangular-subdivision') {
       // Triangular Subdivision - additional settings (position set by getInitialRenderPosition)
     } else if (currentFractalType === 'fractal-islands') {
@@ -1704,27 +1372,9 @@ function setupUI() {
     } else if (currentFractalType === 'minkowski-sausage') {
       // Minkowski Sausage - additional settings (position set by getInitialRenderPosition)
     } else if (currentFractalType === 'penrose-substitution') {
-      // Penrose Substitution - additional settings (position set by getInitialRenderPosition)
-      // Set iterations to 25 by default
-      params.iterations = 25;
-      iterationsExplicitlySet = true;
-      if (iterationsSlider) iterationsSlider.value = 25;
-      if (iterationsValue) iterationsValue.textContent = '25';
-      const fullscreenIterationsNumberEl = document.getElementById('fullscreen-iterations-number');
-      if (fullscreenIterationsNumberEl) {
-        fullscreenIterationsNumberEl.textContent = '25';
-      }
+      // Penrose Substitution - settings come from config
     } else if (currentFractalType === 'rauzy') {
-      // Rauzy - additional settings (position set by getInitialRenderPosition)
-      // Set iterations to 25 by default
-      params.iterations = 25;
-      iterationsExplicitlySet = true;
-      if (iterationsSlider) iterationsSlider.value = 25;
-      if (iterationsValue) iterationsValue.textContent = '25';
-      const fullscreenIterationsNumberEl = document.getElementById('fullscreen-iterations-number');
-      if (fullscreenIterationsNumberEl) {
-        fullscreenIterationsNumberEl.textContent = '25';
-      }
+      // Rauzy - settings come from config
     } else if (currentFractalType === 'spider-set') {
       // Spider Set - additional settings (position set by getInitialRenderPosition)
     } else if (currentFractalType === 'cesaro') {
@@ -1915,77 +1565,97 @@ function setupUI() {
   });
 
   resetViewBtn.addEventListener('click', () => {
-    // Reset zoom and offset to initial render position for this fractal type
-    const initialPosition = getInitialRenderPosition(currentFractalType);
+    // Reset zoom and offset to initial render position from config or fallback
+    const fractalConfig = currentFractalModule?.config;
+    let initialPosition;
+    if (fractalConfig?.initialPosition) {
+      initialPosition = fractalConfig.initialPosition;
+    } else {
+      initialPosition = getInitialRenderPosition(currentFractalType);
+    }
     params.zoom = initialPosition.zoom;
     params.offset.x = initialPosition.offset.x;
     params.offset.y = initialPosition.offset.y;
     updateCoordinateDisplay();
 
-    // Reset scale parameters and other settings based on fractal type
-    // Some fractals have specific default scales and other parameters
-    if (currentFractalType === 'multibrot') {
-      params.xScale = 0.25; // Order 4 for multibrot (only affects order, not coordinates)
-      params.yScale = 1.0;
-      if (xScaleSlider) {
-        xScaleSlider.value = 0.25;
-        updateSliderAccessibility(xScaleSlider, xScaleValue, xScaleAnnounce, 0.25, 'X Axis', false);
+    // Reset scale parameters and other settings from config
+    const fractalConfig = currentFractalModule?.config;
+    if (fractalConfig?.initialSettings) {
+      const settings = fractalConfig.initialSettings;
+      
+      // Reset xScale from config or default to 1.0
+      if (settings.xScale !== undefined) {
+        params.xScale = settings.xScale;
+        if (xScaleSlider) {
+          xScaleSlider.value = settings.xScale;
+          updateSliderAccessibility(xScaleSlider, xScaleValue, xScaleAnnounce, settings.xScale, 'X Axis', false);
+        }
+      } else {
+        params.xScale = 1.0;
+        if (xScaleSlider) {
+          xScaleSlider.value = 1.0;
+          updateSliderAccessibility(xScaleSlider, xScaleValue, xScaleAnnounce, 1.0, 'X Axis', false);
+        }
       }
-    } else if (currentFractalType === 'sierpinski-gasket') {
-      params.xScale = 0.5; // Hexagon for sierpinski gasket
-      params.yScale = 1.0;
-      if (xScaleSlider) {
-        xScaleSlider.value = 0.5;
-        updateSliderAccessibility(xScaleSlider, xScaleValue, xScaleAnnounce, 0.5, 'X Axis', false);
+      
+      // Reset yScale from config or default to 1.0
+      if (settings.yScale !== undefined) {
+        params.yScale = settings.yScale;
+        if (yScaleSlider) {
+          yScaleSlider.value = settings.yScale;
+          updateSliderAccessibility(yScaleSlider, yScaleValue, yScaleAnnounce, settings.yScale, 'Y Axis', false);
+        }
+      } else {
+        params.yScale = 1.0;
+        if (yScaleSlider) {
+          yScaleSlider.value = 1.0;
+          updateSliderAccessibility(yScaleSlider, yScaleValue, yScaleAnnounce, 1.0, 'Y Axis', false);
+        }
       }
-    } else if (currentFractalType === 'phoenix-julia') {
-      // Phoenix Julia Set - reset all initial parameters
-      // Phoenix parameter defaults (xScale and yScale control the Phoenix parameter p)
-      params.xScale = 0.6; // p real = 0.2
-      params.yScale = 0.5; // p imag = 0.0
-      if (xScaleSlider) {
-        xScaleSlider.value = 0.6;
-        updateSliderAccessibility(xScaleSlider, xScaleValue, xScaleAnnounce, 0.6, 'X Axis', false);
+      
+      // Reset juliaC from config if specified
+      if (settings.juliaC !== undefined) {
+        params.juliaC.x = settings.juliaC.x;
+        params.juliaC.y = settings.juliaC.y;
+        if (juliaCReal) juliaCReal.value = settings.juliaC.x;
+        if (juliaCImag) juliaCImag.value = settings.juliaC.y;
+        if (juliaCRealValue) juliaCRealValue.textContent = settings.juliaC.x.toFixed(4);
+        if (juliaCImagValue) juliaCImagValue.textContent = settings.juliaC.y.toFixed(4);
       }
-      if (yScaleSlider) {
-        yScaleSlider.value = 0.5;
-        updateSliderAccessibility(yScaleSlider, yScaleValue, yScaleAnnounce, 0.5, 'Y Axis', false);
+      
+      // Reset iterations from config if specified
+      if (settings.iterations !== undefined) {
+        params.iterations = settings.iterations;
+        if (iterationsSlider) iterationsSlider.value = settings.iterations;
+        if (iterationsValue) iterationsValue.textContent = settings.iterations.toString();
+        const fullscreenIterationsNumberEl = document.getElementById('fullscreen-iterations-number');
+        if (fullscreenIterationsNumberEl) {
+          fullscreenIterationsNumberEl.textContent = settings.iterations.toString();
+        }
       }
-      // Reset Julia C values
-      params.juliaC.x = -0.5;
-      params.juliaC.y = 0.0;
-      if (juliaCReal) juliaCReal.value = -0.5;
-      if (juliaCImag) juliaCImag.value = 0.0;
-      if (juliaCRealValue) juliaCRealValue.textContent = '-0.5000';
-      if (juliaCImagValue) juliaCImagValue.textContent = '0.0000';
-      // Reset iterations
-      params.iterations = 25;
-      if (iterationsSlider) iterationsSlider.value = 25;
-      if (iterationsValue) iterationsValue.textContent = '25';
-      const fullscreenIterationsNumberEl = document.getElementById('fullscreen-iterations-number');
-      if (fullscreenIterationsNumberEl) {
-        fullscreenIterationsNumberEl.textContent = '25';
+      
+      // Reset color scheme from config if specified
+      if (settings.colorScheme !== undefined) {
+        params.colorScheme = settings.colorScheme;
+        if (colorSchemeSelect) colorSchemeSelect.value = settings.colorScheme;
+        const newIndex = colorSchemes.indexOf(settings.colorScheme);
+        if (newIndex !== -1) {
+          currentColorSchemeIndex = newIndex;
+        }
+        updateColorPalettePreview();
       }
-      // Reset color scheme
-      params.colorScheme = 'cosmic';
-      if (colorSchemeSelect) colorSchemeSelect.value = 'cosmic';
-      const newIndex = colorSchemes.indexOf('cosmic');
-      if (newIndex !== -1) {
-        currentColorSchemeIndex = newIndex;
-      }
-      updateColorPalettePreview();
     } else {
+      // Default to 1.0 if no config
       params.xScale = 1.0;
       params.yScale = 1.0;
       if (xScaleSlider) {
         xScaleSlider.value = 1.0;
         updateSliderAccessibility(xScaleSlider, xScaleValue, xScaleAnnounce, 1.0, 'X Axis', false);
       }
-    }
-
-    if (yScaleSlider && currentFractalType !== 'phoenix-julia') {
-      yScaleSlider.value = params.yScale;
-      updateSliderAccessibility(yScaleSlider, yScaleValue, yScaleAnnounce, params.yScale, 'Y Axis', false);
+      if (yScaleSlider) {
+        yScaleSlider.value = 1.0;
+        updateSliderAccessibility(yScaleSlider, yScaleValue, yScaleAnnounce, 1.0, 'Y Axis', false);
+      }
     }
 
     renderFractal();
