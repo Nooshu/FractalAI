@@ -4,14 +4,12 @@ import { BenchmarkUI, addBenchmarkButton } from './performance/ui.js';
 import { CONFIG } from './core/config.js';
 import { FrameCache } from './core/frameCache.js';
 import { initLoadingBar, showLoadingBar, hideLoadingBar } from './ui/loading-bar.js';
+import { initFPSTracker, startFPSTracking, incrementFrameCount } from './performance/fps-tracker.js';
 
 // Application state
 let regl = null;
 let canvas = null;
 let currentFractalType = 'mandelbrot';
-let frameCount = 0;
-let fps = 0;
-let fpsIntervalId = null;
 let drawFractal = null; // Current regl draw command
 let currentFractalModule = null; // Currently loaded fractal module
 let fractalCache = new Map(); // Cache for loaded fractal modules
@@ -40,8 +38,6 @@ const domCache = {
   coordOffsetX: null,
   coordOffsetY: null,
   copyCoordsBtn: null,
-  // FPS display
-  fps: null,
 };
 
 // Initialize DOM cache
@@ -50,9 +46,10 @@ function initDOMCache() {
   domCache.coordOffsetX = document.getElementById('coord-offset-x');
   domCache.coordOffsetY = document.getElementById('coord-offset-y');
   domCache.copyCoordsBtn = document.getElementById('copy-coords-btn');
-  domCache.fps = document.getElementById('fps');
   // Initialize loading bar module
   initLoadingBar();
+  // Initialize FPS tracker module
+  initFPSTracker('fps');
 }
 
 // Function to calculate pixel ratio based on zoom level
@@ -346,12 +343,12 @@ async function init() {
     loadFractal(currentFractalType).then(() => {
       renderFractal();
       updateCoordinateDisplay();
-      initFPSInterval();
+      startFPSTracking();
       animate();
     });
   } else {
     // If loaded from URL, just start animation
-    initFPSInterval();
+    startFPSTracking();
     animate();
   }
 }
@@ -3773,7 +3770,7 @@ function animate() {
   requestAnimationFrame(animate);
 
   // Increment frame counter (FPS calculation moved to separate interval)
-  frameCount++;
+  incrementFrameCount();
 
   // Only render when necessary:
   // 1. When progressive rendering is active (needs continuous updates)
@@ -3799,25 +3796,6 @@ function animate() {
   }
 }
 
-/**
- * Initialize FPS calculation interval
- * Runs once per second to calculate and display FPS
- */
-function initFPSInterval() {
-  // Clear any existing interval
-  if (fpsIntervalId !== null) {
-    clearInterval(fpsIntervalId);
-  }
-
-  // Calculate and display FPS once per second
-  fpsIntervalId = setInterval(() => {
-    fps = frameCount;
-    frameCount = 0;
-    if (domCache.fps) {
-      domCache.fps.textContent = `FPS: ${fps}`;
-    }
-  }, 1000);
-}
 
 // Update coordinate display
 function updateCoordinateDisplay() {
