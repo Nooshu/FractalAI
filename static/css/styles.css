@@ -652,6 +652,19 @@ body {
   padding-left: 28px;
 }
 
+/* Navigation list */
+.navigation-list {
+  margin: 6px 0 0;
+  padding-left: 18px;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.navigation-list li + li {
+  margin-top: 4px;
+}
+
 /* Top Action Bar */
 .top-action-bar {
   position: absolute;
