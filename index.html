@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>FractalAI - 2D Fractal Generator</title>
 
-    <!-- Favicons -->
     <link rel="icon" type="image/x-icon" href="/static/images/favicon.ico" />
     <link rel="icon" type="image/png" sizes="32x32" href="/static/images/favicon-32x32.png" />
     <link rel="icon" type="image/png" sizes="16x16" href="/static/images/favicon-16x16.png" />
@@ -16,7 +15,6 @@
   </head>
   <body>
     <div class="app-container">
-      <!-- Side Panel -->
       <aside class="side-panel">
         <header class="panel-header">
           <button class="back-btn" title="Back">
@@ -35,7 +33,6 @@
         </header>
 
         <div class="panel-content">
-          <!-- Warning Banner -->
           <div class="panel-warning">
             <svg class="warning-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
@@ -44,7 +41,6 @@
             </svg>
             <span>Some fractals, or using a higher number of iterations, may cause your browser to become unresponsive.</span>
           </div>
-          <!-- Navigation Section -->
           <div class="section">
             <button class="section-header" data-section="navigation">
               <svg
@@ -56,9 +52,7 @@
                 stroke="currentColor"
                 stroke-width="2"
               >
-                <!-- Outer circle -->
                 <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" />
-                <!-- Navigation arrow (pointer), rotated so it points diagonally up, centered within the circle -->
                 <polygon points="12 9 14 14 10 14" transform="rotate(-45 12 12)" />
               </svg>
               <span>Navigation</span>
@@ -88,7 +82,6 @@
             </div>
           </div>
 
-          <!-- Auto-Render Setting -->
           <div class="section">
             <button class="section-header" data-section="settings">
               <svg
@@ -98,7 +91,6 @@
                 viewBox="0 0 389.663 389.663"
                 fill="currentColor"
               >
-                <!-- Settings cogwheel from provided SVG, scaled via viewBox -->
                 <path d="M194.832,132.997c-34.1,0-61.842,27.74-61.842,61.838c0,34.1,27.742,61.841,61.842,61.841
                   c34.099,0,61.841-27.741,61.841-61.841C256.674,160.737,228.932,132.997,194.832,132.997z M194.832,226.444
                   c-17.429,0-31.608-14.182-31.608-31.61c0-17.428,14.18-31.605,31.608-31.605c17.429,0,31.607,14.178,31.607,31.605
@@ -149,8 +141,7 @@
                   </div>
                 </label>
               </div>
-              
-              <!-- Coordinate Display -->
+
               <div class="control">
                 <label class="control-label">Coordinates</label>
                 <div class="coordinate-display">
@@ -178,11 +169,10 @@
                   </div>
                 </div>
               </div>
-              
+
             </div>
           </div>
 
-          <!-- Fractal Section -->
           <div class="section">
             <button class="section-header" data-section="fractal">
               <svg
@@ -192,7 +182,6 @@
                 viewBox="144 144 512 512"
                 fill="currentColor"
               >
-                <!-- Scaled-down fractal geometry icon from provided SVG -->
                 <g>
                   <path d="m542.2 565.88h21.965l-10.953-21.965z"/>
                   <path d="m592 565.88-10.941-21.965-11.02 21.965z"/>
@@ -444,7 +433,6 @@
             </div>
           </div>
 
-          <!-- Iterations Section -->
           <div class="section">
             <button class="section-header" data-section="iterations">
               <svg
@@ -492,7 +480,6 @@
             </div>
           </div>
 
-          <!-- Color Scheme Section -->
           <div class="section">
             <button class="section-header" data-section="color">
               <svg
@@ -562,7 +549,6 @@
             </div>
           </div>
 
-          <!-- Julia Parameters Section -->
           <div class="section" id="julia-controls">
             <button class="section-header" data-section="julia">
               <svg
@@ -627,7 +613,6 @@
             </div>
           </div>
 
-          <!-- Scale Section -->
           <div class="section" id="2d-controls">
             <button class="section-header" data-section="scale">
               <svg
@@ -637,7 +622,6 @@
                 viewBox="144 144 512 512"
                 fill="currentColor"
               >
-                <!-- Scaled-down scale icon from provided SVG -->
                 <defs>
                   <clipPath id="scale-icon-clip">
                     <path d="m148.09 148.09h503.81v503.81h-503.81z"/>
@@ -712,7 +696,6 @@
             </div>
           </div>
 
-          <!-- Debug Section -->
           <div class="section" id="debug-section">
             <button class="section-header" data-section="debug">
               <svg
@@ -722,7 +705,6 @@
                 viewBox="144 144 512 512"
                 fill="currentColor"
               >
-                <!-- Scaled-down bug icon from provided SVG -->
                 <g>
                   <path d="m396.05 620.5c-79.691-2.3867-143.65-76.664-143.65-167.95 0-91.285 63.957-165.57 143.65-167.95v335.9zm7.9062-335.9c79.691 2.3867 143.65 76.664 143.65 167.95 0 91.285-63.957 165.57-143.65 167.95v-335.9zm64.641 266.47c0-9.5469-7.7383-17.289-17.285-17.289s-17.285 7.7383-17.285 17.289c0 9.5469 7.7383 17.285 17.285 17.285s17.285-7.7383 17.285-17.285zm0-197.05c0-9.5469-7.7383-17.285-17.285-17.285s-17.285 7.7383-17.285 17.285 7.7383 17.285 17.285 17.285 17.285-7.7383 17.285-17.285zm-17.285 81.238c-9.5469 0-17.285 7.7383-17.285 17.285s7.7383 17.289 17.285 17.289 17.285-7.7383 17.285-17.289c0-9.5469-7.7383-17.285-17.285-17.285zm62.27 64.77c0 9.5469-7.7383 17.285-17.285 17.285s-17.285-7.7383-17.285-17.285 7.7383-17.285 17.285-17.285 17.285 7.7383 17.285 17.285zm0-94.965c0-9.5469-7.7383-17.289-17.285-17.289s-17.285 7.7383-17.285 17.289c0 9.5469 7.7383 17.285 17.285 17.285s17.285-7.7383 17.285-17.285zm-182.18 146c0-9.5469 7.7383-17.289 17.285-17.289s17.285 7.7383 17.285 17.289c0 9.5469-7.7383 17.285-17.285 17.285s-17.285-7.7383-17.285-17.285zm0-197.05c0-9.5469 7.7383-17.285 17.285-17.285s17.285 7.7383 17.285 17.285-7.7383 17.285-17.285 17.285-17.285-7.7383-17.285-17.285zm17.285 81.238c9.5469 0 17.285 7.7383 17.285 17.285s-7.7383 17.289-17.285 17.289-17.285-7.7383-17.285-17.289c0-9.5469 7.7383-17.285 17.285-17.285zm-62.27 64.77c0 9.5469 7.7383 17.285 17.285 17.285s17.289-7.7383 17.289-17.285-7.7383-17.285-17.289-17.285c-9.5469 0-17.285 7.7383-17.285 17.285zm0-94.965c0-9.5469 7.7383-17.289 17.285-17.289s17.289 7.7383 17.289 17.289c0 9.5469-7.7383 17.285-17.289 17.285-9.5469 0-17.285-7.7383-17.285-17.285z" fill-rule="evenodd"/>
                   <path d="m348.93 230.77c0.085937 4.3477 3.6797 7.8047 8.0312 7.7227 4.3477-0.085938 7.8047-3.6797 7.7227-8.0312-0.125-6.3789-2.7305-17.305-11.766-25.844-5.8945-5.5703-14.449-10.133-26.691-11.66-4.332-0.52734-8.2734 2.5547-8.8008 6.8867-0.52734 4.332 2.5547 8.2734 6.8867 8.8008 8.4492 1.0547 14.09 3.957 17.797 7.4609 5.2422 4.957 6.7539 11.105 6.8242 14.664z"/>
@@ -814,7 +796,6 @@
         </div>
       </aside>
 
-      <!-- Footer -->
       <footer class="app-footer">
         <p>
           Made by
@@ -852,9 +833,7 @@
         </button>
       </footer>
 
-      <!-- Main Canvas Area -->
       <main class="canvas-area">
-        <!-- Show Panel Button (visible when panel is hidden) -->
         <button id="show-panel-btn" class="show-panel-btn" title="Show Panel">
           <svg
             width="20"
@@ -868,7 +847,6 @@
           </svg>
         </button>
 
-        <!-- Top Action Bar -->
         <div class="top-action-bar">
           <button id="update-fractal" class="top-action-btn" aria-label="Render fractal">
             <svg
@@ -942,7 +920,6 @@
           <div id="info-panel">
             <div id="fps">FPS: --</div>
           </div>
-          <!-- Fullscreen controls overlay -->
           <div id="fullscreen-controls" class="fullscreen-controls">
             <button
               id="fullscreen-screenshot"
@@ -986,37 +963,27 @@
               <canvas id="fullscreen-color-palette" class="fullscreen-color-palette" width="16" height="16"></canvas>
             </button>
             <button id="fullscreen-random" class="fullscreen-control-btn" title="Random View">
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                stroke="currentColor"
-                stroke-width="1.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <!-- 3D dice with isometric view -->
-                <!-- Top face (showing 5 dots) -->
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
                 <path d="M12 2 L20 6 L12 10 L4 6 Z" fill="currentColor" opacity="0.9" stroke="none"/>
-                <!-- Right face (showing 3 dots) -->
                 <path d="M20 6 L20 14 L12 18 L12 10 Z" fill="currentColor" opacity="0.6" stroke="none"/>
-                <!-- Left face (showing 2 dots) -->
                 <path d="M4 6 L4 14 L12 18 L12 10 Z" fill="currentColor" opacity="0.75" stroke="none"/>
-
-                <!-- Dots on top face (5 dots) -->
                 <circle cx="12" cy="6" r="0.8" fill="rgba(0,0,0,0.3)"/>
                 <circle cx="9" cy="5" r="0.8" fill="rgba(0,0,0,0.3)"/>
                 <circle cx="15" cy="5" r="0.8" fill="rgba(0,0,0,0.3)"/>
                 <circle cx="9" cy="7" r="0.8" fill="rgba(0,0,0,0.3)"/>
                 <circle cx="15" cy="7" r="0.8" fill="rgba(0,0,0,0.3)"/>
-
-                <!-- Dots on right face (3 dots diagonal) -->
                 <circle cx="16.5" cy="9" r="0.7" fill="rgba(0,0,0,0.4)"/>
                 <circle cx="16" cy="12" r="0.7" fill="rgba(0,0,0,0.4)"/>
                 <circle cx="15.5" cy="15" r="0.7" fill="rgba(0,0,0,0.4)"/>
-
-                <!-- Dots on left face (2 dots) -->
                 <circle cx="8" cy="9" r="0.7" fill="rgba(0,0,0,0.4)"/>
                 <circle cx="8" cy="15" r="0.7" fill="rgba(0,0,0,0.4)"/>
               </svg>
@@ -1072,22 +1039,22 @@
     <script>
       // Register Service Worker for PWA (disabled for localhost development)
       if ('serviceWorker' in navigator) {
-        const isLocalhost = window.location.hostname === 'localhost' || 
-                           window.location.hostname === '127.0.0.1' || 
+        const isLocalhost = window.location.hostname === 'localhost' ||
+                           window.location.hostname === '127.0.0.1' ||
                            window.location.hostname === '';
-        
+
         if (!isLocalhost) {
           window.addEventListener('load', () => {
             navigator.serviceWorker
               .register('/sw.js')
               .then((registration) => {
                 console.log('[Service Worker] Registered:', registration.scope);
-                
+
                 // Check for updates periodically
                 setInterval(() => {
                   registration.update();
                 }, 60 * 60 * 1000); // Check every hour
-                
+
                 // Handle updates
                 registration.addEventListener('updatefound', () => {
                   const newWorker = registration.installing;
@@ -1110,7 +1077,7 @@
           });
         } else {
           console.log('[Service Worker] Disabled for localhost development');
-          
+
           // Unregister any existing service workers on localhost
           navigator.serviceWorker.getRegistrations().then((registrations) => {
             for (const registration of registrations) {
@@ -1121,7 +1088,7 @@
               });
             }
           });
-          
+
           // Clear all caches on localhost
           if ('caches' in window) {
             caches.keys().then((cacheNames) => {
