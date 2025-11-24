@@ -30,6 +30,23 @@ export function setupInputControls(getters, callbacks) {
     return { cleanup: () => {} };
   }
 
+  // Create hover coordinates tooltip element
+  const hoverCoords = document.createElement('div');
+  hoverCoords.id = 'hover-coords-tooltip';
+  hoverCoords.style.position = 'absolute';
+  hoverCoords.style.pointerEvents = 'none';
+  hoverCoords.style.background = 'rgba(0, 0, 0, 0.75)';
+  hoverCoords.style.color = '#fff';
+  hoverCoords.style.padding = '4px 8px';
+  hoverCoords.style.borderRadius = '4px';
+  hoverCoords.style.fontSize = '11px';
+  hoverCoords.style.fontFamily = 'Courier New, monospace';
+  hoverCoords.style.border = '1px solid rgba(255, 255, 255, 0.3)';
+  hoverCoords.style.boxShadow = '0 2px 6px rgba(0, 0, 0, 0.6)';
+  hoverCoords.style.zIndex = '120';
+  hoverCoords.style.display = 'none';
+  canvasContainer.appendChild(hoverCoords);
+
   // Internal state
   let isDragging = false;
   let isSelecting = false;
@@ -53,6 +70,34 @@ export function setupInputControls(getters, callbacks) {
     return cachedCanvasRect;
   };
 
+  // Helper to convert client coordinates to fractal coordinates
+  const getFractalCoordsFromClient = (clientX, clientY) => {
+    const params = getParams();
+    const rect = getCanvasRect();
+
+    const mouseX = clientX - rect.left;
+    const mouseY = clientY - rect.top;
+    const displayWidth = rect.width;
+    const displayHeight = rect.height;
+
+    if (displayWidth === 0 || displayHeight === 0 || canvas.width === 0 || canvas.height === 0) {
+      return null;
+    }
+
+    const uvX = mouseX / displayWidth;
+    const uvY = mouseY / displayHeight;
+
+    const rendererWidth = canvas.width;
+    const rendererHeight = canvas.height;
+    const aspect = rendererWidth / rendererHeight;
+
+    const scale = 4.0 / params.zoom;
+    const fractalX = (uvX - 0.5) * scale * aspect * params.xScale + params.offset.x;
+    const fractalY = (uvY - 0.5) * scale * params.yScale + params.offset.y;
+
+    return { x: fractalX, y: fractalY, mouseX, mouseY };
+  };
+
   // Mouse down handler
   const handleMouseDown = (e) => {
     // Only start dragging on left mouse button
@@ -66,6 +111,23 @@ export function setupInputControls(getters, callbacks) {
       const rect = getCanvasRect();
       const mouseX = e.clientX - rect.left;
       const mouseY = e.clientY - rect.top;
+
+      // Ctrl-click: precise zoom into hovered coordinate
+      if (e.ctrlKey) {
+        const coords = getFractalCoordsFromClient(e.clientX, e.clientY);
+        if (coords) {
+          const params = getParams();
+          // Zoom in by a factor (same as double-click)
+          const zoomFactor = 2.0;
+          params.zoom *= zoomFactor;
+          params.offset.x = coords.x;
+          params.offset.y = coords.y;
+          updateCoordinateDisplay();
+          renderFractalProgressive();
+        }
+        e.preventDefault();
+        return;
+      }
 
       // Check if Shift key is held for selection mode
       if (e.shiftKey) {
@@ -262,32 +324,69 @@ export function setupInputControls(getters, callbacks) {
     } else if (!isSelecting) {
       canvas.style.cursor = 'grab';
     }
+
+    // Hide hover coordinates when leaving canvas
+    hoverCoords.style.display = 'none';
   };
 
   // Update cursor based on modifier keys
-  const updateCursor = (shiftKey) => {
+  const updateCursor = (modifierActive) => {
     if (!isDragging && !isSelecting) {
-      canvas.style.cursor = shiftKey ? 'crosshair' : 'grab';
+      canvas.style.cursor = modifierActive ? 'crosshair' : 'grab';
     }
   };
 
-  // Canvas mouse move handler (for cursor updates)
+  // Canvas mouse move handler (for cursor updates and hover coordinates)
   const handleCanvasMouseMove = (e) => {
     if (!isDragging && !isSelecting) {
-      updateCursor(e.shiftKey);
+      const modifierActive = e.shiftKey || e.ctrlKey;
+      updateCursor(modifierActive);
+
+      if (e.ctrlKey) {
+        const coords = getFractalCoordsFromClient(e.clientX, e.clientY);
+        if (coords) {
+          hoverCoords.style.display = 'block';
+          // Position tooltip near the mouse pointer, within canvas container
+          const rect = getCanvasRect();
+          const offsetX = 12;
+          const offsetY = 12;
+          let tooltipX = coords.mouseX + offsetX;
+          let tooltipY = coords.mouseY + offsetY;
+          // Keep tooltip inside canvas bounds
+          const maxX = rect.width - 120; // rough width
+          const maxY = rect.height - 30; // rough height
+          tooltipX = Math.max(0, Math.min(tooltipX, maxX));
+          tooltipY = Math.max(0, Math.min(tooltipY, maxY));
+          hoverCoords.style.left = `${tooltipX}px`;
+          hoverCoords.style.top = `${tooltipY}px`;
+          hoverCoords.textContent = `x: ${coords.x.toFixed(4)}, y: ${coords.y.toFixed(4)}`;
+        }
+      } else {
+        hoverCoords.style.display = 'none';
+      }
     }
+  };
+
+  // Context menu handler - prevent default context menu on canvas/container
+  const handleContextMenu = (e) => {
+    // Always prevent the native context menu on the fractal canvas area,
+    // especially for Ctrl+Click on macOS
+    e.preventDefault();
   };
 
   // Keyboard handlers
   const handleKeyDown = (e) => {
-    if (e.key === 'Shift') {
-      updateCursor(true);
+    if (e.key === 'Shift' || e.key === 'Control') {
+      updateCursor(e.shiftKey || e.ctrlKey);
     }
   };
 
   const handleKeyUp = (e) => {
-    if (e.key === 'Shift') {
-      updateCursor(false);
+    if (e.key === 'Shift' || e.key === 'Control') {
+      updateCursor(e.shiftKey || e.ctrlKey);
+      if (!e.ctrlKey) {
+        hoverCoords.style.display = 'none';
+      }
     }
   };
 
@@ -398,6 +497,8 @@ export function setupInputControls(getters, callbacks) {
   window.addEventListener('mouseup', handleMouseUp, { passive: true });
   canvas.addEventListener('mouseleave', handleMouseLeave, { passive: true });
   canvas.addEventListener('mousemove', handleCanvasMouseMove, { passive: true });
+  canvas.addEventListener('contextmenu', handleContextMenu);
+  canvasContainer.addEventListener('contextmenu', handleContextMenu);
   window.addEventListener('keydown', handleKeyDown);
   window.addEventListener('keyup', handleKeyUp);
   canvas.addEventListener('dblclick', handleDoubleClick);
@@ -411,6 +512,8 @@ export function setupInputControls(getters, callbacks) {
     window.removeEventListener('mouseup', handleMouseUp);
     canvas.removeEventListener('mouseleave', handleMouseLeave);
     canvas.removeEventListener('mousemove', handleCanvasMouseMove);
+    canvas.removeEventListener('contextmenu', handleContextMenu);
+    canvasContainer.removeEventListener('contextmenu', handleContextMenu);
     window.removeEventListener('keydown', handleKeyDown);
     window.removeEventListener('keyup', handleKeyUp);
     canvas.removeEventListener('dblclick', handleDoubleClick);

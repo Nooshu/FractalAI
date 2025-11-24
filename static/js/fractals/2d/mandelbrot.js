@@ -166,6 +166,7 @@ export const config = {
     { x: -0.8, y: 0.156, zoom: 800 }, // Elephant valley
     { x: -0.235125, y: 0.827215, zoom: 400 }, // Another interesting area
     { x: 0.286932, y: 0.008287, zoom: 250 }, // Right side detail
+    { x: -0.7751, y: 0.136, zoom: 4699.082 }, // Deep zoom near Seahorse valley
   ],
   fallbackPosition: {
     offset: { x: -0.75, y: 0.1 },
