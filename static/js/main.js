@@ -1,4 +1,4 @@
-import createRegl from 'regl';
+import { initCanvasRenderer } from './rendering/canvas-renderer.js';
 import { getColorSchemeIndex, computeColorForScheme, isJuliaType } from './fractals/utils.js';
 import { BenchmarkUI, addBenchmarkButton } from './performance/ui.js';
 import { CONFIG } from './core/config.js';
@@ -17,6 +17,7 @@ let regl = null;
 let canvas = null;
 let currentFractalType = 'mandelbrot';
 let drawFractal = null; // Current regl draw command
+let updateRendererSize = null; // Function to update renderer size
 let currentFractalModule = null; // Currently loaded fractal module
 let fractalCache = new Map(); // Cache for loaded fractal modules
 let isLoadingFractal = false; // Track if a fractal is currently being loaded
@@ -50,34 +51,8 @@ function initDOMCache() {
   initFPSTracker('fps');
 }
 
-// Function to calculate pixel ratio based on zoom level
-// Higher zoom = higher pixel ratio for better quality
-function calculatePixelRatio() {
-  // Scale pixel ratio with zoom, but cap it to avoid performance issues
-  // Base pixel ratio * sqrt(zoom) gives a good balance
-  const basePixelRatio = window.devicePixelRatio || 1;
-  const zoomMultiplier = Math.min(Math.sqrt(params.zoom), 4); // Cap at 4x
-  return basePixelRatio * zoomMultiplier;
-}
-
-// Update canvas pixel ratio based on current zoom
-function updatePixelRatio() {
-  if (canvas && regl) {
-    const pixelRatio = calculatePixelRatio();
-    // Regl handles pixel ratio automatically, but we can set it explicitly
-    const container = canvas.parentElement;
-    const rect = container.getBoundingClientRect();
-    const width = rect.width || container.clientWidth || 800;
-    const height = rect.height || container.clientHeight || 600;
-    canvas.width = width * pixelRatio;
-    canvas.height = height * pixelRatio;
-    canvas.style.width = width + 'px';
-    canvas.style.height = height + 'px';
-  }
-}
-
-// Global function to update renderer size (needed for fullscreen and double-click)
-let updateRendererSize = null;
+// Import pixel ratio functions for use in rendering
+import { updatePixelRatio } from './rendering/pixel-ratio.js';
 
 // Throttled render function - batches multiple render requests
 function scheduleRender() {
@@ -121,85 +96,20 @@ async function init() {
   // Initialize DOM cache first
   initDOMCache();
 
-  canvas = document.getElementById('fractal-canvas');
-  const container = canvas.parentElement;
-
-  // Set initial canvas size before initializing regl
-  const rect = container.getBoundingClientRect();
-  const initialWidth = rect.width || container.clientWidth || 800;
-  const initialHeight = rect.height || container.clientHeight || 600;
-  const pixelRatio = window.devicePixelRatio || 1;
-
-  canvas.width = initialWidth * pixelRatio;
-  canvas.height = initialHeight * pixelRatio;
-  canvas.style.width = initialWidth + 'px';
-  canvas.style.height = initialHeight + 'px';
-  canvas.style.display = 'block';
-
-  // Initialize regl
-  regl = createRegl({
-    canvas,
-    attributes: {
-      antialias: true,
-      powerPreference: 'high-performance',
-      stencil: false,
-      depth: false,
-      alpha: false, // Disable transparency to prevent background bleed-through
+  // Initialize canvas and regl renderer
+  const { canvas: canvasElement, regl: reglContext, updateRendererSize: updateSize } = initCanvasRenderer('fractal-canvas', {
+    getZoom: () => params.zoom,
+    onResize: () => {
+      renderFractal();
     },
   });
 
-  // Check for WebGL2 support
-  // WebGL context check (logging removed)
-  try {
-    const gl = regl._gl;
-    if (gl instanceof WebGL2RenderingContext) {
-      // WebGL2 available
-    } else {
-      // WebGL1 in use
-    }
-  } catch {
-    // WebGL context check completed
-  }
-
-  // Function to update canvas size and pixel ratio
-  updateRendererSize = () => {
-    updatePixelRatio();
-
-    // Ensure canvas style is set
-    canvas.style.width = '100%';
-    canvas.style.height = '100%';
-    canvas.style.display = 'block';
-  };
-
-  // Initial size setup
-  updateRendererSize();
-
-  // Throttled resize handler to avoid excessive renders
-  let resizeTimeout = null;
-  const handleResize = () => {
-    if (resizeTimeout) {
-      clearTimeout(resizeTimeout);
-    }
-    resizeTimeout = setTimeout(() => {
-      updateRendererSize();
-      renderFractal();
-      resizeTimeout = null;
-    }, 100); // Throttle resize to 100ms
-  };
-
-  // Handle window resize
-  window.addEventListener('resize', handleResize, { passive: true });
-
-  // Use ResizeObserver for more accurate container size tracking
-  const resizeObserver = new ResizeObserver(handleResize);
-  resizeObserver.observe(container);
+  canvas = canvasElement;
+  regl = reglContext;
+  updateRendererSize = updateSize;
 
   // Cleanup on page unload
   window.addEventListener('beforeunload', () => {
-    resizeObserver.disconnect();
-    if (resizeTimeout) {
-      clearTimeout(resizeTimeout);
-    }
     frameCache.clear();
     if (progressiveRenderAnimationFrame !== null) {
       cancelAnimationFrame(progressiveRenderAnimationFrame);
@@ -3117,7 +3027,7 @@ function renderFractalProgressive(startIterations = null) {
   targetIterations = params.iterations;
 
   // Update pixel ratio based on zoom level
-  updatePixelRatio();
+  updatePixelRatio(canvas, params.zoom);
 
   // Clear the canvas before rendering
   regl.clear({
@@ -3458,7 +3368,7 @@ function renderFractal() {
   showLoadingBar();
 
   // Update pixel ratio based on zoom level for better quality when zoomed in
-  updatePixelRatio();
+  updatePixelRatio(canvas, params.zoom);
 
   // Clear the canvas before rendering
   regl.clear({
