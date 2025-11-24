@@ -12,6 +12,7 @@ import { setupShareFractal, loadFractalFromURL } from './sharing/state-manager.j
 import { getWikipediaUrl, getInitialRenderPosition } from './fractals/fractal-config.js';
 import { initUILayout } from './ui/panels.js';
 import { fractalLoader } from './fractals/loader.js';
+import { RenderingEngine } from './rendering/engine.js';
 
 // Application state
 let regl = null;
@@ -23,11 +24,7 @@ let currentFractalModule = null; // Currently loaded fractal module
 let needsRender = false; // Flag to indicate if a render is needed
 let isDisplayingCached = false; // Track if we're displaying a cached frame
 
-// Render throttling for smooth interaction
-let renderScheduled = false;
-
-// Progressive rendering state
-let progressiveRenderAnimationFrame = null;
+// Progressive rendering state (needed for getters)
 let currentProgressiveIterations = 0;
 let targetIterations = 0;
 let isProgressiveRendering = false;
@@ -36,6 +33,9 @@ let isProgressiveRendering = false;
 const MAX_CACHE_SIZE = 10; // Maximum number of cached frames
 let frameCache = new FrameCache(MAX_CACHE_SIZE);
 let cachedDrawCommand = null; // Draw command for displaying cached frames
+
+// Rendering engine
+let renderingEngine = null;
 
 // Initialize DOM cache and other modules
 function initDOMCache() {
@@ -55,18 +55,9 @@ import { updatePixelRatio } from './rendering/pixel-ratio.js';
 
 // Throttled render function - batches multiple render requests
 function scheduleRender() {
-  // Show loading bar immediately when render is scheduled
-  showLoadingBar();
-
-  if (!renderScheduled) {
-    renderScheduled = true;
-    requestAnimationFrame(() => {
-      renderScheduled = false;
-      // Use progressive rendering for faster feedback
-      renderFractalProgressive();
-    });
+  if (renderingEngine) {
+    renderingEngine.scheduleRender();
   }
-  // If render is already scheduled, the next render will be handled by the existing requestAnimationFrame
 }
 
 // Fractal parameters
@@ -99,7 +90,9 @@ async function init() {
   const { canvas: canvasElement, regl: reglContext, updateRendererSize: updateSize } = initCanvasRenderer('fractal-canvas', {
     getZoom: () => params.zoom,
     onResize: () => {
-      renderFractal();
+      if (renderingEngine) {
+        renderingEngine.renderFractal();
+      }
     },
   });
 
@@ -107,12 +100,40 @@ async function init() {
   regl = reglContext;
   updateRendererSize = updateSize;
 
+  // Initialize rendering engine
+  renderingEngine = new RenderingEngine(
+    {
+      getCurrentFractalModule: () => currentFractalModule,
+      getCurrentFractalType: () => currentFractalType,
+      getParams: () => params,
+      getRegl: () => regl,
+      getCanvas: () => canvas,
+      getDrawFractal: () => drawFractal,
+      getNeedsRender: () => needsRender,
+      getIsProgressiveRendering: () => isProgressiveRendering,
+      getIsDisplayingCached: () => isDisplayingCached,
+      getCachedDrawCommand: () => cachedDrawCommand,
+      getCurrentProgressiveIterations: () => currentProgressiveIterations,
+      getTargetIterations: () => targetIterations,
+      getIsLoading: () => fractalLoader.getIsLoading(),
+    },
+    {
+      setDrawFractal: (value) => { drawFractal = value; },
+      setNeedsRender: (value) => { needsRender = value; },
+      setIsProgressiveRendering: (value) => { isProgressiveRendering = value; },
+      setIsDisplayingCached: (value) => { isDisplayingCached = value; },
+      setCachedDrawCommand: (value) => { cachedDrawCommand = value; },
+      setCurrentProgressiveIterations: (value) => { currentProgressiveIterations = value; },
+      setTargetIterations: (value) => { targetIterations = value; },
+    },
+    frameCache
+  );
+
   // Cleanup on page unload
   window.addEventListener('beforeunload', () => {
     frameCache.clear();
-    if (progressiveRenderAnimationFrame !== null) {
-      cancelAnimationFrame(progressiveRenderAnimationFrame);
-      progressiveRenderAnimationFrame = null;
+    if (renderingEngine) {
+      renderingEngine.cleanup();
     }
   });
 
@@ -140,7 +161,7 @@ async function init() {
       // Update params
       Object.assign(params, newParams);
       // Trigger render
-      renderFractal();
+      renderingEngine.renderFractal();
       // Wait for render to complete
       return new Promise((resolve) => {
         setTimeout(resolve, 100);
@@ -170,22 +191,22 @@ async function init() {
       loadFractal: loadFractal,
       updateWikipediaLink: updateWikipediaLink,
       updateCoordinateDisplay: updateCoordinateDisplay,
-      renderFractal: renderFractal,
+      renderFractal: () => renderingEngine?.renderFractal(),
     }
   );
 
   if (!loadedFromURL) {
     // Load initial fractal if not loaded from URL
     loadFractal(currentFractalType).then(() => {
-      renderFractal();
+      renderingEngine.renderFractal();
       updateCoordinateDisplay();
       startFPSTracking();
-      animate();
+      renderingEngine.startAnimation();
     });
   } else {
     // If loaded from URL, just start animation
     startFPSTracking();
-    animate();
+    renderingEngine.startAnimation();
   }
 }
 
@@ -511,7 +532,7 @@ function setupControls() {
     updateCoordinateDisplay();
 
     // Use progressive rendering for faster feedback
-    renderFractalProgressive();
+    renderingEngine.renderFractalProgressive();
   };
 
   // Attach double-click handler to both canvas and container
@@ -565,7 +586,7 @@ function setupUI() {
       }
       // Schedule render for next animation frame (~16ms at 60fps)
       renderTimeoutId = requestAnimationFrame(() => {
-        renderFractalProgressive();
+        renderingEngine.renderFractalProgressive();
         renderTimeoutId = null;
       });
     }
@@ -577,7 +598,7 @@ function setupUI() {
 
     // If enabling auto-render, immediately render
     if (autoRenderEnabled) {
-      renderFractalProgressive();
+      renderingEngine.renderFractalProgressive();
     }
   });
 
@@ -987,7 +1008,7 @@ function setupUI() {
           depth: 1,
         });
       }
-      renderFractalProgressive();
+      renderingEngine.renderFractalProgressive();
     }
   });
 
@@ -1131,7 +1152,7 @@ function setupUI() {
     // Use requestAnimationFrame to ensure UI updates before heavy computation
     requestAnimationFrame(() => {
       try {
-        renderFractal();
+        renderingEngine.renderFractal();
       } catch (error) {
         console.error('Error rendering fractal:', error);
         hideLoadingBar();
@@ -1238,7 +1259,7 @@ function setupUI() {
       }
     }
 
-    renderFractal();
+    renderingEngine.renderFractal();
   });
 
   // Shared screenshot function to avoid code duplication
@@ -2813,14 +2834,10 @@ function setupUI() {
     }
 
     // Cancel any ongoing progressive rendering
-    if (progressiveRenderAnimationFrame !== null) {
-      cancelAnimationFrame(progressiveRenderAnimationFrame);
-      progressiveRenderAnimationFrame = null;
-      isProgressiveRendering = false;
-    }
+    renderingEngine.cancelProgressiveRender();
 
     // Render the new random view with progressive rendering for better UX
-    renderFractalProgressive();
+    renderingEngine.renderFractalProgressive();
   });
 
   // Iterations controls - cache DOM references
@@ -2856,7 +2873,7 @@ function setupUI() {
     // Recreate draw command with updated iterations
     drawFractal = null;
     // Re-render with updated iterations
-    renderFractalProgressive();
+    renderingEngine.renderFractalProgressive();
   };
 
   fullscreenIterationsUpBtn.addEventListener('click', () => updateIterations(5));
@@ -2884,7 +2901,7 @@ function setupUI() {
     // Recreate draw command with updated color scheme
     drawFractal = null;
     // Re-render with updated color scheme
-    renderFractalProgressive();
+    renderingEngine.renderFractalProgressive();
   });
 
   // Screenshot functionality for fullscreen (reuse shared function)
@@ -2924,7 +2941,7 @@ function setupUI() {
     // Use a small delay to ensure the DOM has updated
     setTimeout(() => {
       updateRendererSize();
-      renderFractal();
+      renderingEngine.renderFractal();
     }, 100);
   };
 
@@ -2967,95 +2984,6 @@ function setupUI() {
 
 
 
-function renderFractalProgressive(startIterations = null) {
-  if (!currentFractalModule || !currentFractalModule.render || !regl) {
-    hideLoadingBar();
-    return;
-  }
-
-  // Check cache first - if we have a cached frame, use it immediately
-  const cached = frameCache.getCachedFrame(canvas, currentFractalType, params, regl);
-  if (cached && cached.framebuffer) {
-    // Display cached frame
-    displayCachedFrame(cached.framebuffer);
-    hideLoadingBar();
-    isProgressiveRendering = false; // Not rendering progressively
-    return;
-  }
-
-  // Not using cache, so we're not displaying cached
-  isDisplayingCached = false;
-  cachedDrawCommand = null;
-
-  // Cancel any existing progressive render
-  if (progressiveRenderAnimationFrame !== null) {
-    cancelAnimationFrame(progressiveRenderAnimationFrame);
-    progressiveRenderAnimationFrame = null;
-  }
-
-  targetIterations = params.iterations;
-
-  // Update pixel ratio based on zoom level
-  updatePixelRatio(canvas, params.zoom);
-
-  // Clear the canvas before rendering
-  regl.clear({
-    color: [0, 0, 0, 1],
-    depth: 1,
-  });
-
-  // Start with low quality for immediate feedback
-  const initialIterations = startIterations || Math.max(20, Math.floor(targetIterations * 0.2));
-  currentProgressiveIterations = initialIterations;
-
-  // Create or recreate draw command with progressive iterations
-  drawFractal = currentFractalModule.render(
-    regl,
-    { ...params, iterations: currentProgressiveIterations },
-    canvas
-  );
-
-  // Render immediately
-  if (drawFractal) {
-    drawFractal();
-  }
-  needsRender = false; // Progressive rendering handles its own renders
-
-  isProgressiveRendering = true;
-
-  // Progressively increase quality
-  const stepSize = Math.max(10, Math.floor(targetIterations * 0.15));
-  const progressiveStep = () => {
-    if (currentProgressiveIterations < targetIterations) {
-      currentProgressiveIterations = Math.min(
-        currentProgressiveIterations + stepSize,
-        targetIterations
-      );
-
-      // Recreate draw command with updated iterations
-      drawFractal = currentFractalModule.render(
-        regl,
-        { ...params, iterations: currentProgressiveIterations },
-        canvas
-      );
-      if (drawFractal) {
-        drawFractal();
-      }
-      needsRender = false; // Progressive rendering handles its own renders
-
-      // Schedule next step using requestAnimationFrame for smooth rendering aligned with display refresh
-      progressiveRenderAnimationFrame = requestAnimationFrame(progressiveStep);
-    } else {
-      isProgressiveRendering = false;
-      // Cache the fully rendered frame
-      cacheCurrentFrame();
-      hideLoadingBar();
-    }
-  };
-
-  // Start progressive rendering using requestAnimationFrame for smooth rendering aligned with display refresh
-  progressiveRenderAnimationFrame = requestAnimationFrame(progressiveStep);
-}
 
 // Zoom into a selection box area
 function zoomToSelection(startX, startY, endX, endY, canvasRect) {
@@ -3203,200 +3131,10 @@ function zoomToSelection(startX, startY, endX, endY, canvasRect) {
   params.offset.y = centerY;
 
   // Render the new view
-  renderFractalProgressive();
+  renderingEngine.renderFractalProgressive();
 }
 
-// Display a cached frame
-function displayCachedFrame(framebuffer) {
-  if (!regl || !framebuffer || !canvas) return;
 
-  // Clear the canvas first to prevent background bleed-through
-  regl.clear({
-    color: [0, 0, 0, 1],
-    depth: 1,
-  });
-
-  // Create draw command to display the cached framebuffer
-  // Use the texture from the framebuffer
-  const texture = framebuffer.color[0] || framebuffer.color;
-
-  cachedDrawCommand = regl({
-    vert: `
-      attribute vec2 position;
-      varying vec2 vUv;
-      void main() {
-        vUv = position * 0.5 + 0.5;
-        gl_Position = vec4(position, 0, 1);
-      }
-    `,
-    frag: `
-      precision highp float;
-      uniform sampler2D texture;
-      varying vec2 vUv;
-      void main() {
-        gl_FragColor = texture2D(texture, vUv);
-      }
-    `,
-    attributes: {
-      position: [-1, -1, 1, -1, -1, 1, 1, 1],
-    },
-    uniforms: {
-      texture: texture,
-    },
-    viewport: {
-      x: 0,
-      y: 0,
-      width: canvas.width,
-      height: canvas.height,
-    },
-    count: 4,
-    primitive: 'triangle strip',
-  });
-
-  isDisplayingCached = true;
-  needsRender = true; // Mark that we need to render this cached frame
-  // Render immediately so cached frame appears right away
-  if (cachedDrawCommand) {
-    cachedDrawCommand();
-  }
-}
-
-// Cache the current rendered frame
-function cacheCurrentFrame() {
-  if (!drawFractal || !regl || !canvas) return;
-
-  // Create framebuffer to capture the current frame
-  const width = canvas.width;
-  const height = canvas.height;
-
-  const framebuffer = regl.framebuffer({
-    width,
-    height,
-    color: regl.texture({
-      width,
-      height,
-      min: 'linear',
-      mag: 'linear',
-    }),
-    depth: false,
-    stencil: false,
-  });
-
-  // Render to framebuffer using regl context
-  framebuffer.use(() => {
-    if (drawFractal) {
-      drawFractal();
-    }
-  });
-
-  // Store in cache
-  frameCache.cacheFrame(canvas, currentFractalType, params, framebuffer);
-}
-
-function renderFractal() {
-  if (!currentFractalModule) {
-    // Only warn if we're not currently loading a fractal
-    // This prevents false warnings during initialization
-    if (!fractalLoader.getIsLoading()) {
-      console.warn('No fractal module loaded');
-    }
-    hideLoadingBar();
-    return;
-  }
-
-  if (!currentFractalModule.render || !regl) {
-    console.error(
-      'Fractal module missing render function or regl not initialized:',
-      currentFractalType
-    );
-    hideLoadingBar();
-    return;
-  }
-
-  // Check cache first
-  const cached = frameCache.getCachedFrame(canvas, currentFractalType, params, regl);
-  if (cached && cached.framebuffer) {
-    displayCachedFrame(cached.framebuffer);
-    hideLoadingBar();
-    isProgressiveRendering = false; // Not rendering progressively
-    return;
-  }
-
-  // Not using cache, so we're not displaying cached
-  isDisplayingCached = false;
-  cachedDrawCommand = null;
-
-  // Cancel progressive rendering if active
-  if (progressiveRenderAnimationFrame !== null) {
-    cancelAnimationFrame(progressiveRenderAnimationFrame);
-    progressiveRenderAnimationFrame = null;
-    isProgressiveRendering = false;
-  }
-
-  // Show loading bar (if not already shown by scheduleRender)
-  showLoadingBar();
-
-  // Update pixel ratio based on zoom level for better quality when zoomed in
-  updatePixelRatio(canvas, params.zoom);
-
-  // Clear the canvas before rendering
-  regl.clear({
-    color: [0, 0, 0, 1],
-    depth: 1,
-  });
-
-  // Call the fractal's render function to create draw command
-  drawFractal = currentFractalModule.render(regl, params, canvas);
-
-  // Execute the draw command
-  if (drawFractal) {
-    drawFractal();
-  }
-
-  needsRender = false; // Render complete (renderFractal handles its own render call)
-  isDisplayingCached = false; // Not displaying cached frame
-
-  // Cache the rendered frame after a short delay to ensure it's fully rendered
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      cacheCurrentFrame();
-      // Add a small delay so the loading bar is visible even for fast renders
-      setTimeout(() => {
-        hideLoadingBar();
-      }, 100);
-    });
-  });
-}
-
-function animate() {
-  requestAnimationFrame(animate);
-
-  // Increment frame counter (FPS calculation moved to separate interval)
-  incrementFrameCount();
-
-  // Only render when necessary:
-  // 1. When progressive rendering is active (needs continuous updates)
-  // 2. When explicitly marked as needing a render (one-time render)
-  const shouldRender = needsRender || isProgressiveRendering;
-
-  if (shouldRender) {
-    // Render cached frame or fractal
-    if (isDisplayingCached && cachedDrawCommand) {
-      cachedDrawCommand();
-    } else if (drawFractal) {
-      drawFractal();
-    }
-
-    // Reset needsRender flag after rendering (progressive rendering will keep setting it)
-    if (!isProgressiveRendering) {
-      needsRender = false;
-      // If we were displaying a cached frame, we've now rendered it once, so stop
-      if (isDisplayingCached) {
-        isDisplayingCached = false;
-      }
-    }
-  }
-}
 
 
 // Wrapper function to update both coordinate and debug displays (for backward compatibility)
