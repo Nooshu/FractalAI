@@ -38,6 +38,7 @@ export function setupInputControls(getters, callbacks) {
   let selectionStartX = 0;
   let selectionStartY = 0;
   let cachedCanvasRect = null;
+  let originalIterations = null; // Store original iterations when dragging starts
 
   // Helper to get canvas rect (cached for performance)
   const getCanvasRect = () => {
@@ -88,6 +89,14 @@ export function setupInputControls(getters, callbacks) {
         lastMouseY = e.clientY;
         canvas.style.cursor = 'grabbing';
         selectionBox.classList.remove('active');
+        
+        // Store original iterations and reduce to 100 for faster panning
+        const params = getParams();
+        if (originalIterations === null && params.iterations > 100) {
+          originalIterations = params.iterations;
+          params.iterations = 100;
+        }
+        
         // Prevent text selection while dragging
         e.preventDefault();
       }
@@ -222,13 +231,35 @@ export function setupInputControls(getters, callbacks) {
       } else if (isDragging) {
         isDragging = false;
         canvas.style.cursor = 'grab';
+        
+        // Restore original iterations and trigger full render
+        if (originalIterations !== null) {
+          const params = getParams();
+          params.iterations = originalIterations;
+          originalIterations = null;
+          // Trigger a full render with restored iterations
+          renderFractalProgressive();
+        }
       }
     }
   };
 
   // Mouse leave handler
   const handleMouseLeave = () => {
-    if (!isDragging && !isSelecting) {
+    if (isDragging) {
+      // If mouse leaves while dragging, stop dragging and restore iterations
+      isDragging = false;
+      canvas.style.cursor = 'grab';
+      
+      // Restore original iterations and trigger full render
+      if (originalIterations !== null) {
+        const params = getParams();
+        params.iterations = originalIterations;
+        originalIterations = null;
+        // Trigger a full render with restored iterations
+        renderFractalProgressive();
+      }
+    } else if (!isSelecting) {
       canvas.style.cursor = 'grab';
     }
   };
