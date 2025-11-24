@@ -11,6 +11,7 @@ import { updateDebugDisplay, setupDebugCopy } from './ui/debug-display.js';
 import { setupShareFractal, loadFractalFromURL } from './sharing/state-manager.js';
 import { getWikipediaUrl, getInitialRenderPosition } from './fractals/fractal-config.js';
 import { initUILayout } from './ui/panels.js';
+import { fractalLoader } from './fractals/loader.js';
 
 // Application state
 let regl = null;
@@ -19,8 +20,6 @@ let currentFractalType = 'mandelbrot';
 let drawFractal = null; // Current regl draw command
 let updateRendererSize = null; // Function to update renderer size
 let currentFractalModule = null; // Currently loaded fractal module
-let fractalCache = new Map(); // Cache for loaded fractal modules
-let isLoadingFractal = false; // Track if a fractal is currently being loaded
 let needsRender = false; // Flag to indicate if a render is needed
 let isDisplayingCached = false; // Track if we're displaying a cached frame
 
@@ -192,40 +191,10 @@ async function init() {
 
 // Dynamically load a fractal module
 async function loadFractal(fractalType) {
-  // Check cache first
-  if (fractalCache.has(fractalType)) {
-    currentFractalModule = fractalCache.get(fractalType);
-    currentFractalType = fractalType; // Ensure currentFractalType is updated
-    return;
-  }
-
-  isLoadingFractal = true;
-  try {
-    // All fractals are 2D, load from 2d folder
-    const module = await import(`./fractals/2d/${fractalType}.js`);
-
-    // Verify the module has required exports
-    if (!module.render) {
-      throw new Error(`Fractal module ${fractalType} missing render function`);
-    }
-
-    currentFractalModule = module;
-    currentFractalType = fractalType; // Ensure currentFractalType is updated
-
-    // Cache the module
-    fractalCache.set(fractalType, module);
-  } catch (error) {
-    console.error(`Failed to load fractal: ${fractalType}`, error);
-    // Fallback to mandelbrot if loading fails
-    if (fractalType !== 'mandelbrot') {
-      console.warn(`Falling back to mandelbrot`);
-      return loadFractal('mandelbrot');
-    } else {
-      throw error; // Re-throw if mandelbrot also fails
-    }
-  } finally {
-    isLoadingFractal = false;
-  }
+  await fractalLoader.loadFractalWithState(fractalType, {
+    setCurrentFractalModule: (module) => { currentFractalModule = module; },
+    setCurrentFractalType: (type) => { currentFractalType = type; },
+  });
 }
 
 function setupControls() {
@@ -728,7 +697,7 @@ function setupUI() {
     isDisplayingCached = false;
 
     // Clear the cache for this fractal type to force a fresh load
-    fractalCache.delete(currentFractalType);
+    fractalLoader.removeFromCache(currentFractalType);
 
     // Clear frame cache when fractal type changes
     frameCache.clear();
@@ -3328,7 +3297,7 @@ function renderFractal() {
   if (!currentFractalModule) {
     // Only warn if we're not currently loading a fractal
     // This prevents false warnings during initialization
-    if (!isLoadingFractal) {
+    if (!fractalLoader.getIsLoading()) {
       console.warn('No fractal module loaded');
     }
     hideLoadingBar();
