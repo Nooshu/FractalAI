@@ -15,29 +15,9 @@ import { fractalLoader } from './fractals/loader.js';
 import { RenderingEngine } from './rendering/engine.js';
 import { setupInputControls, zoomToSelection } from './input/controls.js';
 import { setupUIControls } from './ui/controls.js';
+import { appState } from './core/app-state.js';
 
-// Application state
-let regl = null;
-let canvas = null;
-let currentFractalType = 'mandelbrot';
-let drawFractal = null; // Current regl draw command
-let updateRendererSize = null; // Function to update renderer size
-let currentFractalModule = null; // Currently loaded fractal module
-let needsRender = false; // Flag to indicate if a render is needed
-let isDisplayingCached = false; // Track if we're displaying a cached frame
-
-// Progressive rendering state (needed for getters)
-let currentProgressiveIterations = 0;
-let targetIterations = 0;
-let isProgressiveRendering = false;
-
-// Frame cache for rendered fractals
-const MAX_CACHE_SIZE = 10; // Maximum number of cached frames
-let frameCache = new FrameCache(MAX_CACHE_SIZE);
-let cachedDrawCommand = null; // Draw command for displaying cached frames
-
-// Rendering engine
-let renderingEngine = null;
+// Application state is now managed by appState module
 
 // Initialize DOM cache and other modules
 function initDOMCache() {
@@ -57,26 +37,18 @@ import { updatePixelRatio } from './rendering/pixel-ratio.js';
 
 // Throttled render function - batches multiple render requests
 function scheduleRender() {
+  const renderingEngine = appState.getRenderingEngine();
   if (renderingEngine) {
     renderingEngine.scheduleRender();
   }
 }
 
-// Fractal parameters
-let params = {
-  iterations: 125,
-  colorScheme: 'classic',
-  juliaC: { x: -0.7269, y: 0.1889 },
-  center: { x: 0, y: 0 },
-  zoom: 1,
-  offset: { x: 0, y: 0 },
-  xScale: 1.0,
-  yScale: 1.0,
-};
+// Fractal parameters are now managed by appState module
 
 // Update Wikipedia link based on current fractal type
 function updateWikipediaLink() {
   const wikipediaLink = document.getElementById('wikipedia-link');
+  const currentFractalType = appState.getCurrentFractalType();
   if (wikipediaLink && currentFractalType) {
     const url = getWikipediaUrl(currentFractalType);
     wikipediaLink.href = url;
@@ -89,76 +61,59 @@ async function init() {
   initDOMCache();
 
   // Initialize canvas and regl renderer
+  const params = appState.getParams();
   const { canvas: canvasElement, regl: reglContext, updateRendererSize: updateSize } = initCanvasRenderer('fractal-canvas', {
-    getZoom: () => params.zoom,
+    getZoom: () => appState.getParams().zoom,
     onResize: () => {
+      const renderingEngine = appState.getRenderingEngine();
       if (renderingEngine) {
         renderingEngine.renderFractal();
       }
     },
   });
 
-  canvas = canvasElement;
-  regl = reglContext;
-  updateRendererSize = updateSize;
+  appState.setCanvas(canvasElement);
+  appState.setRegl(reglContext);
+  appState.setUpdateRendererSize(updateSize);
 
   // Initialize rendering engine
-  renderingEngine = new RenderingEngine(
+  const renderingEngine = new RenderingEngine(
     {
-      getCurrentFractalModule: () => currentFractalModule,
-      getCurrentFractalType: () => currentFractalType,
-      getParams: () => params,
-      getRegl: () => regl,
-      getCanvas: () => canvas,
-      getDrawFractal: () => drawFractal,
-      getNeedsRender: () => needsRender,
-      getIsProgressiveRendering: () => isProgressiveRendering,
-      getIsDisplayingCached: () => isDisplayingCached,
-      getCachedDrawCommand: () => cachedDrawCommand,
-      getCurrentProgressiveIterations: () => currentProgressiveIterations,
-      getTargetIterations: () => targetIterations,
+      ...appState.getGetters(),
       getIsLoading: () => fractalLoader.getIsLoading(),
     },
-    {
-      setDrawFractal: (value) => { drawFractal = value; },
-      setNeedsRender: (value) => { needsRender = value; },
-      setIsProgressiveRendering: (value) => { isProgressiveRendering = value; },
-      setIsDisplayingCached: (value) => { isDisplayingCached = value; },
-      setCachedDrawCommand: (value) => { cachedDrawCommand = value; },
-      setCurrentProgressiveIterations: (value) => { currentProgressiveIterations = value; },
-      setTargetIterations: (value) => { targetIterations = value; },
-    },
-    frameCache
+    appState.getSetters(),
+    appState.getFrameCache()
   );
+  appState.setRenderingEngine(renderingEngine);
 
   // Cleanup on page unload
   window.addEventListener('beforeunload', () => {
-    frameCache.clear();
-    if (renderingEngine) {
-      renderingEngine.cleanup();
-    }
+    appState.cleanup();
   });
 
   // Setup UI controls (after rendering engine is initialized)
+  const getters = appState.getGetters();
+  const setters = appState.getSetters();
   setupUIControls(
     {
-      getParams: () => params,
-      getCurrentFractalType: () => currentFractalType,
-      getCurrentFractalModule: () => currentFractalModule,
-      getDrawFractal: () => drawFractal,
-      getCachedDrawCommand: () => cachedDrawCommand,
-      getIsDisplayingCached: () => isDisplayingCached,
-      getRegl: () => regl,
-      getCanvas: () => canvas,
+      getParams: getters.getParams,
+      getCurrentFractalType: getters.getCurrentFractalType,
+      getCurrentFractalModule: getters.getCurrentFractalModule,
+      getDrawFractal: getters.getDrawFractal,
+      getCachedDrawCommand: getters.getCachedDrawCommand,
+      getIsDisplayingCached: getters.getIsDisplayingCached,
+      getRegl: getters.getRegl,
+      getCanvas: getters.getCanvas,
     },
     {
-      setCurrentFractalType: (type) => { currentFractalType = type; },
-      setDrawFractal: (value) => { drawFractal = value; },
-      setCachedDrawCommand: (value) => { cachedDrawCommand = value; },
-      setIsDisplayingCached: (value) => { isDisplayingCached = value; },
+      setCurrentFractalType: setters.setCurrentFractalType,
+      setDrawFractal: setters.setDrawFractal,
+      setCachedDrawCommand: setters.setCachedDrawCommand,
+      setIsDisplayingCached: setters.setIsDisplayingCached,
     },
     {
-      frameCache: frameCache,
+      frameCache: appState.getFrameCache(),
       fractalLoader: fractalLoader,
     },
     {
@@ -170,6 +125,7 @@ async function init() {
       getRandomInterestingView: getRandomInterestingView,
       cancelProgressiveRender: () => renderingEngine.cancelProgressiveRender(),
       onFullscreenChange: (isFullscreen) => {
+        const updateRendererSize = appState.getUpdateRendererSize();
         if (updateRendererSize) {
           updateRendererSize();
         }
@@ -180,9 +136,9 @@ async function init() {
   // Setup input controls (after rendering engine is initialized)
   setupInputControls(
     {
-      getCanvas: () => canvas,
-      getParams: () => params,
-      getUpdateRendererSize: () => updateRendererSize,
+      getCanvas: getters.getCanvas,
+      getParams: getters.getParams,
+      getUpdateRendererSize: getters.getUpdateRendererSize,
     },
     {
       scheduleRender: () => renderingEngine.scheduleRender(),
@@ -190,24 +146,24 @@ async function init() {
       renderFractalProgressive: () => renderingEngine.renderFractalProgressive(),
       zoomToSelection: (startX, startY, endX, endY, canvasRect) => {
         zoomToSelection(startX, startY, endX, endY, canvasRect,
-          { getCanvas: () => canvas, getParams: () => params },
+          { getCanvas: getters.getCanvas, getParams: getters.getParams },
           { renderFractalProgressive: () => renderingEngine.renderFractalProgressive() }
         );
       },
     }
   );
   // Setup UI layout (collapsible sections and panel toggle)
-  initUILayout(updateRendererSize);
+  initUILayout(getters.getUpdateRendererSize);
   // Setup coordinate display with getter functions
-  setupCoordinateCopy(() => currentFractalType, () => params);
-  setupDebugCopy(() => currentFractalType, () => params);
-  setupShareFractal(() => currentFractalType, () => params);
+  setupCoordinateCopy(getters.getCurrentFractalType, getters.getParams);
+  setupDebugCopy(getters.getCurrentFractalType, getters.getParams);
+  setupShareFractal(getters.getCurrentFractalType, getters.getParams);
   updateCoordinateDisplay();
 
   // Initialize benchmark UI
   const benchmarkUI = new BenchmarkUI(
-    regl,
-    canvas,
+    appState.getRegl(),
+    appState.getCanvas(),
     async (fractalType) => {
       await loadFractal(fractalType);
       // Ensure render happens after load
@@ -215,6 +171,7 @@ async function init() {
     },
     (newParams) => {
       // Update params
+      const params = appState.getParams();
       Object.assign(params, newParams);
       // Trigger render
       renderingEngine.renderFractal();
@@ -229,7 +186,7 @@ async function init() {
   // Get the initial fractal type from the dropdown (defaults to mandelbrot if not found)
   const fractalTypeSelect = document.getElementById('fractal-type');
   if (fractalTypeSelect && fractalTypeSelect.value) {
-    currentFractalType = fractalTypeSelect.value;
+    appState.setCurrentFractalType(fractalTypeSelect.value);
   }
 
   // Initialize Wikipedia link
@@ -238,21 +195,22 @@ async function init() {
   // Try to load fractal state from URL first
   const loadedFromURL = await loadFractalFromURL(
     {
-      getCurrentFractalType: () => currentFractalType,
-      getCurrentFractalModule: () => currentFractalModule,
-      getParams: () => params,
+      getCurrentFractalType: getters.getCurrentFractalType,
+      getCurrentFractalModule: getters.getCurrentFractalModule,
+      getParams: getters.getParams,
     },
     {
-      setFractalType: (type) => { currentFractalType = type; },
+      setFractalType: setters.setCurrentFractalType,
       loadFractal: loadFractal,
       updateWikipediaLink: updateWikipediaLink,
       updateCoordinateDisplay: updateCoordinateDisplay,
-      renderFractal: () => renderingEngine?.renderFractal(),
+      renderFractal: () => renderingEngine.renderFractal(),
     }
   );
 
   if (!loadedFromURL) {
     // Load initial fractal if not loaded from URL
+    const currentFractalType = appState.getCurrentFractalType();
     loadFractal(currentFractalType).then(() => {
       renderingEngine.renderFractal();
       updateCoordinateDisplay();
@@ -269,8 +227,8 @@ async function init() {
 // Dynamically load a fractal module
 async function loadFractal(fractalType) {
   await fractalLoader.loadFractalWithState(fractalType, {
-    setCurrentFractalModule: (module) => { currentFractalModule = module; },
-    setCurrentFractalType: (type) => { currentFractalType = type; },
+    setCurrentFractalModule: (module) => { appState.setCurrentFractalModule(module); },
+    setCurrentFractalType: (type) => { appState.setCurrentFractalType(type); },
   });
 }
 
@@ -461,8 +419,8 @@ function generateRandomInterestingPoint(fractalType, excludeSet) {
 
 // Function to generate random interesting coordinates and zoom for each fractal type
 function getRandomInterestingView() {
-  const fractalType = currentFractalType;
-  const fractalConfig = currentFractalModule?.config;
+  const fractalType = appState.getCurrentFractalType();
+  const fractalConfig = appState.getCurrentFractalModule()?.config;
   const params = getParams();
 
   // Check if fractal has interesting points defined in config
@@ -744,11 +702,11 @@ function getRandomInterestingView() {
 
 // Helper functions for getParams and getCanvas (needed by helper functions)
 function getParams() {
-  return params;
+  return appState.getParams();
 }
 
 function getCanvas() {
-  return canvas;
+  return appState.getCanvas();
 }
 
 // setupUI function has been moved to ui/controls.js module
@@ -758,6 +716,8 @@ function getCanvas() {
 
 // Wrapper function to update both coordinate and debug displays (for backward compatibility)
 function updateCoordinateDisplay() {
+  const params = appState.getParams();
+  const currentFractalType = appState.getCurrentFractalType();
   updateCoordDisplay(params);
   updateDebugDisplay(currentFractalType, params);
 }
