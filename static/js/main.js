@@ -10,6 +10,7 @@ import { updateCoordinateDisplay as updateCoordDisplay, setupCoordinateCopy } fr
 import { updateDebugDisplay, setupDebugCopy } from './ui/debug-display.js';
 import { setupShareFractal, loadFractalFromURL } from './sharing/state-manager.js';
 import { getWikipediaUrl, getInitialRenderPosition } from './fractals/fractal-config.js';
+import { initUILayout } from './ui/panels.js';
 
 // Application state
 let regl = null;
@@ -209,8 +210,8 @@ async function init() {
   // Setup controls
   setupControls();
   setupUI();
-  setupCollapsibleSections();
-  setupPanelToggle();
+  // Setup UI layout (collapsible sections and panel toggle)
+  initUILayout(updateRendererSize);
   // Setup coordinate display with getter functions
   setupCoordinateCopy(() => currentFractalType, () => params);
   setupDebugCopy(() => currentFractalType, () => params);
@@ -3085,53 +3086,6 @@ function setupUI() {
   });
 }
 
-function setupCollapsibleSections() {
-  const sectionHeaders = document.querySelectorAll('.section-header');
-
-  sectionHeaders.forEach((header) => {
-    header.addEventListener('click', () => {
-      const section = header.parentElement;
-      const content = section.querySelector('.section-content');
-      const isActive = content.classList.contains('active');
-
-      if (isActive) {
-        content.classList.remove('active');
-        header.classList.add('collapsed');
-      } else {
-        content.classList.add('active');
-        header.classList.remove('collapsed');
-      }
-    });
-  });
-}
-
-function setupPanelToggle() {
-  const sidePanel = document.querySelector('.side-panel');
-  const backBtn = document.querySelector('.back-btn');
-  const showPanelBtn = document.getElementById('show-panel-btn');
-
-  // Hide panel when back button is clicked
-  backBtn.addEventListener('click', () => {
-    sidePanel.classList.add('hidden');
-    // Resize canvas after panel animation
-    setTimeout(() => {
-      if (updateRendererSize) {
-        updateRendererSize();
-      }
-    }, 300);
-  });
-
-  // Show panel when show button is clicked
-  showPanelBtn.addEventListener('click', () => {
-    sidePanel.classList.remove('hidden');
-    // Resize canvas after panel animation
-    setTimeout(() => {
-      if (updateRendererSize) {
-        updateRendererSize();
-      }
-    }, 300);
-  });
-}
 
 
 function renderFractalProgressive(startIterations = null) {

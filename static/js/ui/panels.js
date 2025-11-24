@@ -1,10 +1,12 @@
 /**
- * Panel management UI components
- * Handles collapsible sections and panel toggling
+ * UI Layout Module
+ * UI-specific, minimal coupling module for managing layout components
+ * Handles collapsible sections, panel toggling, and layout-related functionality
  */
 
 /**
  * Setup collapsible sections
+ * Allows sections to be expanded/collapsed by clicking their headers
  */
 export function setupCollapsibleSections() {
   const sectionHeaders = document.querySelectorAll('.section-header');
@@ -28,7 +30,8 @@ export function setupCollapsibleSections() {
 
 /**
  * Setup panel toggle functionality
- * @param {Function} updateRendererSize - Function to update renderer size
+ * Handles showing/hiding the side panel and updating renderer size
+ * @param {Function} updateRendererSize - Optional callback to update renderer size after panel animation
  */
 export function setupPanelToggle(updateRendererSize) {
   const sidePanel = document.querySelector('.side-panel');
@@ -58,5 +61,15 @@ export function setupPanelToggle(updateRendererSize) {
       }
     }, 300);
   });
+}
+
+/**
+ * Initialize all UI layout components
+ * Convenience function to set up all layout-related functionality at once
+ * @param {Function} updateRendererSize - Optional callback to update renderer size
+ */
+export function initUILayout(updateRendererSize) {
+  setupCollapsibleSections();
+  setupPanelToggle(updateRendererSize);
 }
 
