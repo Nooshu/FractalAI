@@ -4,6 +4,8 @@
  * Handles dynamic loading, caching, and state management
  */
 
+import { appState } from '../core/app-state.js';
+
 /**
  * Fractal loader class
  */
@@ -122,4 +124,16 @@ export class FractalLoader {
 
 // Export singleton instance for convenience
 export const fractalLoader = new FractalLoader();
+
+/**
+ * Convenience function to load a fractal module and update app state
+ * @param {string} fractalType - Type of fractal to load
+ * @returns {Promise<Object>} Loaded fractal module
+ */
+export async function loadFractal(fractalType) {
+  await fractalLoader.loadFractalWithState(fractalType, {
+    setCurrentFractalModule: (module) => { appState.setCurrentFractalModule(module); },
+    setCurrentFractalType: (type) => { appState.setCurrentFractalType(type); },
+  });
+}
 

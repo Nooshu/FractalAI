@@ -4,6 +4,8 @@
  */
 
 import { getElement } from '../core/dom-cache.js';
+import { updateDebugDisplay } from './debug-display.js';
+import { appState } from '../core/app-state.js';
 
 /**
  * Format a number with appropriate precision
@@ -71,5 +73,17 @@ export function setupCoordinateCopy(getCurrentFractalType, getParams) {
       alert('Failed to copy coordinates. Please copy manually:\n' + coordsText);
     });
   });
+}
+
+/**
+ * Wrapper function to update both coordinate and debug displays
+ * @param {Function} getParams - Function to get params object (optional, uses appState if not provided)
+ * @param {Function} getCurrentFractalType - Function to get current fractal type (optional, uses appState if not provided)
+ */
+export function updateCoordinateAndDebugDisplay(getParams, getCurrentFractalType) {
+  const params = getParams ? getParams() : appState.getParams();
+  const currentFractalType = getCurrentFractalType ? getCurrentFractalType() : appState.getCurrentFractalType();
+  updateCoordinateDisplay(params);
+  updateDebugDisplay(currentFractalType, params);
 }
 

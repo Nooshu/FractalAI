@@ -8,16 +8,18 @@ import { BenchmarkUI, addBenchmarkButton } from '../performance/ui.js';
 import { initLoadingBar } from '../ui/loading-bar.js';
 import { initFPSTracker, startFPSTracking } from '../performance/fps-tracker.js';
 import { cacheElement } from './dom-cache.js';
-import { setupCoordinateCopy } from '../ui/coordinate-display.js';
+import { setupCoordinateCopy, updateCoordinateAndDebugDisplay } from '../ui/coordinate-display.js';
 import { setupDebugCopy } from '../ui/debug-display.js';
 import { setupShareFractal, loadFractalFromURL } from '../sharing/state-manager.js';
-import { getWikipediaUrl } from '../fractals/fractal-config.js';
+import { updateWikipediaLink } from '../fractals/fractal-config.js';
 import { initUILayout } from '../ui/panels.js';
-import { fractalLoader } from '../fractals/loader.js';
+import { fractalLoader, loadFractal } from '../fractals/loader.js';
 import { RenderingEngine } from '../rendering/engine.js';
 import { setupInputControls, zoomToSelection } from '../input/controls.js';
 import { setupUIControls } from '../ui/controls.js';
 import { getRandomInterestingView } from '../fractals/random-view.js';
+import { appState } from './app-state.js';
+import { initFooterHeightTracking, updateFooterHeight } from '../ui/footer-height.js';
 
 /**
  * Initialize DOM cache and basic UI modules
@@ -274,13 +276,25 @@ async function loadInitialFractal(appState, renderingEngine, loadFractal, update
 }
 
 /**
- * Main initialization function
- * @param {Object} appState - Application state instance
- * @param {Function} loadFractal - Load fractal function
- * @param {Function} updateWikipediaLink - Update Wikipedia link function
- * @param {Function} updateCoordinateDisplay - Update coordinate display function
+ * Create wrapper functions that use appState
  */
-export async function init(appState, loadFractal, updateWikipediaLink, updateCoordinateDisplay) {
+function createUpdateWikipediaLink() {
+  return () => updateWikipediaLink(() => appState.getCurrentFractalType());
+}
+
+function createUpdateCoordinateDisplay() {
+  return () => updateCoordinateAndDebugDisplay(
+    () => appState.getParams(),
+    () => appState.getCurrentFractalType()
+  );
+}
+
+/**
+ * Main initialization function
+ */
+export async function init() {
+  const updateWikipediaLinkFn = createUpdateWikipediaLink();
+  const updateCoordinateDisplayFn = createUpdateCoordinateDisplay();
   // Initialize DOM cache first
   initDOMCache();
 
@@ -294,13 +308,13 @@ export async function init(appState, loadFractal, updateWikipediaLink, updateCoo
   setupCleanupHandlers(appState);
 
   // Setup UI controls (after rendering engine is initialized)
-  setupUIControlsModule(appState, renderingEngine, loadFractal, updateWikipediaLink, updateCoordinateDisplay);
+  setupUIControlsModule(appState, renderingEngine, loadFractal, updateWikipediaLinkFn, updateCoordinateDisplayFn);
   
   // Setup input controls (after rendering engine is initialized)
-  setupInputControlsModule(appState, renderingEngine, updateCoordinateDisplay);
+  setupInputControlsModule(appState, renderingEngine, updateCoordinateDisplayFn);
   
   // Setup UI layout and displays
-  setupUILayoutAndDisplays(appState, updateCoordinateDisplay);
+  setupUILayoutAndDisplays(appState, updateCoordinateDisplayFn);
 
   // Initialize benchmark UI
   initBenchmarkUI(appState, renderingEngine, loadFractal);
@@ -309,9 +323,27 @@ export async function init(appState, loadFractal, updateWikipediaLink, updateCoo
   initInitialFractalType(appState);
 
   // Initialize Wikipedia link
-  updateWikipediaLink();
+  updateWikipediaLinkFn();
 
   // Load initial fractal (from URL or default)
-  await loadInitialFractal(appState, renderingEngine, loadFractal, updateWikipediaLink, updateCoordinateDisplay);
+  await loadInitialFractal(appState, renderingEngine, loadFractal, updateWikipediaLinkFn, updateCoordinateDisplayFn);
 }
+
+/**
+ * Bootstrap the application
+ * Entry point that initializes everything and sets up event listeners
+ */
+function bootstrap() {
+  // Initialize footer height tracking
+  initFooterHeightTracking();
+
+  // Initialize on load
+  window.addEventListener('load', async () => {
+    await init();
+    updateFooterHeight();
+  });
+}
+
+// Auto-bootstrap when module is loaded
+bootstrap();
 

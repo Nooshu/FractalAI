@@ -101,6 +101,19 @@ export function getWikipediaUrl(fractalType) {
 }
 
 /**
+ * Update Wikipedia link in the UI based on current fractal type
+ * @param {Function} getCurrentFractalType - Function to get current fractal type
+ */
+export function updateWikipediaLink(getCurrentFractalType) {
+  const wikipediaLink = document.getElementById('wikipedia-link');
+  const currentFractalType = getCurrentFractalType();
+  if (wikipediaLink && currentFractalType) {
+    const url = getWikipediaUrl(currentFractalType);
+    wikipediaLink.href = url;
+  }
+}
+
+/**
  * Get initial render position for a fractal type
  * Returns default position (zoom: 1, offset: {x: 0, y: 0}) if not found
  * @param {string} fractalType - Fractal type
