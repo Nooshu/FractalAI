@@ -89,6 +89,16 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
   const updateFractalBtn = document.getElementById('update-fractal');
   const autoRenderCheckbox = document.getElementById('auto-render');
 
+  // Random view counter (reset when fractal type changes)
+  let currentInterestingPointIndex = 0;
+  const fullscreenRandomNumberEl = document.getElementById('fullscreen-random-number');
+  const resetRandomViewCounter = () => {
+    currentInterestingPointIndex = 0;
+    if (fullscreenRandomNumberEl) {
+      fullscreenRandomNumberEl.textContent = '0';
+    }
+  };
+
   // Auto-render functionality
   let autoRenderEnabled = false;
 
@@ -231,6 +241,9 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
     setCurrentFractalType(newFractalType);
     updateWikipediaLink();
     updateCoordinateDisplay();
+
+    // Reset random view counter when fractal type changes
+    resetRandomViewCounter();
 
     // Clear previous fractal draw command
     setDrawFractal(null);
@@ -1089,9 +1102,6 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
   }
 
   // Random view button
-  let currentInterestingPointIndex = 1;
-  const fullscreenRandomNumberEl = document.getElementById('fullscreen-random-number');
-
   fullscreenRandomBtn.addEventListener('click', () => {
     // Get random interesting view
     const randomView = getRandomInterestingView ? getRandomInterestingView() : getRandomInterestingViewLocal();
