@@ -203,7 +203,9 @@ export const config = {
     zoom: 2,
     offset: { x: -0.3374, y: -1.698 },
   },
-  interestingPoints: [],
+  interestingPoints: [
+    { x: -0.6138, y: 0.1099, zoom: 70.166 },
+  ],
   fallbackPosition: {
     offset: { x: 0, y: 0 },
     zoom: 1,
