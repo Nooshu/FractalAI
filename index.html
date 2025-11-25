@@ -33,15 +33,15 @@
         </header>
 
         <div class="panel-content">
-          <div class="panel-warning">
+          <section class="panel-warning" aria-live="polite">
             <svg class="warning-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
               <line x1="12" y1="9" x2="12" y2="13"></line>
               <line x1="12" y1="17" x2="12.01" y2="17"></line>
             </svg>
             <span>Some fractals, or using a higher number of iterations, may cause your browser to become unresponsive.</span>
-          </div>
-          <div class="section">
+          </section>
+          <section class="section">
             <button class="section-header" data-section="navigation">
               <svg
                 class="section-icon"
@@ -55,7 +55,7 @@
                 <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" />
                 <polygon points="12 9 14 14 10 14" transform="rotate(-45 12 12)" />
               </svg>
-              <span>Navigation</span>
+              <span class="section-title" role="heading" aria-level="2">Navigation</span>
               <svg
                 class="chevron"
                 width="16"
@@ -80,9 +80,9 @@
                 </ul>
               </div>
             </div>
-          </div>
+          </section>
 
-          <div class="section">
+          <section class="section">
             <button class="section-header" data-section="settings">
               <svg
                 class="section-icon"
@@ -118,7 +118,7 @@
                   c4.039,0,7.832-1.572,10.684-4.429l31.607-31.617l25.789,25.789l-31.609,31.607c-4.336,4.339-5.621,10.806-3.274,16.478
                   l11.534,27.858c2.351,5.669,7.832,9.332,13.966,9.332l44.696-0.01L359.428,213.063L359.428,213.063z"/>
               </svg>
-              <span>Settings</span>
+              <span class="section-title" role="heading" aria-level="2">Settings</span>
               <svg
                 class="chevron"
                 width="16"
@@ -171,9 +171,9 @@
               </div>
 
             </div>
-          </div>
+          </section>
 
-          <div class="section">
+          <section class="section">
             <button class="section-header" data-section="fractal">
               <svg
                 class="section-icon"
@@ -293,7 +293,7 @@
                   <path d="m347.4 398.9h21.961l-11.016-21.969z"/>
                 </g>
               </svg>
-              <span>Fractal</span>
+              <span class="section-title" role="heading" aria-level="2">Fractal</span>
               <svg
                 class="chevron"
                 width="16"
@@ -431,9 +431,9 @@
                 </a>
               </div>
             </div>
-          </div>
+          </section>
 
-          <div class="section">
+          <section class="section">
             <button class="section-header" data-section="iterations">
               <svg
                 class="section-icon"
@@ -448,7 +448,7 @@
                   d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"
                 />
               </svg>
-              <span>Iterations</span>
+              <span class="section-title" role="heading" aria-level="2">Iterations</span>
               <svg
                 class="chevron"
                 width="16"
@@ -499,7 +499,7 @@
                   d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"
                 />
               </svg>
-              <span>Color Scheme</span>
+              <span class="section-title" role="heading" aria-level="2">Color Scheme</span>
               <svg
                 class="chevron"
                 width="16"
@@ -547,9 +547,9 @@
                 </select>
               </div>
             </div>
-          </div>
+          </section>
 
-          <div class="section" id="julia-controls">
+          <section class="section" id="julia-controls">
             <button class="section-header" data-section="julia">
               <svg
                 class="section-icon"
@@ -564,7 +564,7 @@
                 <circle cx="12" cy="12" r="6" />
                 <circle cx="12" cy="12" r="2" />
               </svg>
-              <span>Julia Parameters</span>
+              <span class="section-title" role="heading" aria-level="2">Julia Parameters</span>
               <svg
                 class="chevron"
                 width="16"
@@ -611,9 +611,9 @@
                 />
               </div>
             </div>
-          </div>
+          </section>
 
-          <div class="section" id="2d-controls">
+          <section class="section" id="2d-controls">
             <button class="section-header" data-section="scale">
               <svg
                 class="section-icon"
@@ -637,7 +637,7 @@
                 <path d="m253.88 464.94c9.7852 0 19.172-3.8867 26.09-10.805 6.9219-6.9219 10.809-16.309 10.809-26.094 0-9.7852-3.8867-19.172-10.809-26.094-6.918-6.918-16.305-10.809-26.09-10.809-9.7891 0-19.172 3.8906-26.094 10.809-6.918 6.9219-10.809 16.309-10.809 26.094 0.011719 9.7812 3.9023 19.164 10.82 26.082s16.297 10.809 26.082 10.816zm0-59.039c5.8711 0 11.504 2.332 15.656 6.4844 4.1484 4.1523 6.4844 9.7852 6.4844 15.656 0 5.8711-2.3359 11.504-6.4844 15.656-4.1523 4.1523-9.7852 6.4844-15.656 6.4844s-11.504-2.332-15.656-6.4844c-4.1523-4.1523-6.4844-9.7852-6.4844-15.656 0.003906-5.8711 2.3398-11.5 6.4883-15.648 4.1523-4.1523 9.7812-6.4883 15.652-6.4922z"/>
                 <path d="m605.16 187.45h-61.227c-4.0742 0-7.3789 3.3047-7.3789 7.3789 0 4.0781 3.3047 7.3828 7.3789 7.3828h43.406l-112.56 112.56v-43.402c0-4.0781-3.3008-7.3828-7.3789-7.3828-4.0742 0-7.3789 3.3047-7.3789 7.3828v61.223c0 4.0781 3.3047 7.3789 7.3789 7.3789h61.227c4.0742 0 7.3789-3.3008 7.3789-7.3789 0-4.0742-3.3047-7.3789-7.3789-7.3789h-43.406l112.56-112.56v43.406c0 4.0742 3.3047 7.3789 7.3828 7.3789 4.0742 0 7.3789-3.3047 7.3789-7.3789v-61.227c0-1.957-0.77734-3.832-2.1602-5.2148-1.3867-1.3867-3.2617-2.1641-5.2188-2.1641z"/>
               </svg>
-              <span>Scale</span>
+              <span class="section-title" role="heading" aria-level="2">Scale</span>
               <svg
                 class="chevron"
                 width="16"
@@ -694,9 +694,9 @@
                 <span class="sr-only" id="y-scale-announce" aria-live="polite" aria-atomic="true"></span>
               </div>
             </div>
-          </div>
+          </section>
 
-          <div class="section" id="debug-section">
+          <section class="section" id="debug-section">
             <button class="section-header" data-section="debug">
               <svg
                 class="section-icon"
@@ -720,7 +720,7 @@
                   <path d="m482.25 303.21c1.082-45.508-35.359-84.852-82.246-84.852-15.965 0-30.719 4.4922-43.195 12.207-24.383 15.078-40.07 42.469-39.105 72.684 8.3164-5.8789 17.23-10.941 26.68-15.031 16.301-7.0586 33.676-10.988 51.434-11.52l0.23828-0.007813v-0.23828l3.9531 0.11719 3.9531-0.11719v0.23828l0.23828 0.007813c17.762 0.53125 35.133 4.4609 51.434 11.52 9.4258 4.082 18.32 9.1289 26.625 14.992z" fill-rule="evenodd"/>
                 </g>
               </svg>
-              <span>Debug Info</span>
+              <span class="section-title" role="heading" aria-level="2">Debug Info</span>
               <svg
                 class="chevron"
                 width="16"
@@ -792,7 +792,7 @@
                 </button>
               </div>
             </div>
-          </div>
+          </section>
         </div>
       </aside>
 
@@ -825,9 +825,9 @@
             ><code>{{GIT_SHA}}</code></a
           >).
         </p>
-        <div class="footer-share-description">
+        <p class="footer-share-description">
           Copy URL or seed to share this fractal setup (includes type, theme, zoom, iterations, and coordinates)
-        </div>
+        </p>
         <button class="footer-share-btn" id="share-fractal-btn" title="Share fractal setup (copies URL with seed)">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="18" cy="5" r="3"></circle>
@@ -920,7 +920,7 @@
           </button>
         </div>
 
-        <div class="canvas-container">
+        <section class="canvas-container" role="region" aria-label="Fractal canvas">
           <div id="loading-bar" class="loading-bar"></div>
           <canvas id="fractal-canvas"></canvas>
           <div id="selection-box" class="selection-box"></div>
@@ -1038,7 +1038,7 @@
               </button>
             </div>
           </div>
-        </div>
+        </section>
       </main>
     </div>
 
