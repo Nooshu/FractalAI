@@ -20,8 +20,8 @@ Place your fractal images in the `images/` directory. Supported formats:
 - `.png`
 - `.webp`
 
-**Recommended image specifications:**
-- Size: 400x400px to 800x800px
+**Required image specifications:**
+- Size: 310px × 194px (exact dimensions)
 - Format: JPG (for smaller file sizes)
 - Quality: High enough to show fractal detail
 

@@ -333,9 +333,13 @@ export async function init() {
     // Update view parameters
     const params = appState.getParams();
     if (preset.zoom !== undefined) params.zoom = preset.zoom;
-    if (preset.offsetX !== undefined) params.offsetX = preset.offsetX;
-    if (preset.offsetY !== undefined) params.offsetY = preset.offsetY;
+    if (preset.offsetX !== undefined) params.offset.x = preset.offsetX;
+    if (preset.offsetY !== undefined) params.offset.y = preset.offsetY;
     if (preset.theme) params.colorScheme = preset.theme;
+    if (preset.iterations !== undefined) params.iterations = preset.iterations;
+    
+    // Update UI controls to reflect the new parameters
+    updateUIControlsFromParams(params, preset);
     
     // Load the fractal and render
     loadFractal(preset.fractal || appState.getCurrentFractalType()).then(() => {
@@ -343,6 +347,46 @@ export async function init() {
       updateCoordinateDisplayFn();
       updateWikipediaLinkFn();
     });
+  }
+  
+  /**
+   * Update UI controls to reflect parameter changes
+   * @param {Object} params - Current parameters
+   * @param {Object} preset - Preset data
+   */
+  function updateUIControlsFromParams(params, preset) {
+    // Update fractal type dropdown
+    if (preset.fractal) {
+      const fractalTypeSelect = document.getElementById('fractal-type');
+      if (fractalTypeSelect) {
+        fractalTypeSelect.value = preset.fractal;
+      }
+    }
+    
+    // Update color scheme dropdown
+    if (preset.theme) {
+      const colorSchemeSelect = document.getElementById('color-scheme');
+      if (colorSchemeSelect) {
+        colorSchemeSelect.value = preset.theme;
+      }
+    }
+    
+    // Update iterations slider and display
+    if (preset.iterations !== undefined) {
+      const iterationsSlider = document.getElementById('iterations');
+      const iterationsValue = document.getElementById('iterations-value');
+      const fullscreenIterationsNumber = document.getElementById('fullscreen-iterations-number');
+      
+      if (iterationsSlider) {
+        iterationsSlider.value = preset.iterations;
+      }
+      if (iterationsValue) {
+        iterationsValue.textContent = preset.iterations;
+      }
+      if (fullscreenIterationsNumber) {
+        fullscreenIterationsNumber.textContent = preset.iterations;
+      }
+    }
   }
   
   // Setup UI layout and displays
