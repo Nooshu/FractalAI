@@ -24,9 +24,20 @@ describe('footer-height module', () => {
 
   it('initFooterHeightTracking attaches resize listener and observer', () => {
     const resizeObserverObserve = vi.fn();
-    const ResizeObserverMock = vi.fn((cb) => ({
-      observe: resizeObserverObserve,
-    }));
+
+    class ResizeObserverMock {
+      static instances = [];
+
+      constructor(callback) {
+        this.callback = callback;
+        ResizeObserverMock.instances.push(this);
+      }
+
+      observe(target) {
+        resizeObserverObserve(target);
+      }
+    }
+
     // @ts-ignore
     global.ResizeObserver = ResizeObserverMock;
 
@@ -40,7 +51,7 @@ describe('footer-height module', () => {
 
     initFooterHeightTracking();
 
-    expect(ResizeObserverMock).toHaveBeenCalledTimes(1);
+    expect(ResizeObserverMock.instances.length).toBe(1);
     expect(resizeObserverObserve).toHaveBeenCalled();
 
     // Trigger resize to ensure handler doesn't throw and updates CSS variable
