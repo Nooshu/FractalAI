@@ -17,6 +17,9 @@ describe('input controls module', () => {
   });
 
   it('returns no-op cleanup if selection box missing', () => {
+    // Silence expected warning from missing DOM elements in this scenario
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
     // Remove selection box but keep canvas/container valid
     selectionBox.remove();
     const { cleanup } = setupInputControls(
@@ -32,7 +35,11 @@ describe('input controls module', () => {
         zoomToSelection: () => {},
       }
     );
+
     expect(typeof cleanup).toBe('function');
+    expect(warnSpy).toHaveBeenCalledWith('Canvas or selection box not found');
+
+    warnSpy.mockRestore();
   });
 
   it('attaches mouse event listeners to canvas', () => {
