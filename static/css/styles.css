@@ -213,7 +213,7 @@ body {
 }
 
 .section-content.active {
-  max-height: 500px;
+  max-height: 781px;
   padding: 16px 20px;
 }
 
@@ -859,6 +859,18 @@ body {
 }
 
 .app-footer a:hover {
+  color: var(--text-primary);
+  text-decoration: underline;
+}
+
+/* ELI5 link styling to match footer links */
+.eli5-link {
+  color: var(--accent-blue);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.eli5-link:hover {
   color: var(--text-primary);
   text-decoration: underline;
 }
