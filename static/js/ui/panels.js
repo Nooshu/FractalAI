@@ -29,11 +29,11 @@ export function setupCollapsibleSections() {
 }
 
 /**
- * Setup panel toggle functionality
- * Handles showing/hiding the side panel and updating renderer size
+ * Setup left panel toggle functionality
+ * Handles showing/hiding the left side panel and updating renderer size
  * @param {Function} updateRendererSize - Optional callback to update renderer size after panel animation
  */
-export function setupPanelToggle(updateRendererSize) {
+export function setupLeftPanelToggle(updateRendererSize) {
   const sidePanel = document.querySelector('.side-panel');
   const backBtn = document.querySelector('.back-btn');
   const showPanelBtn = document.getElementById('show-panel-btn');
@@ -64,12 +64,51 @@ export function setupPanelToggle(updateRendererSize) {
 }
 
 /**
+ * Setup right panel toggle functionality
+ * Handles showing/hiding the right panel and updating renderer size
+ * @param {Function} updateRendererSize - Optional callback to update renderer size after panel animation
+ */
+export function setupRightPanelToggle(updateRendererSize) {
+  const rightPanel = document.querySelector('.right-panel');
+  const rightBackBtn = document.querySelector('.right-back-btn');
+  const showRightPanelBtn = document.getElementById('show-right-panel-btn');
+
+  if (!rightPanel || !rightBackBtn || !showRightPanelBtn) return;
+
+  // Hide right panel when back button is clicked
+  rightBackBtn.addEventListener('click', () => {
+    rightPanel.classList.add('hidden');
+    // Resize canvas after panel animation
+    setTimeout(() => {
+      if (updateRendererSize) {
+        updateRendererSize();
+      }
+    }, 300);
+  });
+
+  // Show right panel when show button is clicked
+  showRightPanelBtn.addEventListener('click', () => {
+    rightPanel.classList.remove('hidden');
+    // Resize canvas after panel animation
+    setTimeout(() => {
+      if (updateRendererSize) {
+        updateRendererSize();
+      }
+    }, 300);
+  });
+}
+
+/**
  * Initialize all UI layout components
  * Convenience function to set up all layout-related functionality at once
  * @param {Function} updateRendererSize - Optional callback to update renderer size
  */
 export function initUILayout(updateRendererSize) {
   setupCollapsibleSections();
-  setupPanelToggle(updateRendererSize);
+  setupLeftPanelToggle(updateRendererSize);
+  setupRightPanelToggle(updateRendererSize);
 }
+
+// Backward compatibility alias
+export const setupPanelToggle = setupLeftPanelToggle;
 

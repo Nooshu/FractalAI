@@ -32,6 +32,40 @@
   /* Transitions */
   --transition-fast: 0.2s ease;
   --transition-normal: 0.3s ease;
+
+  /* Button Styling Variables */
+  --button-blue-bg: rgb(74 158 255 / 90%);
+  --button-blue-bg-active: rgb(58 122 199 / 95%);
+  --button-blue-shadow: 0 4px 12px rgb(74 158 255 / 30%);
+  --button-blue-shadow-hover: 0 6px 20px rgb(74 158 255 / 50%);
+  --button-blue-focus-shadow: 0 0 0 4px rgba(74, 158, 255, 0.2);
+  --button-blue-focus-shadow-full: 0 0 0 4px rgba(74, 158, 255, 0.3);
+
+  /* Panel Button Variables */
+  --panel-btn-size: 44px;
+  --panel-btn-opacity: 0.7;
+  --panel-btn-opacity-hover: 1;
+  --panel-btn-border-radius: 8px;
+  --panel-btn-shadow: 0 4px 12px rgb(0 0 0 / 30%);
+
+  /* Common Spacing */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 12px;
+  --spacing-lg: 16px;
+  --spacing-xl: 20px;
+
+  /* Common Border Radius */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+
+  /* Z-Index Scale */
+  --z-canvas: 1;
+  --z-ui: 100;
+  --z-panel-btn: 200;
+  --z-loading: 1000;
+  --z-fullscreen: 2000;
 }
 
 body {
@@ -73,8 +107,8 @@ body {
 .panel-header {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 16px 20px;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg) var(--spacing-xl);
   border-bottom: 1px solid var(--border-color);
   background: var(--bg-dark);
 }
@@ -742,24 +776,24 @@ body {
 .top-action-btn:focus-visible {
   outline: 2px solid var(--accent-blue);
   outline-offset: 2px;
-  background: rgb(74 158 255 / 90%);
+  background: var(--button-blue-bg);
   border-color: var(--accent-blue);
   color: white;
-  box-shadow: 0 0 0 4px rgba(74, 158, 255, 0.2), 0 4px 12px rgb(74 158 255 / 30%);
+  box-shadow: var(--button-blue-focus-shadow), var(--button-blue-shadow);
 }
 
 .top-action-btn:hover {
-  background: rgb(74 158 255 / 90%);
+  background: var(--button-blue-bg);
   border-color: var(--accent-blue);
   color: white;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgb(74 158 255 / 30%);
-  transition: all 0.2s ease;
+  box-shadow: var(--button-blue-shadow);
+  transition: all var(--transition-fast);
 }
 
 .top-action-btn:active {
   transform: translateY(0);
-  background: rgb(58 122 199 / 95%);
+  background: var(--button-blue-bg-active);
   border-color: var(--accent-blue-dim);
 }
 
@@ -782,33 +816,140 @@ body {
 .show-panel-btn {
   position: fixed;
   top: 50%;
-  left: 20px;
+  left: var(--spacing-xl);
   transform: translateY(-50%);
-  width: 44px;
-  height: 44px;
-  background: rgb(45 45 45 / 90%);
+  width: var(--panel-btn-size);
+  height: var(--panel-btn-size);
+  background: var(--button-bg);
   border: 1px solid var(--overlay-lighter);
-  border-radius: 8px;
+  border-radius: var(--panel-btn-border-radius);
   color: var(--text-primary);
   cursor: pointer;
   display: none;
   align-items: center;
   justify-content: center;
-  z-index: 200;
+  z-index: var(--z-panel-btn);
   transition: all var(--transition-fast);
   backdrop-filter: blur(10px);
-  box-shadow: 0 4px 12px rgb(0 0 0 / 30%);
+  box-shadow: var(--panel-btn-shadow);
   will-change: transform;
+  opacity: var(--panel-btn-opacity);
 }
 
 .show-panel-btn:hover {
-  background: rgb(53 53 53 / 95%);
+  background: var(--button-blue-bg);
   border-color: var(--accent-blue);
+  color: white;
   transform: translateY(-50%) translateX(2px);
+  box-shadow: var(--button-blue-shadow);
+  opacity: var(--panel-btn-opacity-hover);
 }
 
 .side-panel.hidden ~ .canvas-area .show-panel-btn {
   display: flex;
+}
+
+/* Right Panel */
+.right-panel {
+  width: var(--panel-width);
+  background: var(--bg-panel);
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid var(--border-color);
+  overflow: hidden;
+  transition:
+    transform var(--transition-normal),
+    width var(--transition-normal);
+  will-change: transform, width;
+  contain: layout style paint;
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100vh;
+  z-index: 100;
+}
+
+.right-panel.hidden {
+  transform: translateX(var(--panel-width));
+  width: 0;
+}
+
+.right-panel .panel-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-dark);
+}
+
+.right-panel .panel-header h1 {
+  flex: 1;
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.right-back-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.right-back-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+/* Show Right Panel Button */
+.show-right-panel-btn {
+  position: fixed;
+  top: 50%;
+  right: var(--spacing-xl);
+  transform: translateY(-50%);
+  width: var(--panel-btn-size);
+  height: var(--panel-btn-size);
+  background: var(--button-bg);
+  border: 1px solid var(--overlay-lighter);
+  border-radius: var(--panel-btn-border-radius);
+  color: var(--text-primary);
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-panel-btn);
+  transition: all var(--transition-fast);
+  backdrop-filter: blur(10px);
+  box-shadow: var(--panel-btn-shadow);
+  will-change: transform;
+  opacity: var(--panel-btn-opacity);
+}
+
+.show-right-panel-btn:hover {
+  background: var(--button-blue-bg);
+  border-color: var(--accent-blue);
+  color: white;
+  transform: translateY(-50%) translateX(-2px);
+  box-shadow: var(--button-blue-shadow);
+  opacity: var(--panel-btn-opacity-hover);
+}
+
+/* Show right panel button when right panel is hidden */
+.right-panel.hidden ~ * .show-right-panel-btn,
+.show-right-panel-btn {
+  display: flex;
+}
+
+/* Hide right panel button when right panel is visible */
+.right-panel:not(.hidden) ~ * .show-right-panel-btn {
+  display: none;
 }
 
 /* Footer */
@@ -1061,16 +1202,16 @@ body {
 }
 
 .fullscreen-control-btn:hover {
-  background: rgb(74 158 255 / 90%);
+  background: var(--button-blue-bg);
   border-color: var(--accent-blue);
   color: white;
   transform: scale(1.1);
-  box-shadow: 0 6px 20px rgb(74 158 255 / 50%);
+  box-shadow: var(--button-blue-shadow-hover);
 }
 
 .fullscreen-control-btn:active {
   transform: scale(0.95);
-  background: rgb(58 122 199 / 95%);
+  background: var(--button-blue-bg-active);
   border-color: var(--accent-blue-dim);
 }
 
@@ -1078,11 +1219,11 @@ body {
 .fullscreen-control-btn:focus-visible {
   outline: 2px solid var(--accent-blue);
   outline-offset: 3px;
-  background: rgb(74 158 255 / 90%);
+  background: var(--button-blue-bg);
   border-color: var(--accent-blue);
   color: white;
   transform: scale(1.1);
-  box-shadow: 0 0 0 4px rgba(74, 158, 255, 0.3), 0 6px 20px rgb(74 158 255 / 50%);
+  box-shadow: var(--button-blue-focus-shadow-full), var(--button-blue-shadow-hover);
 }
 
 .fullscreen-random-number {

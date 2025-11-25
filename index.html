@@ -29,7 +29,7 @@
               <path d="M19 12H5M12 19l-7-7 7-7" />
             </svg>
           </button>
-          <h1>Rendering</h1>
+          <h1>Rendering Settings</h1>
         </header>
 
         <div class="panel-content">
@@ -936,7 +936,7 @@
       </footer>
 
       <main class="canvas-area">
-        <button id="show-panel-btn" class="show-panel-btn" title="Show Panel">
+        <button id="show-panel-btn" class="show-panel-btn" title="Show Rendering Settings">
           <svg
             width="20"
             height="20"
@@ -946,6 +946,19 @@
             stroke-width="2"
           >
             <path d="M5 12h14M12 5l7 7-7 7" />
+          </svg>
+        </button>
+
+        <button id="show-right-panel-btn" class="show-right-panel-btn" title="Show Presets">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M5 12h14M12 5l-7 7 7 7" />
           </svg>
         </button>
 
@@ -1135,6 +1148,28 @@
           </div>
         </div>
       </main>
+
+      <aside class="right-panel hidden">
+        <header class="panel-header">
+          <h1>Presets</h1>
+          <button class="right-back-btn" title="Close">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M5 12h14M12 5l7 7-7 7" />
+            </svg>
+          </button>
+        </header>
+
+        <div class="panel-content">
+          <!-- Right panel content will go here -->
+        </div>
+      </aside>
     </div>
 
     <script type="module" src="static/js/core/initialization.js"></script>
