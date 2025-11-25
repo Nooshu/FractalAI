@@ -652,6 +652,14 @@ body {
   padding-left: 28px;
 }
 
+.navigation-description {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-top: 6px;
+  line-height: 1.4;
+  padding-left: 18px;
+}
+
 /* Navigation list */
 .navigation-list {
   margin: 6px 0 0;
