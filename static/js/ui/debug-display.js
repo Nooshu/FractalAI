@@ -32,6 +32,45 @@ function showCopyFeedback(button, duration = 1000) {
 }
 
 /**
+ * Format theme name for display
+ * @param {string} theme - Theme name to format
+ * @returns {string} Formatted theme name
+ */
+function formatThemeName(theme) {
+  const nameMap = {
+    'classic': 'Classic',
+    'fire': 'Fire',
+    'ocean': 'Ocean',
+    'rainbow': 'Rainbow',
+    'rainbow-pastel': 'Rainbow Pastel',
+    'rainbow-dark': 'Rainbow Dark',
+    'rainbow-vibrant': 'Rainbow Vibrant',
+    'rainbow-double': 'Rainbow Double',
+    'rainbow-shifted': 'Rainbow Shifted',
+    'monochrome': 'Monochrome',
+    'forest': 'Forest',
+    'sunset': 'Sunset',
+    'purple': 'Purple',
+    'cyan': 'Cyan',
+    'gold': 'Gold',
+    'ice': 'Ice',
+    'neon': 'Neon',
+    'cosmic': 'Cosmic',
+    'aurora': 'Aurora',
+    'coral': 'Coral',
+    'autumn': 'Autumn',
+    'midnight': 'Midnight',
+    'emerald': 'Emerald',
+    'rosegold': 'Rose Gold',
+    'electric': 'Electric',
+    'vintage': 'Vintage',
+    'tropical': 'Tropical',
+    'galaxy': 'Galaxy',
+  };
+  return nameMap[theme] || theme.charAt(0).toUpperCase() + theme.slice(1);
+}
+
+/**
  * Update debug display with current fractal information
  * @param {string} fractalType - Current fractal type
  * @param {Object} params - Fractal parameters with zoom and offset
@@ -43,6 +82,7 @@ export function updateDebugDisplay(fractalType, params) {
   const debugZoom = document.getElementById('debug-zoom');
   const debugOffsetX = document.getElementById('debug-offset-x');
   const debugOffsetY = document.getElementById('debug-offset-y');
+  const debugTheme = document.getElementById('debug-theme');
 
   if (debugFractalName) {
     debugFractalName.textContent = fractalType || '-';
@@ -56,6 +96,9 @@ export function updateDebugDisplay(fractalType, params) {
   if (debugOffsetY) {
     debugOffsetY.textContent = formatCoordinate(params.offset.y, 4);
   }
+  if (debugTheme) {
+    debugTheme.textContent = formatThemeName(params.colorScheme) || '-';
+  }
 }
 
 /**
@@ -68,6 +111,7 @@ export function setupDebugCopy(getCurrentFractalType, getParams) {
   const copyZoom = document.getElementById('debug-copy-zoom');
   const copyOffsetX = document.getElementById('debug-copy-offset-x');
   const copyOffsetY = document.getElementById('debug-copy-offset-y');
+  const copyTheme = document.getElementById('debug-copy-theme');
   const copyAll = document.getElementById('debug-copy-all');
 
   if (copyFractalName) {
@@ -115,6 +159,18 @@ export function setupDebugCopy(getCurrentFractalType, getParams) {
     });
   }
 
+  if (copyTheme) {
+    copyTheme.addEventListener('click', () => {
+      const params = getParams();
+      if (params) {
+        const themeName = formatThemeName(params.colorScheme);
+        navigator.clipboard.writeText(themeName).then(() => {
+          showCopyFeedback(copyTheme);
+        });
+      }
+    });
+  }
+
   if (copyAll) {
     copyAll.addEventListener('click', () => {
       const params = getParams();
@@ -126,8 +182,9 @@ export function setupDebugCopy(getCurrentFractalType, getParams) {
       const zoom = formatCoordinate(params.zoom, 3);
       const offsetX = formatCoordinate(params.offset.x, 4);
       const offsetY = formatCoordinate(params.offset.y, 4);
+      const themeName = formatThemeName(params.colorScheme) || '-';
 
-      const allInfo = `Fractal: ${fractalName}\nZoom: ${zoom}\nOffset X: ${offsetX}\nOffset Y: ${offsetY}`;
+      const allInfo = `Fractal: ${fractalName}\nZoom: ${zoom}\nOffset X: ${offsetX}\nOffset Y: ${offsetY}\nTheme: ${themeName}`;
 
       navigator.clipboard.writeText(allInfo).then(() => {
         const originalHTML = copyAll.innerHTML;

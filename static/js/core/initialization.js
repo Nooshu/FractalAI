@@ -11,6 +11,8 @@ import { cacheElement } from './dom-cache.js';
 import { setupCoordinateCopy, updateCoordinateAndDebugDisplay } from '../ui/coordinate-display.js';
 import { setupDebugCopy } from '../ui/debug-display.js';
 import { setupShareFractal, loadFractalFromURL } from '../sharing/state-manager.js';
+import { setupExifEditor } from '../ui/exif-editor.js';
+import { setupPresets } from '../ui/presets.js';
 import { updateWikipediaLink } from '../fractals/fractal-config.js';
 import { initUILayout } from '../ui/panels.js';
 import { fractalLoader, loadFractal } from '../fractals/loader.js';
@@ -176,8 +178,9 @@ function setupInputControlsModule(appState, renderingEngine, updateCoordinateDis
  * Setup UI layout and display modules
  * @param {Object} appState - Application state instance
  * @param {Function} updateCoordinateDisplay - Update coordinate display function
+ * @param {Function} loadFractalFromPreset - Load fractal from preset function
  */
-function setupUILayoutAndDisplays(appState, updateCoordinateDisplay) {
+function setupUILayoutAndDisplays(appState, updateCoordinateDisplay, loadFractalFromPreset) {
   const getters = appState.getGetters();
   
   // Setup UI layout (collapsible sections and panel toggle)
@@ -187,6 +190,8 @@ function setupUILayoutAndDisplays(appState, updateCoordinateDisplay) {
   setupCoordinateCopy(getters.getCurrentFractalType, getters.getParams);
   setupDebugCopy(getters.getCurrentFractalType, getters.getParams);
   setupShareFractal(getters.getCurrentFractalType, getters.getParams);
+  setupExifEditor(getters.getCurrentFractalType, getters.getParams);
+  setupPresets(loadFractalFromPreset);
   updateCoordinateDisplay();
 }
 
@@ -313,8 +318,35 @@ export async function init() {
   // Setup input controls (after rendering engine is initialized)
   setupInputControlsModule(appState, renderingEngine, updateCoordinateDisplayFn);
   
+  /**
+   * Load fractal from preset data
+   * @param {Object} preset - Preset configuration
+   */
+  function loadFractalFromPreset(preset) {
+    const setters = appState.getSetters();
+    
+    // Update fractal parameters from preset
+    if (preset.fractal) {
+      setters.setCurrentFractalType(preset.fractal);
+    }
+    
+    // Update view parameters
+    const params = appState.getParams();
+    if (preset.zoom !== undefined) params.zoom = preset.zoom;
+    if (preset.offsetX !== undefined) params.offsetX = preset.offsetX;
+    if (preset.offsetY !== undefined) params.offsetY = preset.offsetY;
+    if (preset.theme) params.colorScheme = preset.theme;
+    
+    // Load the fractal and render
+    loadFractal(preset.fractal || appState.getCurrentFractalType()).then(() => {
+      renderingEngine.renderFractal();
+      updateCoordinateDisplayFn();
+      updateWikipediaLinkFn();
+    });
+  }
+  
   // Setup UI layout and displays
-  setupUILayoutAndDisplays(appState, updateCoordinateDisplayFn);
+  setupUILayoutAndDisplays(appState, updateCoordinateDisplayFn, loadFractalFromPreset);
 
   // Initialize benchmark UI
   initBenchmarkUI(appState, renderingEngine, loadFractal);

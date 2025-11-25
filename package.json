@@ -29,7 +29,8 @@
     "test:visual:report": "playwright show-report"
   },
   "dependencies": {
-    "regl": "2.1.1"
+    "regl": "2.1.1",
+    "piexifjs": "1.0.6"
   },
   "devDependencies": {
     "@playwright/test": "1.57.0",

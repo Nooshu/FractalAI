@@ -1182,6 +1182,9 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
     // Update palette preview
     updateColorPalettePreview();
 
+    // Update coordinate and debug display
+    updateCoordinateDisplay();
+
     // Clear draw command to force regeneration with new palette
     setDrawFractal(null);
     setCachedDrawCommand(null);

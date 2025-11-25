@@ -877,6 +877,18 @@
                   </button>
                 </div>
               </div>
+              <div class="control">
+                <label class="control-label">Theme</label>
+                <div class="debug-row">
+                  <span class="debug-value" id="debug-theme">-</span>
+                  <button class="debug-copy-btn" id="debug-copy-theme" title="Copy theme name">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                  </button>
+                </div>
+              </div>
               <div class="control" style="margin-top: 12px;">
                 <button class="copy-coords-btn" id="debug-copy-all" title="Copy all debug info">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1167,7 +1179,180 @@
         </header>
 
         <div class="panel-content">
-          <!-- Right panel content will go here -->
+          <div class="section" role="region" aria-labelledby="section-exif-editor-title">
+            <button class="section-header" data-section="exif-editor">
+              <svg
+                class="section-icon"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14,2 14,8 20,8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10,9 9,9 8,9"></polyline>
+              </svg>
+              <span
+                id="section-exif-editor-title"
+                class="section-title"
+                role="heading"
+                aria-level="2"
+              >
+                EXIF Editor
+              </span>
+              <svg
+                class="chevron"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </button>
+            <div class="section-content active">
+              <div class="control">
+                <label class="control-label">Current Fractal Data</label>
+                <div class="current-fractal-info">
+                  <div class="fractal-info-row">
+                    <span class="info-label">Fractal:</span>
+                    <span class="info-value" id="current-fractal-type">-</span>
+                  </div>
+                  <div class="fractal-info-row">
+                    <span class="info-label">Zoom:</span>
+                    <span class="info-value" id="current-zoom">-</span>
+                  </div>
+                  <div class="fractal-info-row">
+                    <span class="info-label">Offset X:</span>
+                    <span class="info-value" id="current-offset-x">-</span>
+                  </div>
+                  <div class="fractal-info-row">
+                    <span class="info-label">Offset Y:</span>
+                    <span class="info-value" id="current-offset-y">-</span>
+                  </div>
+                  <div class="fractal-info-row">
+                    <span class="info-label">Theme:</span>
+                    <span class="info-value" id="current-theme">-</span>
+                  </div>
+                </div>
+                <button class="copy-coords-btn" id="use-current-data-btn" title="Use current fractal data">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M5 12l5 5l10-10"></path>
+                  </svg>
+                  Use Current Data
+                </button>
+              </div>
+
+              <div class="control">
+                <label class="control-label">Drop Image Here</label>
+                <div class="image-drop-zone" id="image-drop-zone">
+                  <div class="drop-zone-content">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                      <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                      <polyline points="21,15 16,10 5,21"></polyline>
+                    </svg>
+                    <p class="drop-zone-text">Drag & drop an image here</p>
+                    <p class="drop-zone-subtext">or click to select</p>
+                  </div>
+                  <input type="file" id="image-file-input" accept="image/jpeg,image/jpg" style="display: none;">
+                </div>
+                <div class="image-preview" id="image-preview" style="display: none;">
+                  <img id="preview-image" alt="Preview">
+                  <div class="image-info">
+                    <span id="image-name">No image selected</span>
+                    <span id="image-size">-</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="control">
+                <label class="control-label">EXIF Data (JSON)</label>
+                <textarea 
+                  id="exif-json-editor" 
+                  class="exif-json-textarea" 
+                  placeholder="EXIF data will appear here..."
+                  rows="8"
+                ></textarea>
+                <div class="control-description">
+                  Edit the JSON data above to customize the fractal information that will be embedded in the image.
+                </div>
+              </div>
+
+              <div class="control">
+                <button class="copy-coords-btn" id="write-exif-btn" title="Write EXIF data and download image" disabled>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7,10 12,15 17,10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                  Write EXIF & Download
+                </button>
+                <button class="copy-coords-btn" id="clear-image-btn" title="Clear image and start over" style="display: none; margin-top: 8px; background: var(--bg-hover);">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 6h18"></path>
+                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                  </svg>
+                  Clear Image
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Presets Section -->
+          <div class="collapsible-section">
+            <button
+              class="section-header"
+              data-section="presets"
+              aria-expanded="false"
+              aria-controls="section-presets-content"
+            >
+              <span
+                id="section-presets-title"
+                class="section-title"
+                role="heading"
+                aria-level="2"
+              >
+                Presets
+              </span>
+              <svg
+                class="chevron"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </button>
+            <div class="section-content" id="section-presets-content">
+              <div class="presets-container">
+                <div class="presets-grid" id="presets-grid">
+                  <!-- Preset images will be loaded here dynamically -->
+                  <div class="preset-placeholder">
+                    <div class="placeholder-content">
+                      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                        <circle cx="8.5" cy="8.5" r="1.5"/>
+                        <polyline points="21,15 16,10 5,21"/>
+                      </svg>
+                      <p>No presets available</p>
+                      <small>Add preset images to static/presets/images/</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </aside>
     </div>
