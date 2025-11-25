@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
 import { copyFileSync, readFileSync, writeFileSync } from 'fs';
 import { resolve } from 'path';
+import { execSync } from 'child_process';
 
 export default defineConfig({
   server: {
@@ -39,7 +40,24 @@ export default defineConfig({
       transformIndexHtml(html) {
         // Replace {{BUILD_YEAR}} placeholder with current year at build time
         const currentYear = new Date().getFullYear();
-        return html.replace(/\{\{BUILD_YEAR\}\}/g, currentYear.toString());
+
+        // Read app version from package.json (semver)
+        const packageJsonPath = resolve(process.cwd(), 'package.json');
+        const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
+        const appVersion = packageJson.version;
+
+        // Get short git SHA for current commit; fall back gracefully if git is unavailable
+        let gitSha = 'dev';
+        try {
+          gitSha = execSync('git rev-parse --short HEAD').toString().trim();
+        } catch {
+          // Leave gitSha as 'dev' when git is not available (e.g. in some CI environments)
+        }
+
+        return html
+          .replace(/\{\{BUILD_YEAR\}\}/g, currentYear.toString())
+          .replace(/\{\{APP_VERSION\}\}/g, appVersion)
+          .replace(/\{\{GIT_SHA\}\}/g, gitSha);
       },
     },
     {
