@@ -73,6 +73,7 @@ export function setupPresets(loadFractalFromPreset) {
  * Load preset images from directory only (no JSON file)
  */
 async function loadPresets() {
+    console.log('🔄 Starting preset loading...');
     // Start with empty presets - only use images from directory
     presetsData = [];
 
@@ -85,20 +86,26 @@ async function loadPresets() {
  */
 async function autoScanAndUpdatePresets() {
     try {
+        console.log('🔍 Auto-scanning for preset images...');
         // Show loading indicator
         showLoadingIndicator();
 
         const scannedPresets = await scanPresetsFromImages();
+        console.log(`📁 Scan result: Found ${scannedPresets.length} presets`);
 
         if (scannedPresets.length > 0) {
             // Update presets data in memory
             updatePresetsDataFromScan(scannedPresets);
+            console.log('✅ Presets updated successfully');
+        } else {
+            console.log('⚠️ No presets found');
         }
 
         // Render the presets (whether from EXIF or empty)
         renderPresets();
 
-    } catch {
+    } catch (error) {
+        console.error('❌ Error in auto-scan:', error);
         // Still render whatever presets we have
         renderPresets();
     }
@@ -367,6 +374,7 @@ async function scanPresetsFromImages() {
  */
 async function getPresetImageFiles() {
   const imageFiles = [];
+  console.log('🔍 Scanning for preset images...');
 
   // Try to get directory listing and parse for JPG files
   try {
@@ -377,44 +385,67 @@ async function getPresetImageFiles() {
       }
     });
 
+    console.log(`Directory listing response: ${response.status}`);
+
     if (response.ok) {
       const html = await response.text();
+      console.log(`HTML length: ${html.length} chars`);
+      console.log(`First 1000 chars of HTML:`, html.substring(0, 1000));
 
       // Parse HTML directory listing for JPG files matching pattern: [number]-[title]-[title].jpg
       const linkMatches = html.match(/<a[^>]+href="([^"]+)"[^>]*>/gi) || [];
+      console.log(`Found ${linkMatches.length} links in directory`);
 
       for (const linkMatch of linkMatches) {
         const hrefMatch = linkMatch.match(/href="([^"]+)"/i);
         if (hrefMatch) {
           const filename = hrefMatch[1];
+          console.log(`Checking link: ${filename}`);
 
           // Check if it's a JPG file matching our pattern: digits-word-word.jpg
           if (filename.match(/^\d{2}-[\w-]+-[\w-]+\.jpg$/i)) {
             imageFiles.push(filename);
+            console.log(`✅ Found preset image via directory: ${filename}`);
           }
         }
       }
 
       if (imageFiles.length > 0) {
+        console.log(`Directory listing found ${imageFiles.length} images`);
         return imageFiles;
+      } else {
+        console.log(`No matching JPG files found in directory listing`);
       }
     }
-  } catch {
-    // Directory listing not available
+  } catch (error) {
+    console.log('Directory listing error:', error.message);
   }
 
-  // If directory listing didn't work, try to find your specific file directly
+  // If directory listing didn't work, only try your known files
   if (imageFiles.length === 0) {
-    // Try to find your known file directly
-    try {
-      const testResponse = await fetch('/static/presets/images/01-rainbow-mandlebrot.jpg', { method: 'HEAD' });
-      if (testResponse.ok) {
-        imageFiles.push('01-rainbow-mandlebrot.jpg');
+    console.log('Directory listing failed, trying known files only...');
+
+    // Only test for files you've explicitly mentioned
+    const knownFiles = [
+      '01-rainbow-mandlebrot.jpg',
+      '02-Julia-Fractal.jpg'
+    ];
+
+    for (const testFile of knownFiles) {
+      try {
+        const testResponse = await fetch(`/static/presets/images/${testFile}`, { method: 'HEAD' });
+        // Check both status and content-type to ensure it's actually an image
+        if (testResponse.ok && testResponse.headers.get('content-type')?.includes('image')) {
+          imageFiles.push(testFile);
+          console.log(`✅ Found known file: ${testFile}`);
+        }
+      } catch {
+        // File doesn't exist
       }
-    } catch {
-      // Could not find file
     }
   }
+
+  console.log(`📁 Total found: ${imageFiles.length} images`, imageFiles);
   return imageFiles;
 }
 
