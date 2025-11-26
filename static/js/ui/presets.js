@@ -434,13 +434,35 @@ async function getPresetImageFiles() {
     for (const testFile of knownFiles) {
       try {
         const testResponse = await fetch(`/static/presets/images/${testFile}`, { method: 'HEAD' });
+        const contentType = testResponse.headers.get('content-type');
+        console.log(`Testing ${testFile}: status=${testResponse.status}, content-type=${contentType}`);
+
         // Check both status and content-type to ensure it's actually an image
-        if (testResponse.ok && testResponse.headers.get('content-type')?.includes('image')) {
+        if (testResponse.ok && contentType && contentType.includes('image')) {
           imageFiles.push(testFile);
           console.log(`✅ Found known file: ${testFile}`);
+        } else if (testResponse.ok && !contentType) {
+          // Cloudflare might not return content-type on HEAD requests, try GET with range
+          try {
+            const getResponse = await fetch(`/static/presets/images/${testFile}`, {
+              method: 'GET',
+              headers: { 'Range': 'bytes=0-10' }
+            });
+            const getContentType = getResponse.headers.get('content-type');
+            console.log(`GET test for ${testFile}: status=${getResponse.status}, content-type=${getContentType}`);
+
+            if (getResponse.ok && getContentType && getContentType.includes('image')) {
+              imageFiles.push(testFile);
+              console.log(`✅ Found known file via GET: ${testFile}`);
+            }
+          } catch {
+            console.log(`❌ GET test failed for ${testFile}`);
+          }
+        } else {
+          console.log(`❌ Not an image or doesn't exist: ${testFile}`);
         }
-      } catch {
-        // File doesn't exist
+      } catch (error) {
+        console.log(`❌ Error testing ${testFile}:`, error.message);
       }
     }
   }
