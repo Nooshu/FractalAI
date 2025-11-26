@@ -98,7 +98,6 @@ export default defineConfig({
         try {
           if (existsSync(staticSrc)) {
             cpSync(staticSrc, staticDest, { recursive: true });
-            console.log('[Static Assets] Copied static/ directory to dist/static/');
           }
         } catch (err) {
           console.warn('Static directory not found or copy failed:', err.message);
