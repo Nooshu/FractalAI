@@ -73,7 +73,6 @@ export function setupPresets(loadFractalFromPreset) {
  * Load preset images from directory only (no JSON file)
  */
 async function loadPresets() {
-    console.log('🔄 Starting preset loading...');
     // Start with empty presets - only use images from directory
     presetsData = [];
 
@@ -86,26 +85,20 @@ async function loadPresets() {
  */
 async function autoScanAndUpdatePresets() {
     try {
-        console.log('🔍 Auto-scanning for preset images...');
         // Show loading indicator
         showLoadingIndicator();
 
         const scannedPresets = await scanPresetsFromImages();
-        console.log(`📁 Scan result: Found ${scannedPresets.length} presets`);
 
         if (scannedPresets.length > 0) {
             // Update presets data in memory
             updatePresetsDataFromScan(scannedPresets);
-            console.log('✅ Presets updated successfully');
-        } else {
-            console.log('⚠️ No presets found');
         }
 
         // Render the presets (whether from EXIF or empty)
         renderPresets();
 
-    } catch (error) {
-        console.error('❌ Error in auto-scan:', error);
+    } catch {
         // Still render whatever presets we have
         renderPresets();
     }
@@ -374,7 +367,6 @@ async function scanPresetsFromImages() {
  */
 async function getPresetImageFiles() {
   const imageFiles = [];
-  console.log('🔍 Scanning for preset images...');
 
   // Try to get directory listing and parse for JPG files
   try {
@@ -385,46 +377,34 @@ async function getPresetImageFiles() {
       }
     });
 
-    console.log(`Directory listing response: ${response.status}`);
-
     if (response.ok) {
       const html = await response.text();
-      console.log(`HTML length: ${html.length} chars`);
-      console.log(`First 1000 chars of HTML:`, html.substring(0, 1000));
 
       // Parse HTML directory listing for JPG files matching pattern: [number]-[title]-[title].jpg
       const linkMatches = html.match(/<a[^>]+href="([^"]+)"[^>]*>/gi) || [];
-      console.log(`Found ${linkMatches.length} links in directory`);
 
       for (const linkMatch of linkMatches) {
         const hrefMatch = linkMatch.match(/href="([^"]+)"/i);
         if (hrefMatch) {
           const filename = hrefMatch[1];
-          console.log(`Checking link: ${filename}`);
 
           // Check if it's a JPG file matching our pattern: digits-word-word.jpg
           if (filename.match(/^\d{2}-[\w-]+-[\w-]+\.jpg$/i)) {
             imageFiles.push(filename);
-            console.log(`✅ Found preset image via directory: ${filename}`);
           }
         }
       }
 
       if (imageFiles.length > 0) {
-        console.log(`Directory listing found ${imageFiles.length} images`);
         return imageFiles;
-      } else {
-        console.log(`No matching JPG files found in directory listing`);
       }
     }
-  } catch (error) {
-    console.log('Directory listing error:', error.message);
+  } catch {
+    // Directory listing not available
   }
 
   // If directory listing didn't work, only try your known files
   if (imageFiles.length === 0) {
-    console.log('Directory listing failed, trying known files only...');
-
     // Only test for files you've explicitly mentioned
     const knownFiles = [
       '01-rainbow-mandlebrot.jpg',
@@ -435,39 +415,17 @@ async function getPresetImageFiles() {
       try {
         const testResponse = await fetch(`/static/presets/images/${testFile}`, { method: 'HEAD' });
         const contentType = testResponse.headers.get('content-type');
-        console.log(`Testing ${testFile}: status=${testResponse.status}, content-type=${contentType}`);
 
         // Check both status and content-type to ensure it's actually an image
         if (testResponse.ok && contentType && contentType.includes('image')) {
           imageFiles.push(testFile);
-          console.log(`✅ Found known file: ${testFile}`);
-        } else if (testResponse.ok && !contentType) {
-          // Cloudflare might not return content-type on HEAD requests, try GET with range
-          try {
-            const getResponse = await fetch(`/static/presets/images/${testFile}`, {
-              method: 'GET',
-              headers: { 'Range': 'bytes=0-10' }
-            });
-            const getContentType = getResponse.headers.get('content-type');
-            console.log(`GET test for ${testFile}: status=${getResponse.status}, content-type=${getContentType}`);
-
-            if (getResponse.ok && getContentType && getContentType.includes('image')) {
-              imageFiles.push(testFile);
-              console.log(`✅ Found known file via GET: ${testFile}`);
-            }
-          } catch {
-            console.log(`❌ GET test failed for ${testFile}`);
-          }
-        } else {
-          console.log(`❌ Not an image or doesn't exist: ${testFile}`);
         }
-      } catch (error) {
-        console.log(`❌ Error testing ${testFile}:`, error.message);
+      } catch {
+        // File doesn't exist
       }
     }
   }
 
-  console.log(`📁 Total found: ${imageFiles.length} images`, imageFiles);
   return imageFiles;
 }
 

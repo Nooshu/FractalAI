@@ -1,5 +1,5 @@
 import { defineConfig } from 'vite';
-import { copyFileSync, readFileSync, writeFileSync } from 'fs';
+import { copyFileSync, readFileSync, writeFileSync, cpSync, existsSync } from 'fs';
 import { resolve } from 'path';
 import { execSync } from 'child_process';
 
@@ -90,6 +90,18 @@ export default defineConfig({
           console.log(`[Service Worker] Copied with cache version: ${cacheVersion}`);
         } catch (err) {
           console.warn('Service worker not found, skipping copy');
+        }
+        
+        // Copy static directory to dist for preset images and other static assets
+        const staticSrc = resolve(__dirname, 'static');
+        const staticDest = resolve(__dirname, 'dist', 'static');
+        try {
+          if (existsSync(staticSrc)) {
+            cpSync(staticSrc, staticDest, { recursive: true });
+            console.log('[Static Assets] Copied static/ directory to dist/static/');
+          }
+        } catch (err) {
+          console.warn('Static directory not found or copy failed:', err.message);
         }
       },
     },
