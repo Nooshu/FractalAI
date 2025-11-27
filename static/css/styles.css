@@ -253,7 +253,7 @@ body {
 }
 
 .section-content.active {
-  max-height: 880px;
+  max-height: 2000px; /* Much larger to accommodate any content */
   padding: 16px 20px;
 }
 
@@ -921,7 +921,6 @@ body {
   overflow-x: hidden;
   padding: 8px 0;
   padding-bottom: 150px; /* Extra padding at bottom to ensure buttons are visible */
-  max-height: 880px; /* Fixed height that ensures all content is visible including both buttons */
 }
 
 /* Show Right Panel Button */
