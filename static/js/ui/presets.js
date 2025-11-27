@@ -267,8 +267,6 @@ function setupPresetInteractions(loadFractalFromPreset) {
                         offsetY: exifData.offsetY !== undefined ? exifData.offsetY : preset.offsetY,
                         theme: exifData.theme || preset.theme
                     };
-
-                    console.log('Loaded fractal settings from EXIF data:', exifData);
                 } else {
                     console.log('No EXIF data found, using JSON preset data');
                 }
