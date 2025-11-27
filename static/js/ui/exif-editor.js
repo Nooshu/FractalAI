@@ -71,7 +71,7 @@ function generateExifData(fractalType, params) {
       "offsetY": formatCoordinate(params.offset.y, 4),
       "theme": params.colorScheme || "classic",
       "timestamp": new Date().toISOString(),
-      "generator": "FractalAI v2.0.0"
+      "generator": "FractalAI v3.0.0"
     }
   };
 }

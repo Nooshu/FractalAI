@@ -1,7 +1,7 @@
 {
   "images": [
     "01-rainbow-mandlebrot.jpg",
-    "02-julia-fractal.jpg",
+    "02-Julia-Fractal.jpg",
     "03-burning-ship.jpg",
     "05-julia-snakes-.jpg",
     "06-folded-paper-dragon.jpg",
@@ -9,6 +9,6 @@
     "09-fractal-frame.jpg",
     "10-spider-set.jpg"
   ],
-  "generated": "2025-11-27T19:37:07.827Z",
+  "generated": "2025-11-27T20:01:04.249Z",
   "count": 8
 }
