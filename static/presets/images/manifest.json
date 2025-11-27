@@ -1,9 +1,14 @@
 {
   "images": [
     "01-rainbow-mandlebrot.jpg",
-    "02-Julia-Fractal.jpg",
-    "03-burning-ship.jpg"
+    "02-julia-fractal.jpg",
+    "03-burning-ship.jpg",
+    "05-julia-snakes-.jpg",
+    "06-folded-paper-dragon.jpg",
+    "08-gosper-curve.jpg",
+    "09-fractal-frame.jpg",
+    "10-magnet-fractal.jpg"
   ],
-  "generated": "2025-11-27T08:41:34.097Z",
-  "count": 3
+  "generated": "2025-11-27T19:04:59.612Z",
+  "count": 8
 }
