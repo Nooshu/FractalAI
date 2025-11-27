@@ -8,9 +8,10 @@
     "npm": ">=10.0.0"
   },
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
+    "dev": "node scripts/generate-presets-manifest.js && vite",
+    "build": "node scripts/generate-presets-manifest.js && vite build",
     "preview": "vite preview",
+    "generate-manifest": "node scripts/generate-presets-manifest.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write \"**/*.{js,json,css,html,md}\"",
