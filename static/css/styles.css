@@ -1019,6 +1019,15 @@ body {
 }
 
 /* EXIF Editor Styling */
+.exif-hidden {
+  display: none !important;
+}
+
+/* Debug Panel Styling */
+.debug-hidden {
+  display: none !important;
+}
+
 .current-fractal-info {
   background: var(--bg-control);
   border: 1px solid var(--border-color);

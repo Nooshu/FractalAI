@@ -336,7 +336,8 @@ export async function init() {
     if (preset.offsetX !== undefined) params.offset.x = preset.offsetX;
     if (preset.offsetY !== undefined) params.offset.y = preset.offsetY;
     if (preset.theme) params.colorScheme = preset.theme;
-    if (preset.iterations !== undefined) params.iterations = preset.iterations;
+    // Always set iterations to 250 when loading a preset
+    params.iterations = 250;
     
     // Update UI controls to reflect the new parameters
     updateUIControlsFromParams(params, preset);
@@ -371,21 +372,19 @@ export async function init() {
       }
     }
     
-    // Update iterations slider and display
-    if (preset.iterations !== undefined) {
-      const iterationsSlider = document.getElementById('iterations');
-      const iterationsValue = document.getElementById('iterations-value');
-      const fullscreenIterationsNumber = document.getElementById('fullscreen-iterations-number');
-      
-      if (iterationsSlider) {
-        iterationsSlider.value = preset.iterations;
-      }
-      if (iterationsValue) {
-        iterationsValue.textContent = preset.iterations;
-      }
-      if (fullscreenIterationsNumber) {
-        fullscreenIterationsNumber.textContent = preset.iterations;
-      }
+    // Update iterations slider and display to 250
+    const iterationsSlider = document.getElementById('iterations');
+    const iterationsValue = document.getElementById('iterations-value');
+    const fullscreenIterationsNumber = document.getElementById('fullscreen-iterations-number');
+    
+    if (iterationsSlider) {
+      iterationsSlider.value = 250;
+    }
+    if (iterationsValue) {
+      iterationsValue.textContent = '250';
+    }
+    if (fullscreenIterationsNumber) {
+      fullscreenIterationsNumber.textContent = '250';
     }
   }
   

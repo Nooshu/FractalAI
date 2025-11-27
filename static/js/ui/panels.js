@@ -5,6 +5,60 @@
  */
 
 /**
+ * Check if EXIF editor should be visible based on URL parameters
+ * @returns {boolean} True if ?exif=true is in the URL
+ */
+function shouldShowExifEditor() {
+  const urlParams = new URLSearchParams(window.location.search);
+  return urlParams.get('exif') === 'true';
+}
+
+/**
+ * Check if debug panel should be visible based on URL parameters
+ * @returns {boolean} True if ?debug=true is in the URL
+ */
+function shouldShowDebugPanel() {
+  const urlParams = new URLSearchParams(window.location.search);
+  return urlParams.get('debug') === 'true';
+}
+
+/**
+ * Setup EXIF editor visibility based on URL parameters
+ * Hides the EXIF editor section if ?exif=true is not present in the URL
+ */
+export function setupExifEditorVisibility() {
+  const exifSection = document.querySelector('[data-section="exif-editor"]')?.parentElement;
+
+  if (!exifSection) return;
+
+  if (shouldShowExifEditor()) {
+    exifSection.classList.remove('exif-hidden');
+    exifSection.style.display = '';
+  } else {
+    exifSection.classList.add('exif-hidden');
+    exifSection.style.display = 'none';
+  }
+}
+
+/**
+ * Setup debug panel visibility based on URL parameters
+ * Hides the debug panel section if ?debug=true is not present in the URL
+ */
+export function setupDebugPanelVisibility() {
+  const debugSection = document.querySelector('[data-section="debug"]')?.parentElement;
+
+  if (!debugSection) return;
+
+  if (shouldShowDebugPanel()) {
+    debugSection.classList.remove('debug-hidden');
+    debugSection.style.display = '';
+  } else {
+    debugSection.classList.add('debug-hidden');
+    debugSection.style.display = 'none';
+  }
+}
+
+/**
  * Setup collapsible sections
  * Allows sections to be expanded/collapsed by clicking their headers
  */
@@ -15,6 +69,10 @@ export function setupCollapsibleSections() {
     header.addEventListener('click', () => {
       const section = header.parentElement;
       const content = section.querySelector('.section-content');
+
+      // Skip if content element doesn't exist
+      if (!content) return;
+
       const isActive = content.classList.contains('active');
 
       if (isActive) {
@@ -107,6 +165,8 @@ export function initUILayout(updateRendererSize) {
   setupCollapsibleSections();
   setupLeftPanelToggle(updateRendererSize);
   setupRightPanelToggle(updateRendererSize);
+  setupExifEditorVisibility();
+  setupDebugPanelVisibility();
 }
 
 // Backward compatibility alias

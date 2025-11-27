@@ -186,7 +186,6 @@ function createPresetItem(preset, index) {
             <div class="preset-details">
                 ${preset.fractal || 'Unknown'} • ${preset.theme || 'Default'}
                 ${preset.zoom ? `<br>Zoom: ${formatZoom(preset.zoom)}` : ''}
-                ${preset.order !== undefined ? `<br>Order: ${preset.order}` : ''}
             </div>
         </div>
     `;
