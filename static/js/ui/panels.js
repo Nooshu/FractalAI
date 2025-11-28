@@ -228,7 +228,8 @@ async function lazyLoadPresetsModule(loadFractalFromPreset) {
   
   try {
     const { setupPresets } = await import('./presets.js');
-    setupPresets(loadFractalFromPreset);
+    // setupPresets is now async, so await it to ensure presets are loaded
+    await setupPresets(loadFractalFromPreset);
     lazyLoadedModules.presets = true;
   } catch (error) {
     console.error('Failed to lazy load presets module:', error);
@@ -293,6 +294,16 @@ export function initUILayout(updateRendererSize, lazyLoadCallbacks = null) {
   setupRightPanelToggle(updateRendererSize, lazyLoadCallbacks?.loadFractalFromPreset || null);
   setupExifEditorVisibility(lazyLoadCallbacks);
   setupDebugPanelVisibility(lazyLoadCallbacks);
+  
+  // Check if right panel is already visible (e.g., from URL parameter or initial state)
+  // If so, load presets module immediately to ensure preset clicks work
+  const rightPanel = document.querySelector('.right-panel');
+  if (rightPanel && !rightPanel.classList.contains('hidden') && lazyLoadCallbacks?.loadFractalFromPreset) {
+    // Panel is visible, load presets module immediately
+    lazyLoadPresetsModule(lazyLoadCallbacks.loadFractalFromPreset).catch((error) => {
+      console.error('Failed to load presets module for visible panel:', error);
+    });
+  }
 }
 
 // Backward compatibility alias

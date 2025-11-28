@@ -63,9 +63,11 @@ async function readExifFromImage(imageUrl) {
  * Initialize the presets functionality
  * @param {Function} loadFractalFromPreset - Function to load fractal from preset data
  */
-export function setupPresets(loadFractalFromPreset) {
-    loadPresets();
+export async function setupPresets(loadFractalFromPreset) {
+    // Set up interactions first (they use event delegation, so they'll work even if items are added later)
     setupPresetInteractions(loadFractalFromPreset);
+    // Then load and render presets (await to ensure presets are loaded)
+    await loadPresets();
 }
 
 

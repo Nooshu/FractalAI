@@ -8,7 +8,8 @@ import { initLoadingBar } from '../ui/loading-bar.js';
 import { initFPSTracker, startFPSTracking } from '../performance/fps-tracker.js';
 import { cacheElement } from './dom-cache.js';
 import { setupCoordinateCopy, updateCoordinateAndDebugDisplay } from '../ui/coordinate-display.js';
-import { setupShareFractal, loadFractalFromURL } from '../sharing/state-manager.js';
+import { loadFractalFromURL } from '../sharing/state-manager.js';
+// setupShareFractal is deferred using requestIdleCallback (non-critical for first render)
 // Presets module is now lazy loaded when right panel is first opened (see panels.js)
 import { updateWikipediaLink } from '../fractals/fractal-config.js';
 import { initUILayout } from '../ui/panels.js';
@@ -18,7 +19,8 @@ import { setupInputControls, zoomToSelection } from '../input/controls.js';
 import { setupUIControls } from '../ui/controls.js';
 import { getRandomInterestingView } from '../fractals/random-view.js';
 import { appState } from './app-state.js';
-import { initFooterHeightTracking, updateFooterHeight } from '../ui/footer-height.js';
+// Footer height tracking is deferred using requestIdleCallback (non-critical for first render)
+import { getColorSchemeIndex, computeColorForScheme } from '../fractals/utils.js';
 
 /**
  * Initialize DOM cache and basic UI modules
@@ -192,7 +194,7 @@ function setupUILayoutAndDisplays(appState, updateCoordinateDisplay, loadFractal
   setupCoordinateCopy(getters.getCurrentFractalType, getters.getParams);
   // Debug and EXIF editor are now lazy loaded when their sections are first opened
   // (handled in panels.js via lazyLoadCallbacks)
-  setupShareFractal(getters.getCurrentFractalType, getters.getParams);
+  // setupShareFractal is deferred using requestIdleCallback (see init function)
   // Presets module is now lazy loaded when right panel is first opened (handled in panels.js)
   updateCoordinateDisplay();
 }
@@ -320,6 +322,74 @@ async function loadInitialFractal(appState, renderingEngine, loadFractal, update
 }
 
 /**
+ * Directly update palette preview canvas (fallback for production builds)
+ * @param {string} colorScheme - Color scheme name
+ * @param {number} retries - Number of retry attempts (default: 3)
+ */
+function updatePalettePreviewDirectly(colorScheme, retries = 3) {
+  const paletteCanvas = document.getElementById('fullscreen-color-palette');
+  if (!paletteCanvas) {
+    // Retry if canvas doesn't exist yet (might be timing issue in production)
+    if (retries > 0) {
+      setTimeout(() => updatePalettePreviewDirectly(colorScheme, retries - 1), 100);
+    }
+    return;
+  }
+
+  const ctx = paletteCanvas.getContext('2d');
+  if (!ctx) {
+    if (retries > 0) {
+      setTimeout(() => updatePalettePreviewDirectly(colorScheme, retries - 1), 100);
+    }
+    return;
+  }
+
+  // Get canvas dimensions - prefer explicit width/height attributes, fallback to client dimensions
+  let width = paletteCanvas.width;
+  let height = paletteCanvas.height;
+  
+  // If width/height are 0 or not set, try to get from client dimensions or set defaults
+  if (!width || width === 0) {
+    width = paletteCanvas.clientWidth || 16;
+    paletteCanvas.width = width;
+  }
+  if (!height || height === 0) {
+    height = paletteCanvas.clientHeight || 16;
+    paletteCanvas.height = height;
+  }
+  
+  // Ensure canvas has valid dimensions
+  if (!width || !height || width === 0 || height === 0) {
+    if (retries > 0) {
+      setTimeout(() => updatePalettePreviewDirectly(colorScheme, retries - 1), 100);
+    }
+    return;
+  }
+
+  const numColors = 8; // Number of color swatches to show
+
+  // Clear canvas
+  ctx.clearRect(0, 0, width, height);
+
+  // Get the color scheme index
+  const schemeIndex = getColorSchemeIndex(colorScheme);
+  if (schemeIndex === -1) return;
+
+  // Draw color swatches using the same color computation as utils.js
+  const swatchWidth = width / numColors;
+  for (let i = 0; i < numColors; i++) {
+    const t = i / (numColors - 1);
+
+    // Use the same color computation function as utils.js
+    const color = computeColorForScheme(t, schemeIndex);
+
+    // Draw the color swatch
+    ctx.fillStyle = `rgb(${Math.floor(color.r * 255)}, ${Math.floor(color.g * 255)}, ${Math.floor(color.b * 255)})`;
+    ctx.fillRect(i * swatchWidth, 0, swatchWidth, height);
+  }
+}
+
+/**
  * Create wrapper functions that use appState
  */
 function createUpdateWikipediaLink() {
@@ -386,6 +456,15 @@ export async function init() {
       renderingEngine.renderFractal();
       updateCoordinateDisplayFn();
       updateWikipediaLinkFn();
+      
+      // Update palette preview after everything is loaded and rendered
+      if (preset.theme) {
+        // Multiple attempts with increasing delays to handle production timing
+        setTimeout(() => updatePalettePreviewDirectly(preset.theme, 5), 0);
+        setTimeout(() => updatePalettePreviewDirectly(preset.theme, 4), 50);
+        setTimeout(() => updatePalettePreviewDirectly(preset.theme, 3), 150);
+        setTimeout(() => updatePalettePreviewDirectly(preset.theme, 2), 300);
+      }
     });
   }
   
@@ -409,13 +488,12 @@ export async function init() {
     }
     
     // Update color scheme dropdown
-    // Trigger change event to update palette preview (this doesn't cause fractal reload)
     if (preset.theme) {
       const colorSchemeSelect = document.getElementById('color-scheme');
       if (colorSchemeSelect) {
         colorSchemeSelect.value = preset.theme;
-        // Trigger change event to update palette preview and other dependent UI elements
-        colorSchemeSelect.dispatchEvent(new Event('change', { bubbles: true }));
+        // Don't trigger change event - just update the UI directly to avoid timing issues in production
+        // The change event listener in controls.js would trigger auto-render which we don't want here
       }
     }
     
@@ -451,6 +529,27 @@ export async function init() {
 
   // Load initial fractal (from URL or default)
   await loadInitialFractal(appState, renderingEngine, loadFractal, updateWikipediaLinkFn, updateCoordinateDisplayFn);
+
+  // Defer non-critical initialization using requestIdleCallback
+  // This allows the browser to prioritize rendering the first fractal
+  const deferredInit = () => {
+    const getters = appState.getGetters();
+    
+    // Setup share button (non-critical for first render)
+    import('../sharing/state-manager.js').then(({ setupShareFractal }) => {
+      setupShareFractal(getters.getCurrentFractalType, getters.getParams);
+    }).catch((error) => {
+      console.error('Failed to load sharing module:', error);
+    });
+  };
+
+  // Use requestIdleCallback if available, otherwise use setTimeout with a small delay
+  if (typeof requestIdleCallback !== 'undefined') {
+    requestIdleCallback(deferredInit, { timeout: 2000 });
+  } else {
+    // Fallback for browsers without requestIdleCallback
+    setTimeout(deferredInit, 100);
+  }
 }
 
 /**
@@ -458,13 +557,28 @@ export async function init() {
  * Entry point that initializes everything and sets up event listeners
  */
 function bootstrap() {
-  // Initialize footer height tracking
-  initFooterHeightTracking();
-
   // Initialize on load
   window.addEventListener('load', async () => {
     await init();
-    updateFooterHeight();
+    
+    // Defer footer height tracking using requestIdleCallback
+    // This is non-critical for first render
+    const deferredFooterInit = () => {
+      import('../ui/footer-height.js').then(({ initFooterHeightTracking, updateFooterHeight }) => {
+        initFooterHeightTracking();
+        updateFooterHeight();
+      }).catch((error) => {
+        console.error('Failed to load footer height module:', error);
+      });
+    };
+
+    // Use requestIdleCallback if available, otherwise use setTimeout with a small delay
+    if (typeof requestIdleCallback !== 'undefined') {
+      requestIdleCallback(deferredFooterInit, { timeout: 2000 });
+    } else {
+      // Fallback for browsers without requestIdleCallback
+      setTimeout(deferredFooterInit, 100);
+    }
   });
 }
 
