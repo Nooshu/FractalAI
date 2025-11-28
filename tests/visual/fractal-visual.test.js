@@ -75,9 +75,9 @@ FRACTAL_TYPES.forEach((fractalType) => {
     // Additional wait for any animations or progressive rendering
     await page.waitForTimeout(500);
     
-    // Hide top action bar buttons, FPS meter, and right panel button for clean screenshots
+    // Hide top action bar buttons, FPS meter, info panel, and right panel button for clean screenshots
     await page.addStyleTag({
-      content: '.top-action-bar { display: none !important; } #fps { display: none !important; } #show-right-panel-btn { display: none !important; }'
+      content: '.top-action-bar { display: none !important; } #fps { display: none !important; } #info-panel { display: none !important; } #show-right-panel-btn { display: none !important; }'
     });
     
     // Ensure canvas is fully rendered by checking for stable image

@@ -100,18 +100,29 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
   // Auto-render functionality
   let autoRenderEnabled = false;
 
-  // Throttled render function for slider updates
-  // Updates UI immediately but throttles render calls to reduce unnecessary renders
+  // Throttled render function for slider updates with batching
+  // Updates UI immediately but batches render calls to reduce unnecessary renders
+  // Multiple control changes within the same frame are batched into a single render
   let renderTimeoutId = null;
+  let pendingRender = false;
+  
   const triggerAutoRender = () => {
     if (autoRenderEnabled) {
+      // Mark that we have pending changes
+      pendingRender = true;
+      
       // Cancel any pending render
       if (renderTimeoutId !== null) {
         cancelAnimationFrame(renderTimeoutId);
       }
+      
       // Schedule render for next animation frame (~16ms at 60fps)
+      // This batches multiple rapid control changes into a single render
       renderTimeoutId = requestAnimationFrame(() => {
-        renderFractalProgressive();
+        if (pendingRender) {
+          renderFractalProgressive();
+          pendingRender = false;
+        }
         renderTimeoutId = null;
       });
     }

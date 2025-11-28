@@ -234,6 +234,17 @@ export function setupInputControls(getters, callbacks) {
     } else if (isDragging) {
       const deltaX = e.clientX - lastMouseX;
       const deltaY = e.clientY - lastMouseY;
+      
+      // Dead-band: ignore very small movements to avoid unnecessary recomputes
+      const DEAD_BAND_THRESHOLD = 2; // pixels
+      const absDeltaX = Math.abs(deltaX);
+      const absDeltaY = Math.abs(deltaY);
+      
+      if (absDeltaX < DEAD_BAND_THRESHOLD && absDeltaY < DEAD_BAND_THRESHOLD) {
+        // Movement too small, skip update
+        return;
+      }
+      
       // Adjust sensitivity based on zoom level for better control
       // Sensitivity decreases with zoom to allow precise panning at high zoom levels
       // Base sensitivity of 0.001 works well at zoom 1, and scales inversely with zoom
@@ -480,38 +491,125 @@ export function setupInputControls(getters, callbacks) {
     renderFractalProgressive();
   };
 
-  // Wheel handler
+  // Wheel handler - throttled to one update per animation frame
+  let wheelUpdateScheduled = false;
+  let pendingWheelDelta = 0;
+  
   const handleWheel = (e) => {
     e.preventDefault();
-    const params = getParams();
-    // Reversed logic: deltaY > 0 (pinch out/spread fingers) should zoom in, deltaY < 0 (pinch in) should zoom out
-    const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1;
-    params.zoom *= zoomFactor;
-    updateCoordinateDisplay();
-    scheduleRender(); // Use throttled render for smooth zooming
+    
+    // Accumulate wheel delta for smoother zooming when scrolling fast
+    pendingWheelDelta += e.deltaY;
+    
+    // Schedule update if not already scheduled (throttle to one per frame)
+    if (!wheelUpdateScheduled) {
+      wheelUpdateScheduled = true;
+      requestAnimationFrame(() => {
+        wheelUpdateScheduled = false;
+        const params = getParams();
+        
+        // Apply accumulated delta with dead-band to avoid tiny zooms
+        const DEAD_BAND_THRESHOLD = 5; // pixels
+        if (Math.abs(pendingWheelDelta) < DEAD_BAND_THRESHOLD) {
+          pendingWheelDelta = 0;
+          return;
+        }
+        
+        // Reversed logic: deltaY > 0 (pinch out/spread fingers) should zoom in, deltaY < 0 (pinch in) should zoom out
+        // Use exponential zoom for smoother experience
+        const zoomFactor = pendingWheelDelta > 0 ? 0.95 : 1.05;
+        params.zoom *= zoomFactor;
+        updateCoordinateDisplay();
+        scheduleRender(); // Use throttled render for smooth zooming
+        
+        // Reset accumulated delta
+        pendingWheelDelta = 0;
+      });
+    }
+  };
+
+  // Unified pointer event handlers (replaces separate mouse/touch handlers where possible)
+  // Pointer events provide better cross-device support and can be more efficient
+  const handlePointerDown = (e) => {
+    // Convert pointer event to mouse-like event for existing handler
+    const mouseEvent = {
+      ...e,
+      button: e.button || (e.pointerType === 'touch' ? 0 : e.button),
+      clientX: e.clientX,
+      clientY: e.clientY,
+      shiftKey: e.shiftKey,
+      preventDefault: () => e.preventDefault(),
+      target: e.target,
+    };
+    handleMouseDown(mouseEvent);
+  };
+
+  const handlePointerMove = (e) => {
+    // Convert pointer event to mouse-like event for existing handler
+    const mouseEvent = {
+      ...e,
+      clientX: e.clientX,
+      clientY: e.clientY,
+      shiftKey: e.shiftKey,
+      target: e.target,
+      closest: e.target.closest?.bind(e.target),
+    };
+    handleMouseMove(mouseEvent);
+  };
+
+  const handlePointerUp = (e) => {
+    // Convert pointer event to mouse-like event for existing handler
+    const mouseEvent = {
+      ...e,
+      button: e.button || 0,
+      clientX: e.clientX,
+      clientY: e.clientY,
+      target: e.target,
+    };
+    handleMouseUp(mouseEvent);
   };
 
   // Attach event listeners
-  canvas.addEventListener('mousedown', handleMouseDown);
-  window.addEventListener('mousemove', handleMouseMove, { passive: true });
-  window.addEventListener('mouseup', handleMouseUp, { passive: true });
-  canvas.addEventListener('mouseleave', handleMouseLeave, { passive: true });
-  canvas.addEventListener('mousemove', handleCanvasMouseMove, { passive: true });
+  // Use pointer events for unified mouse/touch handling (better performance and cross-device support)
+  if (window.PointerEvent) {
+    canvas.addEventListener('pointerdown', handlePointerDown);
+    window.addEventListener('pointermove', handlePointerMove, { passive: true });
+    window.addEventListener('pointerup', handlePointerUp, { passive: true });
+    canvas.addEventListener('pointerleave', handleMouseLeave, { passive: true });
+    canvas.addEventListener('pointermove', handleCanvasMouseMove, { passive: true });
+  } else {
+    // Fallback to mouse events for older browsers
+    canvas.addEventListener('mousedown', handleMouseDown);
+    window.addEventListener('mousemove', handleMouseMove, { passive: true });
+    window.addEventListener('mouseup', handleMouseUp, { passive: true });
+    canvas.addEventListener('mouseleave', handleMouseLeave, { passive: true });
+    canvas.addEventListener('mousemove', handleCanvasMouseMove, { passive: true });
+  }
+  
   canvas.addEventListener('contextmenu', handleContextMenu);
   canvasContainer.addEventListener('contextmenu', handleContextMenu);
   window.addEventListener('keydown', handleKeyDown);
   window.addEventListener('keyup', handleKeyUp);
   canvas.addEventListener('dblclick', handleDoubleClick);
   canvasContainer.addEventListener('dblclick', handleDoubleClick);
-  canvas.addEventListener('wheel', handleWheel);
+  // Use passive: false for wheel to allow preventDefault, but optimize other events
+  canvas.addEventListener('wheel', handleWheel, { passive: false });
 
   // Cleanup function
   const cleanup = () => {
-    canvas.removeEventListener('mousedown', handleMouseDown);
-    window.removeEventListener('mousemove', handleMouseMove);
-    window.removeEventListener('mouseup', handleMouseUp);
-    canvas.removeEventListener('mouseleave', handleMouseLeave);
-    canvas.removeEventListener('mousemove', handleCanvasMouseMove);
+    if (window.PointerEvent) {
+      canvas.removeEventListener('pointerdown', handlePointerDown);
+      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerup', handlePointerUp);
+      canvas.removeEventListener('pointerleave', handleMouseLeave);
+      canvas.removeEventListener('pointermove', handleCanvasMouseMove);
+    } else {
+      canvas.removeEventListener('mousedown', handleMouseDown);
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+      canvas.removeEventListener('mouseleave', handleMouseLeave);
+      canvas.removeEventListener('mousemove', handleCanvasMouseMove);
+    }
     canvas.removeEventListener('contextmenu', handleContextMenu);
     canvasContainer.removeEventListener('contextmenu', handleContextMenu);
     window.removeEventListener('keydown', handleKeyDown);
