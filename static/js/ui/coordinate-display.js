@@ -20,6 +20,7 @@ function formatCoordinate(value, precision = 3) {
 
 /**
  * Update main coordinate display
+ * Also dispatches fractal-updated event for other components (like EXIF editor) to listen to
  * @param {Object} params - Fractal parameters with zoom and offset
  */
 export function updateCoordinateDisplay(params) {
@@ -35,6 +36,12 @@ export function updateCoordinateDisplay(params) {
     coordOffsetX.textContent = formatCoordinate(params.offset.x, 4);
     coordOffsetY.textContent = formatCoordinate(params.offset.y, 4);
   }
+  
+  // Dispatch fractal-updated event so other components (like EXIF editor) can update
+  const currentFractalType = appState.getCurrentFractalType();
+  window.dispatchEvent(new CustomEvent('fractal-updated', {
+    detail: { fractalType: currentFractalType, params }
+  }));
 }
 
 /**
@@ -77,6 +84,7 @@ export function setupCoordinateCopy(getCurrentFractalType, getParams) {
 
 /**
  * Wrapper function to update both coordinate and debug displays
+ * Also dispatches fractal-updated event for other components (like EXIF editor) to listen to
  * @param {Function} getParams - Function to get params object (optional, uses appState if not provided)
  * @param {Function} getCurrentFractalType - Function to get current fractal type (optional, uses appState if not provided)
  */
@@ -85,5 +93,10 @@ export function updateCoordinateAndDebugDisplay(getParams, getCurrentFractalType
   const currentFractalType = getCurrentFractalType ? getCurrentFractalType() : appState.getCurrentFractalType();
   updateCoordinateDisplay(params);
   updateDebugDisplay(currentFractalType, params);
+  
+  // Dispatch fractal-updated event so other components (like EXIF editor) can update
+  window.dispatchEvent(new CustomEvent('fractal-updated', {
+    detail: { fractalType: currentFractalType, params }
+  }));
 }
 

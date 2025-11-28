@@ -25,8 +25,11 @@ function shouldShowDebugPanel() {
 /**
  * Setup EXIF editor visibility based on URL parameters
  * Hides the EXIF editor section if ?exif=true is not present in the URL
+ * @param {Object} lazyLoadCallbacks - Optional callbacks for lazy loading
+ * @param {Function} lazyLoadCallbacks.getCurrentFractalType - Function to get current fractal type
+ * @param {Function} lazyLoadCallbacks.getParams - Function to get current parameters
  */
-export function setupExifEditorVisibility() {
+export function setupExifEditorVisibility(lazyLoadCallbacks = null) {
   const exifSection = document.querySelector('[data-section="exif-editor"]')?.parentElement;
 
   if (!exifSection) return;
@@ -34,6 +37,10 @@ export function setupExifEditorVisibility() {
   if (shouldShowExifEditor()) {
     exifSection.classList.remove('exif-hidden');
     exifSection.style.display = '';
+    // If visible via URL param, load immediately if callbacks provided
+    if (lazyLoadCallbacks && lazyLoadCallbacks.getCurrentFractalType && lazyLoadCallbacks.getParams) {
+      lazyLoadExifModule(lazyLoadCallbacks.getCurrentFractalType, lazyLoadCallbacks.getParams);
+    }
   } else {
     exifSection.classList.add('exif-hidden');
     exifSection.style.display = 'none';
@@ -43,8 +50,11 @@ export function setupExifEditorVisibility() {
 /**
  * Setup debug panel visibility based on URL parameters
  * Hides the debug panel section if ?debug=true is not present in the URL
+ * @param {Object} lazyLoadCallbacks - Optional callbacks for lazy loading
+ * @param {Function} lazyLoadCallbacks.getCurrentFractalType - Function to get current fractal type
+ * @param {Function} lazyLoadCallbacks.getParams - Function to get current parameters
  */
-export function setupDebugPanelVisibility() {
+export function setupDebugPanelVisibility(lazyLoadCallbacks = null) {
   const debugSection = document.querySelector('[data-section="debug"]')?.parentElement;
 
   if (!debugSection) return;
@@ -52,6 +62,10 @@ export function setupDebugPanelVisibility() {
   if (shouldShowDebugPanel()) {
     debugSection.classList.remove('debug-hidden');
     debugSection.style.display = '';
+    // If visible via URL param, load immediately if callbacks provided
+    if (lazyLoadCallbacks && lazyLoadCallbacks.getCurrentFractalType && lazyLoadCallbacks.getParams) {
+      lazyLoadDebugModule(lazyLoadCallbacks.getCurrentFractalType, lazyLoadCallbacks.getParams);
+    }
   } else {
     debugSection.classList.add('debug-hidden');
     debugSection.style.display = 'none';
@@ -59,17 +73,91 @@ export function setupDebugPanelVisibility() {
 }
 
 /**
- * Setup collapsible sections
- * Allows sections to be expanded/collapsed by clicking their headers
+ * Lazy load modules for rarely used panels
+ * Tracks which modules have been loaded to avoid duplicate loads
  */
-export function setupCollapsibleSections() {
+const lazyLoadedModules = {
+  debug: false,
+  exif: false,
+  presets: false,
+};
+
+/**
+ * Lazy load debug display module
+ * @param {Function} getCurrentFractalType - Function to get current fractal type
+ * @param {Function} getParams - Function to get current parameters
+ * @returns {Promise<void>}
+ */
+async function lazyLoadDebugModule(getCurrentFractalType, getParams) {
+  if (lazyLoadedModules.debug) return;
+  
+  try {
+    const { setupDebugCopy } = await import('./debug-display.js');
+    setupDebugCopy(getCurrentFractalType, getParams);
+    lazyLoadedModules.debug = true;
+  } catch (error) {
+    console.error('Failed to lazy load debug module:', error);
+  }
+}
+
+/**
+ * Lazy load EXIF editor module
+ * @param {Function} getCurrentFractalType - Function to get current fractal type
+ * @param {Function} getParams - Function to get current parameters
+ * @returns {Promise<void>}
+ */
+async function lazyLoadExifModule(getCurrentFractalType, getParams) {
+  if (lazyLoadedModules.exif) return;
+  
+  try {
+    const { setupExifEditor } = await import('./exif-editor.js');
+    setupExifEditor(getCurrentFractalType, getParams);
+    lazyLoadedModules.exif = true;
+    
+    // Trigger an immediate update to ensure the display shows current values
+    // Use setTimeout to ensure the module is fully initialized
+    setTimeout(() => {
+      const params = getParams();
+      const fractalType = getCurrentFractalType();
+      if (params && fractalType) {
+        window.dispatchEvent(new CustomEvent('fractal-updated', {
+          detail: { fractalType, params }
+        }));
+      }
+    }, 0);
+  } catch (error) {
+    console.error('Failed to lazy load EXIF editor module:', error);
+  }
+}
+
+/**
+ * Setup collapsible sections with lazy loading support
+ * Allows sections to be expanded/collapsed by clicking their headers
+ * Lazy loads rarely used modules (debug, exif) when first opened
+ * @param {Object} lazyLoadCallbacks - Callbacks for lazy loading modules
+ * @param {Function} lazyLoadCallbacks.getCurrentFractalType - Function to get current fractal type
+ * @param {Function} lazyLoadCallbacks.getParams - Function to get current parameters
+ */
+export function setupCollapsibleSections(lazyLoadCallbacks = null) {
   const sectionHeaders = document.querySelectorAll('.section-header');
 
   sectionHeaders.forEach((header) => {
-    header.addEventListener('click', () => {
-      const section = header.parentElement;
-      const content = section.querySelector('.section-content');
+    const section = header.parentElement;
+    const content = section.querySelector('.section-content');
+    const sectionType = header.getAttribute('data-section');
 
+    // Check if section is already open on page load and lazy load if needed
+    if (content && content.classList.contains('active')) {
+      if (lazyLoadCallbacks && lazyLoadCallbacks.getCurrentFractalType && lazyLoadCallbacks.getParams) {
+        if (sectionType === 'debug') {
+          lazyLoadDebugModule(lazyLoadCallbacks.getCurrentFractalType, lazyLoadCallbacks.getParams);
+        } else if (sectionType === 'exif-editor') {
+          lazyLoadExifModule(lazyLoadCallbacks.getCurrentFractalType, lazyLoadCallbacks.getParams);
+        }
+      }
+    }
+
+    header.addEventListener('click', async () => {
       // Skip if content element doesn't exist
       if (!content) return;
 
@@ -81,6 +169,15 @@ export function setupCollapsibleSections() {
       } else {
         content.classList.add('active');
         header.classList.remove('collapsed');
+        
+        // Lazy load modules when section is first opened
+        if (lazyLoadCallbacks && lazyLoadCallbacks.getCurrentFractalType && lazyLoadCallbacks.getParams) {
+          if (sectionType === 'debug') {
+            await lazyLoadDebugModule(lazyLoadCallbacks.getCurrentFractalType, lazyLoadCallbacks.getParams);
+          } else if (sectionType === 'exif-editor') {
+            await lazyLoadExifModule(lazyLoadCallbacks.getCurrentFractalType, lazyLoadCallbacks.getParams);
+          }
+        }
       }
     });
   });
@@ -122,11 +219,30 @@ export function setupLeftPanelToggle(updateRendererSize) {
 }
 
 /**
+ * Lazy load presets module
+ * @param {Function} loadFractalFromPreset - Function to load fractal from preset data
+ * @returns {Promise<void>}
+ */
+async function lazyLoadPresetsModule(loadFractalFromPreset) {
+  if (lazyLoadedModules.presets) return;
+  
+  try {
+    const { setupPresets } = await import('./presets.js');
+    setupPresets(loadFractalFromPreset);
+    lazyLoadedModules.presets = true;
+  } catch (error) {
+    console.error('Failed to lazy load presets module:', error);
+  }
+}
+
+/**
  * Setup right panel toggle functionality
  * Handles showing/hiding the right panel and updating renderer size
+ * Lazy loads presets module when panel is first opened
  * @param {Function} updateRendererSize - Optional callback to update renderer size after panel animation
+ * @param {Function} loadFractalFromPreset - Optional callback to load fractal from preset (for lazy loading presets)
  */
-export function setupRightPanelToggle(updateRendererSize) {
+export function setupRightPanelToggle(updateRendererSize, loadFractalFromPreset = null) {
   const rightPanel = document.querySelector('.right-panel');
   const rightBackBtn = document.querySelector('.right-back-btn');
   const showRightPanelBtn = document.getElementById('show-right-panel-btn');
@@ -145,8 +261,14 @@ export function setupRightPanelToggle(updateRendererSize) {
   });
 
   // Show right panel when show button is clicked
-  showRightPanelBtn.addEventListener('click', () => {
+  showRightPanelBtn.addEventListener('click', async () => {
     rightPanel.classList.remove('hidden');
+    
+    // Lazy load presets module when panel is first opened
+    if (loadFractalFromPreset && !lazyLoadedModules.presets) {
+      await lazyLoadPresetsModule(loadFractalFromPreset);
+    }
+    
     // Resize canvas after panel animation
     setTimeout(() => {
       if (updateRendererSize) {
@@ -160,13 +282,17 @@ export function setupRightPanelToggle(updateRendererSize) {
  * Initialize all UI layout components
  * Convenience function to set up all layout-related functionality at once
  * @param {Function} updateRendererSize - Optional callback to update renderer size
+ * @param {Object} lazyLoadCallbacks - Optional callbacks for lazy loading modules
+ * @param {Function} lazyLoadCallbacks.getCurrentFractalType - Function to get current fractal type
+ * @param {Function} lazyLoadCallbacks.getParams - Function to get current parameters
+ * @param {Function} lazyLoadCallbacks.loadFractalFromPreset - Function to load fractal from preset (for lazy loading presets)
  */
-export function initUILayout(updateRendererSize) {
-  setupCollapsibleSections();
+export function initUILayout(updateRendererSize, lazyLoadCallbacks = null) {
+  setupCollapsibleSections(lazyLoadCallbacks);
   setupLeftPanelToggle(updateRendererSize);
-  setupRightPanelToggle(updateRendererSize);
-  setupExifEditorVisibility();
-  setupDebugPanelVisibility();
+  setupRightPanelToggle(updateRendererSize, lazyLoadCallbacks?.loadFractalFromPreset || null);
+  setupExifEditorVisibility(lazyLoadCallbacks);
+  setupDebugPanelVisibility(lazyLoadCallbacks);
 }
 
 // Backward compatibility alias

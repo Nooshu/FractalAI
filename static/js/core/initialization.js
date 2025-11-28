@@ -4,15 +4,12 @@
  */
 
 import { initCanvasRenderer } from '../rendering/canvas-renderer.js';
-import { BenchmarkUI, addBenchmarkButton } from '../performance/ui.js';
 import { initLoadingBar } from '../ui/loading-bar.js';
 import { initFPSTracker, startFPSTracking } from '../performance/fps-tracker.js';
 import { cacheElement } from './dom-cache.js';
 import { setupCoordinateCopy, updateCoordinateAndDebugDisplay } from '../ui/coordinate-display.js';
-import { setupDebugCopy } from '../ui/debug-display.js';
 import { setupShareFractal, loadFractalFromURL } from '../sharing/state-manager.js';
-import { setupExifEditor } from '../ui/exif-editor.js';
-import { setupPresets } from '../ui/presets.js';
+// Presets module is now lazy loaded when right panel is first opened (see panels.js)
 import { updateWikipediaLink } from '../fractals/fractal-config.js';
 import { initUILayout } from '../ui/panels.js';
 import { fractalLoader, loadFractal } from '../fractals/loader.js';
@@ -183,46 +180,88 @@ function setupInputControlsModule(appState, renderingEngine, updateCoordinateDis
 function setupUILayoutAndDisplays(appState, updateCoordinateDisplay, loadFractalFromPreset) {
   const getters = appState.getGetters();
   
-  // Setup UI layout (collapsible sections and panel toggle)
-  initUILayout(getters.getUpdateRendererSize);
+  // Setup UI layout (collapsible sections and panel toggle) with lazy loading callbacks
+  // Presets module is now lazy loaded when right panel is first opened (handled in panels.js)
+  initUILayout(getters.getUpdateRendererSize, {
+    getCurrentFractalType: getters.getCurrentFractalType,
+    getParams: getters.getParams,
+    loadFractalFromPreset: loadFractalFromPreset,
+  });
   
   // Setup coordinate display with getter functions
   setupCoordinateCopy(getters.getCurrentFractalType, getters.getParams);
-  setupDebugCopy(getters.getCurrentFractalType, getters.getParams);
+  // Debug and EXIF editor are now lazy loaded when their sections are first opened
+  // (handled in panels.js via lazyLoadCallbacks)
   setupShareFractal(getters.getCurrentFractalType, getters.getParams);
-  setupExifEditor(getters.getCurrentFractalType, getters.getParams);
-  setupPresets(loadFractalFromPreset);
+  // Presets module is now lazy loaded when right panel is first opened (handled in panels.js)
   updateCoordinateDisplay();
 }
 
 /**
- * Initialize benchmark UI
+ * Initialize benchmark UI (lazy loaded when button is clicked)
  * @param {Object} appState - Application state instance
  * @param {RenderingEngine} renderingEngine - Rendering engine instance
  * @param {Function} loadFractal - Load fractal function
  */
 function initBenchmarkUI(appState, renderingEngine, loadFractal) {
-  const benchmarkUI = new BenchmarkUI(
-    appState.getRegl(),
-    appState.getCanvas(),
-    async (fractalType) => {
-      await loadFractal(fractalType);
-      // Ensure render happens after load
-      await new Promise((resolve) => setTimeout(resolve, 50));
-    },
-    (newParams) => {
-      // Update params
-      const params = appState.getParams();
-      Object.assign(params, newParams);
-      // Trigger render
-      renderingEngine.renderFractal();
-      // Wait for render to complete
-      return new Promise((resolve) => {
-        setTimeout(resolve, 100);
-      });
+  let benchmarkUI = null;
+  let isLoaded = false;
+
+  // Lazy load benchmark UI when button is clicked
+  const loadBenchmarkUI = async () => {
+    if (isLoaded && benchmarkUI) {
+      benchmarkUI.show();
+      return;
     }
-  );
-  addBenchmarkButton(benchmarkUI);
+
+    try {
+      const { BenchmarkUI: BenchmarkUIClass } = await import('../performance/ui.js');
+      
+      benchmarkUI = new BenchmarkUIClass(
+        appState.getRegl(),
+        appState.getCanvas(),
+        async (fractalType) => {
+          await loadFractal(fractalType);
+          // Ensure render happens after load
+          await new Promise((resolve) => setTimeout(resolve, 50));
+        },
+        (newParams) => {
+          // Update params
+          const params = appState.getParams();
+          Object.assign(params, newParams);
+          // Trigger render
+          renderingEngine.renderFractal();
+          // Wait for render to complete
+          return new Promise((resolve) => {
+            setTimeout(resolve, 100);
+          });
+        }
+      );
+      
+      isLoaded = true;
+      // Show the UI after loading
+      benchmarkUI.show();
+    } catch (error) {
+      console.error('Failed to load benchmark UI:', error);
+    }
+  };
+
+  // Add benchmark button that triggers lazy loading
+  const topActionBar = document.querySelector('.top-action-bar');
+  if (topActionBar && !document.getElementById('benchmark-toggle')) {
+    const button = document.createElement('button');
+    button.id = 'benchmark-toggle';
+    button.className = 'top-action-btn';
+    button.innerHTML = `
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+      </svg>
+      Benchmark
+    `;
+    button.title = 'Open Performance Benchmark';
+    button.addEventListener('click', loadBenchmarkUI);
+    topActionBar.appendChild(button);
+  }
 }
 
 /**
