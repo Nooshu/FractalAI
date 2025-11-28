@@ -32,6 +32,11 @@ export default [
         performance: 'readonly',
         btoa: 'readonly',
         atob: 'readonly',
+        requestIdleCallback: 'readonly',
+        CustomEvent: 'readonly',
+        FileReader: 'readonly',
+        Event: 'readonly',
+        HTMLElement: 'readonly',
         // ES2021 globals
         Promise: 'readonly',
         Symbol: 'readonly',
@@ -50,7 +55,7 @@ export default [
   },
   {
     // Node.js environment for test files and config files
-    files: ['**/*.test.js', '**/playwright.config.js', '**/vite.config.js', 'tests/**/*.js'],
+    files: ['**/*.test.js', '**/playwright.config.js', '**/vite.config.js', 'tests/**/*.js', 'scripts/**/*.js'],
     languageOptions: {
       globals: {
         process: 'readonly',
@@ -61,10 +66,23 @@ export default [
         module: 'readonly',
         require: 'readonly',
         exports: 'readonly',
+        vi: 'readonly', // Vitest
+        afterAll: 'readonly', // Vitest
+        Event: 'readonly', // DOM API for tests
+        HTMLElement: 'readonly', // DOM API for tests
       },
     },
   },
   {
-    ignores: ['node_modules/', 'dist/', '*.min.js', 'vite.config.js'],
+    ignores: [
+      'node_modules/',
+      'dist/',
+      'playwright-report/',
+      'test-results/',
+      '*.min.js',
+      'vite.config.js',
+      'public/sw.js', // Service worker has its own globals
+      'scripts/generate-presets-manifest.js', // Node.js script
+    ],
   },
 ];

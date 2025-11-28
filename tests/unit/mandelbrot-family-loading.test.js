@@ -46,7 +46,7 @@ describe('Mandelbrot Family Code Splitting', () => {
     expect(loader.isCached('mandelbrot')).toBe(true);
     
     // Load another fractal from same family
-    const module2 = await loader.loadFractal('burning-ship');
+    await loader.loadFractal('burning-ship');
     expect(loader.isCached('burning-ship')).toBe(true);
     
     // Both should be cached

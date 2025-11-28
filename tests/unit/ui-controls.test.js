@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, beforeEach, vi } from 'vitest';
 
 vi.mock('../../static/js/fractals/utils.js', () => ({
   getColorSchemeIndex: vi.fn(() => 0),

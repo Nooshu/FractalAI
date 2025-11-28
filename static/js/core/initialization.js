@@ -99,7 +99,7 @@ function setupCleanupHandlers(appState) {
 function setupUIControlsModule(appState, renderingEngine, loadFractal, updateWikipediaLink, updateCoordinateDisplay) {
   const getters = appState.getGetters();
   const setters = appState.getSetters();
-  
+
   setupUIControls(
     {
       getParams: getters.getParams,
@@ -134,7 +134,7 @@ function setupUIControlsModule(appState, renderingEngine, loadFractal, updateWik
         getCanvas: getters.getCanvas,
       }),
       cancelProgressiveRender: () => renderingEngine.cancelProgressiveRender(),
-      onFullscreenChange: (isFullscreen) => {
+      onFullscreenChange: (_isFullscreen) => {
         const updateRendererSize = appState.getUpdateRendererSize();
         if (updateRendererSize) {
           updateRendererSize();
@@ -152,7 +152,7 @@ function setupUIControlsModule(appState, renderingEngine, loadFractal, updateWik
  */
 function setupInputControlsModule(appState, renderingEngine, updateCoordinateDisplay) {
   const getters = appState.getGetters();
-  
+
   setupInputControls(
     {
       getCanvas: getters.getCanvas,
@@ -181,7 +181,7 @@ function setupInputControlsModule(appState, renderingEngine, updateCoordinateDis
  */
 function setupUILayoutAndDisplays(appState, updateCoordinateDisplay, loadFractalFromPreset) {
   const getters = appState.getGetters();
-  
+
   // Setup UI layout (collapsible sections and panel toggle) with lazy loading callbacks
   // Presets module is now lazy loaded when right panel is first opened (handled in panels.js)
   initUILayout(getters.getUpdateRendererSize, {
@@ -189,7 +189,7 @@ function setupUILayoutAndDisplays(appState, updateCoordinateDisplay, loadFractal
     getParams: getters.getParams,
     loadFractalFromPreset: loadFractalFromPreset,
   });
-  
+
   // Setup coordinate display with getter functions
   setupCoordinateCopy(getters.getCurrentFractalType, getters.getParams);
   // Debug and EXIF editor are now lazy loaded when their sections are first opened
@@ -218,7 +218,7 @@ function initBenchmarkUI(appState, renderingEngine, loadFractal) {
 
     try {
       const { BenchmarkUI: BenchmarkUIClass } = await import('../performance/ui.js');
-      
+
       benchmarkUI = new BenchmarkUIClass(
         appState.getRegl(),
         appState.getCanvas(),
@@ -239,7 +239,7 @@ function initBenchmarkUI(appState, renderingEngine, loadFractal) {
           });
         }
       );
-      
+
       isLoaded = true;
       // Show the UI after loading
       benchmarkUI.show();
@@ -288,7 +288,7 @@ function initInitialFractalType(appState) {
 async function loadInitialFractal(appState, renderingEngine, loadFractal, updateWikipediaLink, updateCoordinateDisplay) {
   const getters = appState.getGetters();
   const setters = appState.getSetters();
-  
+
   // Try to load fractal state from URL first
   const loadedFromURL = await loadFractalFromURL(
     {
@@ -347,7 +347,7 @@ function updatePalettePreviewDirectly(colorScheme, retries = 3) {
   // Get canvas dimensions - prefer explicit width/height attributes, fallback to client dimensions
   let width = paletteCanvas.width;
   let height = paletteCanvas.height;
-  
+
   // If width/height are 0 or not set, try to get from client dimensions or set defaults
   if (!width || width === 0) {
     width = paletteCanvas.clientWidth || 16;
@@ -357,7 +357,7 @@ function updatePalettePreviewDirectly(colorScheme, retries = 3) {
     height = paletteCanvas.clientHeight || 16;
     paletteCanvas.height = height;
   }
-  
+
   // Ensure canvas has valid dimensions
   if (!width || !height || width === 0 || height === 0) {
     if (retries > 0) {
@@ -381,10 +381,12 @@ function updatePalettePreviewDirectly(colorScheme, retries = 3) {
     const t = i / (numColors - 1);
 
     // Use the same color computation function as utils.js
-    const color = computeColorForScheme(t, schemeIndex);
+    // Pre-allocate reusable color array to avoid allocations
+    const colorOut = new Float32Array(3);
+    const color = computeColorForScheme(t, schemeIndex, colorOut);
 
     // Draw the color swatch
-    ctx.fillStyle = `rgb(${Math.floor(color.r * 255)}, ${Math.floor(color.g * 255)}, ${Math.floor(color.b * 255)})`;
+    ctx.fillStyle = `rgb(${Math.floor(color[0] * 255)}, ${Math.floor(color[1] * 255)}, ${Math.floor(color[2] * 255)})`;
     ctx.fillRect(i * swatchWidth, 0, swatchWidth, height);
   }
 }
@@ -423,22 +425,22 @@ export async function init() {
 
   // Setup UI controls (after rendering engine is initialized)
   setupUIControlsModule(appState, renderingEngine, loadFractal, updateWikipediaLinkFn, updateCoordinateDisplayFn);
-  
+
   // Setup input controls (after rendering engine is initialized)
   setupInputControlsModule(appState, renderingEngine, updateCoordinateDisplayFn);
-  
+
   /**
    * Load fractal from preset data
    * @param {Object} preset - Preset configuration
    */
   function loadFractalFromPreset(preset) {
     const setters = appState.getSetters();
-    
+
     // Update fractal parameters from preset
     if (preset.fractal) {
       setters.setCurrentFractalType(preset.fractal);
     }
-    
+
     // Update view parameters
     const params = appState.getParams();
     if (preset.zoom !== undefined) params.zoom = preset.zoom;
@@ -447,16 +449,16 @@ export async function init() {
     if (preset.theme) params.colorScheme = preset.theme;
     // Always set iterations to 250 when loading a preset
     params.iterations = 250;
-    
+
     // Update UI controls to reflect the new parameters
     updateUIControlsFromParams(params, preset);
-    
+
     // Load the fractal and render
     loadFractal(preset.fractal || appState.getCurrentFractalType()).then(() => {
       renderingEngine.renderFractal();
       updateCoordinateDisplayFn();
       updateWikipediaLinkFn();
-      
+
       // Update palette preview after everything is loaded and rendered
       // Use requestAnimationFrame to ensure DOM is ready, then retry internally if needed
       if (preset.theme) {
@@ -466,7 +468,7 @@ export async function init() {
       }
     });
   }
-  
+
   /**
    * Update UI controls to reflect parameter changes
    * @param {Object} params - Current parameters
@@ -485,7 +487,7 @@ export async function init() {
         updateCoordinateDisplayFn();
       }
     }
-    
+
     // Update color scheme dropdown
     if (preset.theme) {
       const colorSchemeSelect = document.getElementById('color-scheme');
@@ -495,12 +497,12 @@ export async function init() {
         // The change event listener in controls.js would trigger auto-render which we don't want here
       }
     }
-    
+
     // Update iterations slider and display to 250
     const iterationsSlider = document.getElementById('iterations');
     const iterationsValue = document.getElementById('iterations-value');
     const fullscreenIterationsNumber = document.getElementById('fullscreen-iterations-number');
-    
+
     if (iterationsSlider) {
       iterationsSlider.value = 250;
       // Don't trigger input event to avoid triggering auto-render (we'll render after fractal loads)
@@ -513,7 +515,7 @@ export async function init() {
       fullscreenIterationsNumber.textContent = '250';
     }
   }
-  
+
   // Setup UI layout and displays
   setupUILayoutAndDisplays(appState, updateCoordinateDisplayFn, loadFractalFromPreset);
 
@@ -533,7 +535,7 @@ export async function init() {
   // This allows the browser to prioritize rendering the first fractal
   const deferredInit = () => {
     const getters = appState.getGetters();
-    
+
     // Setup share button (non-critical for first render)
     import('../sharing/state-manager.js').then(({ setupShareFractal }) => {
       setupShareFractal(getters.getCurrentFractalType, getters.getParams);
@@ -559,7 +561,7 @@ function bootstrap() {
   // Initialize on load
   window.addEventListener('load', async () => {
     await init();
-    
+
     // Defer footer height tracking using requestIdleCallback
     // This is non-critical for first render
     const deferredFooterInit = () => {

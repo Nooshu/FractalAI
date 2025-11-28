@@ -43,7 +43,6 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
     getCurrentFractalType,
     getCurrentFractalModule,
     getDrawFractal,
-    getCachedDrawCommand,
     getIsDisplayingCached,
     getRegl,
     getCanvas,
@@ -66,7 +65,6 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
     renderFractal,
     getRandomInterestingView,
     cancelProgressiveRender,
-    onFullscreenChange,
   } = callbacks;
 
   // Get DOM elements
@@ -224,14 +222,16 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
 
     // Draw color swatches using the same color computation as utils.js
     const swatchWidth = width / numColors;
+    // Pre-allocate reusable color array to avoid allocations
+    const colorOut = new Float32Array(3);
     for (let i = 0; i < numColors; i++) {
       const t = i / (numColors - 1);
 
       // Use the same color computation function as utils.js
-      const color = computeColorForScheme(t, schemeIndex);
+      const color = computeColorForScheme(t, schemeIndex, colorOut);
 
       // Draw the color swatch
-      ctx.fillStyle = `rgb(${Math.floor(color.r * 255)}, ${Math.floor(color.g * 255)}, ${Math.floor(color.b * 255)})`;
+      ctx.fillStyle = `rgb(${Math.floor(color[0] * 255)}, ${Math.floor(color[1] * 255)}, ${Math.floor(color[2] * 255)})`;
       ctx.fillRect(i * swatchWidth, 0, swatchWidth, height);
     }
   };
@@ -925,7 +925,6 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
   };
 
   // Fullscreen controls
-  const fullscreenControls = document.getElementById('fullscreen-controls');
   const fullscreenScreenshotBtn = document.getElementById('fullscreen-screenshot');
   const fullscreenColorCycleBtn = document.getElementById('fullscreen-color-cycle');
   const fullscreenRandomBtn = document.getElementById('fullscreen-random');
@@ -947,7 +946,6 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
     }
 
     // For Mandelbrot/Julia/Burning Ship/Buffalo, sample points to check for variation
-    const samplePoints = 9; // 3x3 grid
     const iterations = params.iterations;
     // Cache canvas dimensions
     const canvasEl = canvas;

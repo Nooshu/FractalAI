@@ -17,7 +17,6 @@ describe('main.js functional tests', () => {
   let mockDOMCache;
   let mockDocument;
   let mockWindow;
-  let mockRegl;
   let mockFramebuffer;
 
   beforeEach(() => {
@@ -75,11 +74,6 @@ describe('main.js functional tests', () => {
       },
     };
 
-    // Create mock regl
-    mockRegl = {
-      clear: vi.fn(),
-      framebuffer: vi.fn(() => mockFramebuffer),
-    };
 
     // Create mock document
     mockDocument = {
@@ -230,7 +224,7 @@ describe('main.js functional tests', () => {
     });
 
     it('should default to 1 when device pixel ratio is not available', () => {
-      const basePixelRatio = undefined || 1;
+      const basePixelRatio = 1; // Default when undefined
       expect(basePixelRatio).toBe(1);
     });
   });
@@ -268,7 +262,6 @@ describe('main.js functional tests', () => {
     });
 
     it('should include Julia parameters for Julia-type fractals', () => {
-      const fractalType = 'julia';
       const testParams = {
         zoom: 2.0,
         offset: { x: 0, y: 0 },
@@ -301,7 +294,6 @@ describe('main.js functional tests', () => {
   describe('Frame cache management', () => {
     it('should store and retrieve cached frames', () => {
       const frameCache = new Map();
-      const MAX_CACHE_SIZE = 10;
 
       const key1 = 'test_key_1';
       const key2 = 'test_key_2';
@@ -639,7 +631,6 @@ describe('main.js functional tests', () => {
     });
 
     it('should handle selection box with negative dimensions', () => {
-      const canvasRect = { width: 800, height: 600 };
       const startX = 400;
       const startY = 300;
       const endX = 200;
@@ -690,7 +681,6 @@ describe('main.js functional tests', () => {
     });
 
     it('should handle clipboard errors gracefully', async () => {
-      const errorText = 'Failed to copy';
       const mockError = new Error('Clipboard error');
       navigator.clipboard.writeText = vi.fn(() => Promise.reject(mockError));
 

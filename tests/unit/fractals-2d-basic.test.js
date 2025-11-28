@@ -94,7 +94,7 @@ const FRACTAL_MODULES_2D = [
 ];
 
 function createMockRegl() {
-  const fn = (config) => {
+  const fn = (_config) => {
     // Return a no-op draw command
     return () => {};
   };

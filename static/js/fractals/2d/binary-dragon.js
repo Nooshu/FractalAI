@@ -6,7 +6,8 @@ import { generatePaletteTexture } from '../utils.js';
 function generateBinaryDragon(iterations) {
   // Calculate the number of steps based on iterations
   // Binary dragon grows exponentially: 2^iterations steps
-  const numSteps = Math.pow(2, iterations);
+  // Optimized: replace Math.pow(2, n) with bit shift for powers of 2
+  const numSteps = 1 << iterations; // 2^iterations
   
   // Starting position and direction
   let x = -0.5;
@@ -14,7 +15,14 @@ function generateBinaryDragon(iterations) {
   let angle = 0; // Start facing right
   
   // Calculate step size to fit the curve in view
-  const stepLength = 1.0 / Math.pow(Math.sqrt(2), iterations);
+  // Optimized: replace Math.pow with explicit calculation
+  // Math.pow(Math.sqrt(2), iterations) = (sqrt(2))^iterations = 2^(iterations/2)
+  const sqrt2 = 1.4142135623730951;
+  let sqrt2Power = 1.0;
+  for (let i = 0; i < iterations; i++) {
+    sqrt2Power *= sqrt2;
+  }
+  const stepLength = 1.0 / sqrt2Power;
   
   const vertices = [];
   vertices.push(x, y);

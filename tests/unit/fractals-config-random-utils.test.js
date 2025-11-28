@@ -111,12 +111,13 @@ describe('random-view module', () => {
 describe('fractals utils module', () => {
   it('computeColorForScheme clamps values to [0,1]', () => {
     const color = computeColorForScheme(2, 0);
-    expect(color.r).toBeGreaterThanOrEqual(0);
-    expect(color.r).toBeLessThanOrEqual(1);
-    expect(color.g).toBeGreaterThanOrEqual(0);
-    expect(color.g).toBeLessThanOrEqual(1);
-    expect(color.b).toBeGreaterThanOrEqual(0);
-    expect(color.b).toBeLessThanOrEqual(1);
+    expect(color[0]).toBeGreaterThanOrEqual(0); // r
+    expect(color[0]).toBeLessThanOrEqual(1);
+    expect(color[1]).toBeGreaterThanOrEqual(0); // g
+    expect(color[1]).toBeLessThanOrEqual(1);
+    expect(color[2]).toBeGreaterThanOrEqual(0); // b
+    expect(color[2]).toBeLessThanOrEqual(1);
+    expect(color).toBeInstanceOf(Float32Array);
   });
 
   it('getColorSchemeIndex returns an index for known scheme', () => {
@@ -126,7 +127,10 @@ describe('fractals utils module', () => {
 
   it('getColor returns black for max iterations', () => {
     const color = getColor(100, 100, 'classic');
-    expect(color).toEqual({ r: 0, g: 0, b: 0 });
+    expect(color).toBeInstanceOf(Float32Array);
+    expect(color[0]).toBe(0); // r
+    expect(color[1]).toBe(0); // g
+    expect(color[2]).toBe(0); // b
   });
 
   it('isJuliaType detects Julia variants', () => {

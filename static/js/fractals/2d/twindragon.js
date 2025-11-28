@@ -18,7 +18,13 @@ function generateTwindragon(iterations) {
     sequence = newSequence;
   }
   
-  const stepLength = 1.0 / Math.pow(Math.sqrt(2), iterations);
+  // Optimized: replace Math.pow with explicit calculation
+  const sqrt2 = 1.4142135623730951;
+  let sqrt2Power = 1.0;
+  for (let i = 0; i < iterations; i++) {
+    sqrt2Power *= sqrt2;
+  }
+  const stepLength = 1.0 / sqrt2Power;
   
   // Generate first dragon (starting from origin, facing right)
   const dragon1 = generateDragonPath(sequence, 0, 0, 0, stepLength);

@@ -53,7 +53,7 @@ describe('Renderer', () => {
 
     canvas = { width: 800, height: 600 };
 
-    global.requestAnimationFrame = (cb) => {
+    global.requestAnimationFrame = (_cb) => {
       // Do not invoke cb here to avoid deep recursion in the animation loop
       return 1;
     };
@@ -191,7 +191,7 @@ describe('RenderingEngine', () => {
       cacheFrame: vi.fn(),
     };
 
-    global.requestAnimationFrame = (cb) => {
+    global.requestAnimationFrame = (_cb) => {
       // For engine animation loop tests, just return an id without invoking cb
       return 1;
     };

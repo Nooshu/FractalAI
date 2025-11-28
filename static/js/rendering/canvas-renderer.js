@@ -5,7 +5,7 @@
  */
 
 import createRegl from 'regl';
-import { calculatePixelRatio, updatePixelRatio } from './pixel-ratio.js';
+import { updatePixelRatio } from './pixel-ratio.js';
 
 /**
  * Initialize canvas and regl renderer

@@ -29,7 +29,13 @@ function generateHeighwayDragon(iterations) {
   let angle = 0; // Start facing right
   
   // Calculate step size to fit the curve in view
-  const stepLength = 1.0 / Math.pow(Math.sqrt(2), iterations);
+  // Optimized: replace Math.pow with explicit calculation
+  const sqrt2 = 1.4142135623730951;
+  let sqrt2Power = 1.0;
+  for (let i = 0; i < iterations; i++) {
+    sqrt2Power *= sqrt2;
+  }
+  const stepLength = 1.0 / sqrt2Power;
   
   const vertices = [];
   vertices.push(x, y);

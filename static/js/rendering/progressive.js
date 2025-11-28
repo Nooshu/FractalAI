@@ -5,7 +5,6 @@
 
 import { hideLoadingBar } from '../ui/loading-bar.js';
 import { updatePixelRatio } from './pixel-ratio.js';
-import { CONFIG } from '../core/config.js';
 import { isLineBasedFractal } from '../fractals/utils.js';
 
 /**

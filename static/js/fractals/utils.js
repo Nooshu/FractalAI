@@ -9,101 +9,128 @@ const MAX_SHADER_CACHE_SIZE = 50; // Maximum number of cached shaders
 
 /**
  * Generates a color value for a given t value (0-1) and scheme
+ * Optimized version that writes to out array to avoid allocations
  * @param {number} t - Value from 0 to 1
  * @param {number} schemeIndex - Index of the color scheme
- * @returns {Object} RGB color {r, g, b} in range [0, 1]
+ * @param {Float32Array|Array} out - Output array [r, g, b] (optional, creates new array if not provided)
+ * @returns {Float32Array|Array} RGB color [r, g, b] in range [0, 1]
  */
-export function computeColorForScheme(t, schemeIndex) {
+export function computeColorForScheme(t, schemeIndex, out = null) {
   // Clamp t to [0, 1]
   t = Math.max(0, Math.min(1, t));
+  
+  // Reuse output array if provided, otherwise create new one
+  if (!out) {
+    out = new Float32Array(3);
+  }
 
   switch (schemeIndex) {
     case 1: // fire
-      return { r: t, g: t * 0.5, b: 0 };
+      out[0] = t;
+      out[1] = t * 0.5;
+      out[2] = 0;
+      return out;
     case 2: // ocean
-      return { r: 0, g: t * 0.5, b: t };
+      out[0] = 0;
+      out[1] = t * 0.5;
+      out[2] = t;
+      return out;
     case 3: // rainbow
       {
         const hue = ((t * 360) % 360) / 360;
-        return {
-          r: 0.5 + 0.5 * Math.cos(hue * 6.28 + 0.0),
-          g: 0.5 + 0.5 * Math.cos(hue * 6.28 + 2.09),
-          b: 0.5 + 0.5 * Math.cos(hue * 6.28 + 4.18),
-        };
+        out[0] = 0.5 + 0.5 * Math.cos(hue * 6.28 + 0.0);
+        out[1] = 0.5 + 0.5 * Math.cos(hue * 6.28 + 2.09);
+        out[2] = 0.5 + 0.5 * Math.cos(hue * 6.28 + 4.18);
+        return out;
       }
     case 12: // rainbow-pastel
       {
         const hue = ((t * 360) % 360) / 360;
         const sat = 0.6;
         const light = 0.7;
-        return {
-          r: light + sat * Math.cos(hue * 6.28 + 0.0),
-          g: light + sat * Math.cos(hue * 6.28 + 2.09),
-          b: light + sat * Math.cos(hue * 6.28 + 4.18),
-        };
+        out[0] = light + sat * Math.cos(hue * 6.28 + 0.0);
+        out[1] = light + sat * Math.cos(hue * 6.28 + 2.09);
+        out[2] = light + sat * Math.cos(hue * 6.28 + 4.18);
+        return out;
       }
     case 13: // rainbow-dark
       {
         const hue = ((t * 360) % 360) / 360;
         const sat = 1.0;
         const light = 0.3;
-        return {
-          r: light + sat * Math.cos(hue * 6.28 + 0.0),
-          g: light + sat * Math.cos(hue * 6.28 + 2.09),
-          b: light + sat * Math.cos(hue * 6.28 + 4.18),
-        };
+        out[0] = light + sat * Math.cos(hue * 6.28 + 0.0);
+        out[1] = light + sat * Math.cos(hue * 6.28 + 2.09);
+        out[2] = light + sat * Math.cos(hue * 6.28 + 4.18);
+        return out;
       }
     case 14: // rainbow-vibrant
       {
         const hue = ((t * 360) % 360) / 360;
         const sat = 1.2;
         const light = 0.4;
-        return {
-          r: Math.max(0, Math.min(1, light + sat * Math.cos(hue * 6.28 + 0.0))),
-          g: Math.max(0, Math.min(1, light + sat * Math.cos(hue * 6.28 + 2.09))),
-          b: Math.max(0, Math.min(1, light + sat * Math.cos(hue * 6.28 + 4.18))),
-        };
+        out[0] = Math.max(0, Math.min(1, light + sat * Math.cos(hue * 6.28 + 0.0)));
+        out[1] = Math.max(0, Math.min(1, light + sat * Math.cos(hue * 6.28 + 2.09)));
+        out[2] = Math.max(0, Math.min(1, light + sat * Math.cos(hue * 6.28 + 4.18)));
+        return out;
       }
     case 15: // rainbow-double
       {
         const hue = ((t * 720) % 360) / 360;
-        return {
-          r: 0.5 + 0.5 * Math.cos(hue * 6.28 + 0.0),
-          g: 0.5 + 0.5 * Math.cos(hue * 6.28 + 2.09),
-          b: 0.5 + 0.5 * Math.cos(hue * 6.28 + 4.18),
-        };
+        out[0] = 0.5 + 0.5 * Math.cos(hue * 6.28 + 0.0);
+        out[1] = 0.5 + 0.5 * Math.cos(hue * 6.28 + 2.09);
+        out[2] = 0.5 + 0.5 * Math.cos(hue * 6.28 + 4.18);
+        return out;
       }
     case 16: // rainbow-shifted
       {
         const hue = ((t * 360 + 60) % 360) / 360;
-        return {
-          r: 0.5 + 0.5 * Math.cos(hue * 6.28 + 0.0),
-          g: 0.5 + 0.5 * Math.cos(hue * 6.28 + 2.09),
-          b: 0.5 + 0.5 * Math.cos(hue * 6.28 + 4.18),
-        };
+        out[0] = 0.5 + 0.5 * Math.cos(hue * 6.28 + 0.0);
+        out[1] = 0.5 + 0.5 * Math.cos(hue * 6.28 + 2.09);
+        out[2] = 0.5 + 0.5 * Math.cos(hue * 6.28 + 4.18);
+        return out;
       }
     case 4: // monochrome
-      return { r: t, g: t, b: t };
+      out[0] = t;
+      out[1] = t;
+      out[2] = t;
+      return out;
     case 5: // forest
-      return { r: t * 0.3, g: t * 0.8, b: t * 0.4 };
+      out[0] = t * 0.3;
+      out[1] = t * 0.8;
+      out[2] = t * 0.4;
+      return out;
     case 6: // sunset
-      return { r: t, g: t * 0.4, b: t * 0.2 };
+      out[0] = t;
+      out[1] = t * 0.4;
+      out[2] = t * 0.2;
+      return out;
     case 7: // purple
-      return { r: t * 0.6, g: t * 0.3, b: t };
+      out[0] = t * 0.6;
+      out[1] = t * 0.3;
+      out[2] = t;
+      return out;
     case 8: // cyan
-      return { r: 0, g: t, b: t };
+      out[0] = 0;
+      out[1] = t;
+      out[2] = t;
+      return out;
     case 9: // gold
-      return { r: t, g: t * 0.8, b: t * 0.2 };
+      out[0] = t;
+      out[1] = t * 0.8;
+      out[2] = t * 0.2;
+      return out;
     case 10: // ice
-      return { r: t * 0.7, g: t * 0.9, b: t };
+      out[0] = t * 0.7;
+      out[1] = t * 0.9;
+      out[2] = t;
+      return out;
     case 11: // neon
       {
         const pulse = Math.sin(t * Math.PI) * 0.5 + 0.5;
-        return {
-          r: t * 0.2 + pulse * 0.8,
-          g: t * 0.8 + pulse * 0.2,
-          b: t,
-        };
+        out[0] = t * 0.2 + pulse * 0.8;
+        out[1] = t * 0.8 + pulse * 0.2;
+        out[2] = t;
+        return out;
       }
     case 17: // cosmic (replaces white - dark space with bright stars/nebulae)
       {
@@ -124,11 +151,10 @@ export function computeColorForScheme(t, schemeIndex) {
         // Add some sparkle/stars with sine waves
         const sparkle = Math.sin(t * Math.PI * 8.0) * 0.1 + 0.9;
         
-        return {
-          r: Math.min(1.0, r * sparkle),
-          g: Math.min(1.0, g * sparkle),
-          b: Math.min(1.0, b * sparkle),
-        };
+        out[0] = Math.min(1.0, r * sparkle);
+        out[1] = Math.min(1.0, g * sparkle);
+        out[2] = Math.min(1.0, b * sparkle);
+        return out;
       }
     case 18: // aurora - Northern lights (greens, blues, purples)
       {
@@ -137,20 +163,17 @@ export function computeColorForScheme(t, schemeIndex) {
         if (phase < 1.0) {
           // Green to cyan transition
           const p = phase;
-          return {
-            r: 0.1 + p * 0.2,
-            g: 0.3 + p * 0.5,
-            b: 0.2 + p * 0.6,
-          };
+          out[0] = 0.1 + p * 0.2;
+          out[1] = 0.3 + p * 0.5;
+          out[2] = 0.2 + p * 0.6;
         } else {
           // Cyan to purple transition
           const p = phase - 1.0;
-          return {
-            r: 0.3 + p * 0.5,
-            g: 0.8 - p * 0.3,
-            b: 0.8 + p * 0.2,
-          };
+          out[0] = 0.3 + p * 0.5;
+          out[1] = 0.8 - p * 0.3;
+          out[2] = 0.8 + p * 0.2;
         }
+        return out;
       }
     case 19: // coral - Coral reef (tropical blues, corals, teals)
       {
@@ -159,11 +182,10 @@ export function computeColorForScheme(t, schemeIndex) {
         const phase2 = Math.max(0.0, Math.min((t - 0.33) * 3.0, 1.0));
         const phase3 = Math.max(0.0, (t - 0.66) * 3.0);
         
-        return {
-          r: phase1 * 0.1 + phase2 * 0.3 + phase3 * 1.0,
-          g: phase1 * 0.4 + phase2 * 0.8 + phase3 * 0.6,
-          b: phase1 * 0.8 + phase2 * 0.7 + phase3 * 0.5,
-        };
+        out[0] = phase1 * 0.1 + phase2 * 0.3 + phase3 * 1.0;
+        out[1] = phase1 * 0.4 + phase2 * 0.8 + phase3 * 0.6;
+        out[2] = phase1 * 0.8 + phase2 * 0.7 + phase3 * 0.5;
+        return out;
       }
     case 20: // autumn - Warm autumn colors (oranges, reds, yellows)
       {
@@ -171,11 +193,10 @@ export function computeColorForScheme(t, schemeIndex) {
         const phase1 = Math.min(t * 2.0, 1.0);
         const phase2 = Math.max(0.0, (t - 0.5) * 2.0);
         
-        return {
-          r: 0.3 + phase1 * 0.5 + phase2 * 0.2,
-          g: 0.1 + phase1 * 0.3 + phase2 * 0.6,
-          b: 0.0 + phase1 * 0.1 + phase2 * 0.1,
-        };
+        out[0] = 0.3 + phase1 * 0.5 + phase2 * 0.2;
+        out[1] = 0.1 + phase1 * 0.3 + phase2 * 0.6;
+        out[2] = 0.0 + phase1 * 0.1 + phase2 * 0.1;
+        return out;
       }
     case 21: // midnight - Deep blues, purples, magentas
       {
@@ -183,11 +204,10 @@ export function computeColorForScheme(t, schemeIndex) {
         const phase1 = Math.min(t * 2.0, 1.0);
         const phase2 = Math.max(0.0, (t - 0.5) * 2.0);
         
-        return {
-          r: 0.05 + phase1 * 0.3 + phase2 * 0.65,
-          g: 0.05 + phase1 * 0.2 + phase2 * 0.3,
-          b: 0.2 + phase1 * 0.5 + phase2 * 0.3,
-        };
+        out[0] = 0.05 + phase1 * 0.3 + phase2 * 0.65;
+        out[1] = 0.05 + phase1 * 0.2 + phase2 * 0.3;
+        out[2] = 0.2 + phase1 * 0.5 + phase2 * 0.3;
+        return out;
       }
     case 22: // emerald - Rich greens with gold accents
       {
@@ -195,11 +215,10 @@ export function computeColorForScheme(t, schemeIndex) {
         const phase1 = Math.min(t * 2.0, 1.0);
         const phase2 = Math.max(0.0, (t - 0.5) * 2.0);
         
-        return {
-          r: 0.0 + phase1 * 0.1 + phase2 * 0.8,
-          g: 0.2 + phase1 * 0.7 + phase2 * 0.6,
-          b: 0.1 + phase1 * 0.4 + phase2 * 0.1,
-        };
+        out[0] = 0.0 + phase1 * 0.1 + phase2 * 0.8;
+        out[1] = 0.2 + phase1 * 0.7 + phase2 * 0.6;
+        out[2] = 0.1 + phase1 * 0.4 + phase2 * 0.1;
+        return out;
       }
     case 23: // rosegold - Pink, rose, gold tones
       {
@@ -207,11 +226,10 @@ export function computeColorForScheme(t, schemeIndex) {
         const phase1 = Math.min(t * 2.0, 1.0);
         const phase2 = Math.max(0.0, (t - 0.5) * 2.0);
         
-        return {
-          r: 0.3 + phase1 * 0.5 + phase2 * 0.2,
-          g: 0.2 + phase1 * 0.3 + phase2 * 0.5,
-          b: 0.2 + phase1 * 0.2 + phase2 * 0.1,
-        };
+        out[0] = 0.3 + phase1 * 0.5 + phase2 * 0.2;
+        out[1] = 0.2 + phase1 * 0.3 + phase2 * 0.5;
+        out[2] = 0.2 + phase1 * 0.2 + phase2 * 0.1;
+        return out;
       }
     case 24: // electric - Bright neon colors
       {
@@ -220,11 +238,10 @@ export function computeColorForScheme(t, schemeIndex) {
         const sat = 1.0;
         const light = 0.5;
         
-        return {
-          r: Math.max(0, Math.min(1, light + sat * Math.cos(hue * 6.28 + 0.0) * 1.2)),
-          g: Math.max(0, Math.min(1, light + sat * Math.cos(hue * 6.28 + 2.09) * 1.2)),
-          b: Math.max(0, Math.min(1, light + sat * Math.cos(hue * 6.28 + 4.18) * 1.2)),
-        };
+        out[0] = Math.max(0, Math.min(1, light + sat * Math.cos(hue * 6.28 + 0.0) * 1.2));
+        out[1] = Math.max(0, Math.min(1, light + sat * Math.cos(hue * 6.28 + 2.09) * 1.2));
+        out[2] = Math.max(0, Math.min(1, light + sat * Math.cos(hue * 6.28 + 4.18) * 1.2));
+        return out;
       }
     case 25: // vintage - Muted pastels
       {
@@ -233,11 +250,10 @@ export function computeColorForScheme(t, schemeIndex) {
         const sat = 0.4; // Low saturation
         const light = 0.7; // High lightness
         
-        return {
-          r: light + sat * Math.cos(hue * 6.28 + 0.0) * 0.5,
-          g: light + sat * Math.cos(hue * 6.28 + 2.09) * 0.5,
-          b: light + sat * Math.cos(hue * 6.28 + 4.18) * 0.5,
-        };
+        out[0] = light + sat * Math.cos(hue * 6.28 + 0.0) * 0.5;
+        out[1] = light + sat * Math.cos(hue * 6.28 + 2.09) * 0.5;
+        out[2] = light + sat * Math.cos(hue * 6.28 + 4.18) * 0.5;
+        return out;
       }
     case 26: // tropical - Bright vibrant colors
       {
@@ -246,28 +262,23 @@ export function computeColorForScheme(t, schemeIndex) {
         if (phase < 1.0) {
           // Cyan to magenta
           const p = phase;
-          return {
-            r: 0.0 + p * 1.0,
-            g: 1.0 - p * 0.3,
-            b: 1.0 - p * 0.5,
-          };
+          out[0] = 0.0 + p * 1.0;
+          out[1] = 1.0 - p * 0.3;
+          out[2] = 1.0 - p * 0.5;
         } else if (phase < 2.0) {
           // Magenta to yellow
           const p = phase - 1.0;
-          return {
-            r: 1.0,
-            g: 0.7 + p * 0.3,
-            b: 0.5 - p * 0.5,
-          };
+          out[0] = 1.0;
+          out[1] = 0.7 + p * 0.3;
+          out[2] = 0.5 - p * 0.5;
         } else {
           // Yellow to cyan
           const p = phase - 2.0;
-          return {
-            r: 1.0 - p * 1.0,
-            g: 1.0,
-            b: 0.0 + p * 1.0,
-          };
+          out[0] = 1.0 - p * 1.0;
+          out[1] = 1.0;
+          out[2] = 0.0 + p * 1.0;
         }
+        return out;
       }
     case 27: // galaxy - Deep space with bright stars (different from cosmic)
       {
@@ -284,14 +295,16 @@ export function computeColorForScheme(t, schemeIndex) {
         // Bright star sparkle effect
         const sparkle = Math.sin(t * Math.PI * 12.0) * 0.15 + 0.85;
         
-        return {
-          r: Math.min(1.0, r * sparkle),
-          g: Math.min(1.0, g * sparkle),
-          b: Math.min(1.0, b * sparkle),
-        };
+        out[0] = Math.min(1.0, r * sparkle);
+        out[1] = Math.min(1.0, g * sparkle);
+        out[2] = Math.min(1.0, b * sparkle);
+        return out;
       }
     default: // classic (scheme == 0)
-      return { r: t * 0.5, g: t, b: Math.min(t * 1.5, 1) };
+      out[0] = t * 0.5;
+      out[1] = t;
+      out[2] = Math.min(t * 1.5, 1);
+      return out;
   }
 }
 
@@ -312,15 +325,17 @@ export function generatePaletteTexture(regl, colorScheme) {
 
   // Generate palette data
   const paletteData = new Uint8Array(PALETTE_SIZE * 4); // RGBA
+  // Pre-allocate reusable color array to avoid allocations in hot loop
+  const colorOut = new Float32Array(3);
 
   for (let i = 0; i < PALETTE_SIZE; i++) {
     const t = i / (PALETTE_SIZE - 1);
-    const color = computeColorForScheme(t, schemeIndex);
+    const color = computeColorForScheme(t, schemeIndex, colorOut);
 
     const offset = i * 4;
-    paletteData[offset + 0] = Math.floor(color.r * 255); // R
-    paletteData[offset + 1] = Math.floor(color.g * 255); // G
-    paletteData[offset + 2] = Math.floor(color.b * 255); // B
+    paletteData[offset + 0] = Math.floor(color[0] * 255); // R
+    paletteData[offset + 1] = Math.floor(color[1] * 255); // G
+    paletteData[offset + 2] = Math.floor(color[2] * 255); // B
     paletteData[offset + 3] = 255; // A (fully opaque)
   }
 
@@ -493,8 +508,15 @@ export function createStandardDrawCommand(regl, params, canvas, fragmentShader, 
 }
 
 // Color schemes (for CPU-side color calculations if needed)
+// Note: This function returns an array [r, g, b] instead of an object for performance
 export function getColor(iterations, maxIterations, scheme) {
-  if (iterations >= maxIterations) return { r: 0, g: 0, b: 0 };
+  if (iterations >= maxIterations) {
+    const out = new Float32Array(3);
+    out[0] = 0;
+    out[1] = 0;
+    out[2] = 0;
+    return out;
+  }
 
   const t = iterations / maxIterations;
   const schemeIndex = getColorSchemeIndex(scheme);

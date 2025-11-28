@@ -5,7 +5,6 @@
  */
 
 import { encodeFractalState } from './encoder.js';
-import { decodeFractalState } from './decoder.js';
 import { loadFractalFromURL as loadStateFromURL } from './url-handler.js';
 import { isJuliaType } from '../fractals/utils.js';
 
