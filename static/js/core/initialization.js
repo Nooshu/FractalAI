@@ -396,18 +396,26 @@ export async function init() {
    */
   function updateUIControlsFromParams(params, preset) {
     // Update fractal type dropdown
+    // Note: We don't trigger the change event here because loadFractalFromPreset
+    // handles the fractal loading itself. Triggering the event would cause a duplicate load.
     if (preset.fractal) {
       const fractalTypeSelect = document.getElementById('fractal-type');
       if (fractalTypeSelect) {
         fractalTypeSelect.value = preset.fractal;
+        // Manually update Wikipedia link and coordinate display without triggering change event
+        updateWikipediaLinkFn();
+        updateCoordinateDisplayFn();
       }
     }
     
     // Update color scheme dropdown
+    // Trigger change event to update palette preview (this doesn't cause fractal reload)
     if (preset.theme) {
       const colorSchemeSelect = document.getElementById('color-scheme');
       if (colorSchemeSelect) {
         colorSchemeSelect.value = preset.theme;
+        // Trigger change event to update palette preview and other dependent UI elements
+        colorSchemeSelect.dispatchEvent(new Event('change', { bubbles: true }));
       }
     }
     
@@ -418,6 +426,8 @@ export async function init() {
     
     if (iterationsSlider) {
       iterationsSlider.value = 250;
+      // Don't trigger input event to avoid triggering auto-render (we'll render after fractal loads)
+      // Just update the display value directly
     }
     if (iterationsValue) {
       iterationsValue.textContent = '250';
