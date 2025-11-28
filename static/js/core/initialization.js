@@ -458,12 +458,11 @@ export async function init() {
       updateWikipediaLinkFn();
       
       // Update palette preview after everything is loaded and rendered
+      // Use requestAnimationFrame to ensure DOM is ready, then retry internally if needed
       if (preset.theme) {
-        // Multiple attempts with increasing delays to handle production timing
-        setTimeout(() => updatePalettePreviewDirectly(preset.theme, 5), 0);
-        setTimeout(() => updatePalettePreviewDirectly(preset.theme, 4), 50);
-        setTimeout(() => updatePalettePreviewDirectly(preset.theme, 3), 150);
-        setTimeout(() => updatePalettePreviewDirectly(preset.theme, 2), 300);
+        requestAnimationFrame(() => {
+          updatePalettePreviewDirectly(preset.theme, 3);
+        });
       }
     });
   }
