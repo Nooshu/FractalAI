@@ -177,12 +177,9 @@ export class RenderingEngine {
     const params = this.getParams();
 
     if (!currentFractalModule) {
-      // Only warn if we're not currently loading a fractal
-      // This prevents false warnings during initialization
-      const isLoading = this.getIsLoading ? this.getIsLoading() : false;
-      if (!isLoading) {
-        console.warn('No fractal module loaded');
-      }
+      // Silently return if no fractal module is loaded
+      // This prevents warnings during initialization or when resize fires before fractal loads
+      // The fractal will be loaded and rendered when it's ready
       hideLoadingBar();
       return;
     }

@@ -24,7 +24,8 @@ export class Renderer {
    */
   render(regl, canvas, fractalModule, params) {
     if (!fractalModule) {
-      console.warn('No fractal module loaded');
+      // Silently return if no fractal module is loaded
+      // This prevents warnings during initialization or when resize fires before fractal loads
       hideLoadingBar();
       return;
     }

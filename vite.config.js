@@ -14,6 +14,100 @@ export default defineConfig({
     minify: 'esbuild', // Use esbuild for faster minification
     cssMinify: true, // Minify CSS
     reportCompressedSize: false, // Skip compressed size reporting for faster builds
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          // Helper function to check if a fractal belongs to a family
+          const isFamilyFractal = (familyName, fractalNames) => {
+            if (id.includes(`/fractals/2d/families/${familyName}.js`)) {
+              return familyName;
+            }
+            if (id.includes('/fractals/2d/')) {
+              return fractalNames.some(name => id.includes(`${name}.js`)) ? familyName : null;
+            }
+            return null;
+          };
+
+          // Mandelbrot Family
+          const mandelbrotFamily = isFamilyFractal('mandelbrot-family', [
+            'mandelbrot', 'celtic-mandelbrot', 'multibrot', 'mutant-mandelbrot',
+            'phoenix-mandelbrot', 'burning-ship', 'tricorn', 'nebulabrot'
+          ]);
+          if (mandelbrotFamily) return mandelbrotFamily;
+
+          // Julia Family
+          const juliaFamily = isFamilyFractal('julia-family', [
+            'julia', 'julia-snakes', 'multibrot-julia', 'burning-ship-julia',
+            'tricorn-julia', 'phoenix-julia', 'lambda-julia', 'hybrid-julia'
+          ]);
+          if (juliaFamily) return juliaFamily;
+
+          // Sierpinski Family
+          const sierpinskiFamily = isFamilyFractal('sierpinski-family', [
+            'sierpinski', 'sierpinski-arrowhead', 'sierpinski-carpet', 'sierpinski-gasket',
+            'sierpinski-hexagon', 'sierpinski-lsystem', 'sierpinski-pentagon',
+            'quadrilateral-subdivision', 'recursive-polygon-splitting', 'triangular-subdivision'
+          ]);
+          if (sierpinskiFamily) return sierpinskiFamily;
+
+          // Dragon Family
+          const dragonFamily = isFamilyFractal('dragon-family', [
+            'binary-dragon', 'dragon-lsystem', 'folded-paper-dragon',
+            'heighway-dragon', 'terdragon', 'twindragon'
+          ]);
+          if (dragonFamily) return dragonFamily;
+
+          // Space-Filling Family
+          const spaceFillingFamily = isFamilyFractal('space-filling-family', [
+            'gosper-curve', 'hilbert-curve', 'levy-c-curve', 'moore-curve', 'peano-curve'
+          ]);
+          if (spaceFillingFamily) return spaceFillingFamily;
+
+          // Root-Finding Family
+          const rootFindingFamily = isFamilyFractal('root-finding-family', [
+            'newton', 'halley', 'nova'
+          ]);
+          if (rootFindingFamily) return rootFindingFamily;
+
+          // Plant Family
+          const plantFamily = isFamilyFractal('plant-family', [
+            'plant', 'barnsley-fern'
+          ]);
+          if (plantFamily) return plantFamily;
+
+          // Koch Family
+          const kochFamily = isFamilyFractal('koch-family', [
+            'fractal-islands', 'koch', 'quadratic-koch'
+          ]);
+          if (kochFamily) return kochFamily;
+
+          // Cantor Family
+          const cantorFamily = isFamilyFractal('cantor-family', [
+            'cantor', 'cantor-dust-base-expansion', 'cantor-dust-circular',
+            'fat-cantor', 'smith-volterra-cantor', 'random-cantor'
+          ]);
+          if (cantorFamily) return cantorFamily;
+
+          // Tiling Family
+          const tilingFamily = isFamilyFractal('tiling-family', [
+            'domino-substitution', 'pinwheel-tiling', 'snowflake-tiling'
+          ]);
+          if (tilingFamily) return tilingFamily;
+
+          // Other Family
+          const otherFamily = isFamilyFractal('other-family', [
+            'amman-tiling', 'apollonian-gasket', 'carpenter-square', 'chair-tiling',
+            'h-tree', 'h-tree-generalized', 'vicsek', 'cross', 'diffusion-limited-aggregation',
+            'fractional-brownian-motion', 'fractal-flame', 'levy-flights',
+            'recursive-circle-removal', 'rose', 'box-variants', 'minkowski-sausage',
+            'penrose-substitution', 'perlin-noise', 'percolation-cluster', 'buffalo',
+            'popcorn', 'random-midpoint-displacement', 'rauzy', 'simplex-noise',
+            'spider-set', 'magnet', 'cesaro'
+          ]);
+          if (otherFamily) return otherFamily;
+        }
+      }
+    }
   },
   plugins: [
     {
