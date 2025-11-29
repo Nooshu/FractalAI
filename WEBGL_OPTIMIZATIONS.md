@@ -21,22 +21,36 @@ This document outlines comprehensive WebGL optimizations to achieve maximum rend
 ### Current Implementation
 
 - Using **regl** library (WebGL1/WebGL2 abstraction)
-- WebGL2 detection exists but not fully utilized
-- Fragment shaders use `mediump` precision
+- WebGL2 detection exists and UBOs are implemented
+- Fragment shaders use `mediump` precision (some use `highp` for deep zooms)
 - Full-screen quad rendering (4 vertices)
-- Texture-based palette lookup
+- Texture-based palette lookup (cached per color scheme)
 - Basic progressive rendering
 - Frame caching with framebuffers
 
+### Optimizations Removed (Not Beneficial for Fractal Rendering)
+
+The following optimizations were considered but removed as they don't provide meaningful benefits for the current fractal rendering approach:
+
+- **Multiple Render Targets (MRT)**: Not useful for single-pass rendering where iterations are computed and immediately used for coloring
+- **Texture Arrays**: Minimal benefit; current palette caching system is already efficient for small textures (512x1)
+- **Integer Textures**: Not applicable; iterations aren't stored in textures, they're computed on-the-fly with smooth coloring (fractional values)
+- **Compressed Textures**: Overhead not worth it for tiny palette textures (512x1, ~2KB)
+- **Texture Views**: Not needed for single palette per render
+- **Instancing**: Not rendering multiple fractals simultaneously
+- **Buffer Streaming/Subdata**: Buffers are static, not frequently updated
+- **Shader Subroutines**: Each fractal type has its own optimized shader; subroutines add complexity without benefit
+- **FMA Optimization**: Modern GPUs handle FMA automatically; manual optimization unnecessary
+- **GPU-Driven Rendering**: Not applicable for single quad rendering
+
 ### Performance Bottlenecks Identified
 
-1. Not leveraging WebGL2-specific features
+1. Not fully leveraging WebGL2-specific features
 2. Limited use of WebGL extensions
 3. Shader precision could be optimized per platform
-4. No instanced rendering for multi-fractal views
-5. Texture filtering could be optimized
-6. No compute shader usage (when available)
-7. Limited use of uniform buffer objects
+4. Texture storage could be optimized
+5. No compute shader usage (when available)
+6. Limited use of uniform buffer objects
 
 ---
 
@@ -106,84 +120,6 @@ layout(std140) uniform FractalParams {
 - Better GPU cache utilization
 - Reduced draw call overhead
 
-### 3. Multiple Render Targets (MRT)
-
-**Current**: Single color output  
-**Optimization**: Render to multiple textures simultaneously (for future multi-pass effects)
-
-```javascript
-// WebGL2 framebuffer with multiple color attachments
-const mrtFramebuffer = regl.framebuffer({
-  color: [
-    regl.texture({ width, height }), // Main output
-    regl.texture({ width, height }), // Iteration count
-    regl.texture({ width, height }), // Distance estimate
-  ],
-  depth: false,
-  stencil: false,
-});
-```
-
-**Benefits**:
-
-- Single pass for multiple outputs
-- Enables advanced post-processing
-- Better for deferred rendering techniques
-
-### 4. Texture Array Support
-
-**Current**: Single palette texture  
-**Optimization**: Use texture arrays for multiple palettes
-
-```javascript
-// WebGL2 texture array
-const paletteArray = regl.texture({
-  width: PALETTE_SIZE,
-  height: 1,
-  count: MAX_PALETTES, // Number of palettes
-  data: allPaletteData,
-  format: 'rgba',
-  type: 'uint8',
-});
-
-// In shader
-uniform sampler2DArray uPaletteArray;
-uniform int uPaletteIndex;
-
-vec3 color = texture(uPaletteArray, vec3(t, 0.5, uPaletteIndex)).rgb;
-```
-
-**Benefits**:
-
-- Single texture bind for all palettes
-- Faster palette switching
-- Reduced texture state changes
-
-### 5. Integer Textures for Iteration Counts
-
-**Current**: Float-based iteration values  
-**Optimization**: Use integer textures for precise iteration storage
-
-```javascript
-// WebGL2 integer texture
-const iterationTexture = regl.texture({
-  width,
-  height,
-  format: 'r32ui', // 32-bit unsigned integer
-  type: 'uint',
-  data: null,
-});
-
-// In shader
-uniform usampler2D uIterationTexture;
-uint iterations = texture(uIterationTexture, uv).r;
-```
-
-**Benefits**:
-
-- Exact iteration counts (no precision loss)
-- Better for high iteration counts
-- Enables integer-based optimizations
 
 ---
 
@@ -263,27 +199,7 @@ float computeFractal(vec2 c) {
 - Reduced loop overhead
 - Platform-specific optimization
 
-### 4. Fused Multiply-Add (FMA) Optimization
-
-**Current**: Separate multiply and add  
-**Optimization**: Use FMA instructions where available
-
-```glsl
-// Instead of:
-z = vec2(zx2 - zy2, 2.0 * z.x * z.y) + c;
-
-// Use FMA-friendly form:
-z.x = fma(z.x, z.x, -zy2) + c.x; // If fma() available
-z.y = fma(2.0 * z.x, z.y, c.y);
-```
-
-**Benefits**:
-
-- Single instruction for multiply-add
-- Better precision
-- Faster execution on modern GPUs
-
-### 5. Vectorization
+### 4. Vectorization
 
 **Current**: Scalar operations  
 **Optimization**: Use vector operations where possible
@@ -300,71 +216,11 @@ vec2 z_squared = vec2(z2.x - z2.y, 2.0 * z.x * z.y); // Optimized form
 - Fewer instructions
 - Improved throughput
 
-### 6. Shader Subroutines (WebGL2)
-
-**Current**: Conditional branching in shaders  
-**Optimization**: Use shader subroutines for fractal type selection
-
-```glsl
-// WebGL2 shader subroutines
-subroutine vec4 FractalCompute(vec2 c);
-subroutine uniform FractalCompute fractalFunction;
-
-subroutine(FractalCompute)
-vec4 mandelbrot(vec2 c) {
-    // Mandelbrot implementation
-}
-
-subroutine(FractalCompute)
-vec4 julia(vec2 c) {
-    // Julia implementation
-}
-
-void main() {
-    float iterations = fractalFunction(uv).r;
-    // ...
-}
-```
-
-**Benefits**:
-
-- No branching overhead
-- Better GPU optimization
-- Faster fractal type switching
-
 ---
 
 ## Texture Optimizations
 
-### 1. Compressed Texture Formats
-
-**Current**: Uncompressed RGBA8 textures  
-**Optimization**: Use compressed formats when available
-
-```javascript
-// Detect and use compressed texture formats
-const extensions = {
-  s3tc: gl.getExtension('WEBGL_compressed_texture_s3tc'),
-  etc1: gl.getExtension('WEBGL_compressed_texture_etc1'),
-  etc2: gl.getExtension('WEBGL_compressed_texture_etc'),
-  astc: gl.getExtension('WEBGL_compressed_texture_astc'),
-  bptc: gl.getExtension('EXT_texture_compression_bptc'),
-};
-
-// Use appropriate format for palette textures
-const paletteTexture = regl.texture({
-  // ... if compressed format available, use it
-  internalFormat: extensions.s3tc ? 'compressed' : 'rgba',
-});
-```
-
-**Benefits**:
-
-- Reduced memory bandwidth
-- Faster texture uploads
-- Lower memory usage
-
-### 2. Texture Storage (WebGL2)
+### 1. Texture Storage (WebGL2)
 
 **Current**: Standard textures  
 **Optimization**: Use immutable texture storage
@@ -386,50 +242,24 @@ const paletteTexture = regl.texture({
 - Faster texture creation
 - More efficient GPU usage
 
-### 3. Texture Filtering Optimization
+### 2. Texture Filtering Optimization
 
 **Current**: Linear filtering  
-**Optimization**: Use nearest for palette (1D texture)
+**Note**: Linear filtering is appropriate for palette textures to enable smooth color gradients. The overhead is minimal for 1D textures (512x1), and the visual quality benefit is significant.
 
 ```javascript
 const paletteTexture = regl.texture({
   // ...
-  min: 'linear', // Keep for smooth gradients
-  mag: 'linear',
-  // But consider nearest for exact color matching
-  // mag: 'nearest', // If exact colors needed
+  min: 'linear', // Smooth gradients
+  mag: 'linear', // Smooth gradients
 });
 ```
 
 **Benefits**:
 
-- Faster texture lookups
-- No interpolation overhead for 1D textures
-- Better cache performance
-
-### 4. Texture Views (WebGL2)
-
-**Current**: Separate textures for different views  
-**Optimization**: Use texture views for different palette regions
-
-```javascript
-// WebGL2 texture views (when available)
-// Create view of existing texture for different palette ranges
-const paletteView = gl.createTextureView?.(paletteTexture, {
-  target: gl.TEXTURE_2D,
-  internalFormat: gl.RGBA8,
-  minLevel: 0,
-  numLevels: 1,
-  minLayer: 0,
-  numLayers: 1,
-});
-```
-
-**Benefits**:
-
-- Shared texture memory
-- Faster palette switching
-- Reduced memory usage
+- Smooth color transitions
+- Minimal performance overhead for small textures
+- Better visual quality
 
 ---
 
@@ -458,74 +288,6 @@ const drawFractal = regl({
 - Reduced memory allocations
 - Better GPU cache usage
 - Faster attribute setup
-
-### 2. Index Buffer for Instancing
-
-**Current**: Triangle strip  
-**Optimization**: Use indexed rendering with instancing (for multi-view)
-
-```javascript
-// Index buffer for quad
-const indexBuffer = regl.elements([0, 1, 2, 1, 3, 2]);
-
-// Instanced rendering for multiple views
-const drawMultiple = regl({
-  attributes: {
-    position: quadBuffer,
-    instanceOffset: {
-      // Per-instance data
-      buffer: instanceBuffer,
-      divisor: 1,
-    },
-  },
-  elements: indexBuffer,
-  instances: viewCount,
-});
-```
-
-**Benefits**:
-
-- Single draw call for multiple views
-- Better GPU utilization
-- Reduced CPU overhead
-
-### 3. Buffer Streaming
-
-**Current**: Static buffers  
-**Optimization**: Use streaming buffers for dynamic data
-
-```javascript
-// Use STREAM_DRAW for frequently updated buffers
-const dynamicBuffer = regl.buffer({
-  usage: 'stream', // STREAM_DRAW
-  data: dynamicData,
-});
-```
-
-**Benefits**:
-
-- Better performance for frequently updated data
-- Optimized GPU memory usage
-- Reduced stalling
-
-### 4. Buffer Subdata Updates
-
-**Current**: Full buffer updates  
-**Optimization**: Use subdata updates for partial changes
-
-```javascript
-// Update only changed portion
-buffer.subdata({
-  offset: changedOffset,
-  data: changedData,
-});
-```
-
-**Benefits**:
-
-- Faster updates
-- Reduced memory bandwidth
-- Better for incremental changes
 
 ---
 
@@ -575,30 +337,7 @@ if (ext) {
 - Smoother gradients
 - Maintains performance benefits
 
-### 3. WEBGL_draw_buffers
-
-**Current**: Single color output  
-**Optimization**: Multiple color outputs (WebGL1 fallback)
-
-```javascript
-const ext = gl.getExtension('WEBGL_draw_buffers');
-if (ext) {
-  // Enable multiple render targets
-  gl.drawBuffers([
-    gl.COLOR_ATTACHMENT0,
-    gl.COLOR_ATTACHMENT1,
-    // ...
-  ]);
-}
-```
-
-**Benefits**:
-
-- Multiple outputs on WebGL1
-- Better compatibility
-- Enables advanced effects
-
-### 4. EXT_disjoint_timer_query / EXT_disjoint_timer_query_webgl2
+### 3. EXT_disjoint_timer_query / EXT_disjoint_timer_query_webgl2
 
 **Current**: Basic timing (WebGL2 only)  
 **Optimization**: Enhanced GPU timing for all WebGL versions
@@ -619,18 +358,12 @@ const timerExt = timerQuery2 || timerQuery1;
 - Better performance profiling
 - Platform-wide support
 
-### 5. WEBGL_lose_context (for testing)
+### 4. Context Loss Handling
 
 **Current**: No context loss handling  
 **Optimization**: Graceful context loss recovery
 
 ```javascript
-const loseContextExt = gl.getExtension('WEBGL_lose_context');
-if (loseContextExt) {
-  // For testing: simulate context loss
-  // loseContextExt.loseContext();
-}
-
 // Handle context loss
 canvas.addEventListener('webglcontextlost', (e) => {
   e.preventDefault();
@@ -647,44 +380,6 @@ canvas.addEventListener('webglcontextrestored', () => {
 - Better error handling
 - Graceful degradation
 - Improved user experience
-
-### 6. OES_standard_derivatives
-
-**Current**: Not used  
-**Optimization**: Enable for advanced shader features
-
-```javascript
-const ext = gl.getExtension('OES_standard_derivatives');
-if (ext) {
-  // Can use dFdx, dFdy, fwidth in shaders
-  // Useful for adaptive quality
-}
-```
-
-**Benefits**:
-
-- Advanced shader features
-- Adaptive quality based on screen-space derivatives
-- Better edge detection
-
-### 7. EXT_shader_texture_lod
-
-**Current**: Basic texture sampling  
-**Optimization**: Explicit LOD control
-
-```javascript
-const ext = gl.getExtension('EXT_shader_texture_lod');
-if (ext) {
-  // Can use texture2DLodEXT in shaders
-  // Better mipmap control
-}
-```
-
-**Benefits**:
-
-- Explicit mipmap selection
-- Better quality control
-- Reduced texture fetches
 
 ---
 
@@ -956,26 +651,6 @@ requestIdleCallback(() => {
 - Progressive quality improvement
 - Better perceived performance
 
-### 5. GPU-Driven Rendering
-
-**Current**: CPU-driven draw calls  
-**Optimization**: GPU-driven with indirect drawing (WebGL2)
-
-```javascript
-// WebGL2 indirect drawing
-const indirectBuffer = regl.buffer({
-  data: new Uint32Array([vertexCount, instanceCount, firstVertex, baseInstance]),
-});
-
-gl.drawArraysIndirect(gl.TRIANGLES, indirectBuffer);
-```
-
-**Benefits**:
-
-- Reduced CPU overhead
-- Better GPU utilization
-- Scalable rendering
-
 ---
 
 ## Implementation Priority
@@ -985,17 +660,16 @@ gl.drawArraysIndirect(gl.TRIANGLES, indirectBuffer);
 1. ✅ Enable WebGL2 explicitly
 2. ✅ Use uniform buffer objects (UBOs)
 3. ✅ Optimize shader precision
-4. ✅ Implement texture array support
-5. ✅ Add compressed texture support
-6. ✅ Optimize texture filtering
+4. ✅ Implement texture storage optimization
+5. ✅ Optimize early exit strategies
 
 ### Phase 2: Medium Impact, Medium Risk (Short-term)
 
-1. ✅ Implement multiple render targets
-2. ✅ Add occlusion query support
-3. ✅ Optimize buffer usage
-4. ✅ Add extension detection and usage
-5. ✅ Implement adaptive quality
+1. ✅ Add occlusion query support
+2. ✅ Optimize vertex buffer usage
+3. ✅ Add extension detection and usage (half-float, timer queries)
+4. ✅ Implement adaptive quality
+5. ✅ Optimize loop unrolling strategies
 
 ### Phase 3: High Impact, Higher Risk (Medium-term)
 
@@ -1008,8 +682,7 @@ gl.drawArraysIndirect(gl.TRIANGLES, indirectBuffer);
 
 1. ✅ Predictive rendering
 2. ✅ Multi-resolution rendering
-3. ✅ GPU-driven rendering
-4. ✅ WebCodecs integration
+3. ✅ WebCodecs integration
 
 ---
 
@@ -1022,11 +695,8 @@ export const CONFIG = {
     // WebGL2 optimizations
     webgl2: true,
     uniformBuffers: true,
-    textureArrays: true,
-    multipleRenderTargets: false, // Enable when needed
 
     // Extensions
-    compressedTextures: true,
     halfFloat: true,
     timerQuery: true,
 
