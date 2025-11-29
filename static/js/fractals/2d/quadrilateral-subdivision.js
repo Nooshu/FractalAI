@@ -184,8 +184,8 @@ export const config = {
     colorScheme: 'galaxy',
   },
   initialPosition: {
-    zoom: 3.186,
-    offset: { x: 0.9638, y: 0.6144 },
+    zoom: 1.515,
+    offset: { x: -0.0813, y: -0.0318 },
   },
   interestingPoints: [],
   fallbackPosition: {

@@ -172,8 +172,8 @@ export const config = {
     colorScheme: 'midnight',
   },
   initialPosition: {
-    zoom: 1,
-    offset: { x: 2.63, y: 2.178 },
+    zoom: 0.619,
+    offset: { x: 0.2327, y: -0.0014 },
   },
   interestingPoints: [],
   fallbackPosition: {

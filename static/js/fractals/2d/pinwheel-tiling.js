@@ -210,8 +210,8 @@ export const config = {
     colorScheme: 'rainbow-shifted',
   },
   initialPosition: {
-    zoom: 1,
-    offset: { x: 2.46, y: 1.631 },
+    zoom: 0.637,
+    offset: { x: -2.2096, y: -1.3394 },
   },
   interestingPoints: [],
   fallbackPosition: {

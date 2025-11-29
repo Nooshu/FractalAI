@@ -218,8 +218,8 @@ export const config = {
     colorScheme: 'electric',
   },
   initialPosition: {
-    zoom: 2,
-    offset: { x: 1.4952, y: 1.059 },
+    zoom: 1.853,
+    offset: { x: 0.1162, y: 0.1193 },
   },
   interestingPoints: [],
   fallbackPosition: {
