@@ -52,6 +52,7 @@ function initCanvasAndRenderer(appState) {
     canvas: canvasElement,
     regl: reglContext,
     updateRendererSize: updateSize,
+    webglCapabilities,
   } = initCanvasRenderer('fractal-canvas', {
     getZoom: () => appState.getParams().zoom,
     onResize: () => {
@@ -65,6 +66,7 @@ function initCanvasAndRenderer(appState) {
   appState.setCanvas(canvasElement);
   appState.setRegl(reglContext);
   appState.setUpdateRendererSize(updateSize);
+  appState.setWebGLCapabilities(webglCapabilities);
 
   return { canvasElement, reglContext, updateSize };
 }

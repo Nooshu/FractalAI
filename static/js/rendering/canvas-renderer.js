@@ -6,6 +6,7 @@
 
 import createRegl from 'regl';
 import { updatePixelRatio } from './pixel-ratio.js';
+import { detectWebGLCapabilities, formatCapabilities } from './webgl-capabilities.js';
 
 /**
  * Initialize canvas and regl renderer
@@ -41,6 +42,8 @@ export function initCanvasRenderer(canvasId, options = {}) {
   canvas.style.display = 'block';
 
   // Initialize regl
+  // Note: regl automatically tries to get a WebGL2 context if available,
+  // and falls back to WebGL1 if WebGL2 is not supported
   const regl = createRegl({
     canvas,
     attributes: {
@@ -52,16 +55,25 @@ export function initCanvasRenderer(canvasId, options = {}) {
     },
   });
 
-  // Check for WebGL2 support (for future use)
+  // Detect and store WebGL capabilities
+  // regl automatically prefers WebGL2 if available, so we detect what we got
+  let webglCapabilities = null;
   try {
     const gl = regl._gl;
-    if (gl instanceof WebGL2RenderingContext) {
-      // WebGL2 available
-    } else {
-      // WebGL1 in use
+    if (gl) {
+      webglCapabilities = detectWebGLCapabilities(gl);
+
+      // Log capabilities in development mode
+      if (import.meta.env?.DEV) {
+        console.log(
+          `%c[WebGL Capabilities]%c\n${formatCapabilities(webglCapabilities)}`,
+          'color: #4CAF50; font-weight: bold;',
+          'color: inherit; font-family: monospace; font-size: 11px;'
+        );
+      }
     }
-  } catch {
-    // WebGL context check completed
+  } catch (error) {
+    console.warn('Failed to detect WebGL capabilities:', error);
   }
 
   // Function to update canvas size and pixel ratio
@@ -123,5 +135,6 @@ export function initCanvasRenderer(canvasId, options = {}) {
     regl,
     updateRendererSize,
     cleanup,
+    webglCapabilities, // Expose capabilities for use throughout the app
   };
 }

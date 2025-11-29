@@ -19,6 +19,7 @@ export class AppStateManager {
     this.regl = null;
     this.canvas = null;
     this.updateRendererSize = null;
+    this.webglCapabilities = null;
 
     // Fractal state
     this.currentFractalType = CONFIG.fractal.defaultType;
@@ -65,6 +66,9 @@ export class AppStateManager {
   }
   getUpdateRendererSize() {
     return this.updateRendererSize;
+  }
+  getWebGLCapabilities() {
+    return this.webglCapabilities;
   }
   getCurrentFractalType() {
     return this.currentFractalType;
@@ -162,6 +166,9 @@ export class AppStateManager {
   setUpdateRendererSize(value) {
     this.updateRendererSize = value;
   }
+  setWebGLCapabilities(value) {
+    this.webglCapabilities = value;
+  }
   setCurrentFractalType(value) {
     this.currentFractalType = value;
   }
@@ -200,6 +207,7 @@ export class AppStateManager {
   getGetters() {
     return {
       getRegl: () => this.getRegl(),
+      getWebGLCapabilities: () => this.getWebGLCapabilities(),
       getCanvas: () => this.getCanvas(),
       getUpdateRendererSize: () => this.getUpdateRendererSize(),
       getCurrentFractalType: () => this.getCurrentFractalType(),
