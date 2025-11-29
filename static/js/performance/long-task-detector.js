@@ -37,6 +37,14 @@ export class LongTaskDetector {
       return;
     }
 
+    // Check if 'longtask' entry type is supported before attempting to observe
+    // This prevents browser warnings about unsupported entry types
+    const supportedEntryTypes = PerformanceObserver.supportedEntryTypes;
+    if (!supportedEntryTypes || !supportedEntryTypes.includes('longtask')) {
+      // Silently fail - longtask detection is not critical and not supported in this browser
+      return;
+    }
+
     try {
       this.observer = new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) {
