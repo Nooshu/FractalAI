@@ -123,4 +123,6 @@ Requires a modern browser with WebGL support:
 
 ## License
 
-See LICENSE file for details.
+This work is licensed under a [Creative Commons Attribution 4.0 International License](https://creativecommons.org/licenses/by/4.0/).
+
+See LICENSE file for full legal text.
