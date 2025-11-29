@@ -6,25 +6,25 @@
 
 /**
  * Check if EXIF editor should be visible based on URL parameters
- * @returns {boolean} True if ?exif=true is in the URL
+ * @returns {boolean} True if ?exif=true or ?full=true is in the URL
  */
 function shouldShowExifEditor() {
   const urlParams = new URLSearchParams(window.location.search);
-  return urlParams.get('exif') === 'true';
+  return urlParams.get('exif') === 'true' || urlParams.get('full') === 'true';
 }
 
 /**
  * Check if debug panel should be visible based on URL parameters
- * @returns {boolean} True if ?debug=true is in the URL
+ * @returns {boolean} True if ?debug=true or ?full=true is in the URL
  */
 function shouldShowDebugPanel() {
   const urlParams = new URLSearchParams(window.location.search);
-  return urlParams.get('debug') === 'true';
+  return urlParams.get('debug') === 'true' || urlParams.get('full') === 'true';
 }
 
 /**
  * Setup EXIF editor visibility based on URL parameters
- * Hides the EXIF editor section if ?exif=true is not present in the URL
+ * Shows the EXIF editor section if ?exif=true or ?full=true is in the URL
  * @param {Object} lazyLoadCallbacks - Optional callbacks for lazy loading
  * @param {Function} lazyLoadCallbacks.getCurrentFractalType - Function to get current fractal type
  * @param {Function} lazyLoadCallbacks.getParams - Function to get current parameters
@@ -49,7 +49,7 @@ export function setupExifEditorVisibility(lazyLoadCallbacks = null) {
 
 /**
  * Setup debug panel visibility based on URL parameters
- * Hides the debug panel section if ?debug=true is not present in the URL
+ * Shows the debug panel section if ?debug=true or ?full=true is in the URL
  * @param {Object} lazyLoadCallbacks - Optional callbacks for lazy loading
  * @param {Function} lazyLoadCallbacks.getCurrentFractalType - Function to get current fractal type
  * @param {Function} lazyLoadCallbacks.getParams - Function to get current parameters

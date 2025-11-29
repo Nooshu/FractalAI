@@ -255,6 +255,20 @@ describe('panels module', () => {
       expect(exifSection.style.display).toBe('');
     });
 
+    it('shows EXIF editor when ?full=true is in URL', () => {
+      Object.defineProperty(window, 'location', {
+        value: { search: '?full=true' },
+        writable: true,
+      });
+
+      setupExifEditorVisibility();
+
+      const exifSection = document.querySelector('[data-section="exif-editor"]')?.parentElement;
+      expect(exifSection).toBeDefined();
+      expect(exifSection.classList.contains('exif-hidden')).toBe(false);
+      expect(exifSection.style.display).toBe('');
+    });
+
     it('hides EXIF editor when ?exif=true is not in URL', () => {
       Object.defineProperty(window, 'location', {
         value: { search: '' },
@@ -301,6 +315,20 @@ describe('panels module', () => {
 
       setupDebugPanelVisibility();
 
+      expect(debugSection.classList.contains('debug-hidden')).toBe(false);
+      expect(debugSection.style.display).toBe('');
+    });
+
+    it('shows debug panel when ?full=true is in URL', () => {
+      Object.defineProperty(window, 'location', {
+        value: { search: '?full=true' },
+        writable: true,
+      });
+
+      setupDebugPanelVisibility();
+
+      const debugSection = document.querySelector('[data-section="debug"]')?.parentElement;
+      expect(debugSection).toBeDefined();
       expect(debugSection.classList.contains('debug-hidden')).toBe(false);
       expect(debugSection.style.display).toBe('');
     });
@@ -372,6 +400,25 @@ describe('panels module', () => {
       // Verify debug visibility is set up
       const debugSection = document.querySelector('[data-section="debug"]').parentElement;
       expect(debugSection.classList.contains('debug-hidden')).toBe(true);
+    });
+
+    it('shows both EXIF editor and debug panel when ?full=true is in URL', () => {
+      Object.defineProperty(window, 'location', {
+        value: { search: '?full=true' },
+        writable: true,
+      });
+
+      initUILayout();
+
+      const exifSection = document.querySelector('[data-section="exif-editor"]')?.parentElement;
+      const debugSection = document.querySelector('[data-section="debug"]')?.parentElement;
+      
+      expect(exifSection).toBeDefined();
+      expect(debugSection).toBeDefined();
+      expect(exifSection.classList.contains('exif-hidden')).toBe(false);
+      expect(debugSection.classList.contains('debug-hidden')).toBe(false);
+      expect(exifSection.style.display).toBe('');
+      expect(debugSection.style.display).toBe('');
     });
 
     it('handles missing updateRendererSize callback', () => {
