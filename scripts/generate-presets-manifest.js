@@ -19,9 +19,9 @@ try {
   // Read all files in the presets directory
   const files = readdirSync(presetsDir);
 
-  // Filter for JPG files matching the pattern: [number]-[title]-[title].jpg
+  // Filter for JPG files matching the pattern: [number]-[title].jpg or [number]-[title]-[title].jpg
   const imageFiles = files.filter((file) => {
-    return file.match(/^\d{2}-[\w-]+-[\w-]+\.jpg$/i);
+    return file.match(/^\d{2}-[\w-]+\.jpg$/i);
   });
 
   // Sort by filename (which sorts by number prefix)
@@ -30,7 +30,6 @@ try {
   // Generate manifest
   const manifest = {
     images: imageFiles,
-    generated: new Date().toISOString(),
     count: imageFiles.length,
   };
 
