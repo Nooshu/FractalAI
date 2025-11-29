@@ -75,11 +75,13 @@ This project is configured for deployment on Cloudflare Pages using the v3 build
 #### Manual Deployment via Wrangler CLI
 
 1. Install Wrangler CLI (if not already installed):
+
    ```bash
    npm install -g wrangler
    ```
 
 2. Build the project:
+
    ```bash
    npm run build
    ```

@@ -103,8 +103,8 @@ function pixelToComplex(px, py, canvasWidth, canvasHeight, params) {
   const scale = 4.0 / params.zoom;
 
   // Center the coordinates
-  const centeredX = (px / canvasWidth) - 0.5;
-  const centeredY = (py / canvasHeight) - 0.5;
+  const centeredX = px / canvasWidth - 0.5;
+  const centeredY = py / canvasHeight - 0.5;
 
   return {
     x: centeredX * scale * aspect * (params.xScale || 1.0) + params.offset.x,
@@ -171,4 +171,3 @@ self.addEventListener('message', (event) => {
     // In a more complex implementation, we could track in-flight work
   }
 });
-

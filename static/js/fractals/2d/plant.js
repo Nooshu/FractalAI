@@ -14,39 +14,39 @@ let cachedVertexCount = 0;
  */
 function generatePlant(iterations, angle = 25, lengthRatio = 0.7) {
   const angleRad = (angle * Math.PI) / 180;
-  
+
   // Collect all vertices
   const vertexList = [];
-  
+
   // Recursive function to generate branches
   function generateBranch(x, y, angle, length, depth) {
     if (depth <= 0 || length < 0.01) return;
-    
+
     // Calculate end point of current branch
     const endX = x + Math.cos(angle) * length;
     const endY = y + Math.sin(angle) * length;
-    
+
     // Add vertices for this branch
     vertexList.push(x, y, endX, endY);
-    
+
     // Create branches
     const newLength = length * lengthRatio;
-    
+
     // Main branch continues
     generateBranch(endX, endY, angle, newLength, depth - 1);
-    
+
     // Left branch
     generateBranch(endX, endY, angle - angleRad, newLength, depth - 1);
-    
+
     // Right branch
     generateBranch(endX, endY, angle + angleRad, newLength, depth - 1);
   }
-  
+
   // Generate the plant starting from the base
   const initialLength = 0.8;
   const initialAngle = Math.PI / 2; // Pointing up
   generateBranch(0, -0.8, initialAngle, initialLength, iterations);
-  
+
   // Convert to Float32Array
   return new Float32Array(vertexList);
 }
@@ -58,7 +58,7 @@ export function render(regl, params, canvas) {
   const angle = params.xScale * 45;
   // Use yScale to control length ratio (0.5-0.9)
   const lengthRatio = 0.5 + params.yScale * 0.4;
-  
+
   const positions = generatePlant(iterations, angle, lengthRatio);
   const vertexCount = positions.length / 2;
 
@@ -339,4 +339,3 @@ export const config = {
     zoom: 1,
   },
 };
-

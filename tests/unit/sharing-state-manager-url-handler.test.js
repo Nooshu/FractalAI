@@ -172,5 +172,3 @@ describe('state-manager module', () => {
     expect(result).toBe(false);
   });
 });
-
-

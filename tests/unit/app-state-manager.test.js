@@ -75,5 +75,3 @@ describe('appState singleton (new AppStateManager)', () => {
     expect(appState).toBeInstanceOf(AppStateManager);
   });
 });
-
-

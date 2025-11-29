@@ -21,7 +21,8 @@ describe('calculatePixelRatio', () => {
 
   it('should use base pixel ratio for zoom 1', () => {
     const ratio = calculatePixelRatio(1.0);
-    const expectedRatio = CONFIG.canvas.basePixelRatio * Math.min(Math.sqrt(1.0), CONFIG.canvas.maxPixelRatio);
+    const expectedRatio =
+      CONFIG.canvas.basePixelRatio * Math.min(Math.sqrt(1.0), CONFIG.canvas.maxPixelRatio);
     expect(ratio).toBe(expectedRatio);
   });
 
@@ -35,7 +36,9 @@ describe('calculatePixelRatio', () => {
   it('should cap at maxPixelRatio', () => {
     window.devicePixelRatio = 1;
     const maxRatio = calculatePixelRatio(1e10); // Very high zoom
-    expect(maxRatio).toBeLessThanOrEqual(CONFIG.canvas.maxPixelRatio * CONFIG.canvas.basePixelRatio);
+    expect(maxRatio).toBeLessThanOrEqual(
+      CONFIG.canvas.maxPixelRatio * CONFIG.canvas.basePixelRatio
+    );
   });
 
   it('should use sqrt of zoom for scaling', () => {
@@ -66,7 +69,7 @@ describe('updatePixelRatio', () => {
         height: '',
       },
     };
-    
+
     Object.defineProperty(window, 'devicePixelRatio', {
       writable: true,
       configurable: true,
@@ -120,14 +123,13 @@ describe('updatePixelRatio', () => {
     updatePixelRatio(mockCanvas, 1.0);
     const width1 = mockCanvas.width;
     const height1 = mockCanvas.height;
-    
+
     updatePixelRatio(mockCanvas, 4.0);
     const width4 = mockCanvas.width;
     const height4 = mockCanvas.height;
-    
+
     // Higher zoom should result in higher pixel ratio, thus larger canvas
     expect(width4).toBeGreaterThan(width1);
     expect(height4).toBeGreaterThan(height1);
   });
 });
-

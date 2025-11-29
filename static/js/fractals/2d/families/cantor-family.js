@@ -13,11 +13,10 @@ import * as randomCantor from '../random-cantor.js';
 
 // Export as a mapping object for easy lookup
 export const fractals = {
-  'cantor': cantor,
+  cantor: cantor,
   'cantor-dust-base-expansion': cantorDustBaseExpansion,
   'cantor-dust-circular': cantorDustCircular,
   'fat-cantor': fatCantor,
   'smith-volterra-cantor': smithVolterraCantor,
   'random-cantor': randomCantor,
 };
-

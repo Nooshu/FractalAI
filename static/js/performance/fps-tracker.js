@@ -78,4 +78,3 @@ export function getFPS() {
 export function getFrameCount() {
   return frameCount;
 }
-

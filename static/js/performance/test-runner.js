@@ -161,4 +161,3 @@ export async function quickBenchmark(regl, canvas, loadFractal, setParams) {
   const runner = new TestRunner(regl, canvas, loadFractal, setParams);
   return runner.run('quick', { duration: 2000 });
 }
-

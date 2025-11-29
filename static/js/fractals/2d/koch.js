@@ -22,9 +22,12 @@ function generateKochSnowflake(iterations) {
 
   // Start with base triangle - using a flat array structure for better performance
   let vertices = [
-    0, h * TWO_THIRDS,       // Top point
-    -w, -h * ONE_THIRD,      // Bottom-left point
-    w, -h * ONE_THIRD,       // Bottom-right point
+    0,
+    h * TWO_THIRDS, // Top point
+    -w,
+    -h * ONE_THIRD, // Bottom-left point
+    w,
+    -h * ONE_THIRD, // Bottom-right point
   ];
   let vertexCount = 3;
 
@@ -38,7 +41,7 @@ function generateKochSnowflake(iterations) {
     for (let j = 0; j < vertexCount; j++) {
       const aIndex = j * 2;
       const bIndex = ((j + 1) % vertexCount) * 2;
-      
+
       const ax = vertices[aIndex];
       const ay = vertices[aIndex + 1];
       const bx = vertices[bIndex];
@@ -74,25 +77,27 @@ function generateKochSnowflake(iterations) {
   }
 
   // Calculate bounding box
-  let minX = Infinity, maxX = -Infinity;
-  let minY = Infinity, maxY = -Infinity;
+  let minX = Infinity,
+    maxX = -Infinity;
+  let minY = Infinity,
+    maxY = -Infinity;
   for (let i = 0; i < vertices.length; i += 2) {
     minX = Math.min(minX, vertices[i]);
     maxX = Math.max(maxX, vertices[i]);
     minY = Math.min(minY, vertices[i + 1]);
     maxY = Math.max(maxY, vertices[i + 1]);
   }
-  
+
   // Calculate center and size
   const centerX = (minX + maxX) / 2;
   const centerY = (minY + maxY) / 2;
   const width = maxX - minX;
   const height = maxY - minY;
-  
+
   // Use the maximum dimension to ensure the shape fits and maintains aspect ratio
   // The vertex shader will handle aspect ratio correction, so we scale uniformly
   const maxSize = Math.max(width, height);
-  
+
   // Scale to fit in a larger range and center at origin
   // Use a larger scale factor to make it clearly visible
   // Scale uniformly to preserve aspect ratio - the vertex shader handles aspect correction
@@ -102,7 +107,7 @@ function generateKochSnowflake(iterations) {
     scaledVertices[i] = (vertices[i] - centerX) * scale;
     scaledVertices[i + 1] = (vertices[i + 1] - centerY) * scale;
   }
-  
+
   return scaledVertices;
 }
 

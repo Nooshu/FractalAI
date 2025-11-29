@@ -127,5 +127,3 @@ describe('ui controls module', () => {
     document.getElementById = originalGetElementById;
   });
 });
-
-

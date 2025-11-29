@@ -11,7 +11,7 @@ const STATIC_ASSETS = [
   '/site.webmanifest',
   '/_routes.json',
   '/_headers',
-  '/_redirects'
+  '/_redirects',
 ];
 
 // Install event - cache static assets
@@ -67,7 +67,11 @@ self.addEventListener('fetch', (event) => {
 
   // Strategy 1: HTML files - Network first, fallback to cache
   // This ensures users always get the latest HTML
-  if (request.destination === 'document' || url.pathname === '/' || url.pathname.endsWith('.html')) {
+  if (
+    request.destination === 'document' ||
+    url.pathname === '/' ||
+    url.pathname.endsWith('.html')
+  ) {
     event.respondWith(
       fetch(request)
         .then((response) => {
@@ -99,24 +103,30 @@ self.addEventListener('fetch', (event) => {
   // Strategy 2: CSS and JavaScript - Cache first (Vite hashes filenames)
   // Since Vite already version-hashes these files (e.g., index-abc123.js),
   // we can cache aggressively. If the hash changes, it's a new file.
-  if (request.destination === 'script' || request.destination === 'style' || 
-      url.pathname.endsWith('.js') || url.pathname.endsWith('.css') ||
-      url.pathname.startsWith('/assets/')) {
+  if (
+    request.destination === 'script' ||
+    request.destination === 'style' ||
+    url.pathname.endsWith('.js') ||
+    url.pathname.endsWith('.css') ||
+    url.pathname.startsWith('/assets/')
+  ) {
     event.respondWith(
       caches.match(request).then((cachedResponse) => {
         if (cachedResponse) {
           // Return cached version immediately
           // Also fetch in background to update cache if needed (for same URL)
-          fetch(request).then((networkResponse) => {
-            if (networkResponse.ok && networkResponse.status === 200) {
-              const responseClone = networkResponse.clone();
-              caches.open(CACHE_NAME).then((cache) => {
-                cache.put(request, responseClone);
-              });
-            }
-          }).catch(() => {
-            // Network failed, that's okay - we have cache
-          });
+          fetch(request)
+            .then((networkResponse) => {
+              if (networkResponse.ok && networkResponse.status === 200) {
+                const responseClone = networkResponse.clone();
+                caches.open(CACHE_NAME).then((cache) => {
+                  cache.put(request, responseClone);
+                });
+              }
+            })
+            .catch(() => {
+              // Network failed, that's okay - we have cache
+            });
           return cachedResponse;
         }
         // Not in cache, fetch and cache
@@ -136,9 +146,11 @@ self.addEventListener('fetch', (event) => {
 
   // Strategy 3: Images and static assets - Cache first
   // These rarely change and are versioned by Vite
-  if (request.destination === 'image' || 
-      url.pathname.startsWith('/static/images/') ||
-      url.pathname.startsWith('/static/')) {
+  if (
+    request.destination === 'image' ||
+    url.pathname.startsWith('/static/images/') ||
+    url.pathname.startsWith('/static/')
+  ) {
     event.respondWith(
       caches.match(request).then((cachedResponse) => {
         if (cachedResponse) {
@@ -206,4 +218,3 @@ self.addEventListener('message', (event) => {
     event.ports[0].postMessage({ version: CACHE_VERSION });
   }
 });
-

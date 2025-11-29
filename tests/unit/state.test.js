@@ -46,7 +46,7 @@ describe('AppState', () => {
   it('should get and set fractal type', () => {
     state.setFractalType('julia');
     expect(state.getFractalType()).toBe('julia');
-    
+
     state.setFractalType('mandelbrot');
     expect(state.getFractalType()).toBe('mandelbrot');
   });
@@ -67,9 +67,9 @@ describe('AppState', () => {
   });
 
   it('should update nested params', () => {
-    state.updateParams({ 
+    state.updateParams({
       juliaC: { x: 0.5, y: 0.3 },
-      offset: { x: 1.0, y: 2.0 }
+      offset: { x: 1.0, y: 2.0 },
     });
     const params = state.getParams();
     expect(params.juliaC.x).toBe(0.5);
@@ -84,4 +84,3 @@ describe('appState singleton', () => {
     expect(appState).toBeInstanceOf(AppState);
   });
 });
-

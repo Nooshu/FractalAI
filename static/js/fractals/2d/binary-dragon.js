@@ -8,12 +8,12 @@ function generateBinaryDragon(iterations) {
   // Binary dragon grows exponentially: 2^iterations steps
   // Optimized: replace Math.pow(2, n) with bit shift for powers of 2
   const numSteps = 1 << iterations; // 2^iterations
-  
+
   // Starting position and direction
   let x = -0.5;
   let y = 0;
   let angle = 0; // Start facing right
-  
+
   // Calculate step size to fit the curve in view
   // Optimized: replace Math.pow with explicit calculation
   // Math.pow(Math.sqrt(2), iterations) = (sqrt(2))^iterations = 2^(iterations/2)
@@ -23,10 +23,10 @@ function generateBinaryDragon(iterations) {
     sqrt2Power *= sqrt2;
   }
   const stepLength = 1.0 / sqrt2Power;
-  
+
   const vertices = [];
   vertices.push(x, y);
-  
+
   // Generate the binary dragon curve
   for (let n = 0; n < numSteps; n++) {
     // Count the number of 1s in the binary representation of n
@@ -36,19 +36,19 @@ function generateBinaryDragon(iterations) {
       if (temp & 1) onesCount++;
       temp >>= 1;
     }
-    
+
     // Turn direction: if odd number of 1s, turn right (1), else turn left (-1)
-    const turn = (onesCount % 2 === 1) ? 1 : -1;
-    
+    const turn = onesCount % 2 === 1 ? 1 : -1;
+
     // Move forward
     x += Math.cos(angle) * stepLength;
     y += Math.sin(angle) * stepLength;
     vertices.push(x, y);
-    
+
     // Turn based on binary pattern
-    angle += turn * Math.PI / 2;
+    angle += (turn * Math.PI) / 2;
   }
-  
+
   return new Float32Array(vertices);
 }
 
@@ -113,7 +113,7 @@ export function render(regl, params, canvas) {
   // Map 0-200 iterations to 0-15 levels
   // Binary dragon grows as 2^n, so keep it reasonable
   const iterationLevel = Math.max(0, Math.min(15, Math.floor(params.iterations / 13)));
-  
+
   // Generate vertices for current iteration level
   const vertices = generateBinaryDragon(iterationLevel);
 
@@ -176,4 +176,3 @@ export const config = {
     zoom: 1,
   },
 };
-

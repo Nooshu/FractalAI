@@ -5,19 +5,19 @@ import { generatePaletteTexture } from '../utils.js';
 function generateTwindragon(iterations) {
   // Generate the dragon curve sequence
   let sequence = [1]; // 1 = right turn, -1 = left turn
-  
+
   for (let iter = 0; iter < iterations; iter++) {
     const newSequence = [...sequence];
     newSequence.push(1); // Add a right turn in the middle
-    
+
     // Append the reverse of the sequence with alternating signs
     for (let i = sequence.length - 1; i >= 0; i--) {
       newSequence.push(-sequence[i]);
     }
-    
+
     sequence = newSequence;
   }
-  
+
   // Optimized: replace Math.pow with explicit calculation
   const sqrt2 = 1.4142135623730951;
   let sqrt2Power = 1.0;
@@ -25,17 +25,17 @@ function generateTwindragon(iterations) {
     sqrt2Power *= sqrt2;
   }
   const stepLength = 1.0 / sqrt2Power;
-  
+
   // Generate first dragon (starting from origin, facing right)
   const dragon1 = generateDragonPath(sequence, 0, 0, 0, stepLength);
-  
+
   // Generate second dragon (starting from (stepLength, 0), facing up-left at 135°)
   // This is rotated 90 degrees and reflected to tile with the first dragon
-  const dragon2 = generateDragonPath(sequence, stepLength, 0, Math.PI * 3 / 4, stepLength);
-  
+  const dragon2 = generateDragonPath(sequence, stepLength, 0, (Math.PI * 3) / 4, stepLength);
+
   // Combine both dragons
   const allVertices = [...dragon1, ...dragon2];
-  
+
   return new Float32Array(allVertices);
 }
 
@@ -43,21 +43,21 @@ function generateDragonPath(sequence, startX, startY, startAngle, stepLength) {
   let x = startX;
   let y = startY;
   let angle = startAngle;
-  
+
   const vertices = [];
   vertices.push(x, y);
-  
+
   // Draw each segment
   for (let i = 0; i < sequence.length; i++) {
     // Move forward
     x += Math.cos(angle) * stepLength;
     y += Math.sin(angle) * stepLength;
     vertices.push(x, y);
-    
+
     // Turn based on the sequence value
-    angle += sequence[i] * Math.PI / 2;
+    angle += (sequence[i] * Math.PI) / 2;
   }
-  
+
   return vertices;
 }
 
@@ -120,7 +120,7 @@ export function render(regl, params, canvas) {
 
   // Calculate iteration level based on params.iterations
   const iterationLevel = Math.max(0, Math.min(15, Math.floor(params.iterations / 13)));
-  
+
   // Generate vertices for current iteration level
   const vertices = generateTwindragon(iterationLevel);
 
@@ -183,4 +183,3 @@ export const config = {
     zoom: 1,
   },
 };
-

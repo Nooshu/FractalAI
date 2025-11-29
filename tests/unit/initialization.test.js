@@ -6,5 +6,3 @@ describe('initialization module', () => {
     expect(initialization.init).toBeTypeOf('function');
   });
 });
-
-

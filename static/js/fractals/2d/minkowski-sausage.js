@@ -8,33 +8,33 @@ function generateMinkowskiSausage(iterations) {
     [0.5, -0.5],
     [0.5, 0.5],
     [-0.5, 0.5],
-    [-0.5, -0.5] // Close the square
+    [-0.5, -0.5], // Close the square
   ];
 
   // Apply Minkowski transformation for each iteration
   for (let iter = 0; iter < iterations; iter++) {
     const newVertices = [];
-    
+
     for (let i = 0; i < vertices.length - 1; i++) {
       const p1 = vertices[i];
       const p2 = vertices[i + 1];
-      
+
       // Calculate direction and perpendicular vectors
       const dx = p2[0] - p1[0];
       const dy = p2[1] - p1[1];
       const len = Math.sqrt(dx * dx + dy * dy);
-      
+
       // Normalized direction
       const ux = dx / len;
       const uy = dy / len;
-      
+
       // Perpendicular (rotate 90 degrees counterclockwise for outward bump)
       const px = -uy;
       const py = ux;
-      
+
       // Divide segment into 4 parts
       const segmentLen = len / 4;
-      
+
       // Minkowski sausage: creates a rectangular protrusion
       // Pattern: 1/4 forward, 1/4 out, 1/2 forward, 1/4 in, 1/4 forward
       const points = [
@@ -44,19 +44,22 @@ function generateMinkowskiSausage(iterations) {
         // Turn out and go 1/4 perpendicular
         [p1[0] + ux * segmentLen + px * segmentLen, p1[1] + uy * segmentLen + py * segmentLen],
         // Go 1/2 forward (2 segments)
-        [p1[0] + ux * 3 * segmentLen + px * segmentLen, p1[1] + uy * 3 * segmentLen + py * segmentLen],
+        [
+          p1[0] + ux * 3 * segmentLen + px * segmentLen,
+          p1[1] + uy * 3 * segmentLen + py * segmentLen,
+        ],
         // Turn in and go 1/4 perpendicular back
         [p1[0] + ux * 3 * segmentLen, p1[1] + uy * 3 * segmentLen],
         // Go final 1/4 forward to reach p2
-        p2
+        p2,
       ];
-      
+
       // Add all points except the last (it will be the first point of the next segment)
       for (let j = 0; j < points.length - 1; j++) {
         newVertices.push(points[j]);
       }
     }
-    
+
     // Close the curve by adding the first point
     newVertices.push(newVertices[0]);
     vertices = newVertices;
@@ -130,7 +133,7 @@ export function render(regl, params, canvas) {
   // Calculate iteration level based on params.iterations
   // Map 0-200 iterations to 0-6 levels
   const iterationLevel = Math.max(0, Math.min(6, Math.floor(params.iterations / 30)));
-  
+
   // Generate vertices for current iteration level
   const vertices = generateMinkowskiSausage(iterationLevel);
 
@@ -194,4 +197,3 @@ export const config = {
     zoom: 1,
   },
 };
-

@@ -15,13 +15,12 @@ import * as nebulabrot from '../nebulabrot.js';
 
 // Export as a mapping object for easy lookup
 export const fractals = {
-  'mandelbrot': mandelbrot,
+  mandelbrot: mandelbrot,
   'celtic-mandelbrot': celticMandelbrot,
-  'multibrot': multibrot,
+  multibrot: multibrot,
   'mutant-mandelbrot': mutantMandelbrot,
   'phoenix-mandelbrot': phoenixMandelbrot,
   'burning-ship': burningShip,
-  'tricorn': tricorn,
-  'nebulabrot': nebulabrot,
+  tricorn: tricorn,
+  nebulabrot: nebulabrot,
 };
-

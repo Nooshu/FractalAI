@@ -19,6 +19,7 @@ This document outlines comprehensive WebGL optimizations to achieve maximum rend
 ## Current State Analysis
 
 ### Current Implementation
+
 - Using **regl** library (WebGL1/WebGL2 abstraction)
 - WebGL2 detection exists but not fully utilized
 - Fragment shaders use `mediump` precision
@@ -28,6 +29,7 @@ This document outlines comprehensive WebGL optimizations to achieve maximum rend
 - Frame caching with framebuffers
 
 ### Performance Bottlenecks Identified
+
 1. Not leveraging WebGL2-specific features
 2. Limited use of WebGL extensions
 3. Shader precision could be optimized per platform
@@ -68,6 +70,7 @@ const isWebGL2 = gl instanceof WebGL2RenderingContext;
 ```
 
 **Benefits**:
+
 - Access to WebGL2-only features (UBOs, multiple render targets, etc.)
 - Better performance on modern GPUs
 - More efficient texture formats
@@ -98,6 +101,7 @@ layout(std140) uniform FractalParams {
 ```
 
 **Benefits**:
+
 - Single uniform update for all parameters
 - Better GPU cache utilization
 - Reduced draw call overhead
@@ -121,6 +125,7 @@ const mrtFramebuffer = regl.framebuffer({
 ```
 
 **Benefits**:
+
 - Single pass for multiple outputs
 - Enables advanced post-processing
 - Better for deferred rendering techniques
@@ -149,6 +154,7 @@ vec3 color = texture(uPaletteArray, vec3(t, 0.5, uPaletteIndex)).rgb;
 ```
 
 **Benefits**:
+
 - Single texture bind for all palettes
 - Faster palette switching
 - Reduced texture state changes
@@ -174,6 +180,7 @@ uint iterations = texture(uIterationTexture, uv).r;
 ```
 
 **Benefits**:
+
 - Exact iteration counts (no precision loss)
 - Better for high iteration counts
 - Enables integer-based optimizations
@@ -195,6 +202,7 @@ precision lowp sampler2D; // For texture lookups
 ```
 
 **Benefits**:
+
 - Better precision for deep zooms
 - Faster color calculations
 - Platform-specific optimization
@@ -211,7 +219,7 @@ const float ESCAPE_RADIUS_SQ_EARLY = 2.0; // Early exit threshold
 
 float computeFractal(vec2 c) {
     vec2 z = c;
-    
+
     // Very early exit check (most pixels escape quickly)
     for (int i = 0; i < 4; i++) {
         z = vec2(z.x * z.x - z.y * z.y, 2.0 * z.x * z.y) + c;
@@ -221,13 +229,14 @@ float computeFractal(vec2 c) {
             return float(i) + 1.0;
         }
     }
-    
+
     // Continue with full precision for remaining iterations
     // ...
 }
 ```
 
 **Benefits**:
+
 - Faster rendering for most pixels
 - Better GPU branch prediction
 - Reduced computation for escaped points
@@ -249,6 +258,7 @@ float computeFractal(vec2 c) {
 ```
 
 **Benefits**:
+
 - Better instruction-level parallelism
 - Reduced loop overhead
 - Platform-specific optimization
@@ -268,6 +278,7 @@ z.y = fma(2.0 * z.x, z.y, c.y);
 ```
 
 **Benefits**:
+
 - Single instruction for multiply-add
 - Better precision
 - Faster execution on modern GPUs
@@ -284,6 +295,7 @@ vec2 z_squared = vec2(z2.x - z2.y, 2.0 * z.x * z.y); // Optimized form
 ```
 
 **Benefits**:
+
 - Better SIMD utilization
 - Fewer instructions
 - Improved throughput
@@ -315,6 +327,7 @@ void main() {
 ```
 
 **Benefits**:
+
 - No branching overhead
 - Better GPU optimization
 - Faster fractal type switching
@@ -346,6 +359,7 @@ const paletteTexture = regl.texture({
 ```
 
 **Benefits**:
+
 - Reduced memory bandwidth
 - Faster texture uploads
 - Lower memory usage
@@ -367,6 +381,7 @@ const paletteTexture = regl.texture({
 ```
 
 **Benefits**:
+
 - Better memory allocation
 - Faster texture creation
 - More efficient GPU usage
@@ -387,6 +402,7 @@ const paletteTexture = regl.texture({
 ```
 
 **Benefits**:
+
 - Faster texture lookups
 - No interpolation overhead for 1D textures
 - Better cache performance
@@ -410,6 +426,7 @@ const paletteView = gl.createTextureView?.(paletteTexture, {
 ```
 
 **Benefits**:
+
 - Shared texture memory
 - Faster palette switching
 - Reduced memory usage
@@ -425,12 +442,7 @@ const paletteView = gl.createTextureView?.(paletteTexture, {
 
 ```javascript
 // Create persistent vertex buffer
-const quadBuffer = regl.buffer([
-  -1, -1,
-   1, -1,
-  -1,  1,
-   1,  1,
-]);
+const quadBuffer = regl.buffer([-1, -1, 1, -1, -1, 1, 1, 1]);
 
 // Reuse for all fractals
 const drawFractal = regl({
@@ -442,6 +454,7 @@ const drawFractal = regl({
 ```
 
 **Benefits**:
+
 - Reduced memory allocations
 - Better GPU cache usage
 - Faster attribute setup
@@ -453,16 +466,14 @@ const drawFractal = regl({
 
 ```javascript
 // Index buffer for quad
-const indexBuffer = regl.elements([
-  0, 1, 2,
-  1, 3, 2,
-]);
+const indexBuffer = regl.elements([0, 1, 2, 1, 3, 2]);
 
 // Instanced rendering for multiple views
 const drawMultiple = regl({
   attributes: {
     position: quadBuffer,
-    instanceOffset: { // Per-instance data
+    instanceOffset: {
+      // Per-instance data
       buffer: instanceBuffer,
       divisor: 1,
     },
@@ -473,6 +484,7 @@ const drawMultiple = regl({
 ```
 
 **Benefits**:
+
 - Single draw call for multiple views
 - Better GPU utilization
 - Reduced CPU overhead
@@ -491,6 +503,7 @@ const dynamicBuffer = regl.buffer({
 ```
 
 **Benefits**:
+
 - Better performance for frequently updated data
 - Optimized GPU memory usage
 - Reduced stalling
@@ -509,6 +522,7 @@ buffer.subdata({
 ```
 
 **Benefits**:
+
 - Faster updates
 - Reduced memory bandwidth
 - Better for incremental changes
@@ -536,6 +550,7 @@ if (ext) {
 ```
 
 **Benefits**:
+
 - 2x memory savings
 - Faster rendering
 - Sufficient precision for most fractals
@@ -555,6 +570,7 @@ if (ext) {
 ```
 
 **Benefits**:
+
 - Better quality with half-float
 - Smoother gradients
 - Maintains performance benefits
@@ -577,6 +593,7 @@ if (ext) {
 ```
 
 **Benefits**:
+
 - Multiple outputs on WebGL1
 - Better compatibility
 - Enables advanced effects
@@ -597,6 +614,7 @@ const timerExt = timerQuery2 || timerQuery1;
 ```
 
 **Benefits**:
+
 - Accurate GPU timing
 - Better performance profiling
 - Platform-wide support
@@ -625,6 +643,7 @@ canvas.addEventListener('webglcontextrestored', () => {
 ```
 
 **Benefits**:
+
 - Better error handling
 - Graceful degradation
 - Improved user experience
@@ -643,6 +662,7 @@ if (ext) {
 ```
 
 **Benefits**:
+
 - Advanced shader features
 - Adaptive quality based on screen-space derivatives
 - Better edge detection
@@ -661,6 +681,7 @@ if (ext) {
 ```
 
 **Benefits**:
+
 - Explicit mipmap selection
 - Better quality control
 - Reduced texture fetches
@@ -682,7 +703,7 @@ if (supportsWebGPU && CONFIG.features.webgpu) {
   // Initialize WebGPU renderer
   const adapter = await navigator.gpu.requestAdapter();
   const device = await adapter.requestDevice();
-  
+
   // WebGPU compute shaders for fractal computation
   const computeShader = device.createComputePipeline({
     compute: {
@@ -698,11 +719,13 @@ if (supportsWebGPU && CONFIG.features.webgpu) {
 ```
 
 **Benefits**:
+
 - Compute shaders for parallel iteration
 - Better performance on modern GPUs
 - More efficient memory access
 
 **Feature Flag**:
+
 ```javascript
 CONFIG.features = {
   webgpu: false, // Enable when stable
@@ -727,6 +750,7 @@ if (computeExt && CONFIG.features.computeShaders) {
 ```
 
 **Benefits**:
+
 - Parallel pixel computation
 - Better GPU utilization
 - Faster rendering for complex fractals
@@ -741,18 +765,20 @@ if (typeof SharedArrayBuffer !== 'undefined' && CONFIG.features.sharedArrayBuffe
   // Use SharedArrayBuffer for worker communication
   const sharedBuffer = new SharedArrayBuffer(width * height * 4);
   const view = new Uint8Array(sharedBuffer);
-  
+
   // Workers can write directly to shared memory
   worker.postMessage({ buffer: sharedBuffer });
 }
 ```
 
 **Benefits**:
+
 - Zero-copy worker communication
 - Faster multi-threaded rendering
 - Better CPU utilization
 
 **Requirements**:
+
 - COOP: `Cross-Origin-Opener-Policy: same-origin`
 - COEP: `Cross-Origin-Embedder-Policy: require-corp`
 
@@ -765,10 +791,10 @@ if (typeof SharedArrayBuffer !== 'undefined' && CONFIG.features.sharedArrayBuffe
 if (typeof OffscreenCanvas !== 'undefined' && CONFIG.features.offscreenCanvas) {
   const offscreen = new OffscreenCanvas(width, height);
   const gl = offscreen.getContext('webgl2');
-  
+
   // Render offscreen
   renderFractal(gl, params);
-  
+
   // Transfer to main thread
   const imageBitmap = offscreen.transferToImageBitmap();
   ctx.transferFromImageBitmap(imageBitmap);
@@ -776,6 +802,7 @@ if (typeof OffscreenCanvas !== 'undefined' && CONFIG.features.offscreenCanvas) {
 ```
 
 **Benefits**:
+
 - Non-blocking rendering
 - Better frame timing
 - Smoother animations
@@ -793,13 +820,14 @@ if ('VideoEncoder' in window && CONFIG.features.webCodecs) {
     },
     error: (e) => console.error(e),
   });
-  
+
   // Encode canvas frames
   encoder.encode(frame);
 }
 ```
 
 **Benefits**:
+
 - Hardware-accelerated video encoding
 - Faster video export
 - Better quality
@@ -818,6 +846,7 @@ if (WebAssembly.validate(simdModule) && CONFIG.features.wasmSimd) {
 ```
 
 **Benefits**:
+
 - SIMD-accelerated CPU rendering
 - Better fallback performance
 - Cross-platform optimization
@@ -849,6 +878,7 @@ if (!visible) {
 ```
 
 **Benefits**:
+
 - Skip invisible tiles
 - Faster rendering for zoomed views
 - Better performance for large canvases
@@ -877,6 +907,7 @@ function adaptiveQuality(frameTime) {
 ```
 
 **Benefits**:
+
 - Maintains target framerate
 - Better user experience
 - Optimal quality/performance balance
@@ -891,12 +922,13 @@ function adaptiveQuality(frameTime) {
 const predictedViews = predictNextViews(currentView, userInput);
 
 // Pre-render in background
-predictedViews.forEach(view => {
+predictedViews.forEach((view) => {
   renderToCache(view);
 });
 ```
 
 **Benefits**:
+
 - Instant view changes
 - Smoother navigation
 - Better perceived performance
@@ -919,6 +951,7 @@ requestIdleCallback(() => {
 ```
 
 **Benefits**:
+
 - Fast initial display
 - Progressive quality improvement
 - Better perceived performance
@@ -931,15 +964,14 @@ requestIdleCallback(() => {
 ```javascript
 // WebGL2 indirect drawing
 const indirectBuffer = regl.buffer({
-  data: new Uint32Array([
-    vertexCount, instanceCount, firstVertex, baseInstance,
-  ]),
+  data: new Uint32Array([vertexCount, instanceCount, firstVertex, baseInstance]),
 });
 
 gl.drawArraysIndirect(gl.TRIANGLES, indirectBuffer);
 ```
 
 **Benefits**:
+
 - Reduced CPU overhead
 - Better GPU utilization
 - Scalable rendering
@@ -949,6 +981,7 @@ gl.drawArraysIndirect(gl.TRIANGLES, indirectBuffer);
 ## Implementation Priority
 
 ### Phase 1: High Impact, Low Risk (Immediate)
+
 1. ✅ Enable WebGL2 explicitly
 2. ✅ Use uniform buffer objects (UBOs)
 3. ✅ Optimize shader precision
@@ -957,6 +990,7 @@ gl.drawArraysIndirect(gl.TRIANGLES, indirectBuffer);
 6. ✅ Optimize texture filtering
 
 ### Phase 2: Medium Impact, Medium Risk (Short-term)
+
 1. ✅ Implement multiple render targets
 2. ✅ Add occlusion query support
 3. ✅ Optimize buffer usage
@@ -964,12 +998,14 @@ gl.drawArraysIndirect(gl.TRIANGLES, indirectBuffer);
 5. ✅ Implement adaptive quality
 
 ### Phase 3: High Impact, Higher Risk (Medium-term)
+
 1. ✅ WebGPU support (behind flag)
 2. ✅ Compute shader support (behind flag)
 3. ✅ SharedArrayBuffer integration (behind flag)
 4. ✅ OffscreenCanvas optimization (behind flag)
 
 ### Phase 4: Advanced Features (Long-term)
+
 1. ✅ Predictive rendering
 2. ✅ Multi-resolution rendering
 3. ✅ GPU-driven rendering
@@ -988,12 +1024,12 @@ export const CONFIG = {
     uniformBuffers: true,
     textureArrays: true,
     multipleRenderTargets: false, // Enable when needed
-    
+
     // Extensions
     compressedTextures: true,
     halfFloat: true,
     timerQuery: true,
-    
+
     // Future features (behind flags)
     webgpu: false,
     computeShaders: false,
@@ -1001,14 +1037,14 @@ export const CONFIG = {
     offscreenCanvas: true,
     webCodecs: false,
     wasmSimd: false,
-    
+
     // Advanced rendering
     occlusionQueries: true,
     adaptiveQuality: true,
     predictiveRendering: false,
     multiResolution: true,
   },
-  
+
   // Performance targets
   performance: {
     targetFPS: 60,
@@ -1023,6 +1059,7 @@ export const CONFIG = {
 ## Testing and Validation
 
 ### Performance Metrics
+
 - Frame time (CPU and GPU)
 - Draw call count
 - Texture memory usage
@@ -1031,12 +1068,14 @@ export const CONFIG = {
 - Frame cache hit rate
 
 ### Browser Compatibility
+
 - Chrome/Edge (Chromium)
 - Firefox
 - Safari (WebKit)
 - Mobile browsers
 
 ### Feature Detection
+
 ```javascript
 function detectWebGLCapabilities(gl) {
   return {
@@ -1060,4 +1099,3 @@ function detectWebGLCapabilities(gl) {
 This comprehensive optimization plan provides a roadmap for maximizing WebGL rendering performance for fractal visualization. By implementing these optimizations in phases, you can achieve significant performance improvements while maintaining compatibility and stability.
 
 The feature flag system allows for safe experimentation with cutting-edge features while ensuring a stable experience for all users. As browser support improves, features can be gradually enabled for wider audiences.
-

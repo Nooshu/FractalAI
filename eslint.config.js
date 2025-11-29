@@ -69,7 +69,14 @@ export default [
   },
   {
     // Node.js environment for test files and config files
-    files: ['**/*.test.js', '**/playwright.config.js', '**/vite.config.js', '**/vitest.config.js', 'tests/**/*.js', 'scripts/**/*.js'],
+    files: [
+      '**/*.test.js',
+      '**/playwright.config.js',
+      '**/vite.config.js',
+      '**/vitest.config.js',
+      'tests/**/*.js',
+      'scripts/**/*.js',
+    ],
     languageOptions: {
       globals: {
         process: 'readonly',

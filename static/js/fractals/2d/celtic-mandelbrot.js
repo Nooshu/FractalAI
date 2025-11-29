@@ -130,4 +130,3 @@ export const config = {
     zoom: 1,
   },
 };
-

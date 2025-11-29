@@ -50,12 +50,8 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
     getCanvas,
   } = getters;
 
-  const {
-    setCurrentFractalType,
-    setDrawFractal,
-    setCachedDrawCommand,
-    setIsDisplayingCached,
-  } = setters;
+  const { setCurrentFractalType, setDrawFractal, setCachedDrawCommand, setIsDisplayingCached } =
+    setters;
 
   const { frameCache, fractalLoader } = dependencies;
 
@@ -108,17 +104,17 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
   // Multiple control changes within the same frame are batched into a single render
   let renderTimeoutId = null;
   let pendingRender = false;
-  
+
   const triggerAutoRender = () => {
     if (autoRenderEnabled) {
       // Mark that we have pending changes
       pendingRender = true;
-      
+
       // Cancel any pending render
       if (renderTimeoutId !== null) {
         cancelAnimationFrame(renderTimeoutId);
       }
-      
+
       // Schedule render for next animation frame (~16ms at 60fps)
       // This batches multiple rapid control changes into a single render
       renderTimeoutId = requestAnimationFrame(() => {
@@ -165,34 +161,34 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
     // Helper function to format scheme names for display
     const formatSchemeName = (scheme) => {
       const nameMap = {
-        'classic': 'Classic',
-        'fire': 'Fire',
-        'ocean': 'Ocean',
-        'rainbow': 'Rainbow',
+        classic: 'Classic',
+        fire: 'Fire',
+        ocean: 'Ocean',
+        rainbow: 'Rainbow',
         'rainbow-pastel': 'Rainbow Pastel',
         'rainbow-dark': 'Rainbow Dark',
         'rainbow-vibrant': 'Rainbow Vibrant',
         'rainbow-double': 'Rainbow Double',
         'rainbow-shifted': 'Rainbow Shifted',
-        'monochrome': 'Monochrome',
-        'forest': 'Forest',
-        'sunset': 'Sunset',
-        'purple': 'Purple',
-        'cyan': 'Cyan',
-        'gold': 'Gold',
-        'ice': 'Ice',
-        'neon': 'Neon',
-        'cosmic': 'Cosmic',
-        'aurora': 'Aurora',
-        'coral': 'Coral',
-        'autumn': 'Autumn',
-        'midnight': 'Midnight',
-        'emerald': 'Emerald',
-        'rosegold': 'Rose Gold',
-        'electric': 'Electric',
-        'vintage': 'Vintage',
-        'tropical': 'Tropical',
-        'galaxy': 'Galaxy',
+        monochrome: 'Monochrome',
+        forest: 'Forest',
+        sunset: 'Sunset',
+        purple: 'Purple',
+        cyan: 'Cyan',
+        gold: 'Gold',
+        ice: 'Ice',
+        neon: 'Neon',
+        cosmic: 'Cosmic',
+        aurora: 'Aurora',
+        coral: 'Coral',
+        autumn: 'Autumn',
+        midnight: 'Midnight',
+        emerald: 'Emerald',
+        rosegold: 'Rose Gold',
+        electric: 'Electric',
+        vintage: 'Vintage',
+        tropical: 'Tropical',
+        galaxy: 'Galaxy',
       };
       return nameMap[scheme] || scheme.charAt(0).toUpperCase() + scheme.slice(1);
     };
@@ -252,10 +248,10 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
 
   fractalTypeSelect.addEventListener('change', async (e) => {
     const newFractalType = e.target.value;
-    
+
     // Start new lifecycle session
     lifecycleManager.startSession('fractal-change', newFractalType);
-    
+
     setCurrentFractalType(newFractalType);
     updateWikipediaLink();
     updateCoordinateDisplay();
@@ -339,7 +335,9 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
         iterationsExplicitlySet = true;
         if (iterationsSlider) iterationsSlider.value = settings.iterations;
         if (iterationsValue) iterationsValue.textContent = settings.iterations.toString();
-        const fullscreenIterationsNumberEl = document.getElementById('fullscreen-iterations-number');
+        const fullscreenIterationsNumberEl = document.getElementById(
+          'fullscreen-iterations-number'
+        );
         if (fullscreenIterationsNumberEl) {
           fullscreenIterationsNumberEl.textContent = settings.iterations.toString();
         }
@@ -376,7 +374,14 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
         params.xScale = settings.xScale;
         if (xScaleSlider) {
           xScaleSlider.value = settings.xScale;
-          updateSliderAccessibility(xScaleSlider, xScaleValue, xScaleAnnounce, settings.xScale, 'X Axis', false);
+          updateSliderAccessibility(
+            xScaleSlider,
+            xScaleValue,
+            xScaleAnnounce,
+            settings.xScale,
+            'X Axis',
+            false
+          );
         }
         if (xScaleValue) xScaleValue.textContent = settings.xScale.toString();
       }
@@ -386,7 +391,14 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
         params.yScale = settings.yScale;
         if (yScaleSlider) {
           yScaleSlider.value = settings.yScale;
-          updateSliderAccessibility(yScaleSlider, yScaleValue, yScaleAnnounce, settings.yScale, 'Y Axis', false);
+          updateSliderAccessibility(
+            yScaleSlider,
+            yScaleValue,
+            yScaleAnnounce,
+            settings.yScale,
+            'Y Axis',
+            false
+          );
         }
         if (yScaleValue) yScaleValue.textContent = settings.yScale.toString();
       }
@@ -625,7 +637,14 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
   const yScaleAnnounce = document.getElementById('y-scale-announce');
 
   // Function to update slider accessibility and announce value
-  function updateSliderAccessibility(slider, valueElement, announceElement, value, label, announce = true) {
+  function updateSliderAccessibility(
+    slider,
+    valueElement,
+    announceElement,
+    value,
+    label,
+    announce = true
+  ) {
     const formattedValue = value.toFixed(1);
     valueElement.textContent = formattedValue;
     if (slider) {
@@ -764,13 +783,27 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
         params.xScale = settings.xScale;
         if (xScaleSlider) {
           xScaleSlider.value = settings.xScale;
-          updateSliderAccessibility(xScaleSlider, xScaleValue, xScaleAnnounce, settings.xScale, 'X Axis', false);
+          updateSliderAccessibility(
+            xScaleSlider,
+            xScaleValue,
+            xScaleAnnounce,
+            settings.xScale,
+            'X Axis',
+            false
+          );
         }
       } else {
         params.xScale = 1.0;
         if (xScaleSlider) {
           xScaleSlider.value = 1.0;
-          updateSliderAccessibility(xScaleSlider, xScaleValue, xScaleAnnounce, 1.0, 'X Axis', false);
+          updateSliderAccessibility(
+            xScaleSlider,
+            xScaleValue,
+            xScaleAnnounce,
+            1.0,
+            'X Axis',
+            false
+          );
         }
       }
 
@@ -779,13 +812,27 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
         params.yScale = settings.yScale;
         if (yScaleSlider) {
           yScaleSlider.value = settings.yScale;
-          updateSliderAccessibility(yScaleSlider, yScaleValue, yScaleAnnounce, settings.yScale, 'Y Axis', false);
+          updateSliderAccessibility(
+            yScaleSlider,
+            yScaleValue,
+            yScaleAnnounce,
+            settings.yScale,
+            'Y Axis',
+            false
+          );
         }
       } else {
         params.yScale = 1.0;
         if (yScaleSlider) {
           yScaleSlider.value = 1.0;
-          updateSliderAccessibility(yScaleSlider, yScaleValue, yScaleAnnounce, 1.0, 'Y Axis', false);
+          updateSliderAccessibility(
+            yScaleSlider,
+            yScaleValue,
+            yScaleAnnounce,
+            1.0,
+            'Y Axis',
+            false
+          );
         }
       }
 
@@ -804,7 +851,9 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
         params.iterations = settings.iterations;
         if (iterationsSlider) iterationsSlider.value = settings.iterations;
         if (iterationsValue) iterationsValue.textContent = settings.iterations.toString();
-        const fullscreenIterationsNumberEl = document.getElementById('fullscreen-iterations-number');
+        const fullscreenIterationsNumberEl = document.getElementById(
+          'fullscreen-iterations-number'
+        );
         if (fullscreenIterationsNumberEl) {
           fullscreenIterationsNumberEl.textContent = settings.iterations.toString();
         }
@@ -956,13 +1005,47 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
     const params = getParams();
     const canvas = getCanvas();
     // For geometric fractals and chaotic maps, they're generally always interesting
-    if (fractalType === 'sierpinski' || fractalType === 'sierpinski-arrowhead' || fractalType === 'sierpinski-carpet' || fractalType === 'sierpinski-pentagon' || fractalType === 'sierpinski-hexagon' || fractalType === 'sierpinski-gasket' || fractalType === 'koch' || fractalType === 'quadratic-koch' || fractalType === 'minkowski-sausage' || fractalType === 'cesaro' || fractalType === 'vicsek' || fractalType === 'cross' || fractalType === 'box-variants' || fractalType === 'h-tree' || fractalType === 'h-tree-generalized' || fractalType === 'heighway-dragon' || fractalType === 'hilbert-curve' || fractalType === 'twindragon' || fractalType === 'terdragon' || fractalType === 'binary-dragon' || fractalType === 'folded-paper-dragon' || fractalType === 'peano-curve' || fractalType === 'popcorn' || fractalType === 'rose' || fractalType === 'mutant-mandelbrot' || fractalType === 'cantor' || fractalType === 'fat-cantor' || fractalType === 'smith-volterra-cantor' || fractalType === 'random-cantor') {
+    if (
+      fractalType === 'sierpinski' ||
+      fractalType === 'sierpinski-arrowhead' ||
+      fractalType === 'sierpinski-carpet' ||
+      fractalType === 'sierpinski-pentagon' ||
+      fractalType === 'sierpinski-hexagon' ||
+      fractalType === 'sierpinski-gasket' ||
+      fractalType === 'koch' ||
+      fractalType === 'quadratic-koch' ||
+      fractalType === 'minkowski-sausage' ||
+      fractalType === 'cesaro' ||
+      fractalType === 'vicsek' ||
+      fractalType === 'cross' ||
+      fractalType === 'box-variants' ||
+      fractalType === 'h-tree' ||
+      fractalType === 'h-tree-generalized' ||
+      fractalType === 'heighway-dragon' ||
+      fractalType === 'hilbert-curve' ||
+      fractalType === 'twindragon' ||
+      fractalType === 'terdragon' ||
+      fractalType === 'binary-dragon' ||
+      fractalType === 'folded-paper-dragon' ||
+      fractalType === 'peano-curve' ||
+      fractalType === 'popcorn' ||
+      fractalType === 'rose' ||
+      fractalType === 'mutant-mandelbrot' ||
+      fractalType === 'cantor' ||
+      fractalType === 'fat-cantor' ||
+      fractalType === 'smith-volterra-cantor' ||
+      fractalType === 'random-cantor'
+    ) {
       return true;
     }
 
     // For Burning Ship, Buffalo, and Multibrot, use similar validation to Mandelbrot
     // (they're escape-time fractals with similar characteristics)
-    if (fractalType === 'burning-ship' || fractalType === 'buffalo' || fractalType === 'multibrot') {
+    if (
+      fractalType === 'burning-ship' ||
+      fractalType === 'buffalo' ||
+      fractalType === 'multibrot'
+    ) {
       fractalType = 'mandelbrot'; // Use same validation logic
     }
 
@@ -1050,20 +1133,21 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
       if (fractalType === 'sierpinski-gasket') {
         // Generalised Sierpinski Gasket - randomly select polygon type
         const polygonTypes = [
-          { sides: 3, name: 'Triangle' },   // xScale = 0.0
-          { sides: 4, name: 'Square' },     // xScale = 0.167
-          { sides: 5, name: 'Pentagon' },   // xScale = 0.333
-          { sides: 6, name: 'Hexagon' },    // xScale = 0.5
-          { sides: 7, name: 'Heptagon' },   // xScale = 0.667
-          { sides: 8, name: 'Octagon' },    // xScale = 0.833
-          { sides: 9, name: 'Nonagon' },    // xScale = 1.0
-          { sides: 10, name: 'Decagon' },   // xScale = 1.167
+          { sides: 3, name: 'Triangle' }, // xScale = 0.0
+          { sides: 4, name: 'Square' }, // xScale = 0.167
+          { sides: 5, name: 'Pentagon' }, // xScale = 0.333
+          { sides: 6, name: 'Hexagon' }, // xScale = 0.5
+          { sides: 7, name: 'Heptagon' }, // xScale = 0.667
+          { sides: 8, name: 'Octagon' }, // xScale = 0.833
+          { sides: 9, name: 'Nonagon' }, // xScale = 1.0
+          { sides: 10, name: 'Decagon' }, // xScale = 1.167
           { sides: 12, name: 'Dodecagon' }, // xScale = 1.5
         ];
         const polygonType = polygonTypes[Math.floor(Math.random() * polygonTypes.length)];
         const xScale = (polygonType.sides - 3) / 6.0;
 
-        const location = interestingLocations[Math.floor(Math.random() * interestingLocations.length)];
+        const location =
+          interestingLocations[Math.floor(Math.random() * interestingLocations.length)];
         const zoom = location.zoom * (0.8 + Math.random() * 0.4);
 
         // Update xScale slider
@@ -1071,7 +1155,14 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
         const xScaleValue = document.getElementById('x-scale-value');
         if (xScaleSlider) {
           xScaleSlider.value = xScale;
-          updateSliderAccessibility(xScaleSlider, xScaleValue, xScaleAnnounce, xScale, 'X Axis', false);
+          updateSliderAccessibility(
+            xScaleSlider,
+            xScaleValue,
+            xScaleAnnounce,
+            xScale,
+            'X Axis',
+            false
+          );
         }
         params.xScale = xScale;
 
@@ -1082,7 +1173,8 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
       }
 
       // For other fractals with interesting points, randomly select one
-      const location = interestingLocations[Math.floor(Math.random() * interestingLocations.length)];
+      const location =
+        interestingLocations[Math.floor(Math.random() * interestingLocations.length)];
       const zoom = location.zoom * (0.8 + Math.random() * 0.4);
 
       return {
@@ -1123,7 +1215,9 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
   // Random view button
   fullscreenRandomBtn.addEventListener('click', () => {
     // Get random interesting view
-    const randomView = getRandomInterestingView ? getRandomInterestingView() : getRandomInterestingViewLocal();
+    const randomView = getRandomInterestingView
+      ? getRandomInterestingView()
+      : getRandomInterestingViewLocal();
     const params = getParams();
 
     // Update parameters
@@ -1280,4 +1374,3 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
     },
   };
 }
-

@@ -36,12 +36,14 @@ export function updateCoordinateDisplay(params) {
     coordOffsetX.textContent = formatCoordinate(params.offset.x, 4);
     coordOffsetY.textContent = formatCoordinate(params.offset.y, 4);
   }
-  
+
   // Dispatch fractal-updated event so other components (like EXIF editor) can update
   const currentFractalType = appState.getCurrentFractalType();
-  window.dispatchEvent(new CustomEvent('fractal-updated', {
-    detail: { fractalType: currentFractalType, params }
-  }));
+  window.dispatchEvent(
+    new CustomEvent('fractal-updated', {
+      detail: { fractalType: currentFractalType, params },
+    })
+  );
 }
 
 /**
@@ -56,7 +58,7 @@ export function setupCoordinateCopy(getCurrentFractalType, getParams) {
   copyBtn.addEventListener('click', () => {
     const params = getParams();
     const fractalType = getCurrentFractalType();
-    
+
     if (!params || !fractalType) return;
 
     const zoom = formatCoordinate(params.zoom, 3);
@@ -65,20 +67,24 @@ export function setupCoordinateCopy(getCurrentFractalType, getParams) {
 
     const coordsText = `fractal: ${fractalType}, zoom: ${zoom}, offsetX: ${offsetX}, offsetY: ${offsetY}`;
 
-    navigator.clipboard.writeText(coordsText).then(() => {
-      // Show feedback
-      const originalText = copyBtn.innerHTML;
-      copyBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"></path></svg>Copied!';
-      copyBtn.style.background = 'var(--accent-blue)';
+    navigator.clipboard
+      .writeText(coordsText)
+      .then(() => {
+        // Show feedback
+        const originalText = copyBtn.innerHTML;
+        copyBtn.innerHTML =
+          '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"></path></svg>Copied!';
+        copyBtn.style.background = 'var(--accent-blue)';
 
-      setTimeout(() => {
-        copyBtn.innerHTML = originalText;
-        copyBtn.style.background = '';
-      }, 2000);
-    }).catch(err => {
-      console.error('Failed to copy coordinates:', err);
-      alert('Failed to copy coordinates. Please copy manually:\n' + coordsText);
-    });
+        setTimeout(() => {
+          copyBtn.innerHTML = originalText;
+          copyBtn.style.background = '';
+        }, 2000);
+      })
+      .catch((err) => {
+        console.error('Failed to copy coordinates:', err);
+        alert('Failed to copy coordinates. Please copy manually:\n' + coordsText);
+      });
   });
 }
 
@@ -90,13 +96,16 @@ export function setupCoordinateCopy(getCurrentFractalType, getParams) {
  */
 export function updateCoordinateAndDebugDisplay(getParams, getCurrentFractalType) {
   const params = getParams ? getParams() : appState.getParams();
-  const currentFractalType = getCurrentFractalType ? getCurrentFractalType() : appState.getCurrentFractalType();
+  const currentFractalType = getCurrentFractalType
+    ? getCurrentFractalType()
+    : appState.getCurrentFractalType();
   updateCoordinateDisplay(params);
   updateDebugDisplay(currentFractalType, params);
-  
-  // Dispatch fractal-updated event so other components (like EXIF editor) can update
-  window.dispatchEvent(new CustomEvent('fractal-updated', {
-    detail: { fractalType: currentFractalType, params }
-  }));
-}
 
+  // Dispatch fractal-updated event so other components (like EXIF editor) can update
+  window.dispatchEvent(
+    new CustomEvent('fractal-updated', {
+      detail: { fractalType: currentFractalType, params },
+    })
+  );
+}

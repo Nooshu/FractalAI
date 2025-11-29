@@ -48,7 +48,11 @@ function initDOMCache() {
  * @returns {Object} Canvas, regl context, and updateRendererSize function
  */
 function initCanvasAndRenderer(appState) {
-  const { canvas: canvasElement, regl: reglContext, updateRendererSize: updateSize } = initCanvasRenderer('fractal-canvas', {
+  const {
+    canvas: canvasElement,
+    regl: reglContext,
+    updateRendererSize: updateSize,
+  } = initCanvasRenderer('fractal-canvas', {
     getZoom: () => appState.getParams().zoom,
     onResize: () => {
       const renderingEngine = appState.getRenderingEngine();
@@ -94,13 +98,13 @@ function setupCleanupHandlers(appState, longTaskDetector) {
     if (longTaskDetector) {
       longTaskDetector.stop();
     }
-    
+
     // Stop idle cleanup
     idleCleanupManager.stop();
-    
+
     // End current session
     lifecycleManager.endSession();
-    
+
     // Cleanup app state
     appState.cleanup();
   });
@@ -114,7 +118,13 @@ function setupCleanupHandlers(appState, longTaskDetector) {
  * @param {Function} updateWikipediaLink - Update Wikipedia link function
  * @param {Function} updateCoordinateDisplay - Update coordinate display function
  */
-function setupUIControlsModule(appState, renderingEngine, loadFractal, updateWikipediaLink, updateCoordinateDisplay) {
+function setupUIControlsModule(
+  appState,
+  renderingEngine,
+  loadFractal,
+  updateWikipediaLink,
+  updateCoordinateDisplay
+) {
   const getters = appState.getGetters();
   const setters = appState.getSetters();
 
@@ -146,12 +156,13 @@ function setupUIControlsModule(appState, renderingEngine, loadFractal, updateWik
       renderFractalProgressive: () => renderingEngine.renderFractalProgressive(),
       renderFractal: () => renderingEngine.renderFractal(),
       cancelWorkerTasks: () => appState.cancelWorkerTasks(),
-      getRandomInterestingView: () => getRandomInterestingView({
-        getCurrentFractalType: getters.getCurrentFractalType,
-        getCurrentFractalModule: getters.getCurrentFractalModule,
-        getParams: getters.getParams,
-        getCanvas: getters.getCanvas,
-      }),
+      getRandomInterestingView: () =>
+        getRandomInterestingView({
+          getCurrentFractalType: getters.getCurrentFractalType,
+          getCurrentFractalModule: getters.getCurrentFractalModule,
+          getParams: getters.getParams,
+          getCanvas: getters.getCanvas,
+        }),
       cancelProgressiveRender: () => renderingEngine.cancelProgressiveRender(),
       onFullscreenChange: (_isFullscreen) => {
         const updateRendererSize = appState.getUpdateRendererSize();
@@ -183,7 +194,12 @@ function setupInputControlsModule(appState, renderingEngine, updateCoordinateDis
       updateCoordinateDisplay: updateCoordinateDisplay,
       renderFractalProgressive: () => renderingEngine.renderFractalProgressive(),
       zoomToSelection: (startX, startY, endX, endY, canvasRect) => {
-        zoomToSelection(startX, startY, endX, endY, canvasRect,
+        zoomToSelection(
+          startX,
+          startY,
+          endX,
+          endY,
+          canvasRect,
           { getCanvas: getters.getCanvas, getParams: getters.getParams },
           { renderFractalProgressive: () => renderingEngine.renderFractalProgressive() }
         );
@@ -304,7 +320,13 @@ function initInitialFractalType(appState) {
  * @param {Function} updateWikipediaLink - Update Wikipedia link function
  * @param {Function} updateCoordinateDisplay - Update coordinate display function
  */
-async function loadInitialFractal(appState, renderingEngine, loadFractal, updateWikipediaLink, updateCoordinateDisplay) {
+async function loadInitialFractal(
+  appState,
+  renderingEngine,
+  loadFractal,
+  updateWikipediaLink,
+  updateCoordinateDisplay
+) {
   const getters = appState.getGetters();
   const setters = appState.getSetters();
 
@@ -418,10 +440,11 @@ function createUpdateWikipediaLink() {
 }
 
 function createUpdateCoordinateDisplay() {
-  return () => updateCoordinateAndDebugDisplay(
-    () => appState.getParams(),
-    () => appState.getCurrentFractalType()
-  );
+  return () =>
+    updateCoordinateAndDebugDisplay(
+      () => appState.getParams(),
+      () => appState.getCurrentFractalType()
+    );
 }
 
 /**
@@ -430,7 +453,7 @@ function createUpdateCoordinateDisplay() {
 export async function init() {
   const updateWikipediaLinkFn = createUpdateWikipediaLink();
   const updateCoordinateDisplayFn = createUpdateCoordinateDisplay();
-  
+
   // Detect and configure worker optimizations
   const workerCapabilities = getWorkerCapabilities();
   if (workerCapabilities.recommended) {
@@ -445,16 +468,18 @@ export async function init() {
   } else {
     CONFIG.workers.enabled = false;
     // Log why workers are disabled
-    const reason = !workerCapabilities.workers ? 'Workers not supported' :
-                   workerCapabilities.hardwareConcurrency < CONFIG.workers.minCores ? `Insufficient CPU cores (${workerCapabilities.hardwareConcurrency} < ${CONFIG.workers.minCores})` :
-                   'Unknown';
+    const reason = !workerCapabilities.workers
+      ? 'Workers not supported'
+      : workerCapabilities.hardwareConcurrency < CONFIG.workers.minCores
+        ? `Insufficient CPU cores (${workerCapabilities.hardwareConcurrency} < ${CONFIG.workers.minCores})`
+        : 'Unknown';
     console.log(
       `%c[Worker Optimizations]%c Disabled - ${reason}`,
       'color: #FF9800; font-weight: bold;',
       'color: inherit;'
     );
   }
-  
+
   // Initialize DOM cache first
   initDOMCache();
 
@@ -463,9 +488,7 @@ export async function init() {
     onLongTask: (task) => {
       // Log long tasks in development
       if (import.meta.env?.DEV) {
-        console.warn(
-          `[Long Task] ${task.duration.toFixed(2)}ms blocking operation detected`
-        );
+        console.warn(`[Long Task] ${task.duration.toFixed(2)}ms blocking operation detected`);
       }
     },
   });
@@ -500,7 +523,13 @@ export async function init() {
   setupCleanupHandlers(appState, longTaskDetector);
 
   // Setup UI controls (after rendering engine is initialized)
-  setupUIControlsModule(appState, renderingEngine, loadFractal, updateWikipediaLinkFn, updateCoordinateDisplayFn);
+  setupUIControlsModule(
+    appState,
+    renderingEngine,
+    loadFractal,
+    updateWikipediaLinkFn,
+    updateCoordinateDisplayFn
+  );
 
   // Setup input controls (after rendering engine is initialized)
   setupInputControlsModule(appState, renderingEngine, updateCoordinateDisplayFn);
@@ -511,8 +540,11 @@ export async function init() {
    */
   function loadFractalFromPreset(preset) {
     // Start new lifecycle session for preset load
-    lifecycleManager.startSession('preset-load', preset.fractal || appState.getCurrentFractalType());
-    
+    lifecycleManager.startSession(
+      'preset-load',
+      preset.fractal || appState.getCurrentFractalType()
+    );
+
     const setters = appState.getSetters();
 
     // Update fractal parameters from preset
@@ -608,7 +640,13 @@ export async function init() {
   updateWikipediaLinkFn();
 
   // Load initial fractal (from URL or default)
-  await loadInitialFractal(appState, renderingEngine, loadFractal, updateWikipediaLinkFn, updateCoordinateDisplayFn);
+  await loadInitialFractal(
+    appState,
+    renderingEngine,
+    loadFractal,
+    updateWikipediaLinkFn,
+    updateCoordinateDisplayFn
+  );
 
   // Defer non-critical initialization using requestIdleCallback
   // This allows the browser to prioritize rendering the first fractal
@@ -616,11 +654,13 @@ export async function init() {
     const getters = appState.getGetters();
 
     // Setup share button (non-critical for first render)
-    import('../sharing/state-manager.js').then(({ setupShareFractal }) => {
-      setupShareFractal(getters.getCurrentFractalType, getters.getParams);
-    }).catch((error) => {
-      console.error('Failed to load sharing module:', error);
-    });
+    import('../sharing/state-manager.js')
+      .then(({ setupShareFractal }) => {
+        setupShareFractal(getters.getCurrentFractalType, getters.getParams);
+      })
+      .catch((error) => {
+        console.error('Failed to load sharing module:', error);
+      });
   };
 
   // Use requestIdleCallback if available, otherwise use setTimeout with a small delay
@@ -644,12 +684,14 @@ function bootstrap() {
     // Defer footer height tracking using requestIdleCallback
     // This is non-critical for first render
     const deferredFooterInit = () => {
-      import('../ui/footer-height.js').then(({ initFooterHeightTracking, updateFooterHeight }) => {
-        initFooterHeightTracking();
-        updateFooterHeight();
-      }).catch((error) => {
-        console.error('Failed to load footer height module:', error);
-      });
+      import('../ui/footer-height.js')
+        .then(({ initFooterHeightTracking, updateFooterHeight }) => {
+          initFooterHeightTracking();
+          updateFooterHeight();
+        })
+        .catch((error) => {
+          console.error('Failed to load footer height module:', error);
+        });
     };
 
     // Use requestIdleCallback if available, otherwise use setTimeout with a small delay
@@ -664,4 +706,3 @@ function bootstrap() {
 
 // Auto-bootstrap when module is loaded
 bootstrap();
-

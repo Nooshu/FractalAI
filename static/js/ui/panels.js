@@ -38,7 +38,11 @@ export function setupExifEditorVisibility(lazyLoadCallbacks = null) {
     exifSection.classList.remove('exif-hidden');
     exifSection.style.display = '';
     // If visible via URL param, load immediately if callbacks provided
-    if (lazyLoadCallbacks && lazyLoadCallbacks.getCurrentFractalType && lazyLoadCallbacks.getParams) {
+    if (
+      lazyLoadCallbacks &&
+      lazyLoadCallbacks.getCurrentFractalType &&
+      lazyLoadCallbacks.getParams
+    ) {
       lazyLoadExifModule(lazyLoadCallbacks.getCurrentFractalType, lazyLoadCallbacks.getParams);
     }
   } else {
@@ -63,7 +67,11 @@ export function setupDebugPanelVisibility(lazyLoadCallbacks = null) {
     debugSection.classList.remove('debug-hidden');
     debugSection.style.display = '';
     // If visible via URL param, load immediately if callbacks provided
-    if (lazyLoadCallbacks && lazyLoadCallbacks.getCurrentFractalType && lazyLoadCallbacks.getParams) {
+    if (
+      lazyLoadCallbacks &&
+      lazyLoadCallbacks.getCurrentFractalType &&
+      lazyLoadCallbacks.getParams
+    ) {
       lazyLoadDebugModule(lazyLoadCallbacks.getCurrentFractalType, lazyLoadCallbacks.getParams);
     }
   } else {
@@ -90,7 +98,7 @@ const lazyLoadedModules = {
  */
 async function lazyLoadDebugModule(getCurrentFractalType, getParams) {
   if (lazyLoadedModules.debug) return;
-  
+
   try {
     const { setupDebugCopy } = await import('./debug-display.js');
     setupDebugCopy(getCurrentFractalType, getParams);
@@ -108,21 +116,23 @@ async function lazyLoadDebugModule(getCurrentFractalType, getParams) {
  */
 async function lazyLoadExifModule(getCurrentFractalType, getParams) {
   if (lazyLoadedModules.exif) return;
-  
+
   try {
     const { setupExifEditor } = await import('./exif-editor.js');
     setupExifEditor(getCurrentFractalType, getParams);
     lazyLoadedModules.exif = true;
-    
+
     // Trigger an immediate update to ensure the display shows current values
     // Use setTimeout to ensure the module is fully initialized
     setTimeout(() => {
       const params = getParams();
       const fractalType = getCurrentFractalType();
       if (params && fractalType) {
-        window.dispatchEvent(new CustomEvent('fractal-updated', {
-          detail: { fractalType, params }
-        }));
+        window.dispatchEvent(
+          new CustomEvent('fractal-updated', {
+            detail: { fractalType, params },
+          })
+        );
       }
     }, 0);
   } catch (error) {
@@ -148,7 +158,11 @@ export function setupCollapsibleSections(lazyLoadCallbacks = null) {
 
     // Check if section is already open on page load and lazy load if needed
     if (content && content.classList.contains('active')) {
-      if (lazyLoadCallbacks && lazyLoadCallbacks.getCurrentFractalType && lazyLoadCallbacks.getParams) {
+      if (
+        lazyLoadCallbacks &&
+        lazyLoadCallbacks.getCurrentFractalType &&
+        lazyLoadCallbacks.getParams
+      ) {
         if (sectionType === 'debug') {
           lazyLoadDebugModule(lazyLoadCallbacks.getCurrentFractalType, lazyLoadCallbacks.getParams);
         } else if (sectionType === 'exif-editor') {
@@ -169,13 +183,23 @@ export function setupCollapsibleSections(lazyLoadCallbacks = null) {
       } else {
         content.classList.add('active');
         header.classList.remove('collapsed');
-        
+
         // Lazy load modules when section is first opened
-        if (lazyLoadCallbacks && lazyLoadCallbacks.getCurrentFractalType && lazyLoadCallbacks.getParams) {
+        if (
+          lazyLoadCallbacks &&
+          lazyLoadCallbacks.getCurrentFractalType &&
+          lazyLoadCallbacks.getParams
+        ) {
           if (sectionType === 'debug') {
-            await lazyLoadDebugModule(lazyLoadCallbacks.getCurrentFractalType, lazyLoadCallbacks.getParams);
+            await lazyLoadDebugModule(
+              lazyLoadCallbacks.getCurrentFractalType,
+              lazyLoadCallbacks.getParams
+            );
           } else if (sectionType === 'exif-editor') {
-            await lazyLoadExifModule(lazyLoadCallbacks.getCurrentFractalType, lazyLoadCallbacks.getParams);
+            await lazyLoadExifModule(
+              lazyLoadCallbacks.getCurrentFractalType,
+              lazyLoadCallbacks.getParams
+            );
           }
         }
       }
@@ -225,7 +249,7 @@ export function setupLeftPanelToggle(updateRendererSize) {
  */
 async function lazyLoadPresetsModule(loadFractalFromPreset) {
   if (lazyLoadedModules.presets) return;
-  
+
   try {
     const { setupPresets } = await import('./presets.js');
     // setupPresets is now async, so await it to ensure presets are loaded
@@ -264,12 +288,12 @@ export function setupRightPanelToggle(updateRendererSize, loadFractalFromPreset 
   // Show right panel when show button is clicked
   showRightPanelBtn.addEventListener('click', async () => {
     rightPanel.classList.remove('hidden');
-    
+
     // Lazy load presets module when panel is first opened
     if (loadFractalFromPreset && !lazyLoadedModules.presets) {
       await lazyLoadPresetsModule(loadFractalFromPreset);
     }
-    
+
     // Resize canvas after panel animation
     setTimeout(() => {
       if (updateRendererSize) {
@@ -294,11 +318,15 @@ export function initUILayout(updateRendererSize, lazyLoadCallbacks = null) {
   setupRightPanelToggle(updateRendererSize, lazyLoadCallbacks?.loadFractalFromPreset || null);
   setupExifEditorVisibility(lazyLoadCallbacks);
   setupDebugPanelVisibility(lazyLoadCallbacks);
-  
+
   // Check if right panel is already visible (e.g., from URL parameter or initial state)
   // If so, load presets module immediately to ensure preset clicks work
   const rightPanel = document.querySelector('.right-panel');
-  if (rightPanel && !rightPanel.classList.contains('hidden') && lazyLoadCallbacks?.loadFractalFromPreset) {
+  if (
+    rightPanel &&
+    !rightPanel.classList.contains('hidden') &&
+    lazyLoadCallbacks?.loadFractalFromPreset
+  ) {
     // Panel is visible, load presets module immediately
     lazyLoadPresetsModule(lazyLoadCallbacks.loadFractalFromPreset).catch((error) => {
       console.error('Failed to load presets module for visible panel:', error);
@@ -308,4 +336,3 @@ export function initUILayout(updateRendererSize, lazyLoadCallbacks = null) {
 
 // Backward compatibility alias
 export const setupPanelToggle = setupLeftPanelToggle;
-

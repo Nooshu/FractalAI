@@ -32,91 +32,146 @@ export default defineConfig({
               return familyName;
             }
             if (id.includes('/fractals/2d/')) {
-              return fractalNames.some(name => id.includes(`${name}.js`)) ? familyName : null;
+              return fractalNames.some((name) => id.includes(`${name}.js`)) ? familyName : null;
             }
             return null;
           };
 
           // Mandelbrot Family
           const mandelbrotFamily = isFamilyFractal('mandelbrot-family', [
-            'mandelbrot', 'celtic-mandelbrot', 'multibrot', 'mutant-mandelbrot',
-            'phoenix-mandelbrot', 'burning-ship', 'tricorn', 'nebulabrot'
+            'mandelbrot',
+            'celtic-mandelbrot',
+            'multibrot',
+            'mutant-mandelbrot',
+            'phoenix-mandelbrot',
+            'burning-ship',
+            'tricorn',
+            'nebulabrot',
           ]);
           if (mandelbrotFamily) return mandelbrotFamily;
 
           // Julia Family
           const juliaFamily = isFamilyFractal('julia-family', [
-            'julia', 'julia-snakes', 'multibrot-julia', 'burning-ship-julia',
-            'tricorn-julia', 'phoenix-julia', 'lambda-julia', 'hybrid-julia'
+            'julia',
+            'julia-snakes',
+            'multibrot-julia',
+            'burning-ship-julia',
+            'tricorn-julia',
+            'phoenix-julia',
+            'lambda-julia',
+            'hybrid-julia',
           ]);
           if (juliaFamily) return juliaFamily;
 
           // Sierpinski Family
           const sierpinskiFamily = isFamilyFractal('sierpinski-family', [
-            'sierpinski', 'sierpinski-arrowhead', 'sierpinski-carpet', 'sierpinski-gasket',
-            'sierpinski-hexagon', 'sierpinski-lsystem', 'sierpinski-pentagon',
-            'quadrilateral-subdivision', 'recursive-polygon-splitting', 'triangular-subdivision'
+            'sierpinski',
+            'sierpinski-arrowhead',
+            'sierpinski-carpet',
+            'sierpinski-gasket',
+            'sierpinski-hexagon',
+            'sierpinski-lsystem',
+            'sierpinski-pentagon',
+            'quadrilateral-subdivision',
+            'recursive-polygon-splitting',
+            'triangular-subdivision',
           ]);
           if (sierpinskiFamily) return sierpinskiFamily;
 
           // Dragon Family
           const dragonFamily = isFamilyFractal('dragon-family', [
-            'binary-dragon', 'dragon-lsystem', 'folded-paper-dragon',
-            'heighway-dragon', 'terdragon', 'twindragon'
+            'binary-dragon',
+            'dragon-lsystem',
+            'folded-paper-dragon',
+            'heighway-dragon',
+            'terdragon',
+            'twindragon',
           ]);
           if (dragonFamily) return dragonFamily;
 
           // Space-Filling Family
           const spaceFillingFamily = isFamilyFractal('space-filling-family', [
-            'gosper-curve', 'hilbert-curve', 'levy-c-curve', 'moore-curve', 'peano-curve'
+            'gosper-curve',
+            'hilbert-curve',
+            'levy-c-curve',
+            'moore-curve',
+            'peano-curve',
           ]);
           if (spaceFillingFamily) return spaceFillingFamily;
 
           // Root-Finding Family
           const rootFindingFamily = isFamilyFractal('root-finding-family', [
-            'newton', 'halley', 'nova'
+            'newton',
+            'halley',
+            'nova',
           ]);
           if (rootFindingFamily) return rootFindingFamily;
 
           // Plant Family
-          const plantFamily = isFamilyFractal('plant-family', [
-            'plant', 'barnsley-fern'
-          ]);
+          const plantFamily = isFamilyFractal('plant-family', ['plant', 'barnsley-fern']);
           if (plantFamily) return plantFamily;
 
           // Koch Family
           const kochFamily = isFamilyFractal('koch-family', [
-            'fractal-islands', 'koch', 'quadratic-koch'
+            'fractal-islands',
+            'koch',
+            'quadratic-koch',
           ]);
           if (kochFamily) return kochFamily;
 
           // Cantor Family
           const cantorFamily = isFamilyFractal('cantor-family', [
-            'cantor', 'cantor-dust-base-expansion', 'cantor-dust-circular',
-            'fat-cantor', 'smith-volterra-cantor', 'random-cantor'
+            'cantor',
+            'cantor-dust-base-expansion',
+            'cantor-dust-circular',
+            'fat-cantor',
+            'smith-volterra-cantor',
+            'random-cantor',
           ]);
           if (cantorFamily) return cantorFamily;
 
           // Tiling Family
           const tilingFamily = isFamilyFractal('tiling-family', [
-            'domino-substitution', 'pinwheel-tiling', 'snowflake-tiling'
+            'domino-substitution',
+            'pinwheel-tiling',
+            'snowflake-tiling',
           ]);
           if (tilingFamily) return tilingFamily;
 
           // Other Family
           const otherFamily = isFamilyFractal('other-family', [
-            'amman-tiling', 'apollonian-gasket', 'carpenter-square', 'chair-tiling',
-            'h-tree', 'h-tree-generalized', 'vicsek', 'cross', 'diffusion-limited-aggregation',
-            'fractional-brownian-motion', 'fractal-flame', 'levy-flights',
-            'recursive-circle-removal', 'rose', 'box-variants', 'minkowski-sausage',
-            'penrose-substitution', 'perlin-noise', 'percolation-cluster', 'buffalo',
-            'popcorn', 'random-midpoint-displacement', 'rauzy', 'simplex-noise',
-            'spider-set', 'magnet', 'cesaro'
+            'amman-tiling',
+            'apollonian-gasket',
+            'carpenter-square',
+            'chair-tiling',
+            'h-tree',
+            'h-tree-generalized',
+            'vicsek',
+            'cross',
+            'diffusion-limited-aggregation',
+            'fractional-brownian-motion',
+            'fractal-flame',
+            'levy-flights',
+            'recursive-circle-removal',
+            'rose',
+            'box-variants',
+            'minkowski-sausage',
+            'penrose-substitution',
+            'perlin-noise',
+            'percolation-cluster',
+            'buffalo',
+            'popcorn',
+            'random-midpoint-displacement',
+            'rauzy',
+            'simplex-noise',
+            'spider-set',
+            'magnet',
+            'cesaro',
           ]);
           if (otherFamily) return otherFamily;
-        }
-      }
-    }
+        },
+      },
+    },
   },
   plugins: [
     {
@@ -126,12 +181,14 @@ export default defineConfig({
         // Prevent Vite from trying to parse Cloudflare config files
         // Check both relative and absolute paths
         const normalizedId = id.replace(/\\/g, '/');
-        if (normalizedId.includes('/_headers') || 
-            normalizedId.includes('/_redirects') || 
-            normalizedId.includes('/_routes.json') ||
-            normalizedId.endsWith('_headers') ||
-            normalizedId.endsWith('_redirects') ||
-            normalizedId.endsWith('_routes.json')) {
+        if (
+          normalizedId.includes('/_headers') ||
+          normalizedId.includes('/_redirects') ||
+          normalizedId.includes('/_routes.json') ||
+          normalizedId.endsWith('_headers') ||
+          normalizedId.endsWith('_redirects') ||
+          normalizedId.endsWith('_routes.json')
+        ) {
           // Return empty module to prevent parsing errors
           return 'export default {}';
         }
@@ -169,15 +226,9 @@ export default defineConfig({
           resolve(__dirname, 'dist', '_routes.json')
         );
         // Copy _headers to dist directory for Cloudflare Pages
-        copyFileSync(
-          resolve(__dirname, '_headers'),
-          resolve(__dirname, 'dist', '_headers')
-        );
+        copyFileSync(resolve(__dirname, '_headers'), resolve(__dirname, 'dist', '_headers'));
         // Copy _redirects to dist directory for Cloudflare Pages
-        copyFileSync(
-          resolve(__dirname, '_redirects'),
-          resolve(__dirname, 'dist', '_redirects')
-        );
+        copyFileSync(resolve(__dirname, '_redirects'), resolve(__dirname, 'dist', '_redirects'));
         // Process and copy service worker with cache version
         const swPath = resolve(__dirname, 'public', 'sw.js');
         const swDest = resolve(__dirname, 'dist', 'sw.js');
@@ -191,7 +242,7 @@ export default defineConfig({
         } catch (err) {
           console.warn('Service worker not found, skipping copy');
         }
-        
+
         // Copy static directory to dist for preset images and other static assets
         const staticSrc = resolve(__dirname, 'static');
         const staticDest = resolve(__dirname, 'dist', 'static');

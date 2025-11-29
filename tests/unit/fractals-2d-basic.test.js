@@ -138,5 +138,3 @@ for (const name of FRACTAL_MODULES_2D) {
     });
   });
 }
-
-

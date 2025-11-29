@@ -225,5 +225,3 @@ describe('RenderingEngine', () => {
     expect(engine.animationFrameId).toBeNull();
   });
 });
-
-

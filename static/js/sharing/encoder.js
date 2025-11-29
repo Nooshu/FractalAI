@@ -33,4 +33,3 @@ export function encodeFractalState(fractalType, params) {
   const json = JSON.stringify(state);
   return btoa(json).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
 }
-

@@ -17,7 +17,6 @@ export const fractals = {
   'dragon-lsystem': dragonLsystem,
   'folded-paper-dragon': foldedPaperDragon,
   'heighway-dragon': heighwayDragon,
-  'terdragon': terdragon,
-  'twindragon': twindragon,
+  terdragon: terdragon,
+  twindragon: twindragon,
 };
-

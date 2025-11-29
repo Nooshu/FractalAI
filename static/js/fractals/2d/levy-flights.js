@@ -8,73 +8,75 @@ let cachedVertexCount = 0;
 function generateLevyFlight(params) {
   const vertices = [];
   const colorValues = [];
-  
+
   const numSteps = Math.floor(params.iterations * 20); // Scale with iterations
   const alpha = 0.5 + params.xScale * 1.5; // Lévy distribution parameter (0.5 to 2.0)
-  
+
   let x = 0;
   let y = 0;
-  
+
   // Generate Lévy flight path
   for (let i = 0; i < numSteps; i++) {
     const prevX = x;
     const prevY = y;
-    
+
     // Generate step length using power-law distribution (Lévy distribution approximation)
     // For Lévy flights, step lengths follow a power-law: P(l) ~ l^(-alpha-1)
     const u = Math.random();
     const stepLength = Math.pow(1.0 - u, -1.0 / alpha) * 0.02;
-    
+
     // Generate step direction (uniform random)
     const angle = Math.random() * Math.PI * 2;
-    
+
     // Apply step
     x += Math.cos(angle) * stepLength;
     y += Math.sin(angle) * stepLength;
-    
+
     // Add line segment
     vertices.push(prevX, prevY);
     vertices.push(x, y);
-    
+
     // Color based on step number (distance along path)
     const colorValue = Math.min(i / numSteps, 1.0);
     colorValues.push(colorValue);
     colorValues.push(colorValue);
   }
-  
+
   return { vertices, colorValues };
 }
 
 export function render(regl, params, canvas) {
   const paletteTexture = generatePaletteTexture(regl, params.colorScheme);
-  
+
   // Generate Lévy flight path
   const { vertices, colorValues } = generateLevyFlight(params);
   const vertexCount = vertices.length / 2;
-  
+
   // Calculate bounding box for scaling
-  let minX = Infinity, maxX = -Infinity;
-  let minY = Infinity, maxY = -Infinity;
-  
+  let minX = Infinity,
+    maxX = -Infinity;
+  let minY = Infinity,
+    maxY = -Infinity;
+
   for (let i = 0; i < vertices.length; i += 2) {
     minX = Math.min(minX, vertices[i]);
     maxX = Math.max(maxX, vertices[i]);
     minY = Math.min(minY, vertices[i + 1]);
     maxY = Math.max(maxY, vertices[i + 1]);
   }
-  
+
   const width = maxX - minX || 1;
   const height = maxY - minY || 1;
   const centerX = (minX + maxX) / 2;
   const centerY = (minY + maxY) / 2;
-  
+
   // Scale to fit viewport
   const scale = Math.min(8.0 / width, 8.0 / height);
-  
+
   // Convert to Float32Array
   const positions = new Float32Array(vertices);
   const colors = new Float32Array(colorValues);
-  
+
   // Reuse buffer if possible, otherwise create new one
   if (!cachedBuffer || cachedVertexCount !== vertexCount) {
     if (cachedBuffer) {
@@ -86,10 +88,10 @@ export function render(regl, params, canvas) {
     // Buffer exists with same size, just update the data
     cachedBuffer.subdata(positions);
   }
-  
+
   // Create color buffer
   const colorBuffer = regl.buffer(colors);
-  
+
   // Vertex shader
   const vertexShader = `
     precision mediump float;
@@ -131,7 +133,7 @@ export function render(regl, params, canvas) {
       vColor = texture2D(uPalette, vec2(t, 0.5));
     }
   `;
-  
+
   // Fragment shader
   const fragmentShader = `
     precision mediump float;
@@ -141,7 +143,7 @@ export function render(regl, params, canvas) {
       gl_FragColor = vColor;
     }
   `;
-  
+
   const drawLevyFlight = regl({
     frag: fragmentShader,
     vert: vertexShader,
@@ -174,7 +176,7 @@ export function render(regl, params, canvas) {
       height: canvas.height,
     },
   });
-  
+
   return drawLevyFlight;
 }
 
@@ -197,4 +199,3 @@ export const config = {
     zoom: 1,
   },
 };
-

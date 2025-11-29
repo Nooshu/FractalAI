@@ -42,7 +42,7 @@ export class FrameCache {
     const isJulia = isJuliaType(fractalType);
     const juliaCX = isJulia ? Math.round(params.juliaC.x * 10000) / 10000 : 0;
     const juliaCY = isJulia ? Math.round(params.juliaC.y * 10000) / 10000 : 0;
-    
+
     // Use display dimensions (not render dimensions affected by pixel ratio) for cache key
     const container = canvas.parentElement;
     const rect = container.getBoundingClientRect();
@@ -63,7 +63,7 @@ export class FrameCache {
   getCachedFrame(canvas, fractalType, params, regl) {
     const key = this.generateCacheKey(canvas, fractalType, params);
     if (!key) return null;
-    
+
     const cached = this.cache.get(key);
     // Verify the cached framebuffer exists
     if (cached && cached.framebuffer && regl) {
@@ -117,4 +117,3 @@ export class FrameCache {
     this.cache.clear();
   }
 }
-

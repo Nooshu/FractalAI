@@ -19,12 +19,13 @@
  */
 export function setupInputControls(getters, callbacks) {
   const { getCanvas, getParams, getUpdateRendererSize } = getters;
-  const { scheduleRender, updateCoordinateDisplay, renderFractalProgressive, zoomToSelection } = callbacks;
+  const { scheduleRender, updateCoordinateDisplay, renderFractalProgressive, zoomToSelection } =
+    callbacks;
 
   const canvas = getCanvas();
   const canvasContainer = canvas.parentElement;
   const selectionBox = document.getElementById('selection-box');
-  
+
   if (!canvas || !selectionBox) {
     console.warn('Canvas or selection box not found');
     return { cleanup: () => {} };
@@ -151,14 +152,14 @@ export function setupInputControls(getters, callbacks) {
         lastMouseY = e.clientY;
         canvas.style.cursor = 'grabbing';
         selectionBox.classList.remove('active');
-        
+
         // Store original iterations and reduce to 100 for faster panning
         const params = getParams();
         if (originalIterations === null && params.iterations > 100) {
           originalIterations = params.iterations;
           params.iterations = 100;
         }
-        
+
         // Prevent text selection while dragging
         e.preventDefault();
       }
@@ -234,17 +235,17 @@ export function setupInputControls(getters, callbacks) {
     } else if (isDragging) {
       const deltaX = e.clientX - lastMouseX;
       const deltaY = e.clientY - lastMouseY;
-      
+
       // Dead-band: ignore very small movements to avoid unnecessary recomputes
       const DEAD_BAND_THRESHOLD = 2; // pixels
       const absDeltaX = Math.abs(deltaX);
       const absDeltaY = Math.abs(deltaY);
-      
+
       if (absDeltaX < DEAD_BAND_THRESHOLD && absDeltaY < DEAD_BAND_THRESHOLD) {
         // Movement too small, skip update
         return;
       }
-      
+
       // Adjust sensitivity based on zoom level for better control
       // Sensitivity decreases with zoom to allow precise panning at high zoom levels
       // Base sensitivity of 0.001 works well at zoom 1, and scales inversely with zoom
@@ -304,7 +305,7 @@ export function setupInputControls(getters, callbacks) {
       } else if (isDragging) {
         isDragging = false;
         canvas.style.cursor = 'grab';
-        
+
         // Restore original iterations and trigger full render
         if (originalIterations !== null) {
           const params = getParams();
@@ -323,7 +324,7 @@ export function setupInputControls(getters, callbacks) {
       // If mouse leaves while dragging, stop dragging and restore iterations
       isDragging = false;
       canvas.style.cursor = 'grab';
-      
+
       // Restore original iterations and trigger full render
       if (originalIterations !== null) {
         const params = getParams();
@@ -494,34 +495,34 @@ export function setupInputControls(getters, callbacks) {
   // Wheel handler - throttled to one update per animation frame
   let wheelUpdateScheduled = false;
   let pendingWheelDelta = 0;
-  
+
   const handleWheel = (e) => {
     e.preventDefault();
-    
+
     // Accumulate wheel delta for smoother zooming when scrolling fast
     pendingWheelDelta += e.deltaY;
-    
+
     // Schedule update if not already scheduled (throttle to one per frame)
     if (!wheelUpdateScheduled) {
       wheelUpdateScheduled = true;
       requestAnimationFrame(() => {
         wheelUpdateScheduled = false;
         const params = getParams();
-        
+
         // Apply accumulated delta with dead-band to avoid tiny zooms
         const DEAD_BAND_THRESHOLD = 5; // pixels
         if (Math.abs(pendingWheelDelta) < DEAD_BAND_THRESHOLD) {
           pendingWheelDelta = 0;
           return;
         }
-        
+
         // Reversed logic: deltaY > 0 (pinch out/spread fingers) should zoom in, deltaY < 0 (pinch in) should zoom out
         // Use exponential zoom for smoother experience
         const zoomFactor = pendingWheelDelta > 0 ? 0.95 : 1.05;
         params.zoom *= zoomFactor;
         updateCoordinateDisplay();
         scheduleRender(); // Use throttled render for smooth zooming
-        
+
         // Reset accumulated delta
         pendingWheelDelta = 0;
       });
@@ -585,7 +586,7 @@ export function setupInputControls(getters, callbacks) {
     canvas.addEventListener('mouseleave', handleMouseLeave, { passive: true });
     canvas.addEventListener('mousemove', handleCanvasMouseMove, { passive: true });
   }
-  
+
   canvas.addEventListener('contextmenu', handleContextMenu);
   canvasContainer.addEventListener('contextmenu', handleContextMenu);
   window.addEventListener('keydown', handleKeyDown);
@@ -788,4 +789,3 @@ export function zoomToSelection(startX, startY, endX, endY, canvasRect, getters,
   // Render the new view
   renderFractalProgressive();
 }
-

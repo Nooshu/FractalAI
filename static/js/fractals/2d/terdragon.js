@@ -5,19 +5,19 @@ import { generatePaletteTexture } from '../utils.js';
 function generateTerdragon(iterations) {
   // Generate the dragon curve sequence
   let sequence = [1]; // 1 = right turn, -1 = left turn
-  
+
   for (let iter = 0; iter < iterations; iter++) {
     const newSequence = [...sequence];
     newSequence.push(1); // Add a right turn in the middle
-    
+
     // Append the reverse of the sequence with alternating signs
     for (let i = sequence.length - 1; i >= 0; i--) {
       newSequence.push(-sequence[i]);
     }
-    
+
     sequence = newSequence;
   }
-  
+
   // Optimized: replace Math.pow with explicit calculation
   const sqrt2 = 1.4142135623730951;
   let sqrt2Power = 1.0;
@@ -25,20 +25,20 @@ function generateTerdragon(iterations) {
     sqrt2Power *= sqrt2;
   }
   const stepLength = 1.0 / sqrt2Power;
-  
+
   // Generate three dragons at 120-degree angles to form the terdragon
   // First dragon: starting at origin, facing right (0°)
   const dragon1 = generateDragonPath(sequence, 0, 0, 0, stepLength);
-  
+
   // Second dragon: rotated 120° (2π/3)
   const dragon2 = generateDragonPath(sequence, 0, 0, (2 * Math.PI) / 3, stepLength);
-  
+
   // Third dragon: rotated 240° (4π/3)
   const dragon3 = generateDragonPath(sequence, 0, 0, (4 * Math.PI) / 3, stepLength);
-  
+
   // Combine all three dragons
   const allVertices = [...dragon1, ...dragon2, ...dragon3];
-  
+
   return new Float32Array(allVertices);
 }
 
@@ -46,23 +46,23 @@ function generateDragonPath(sequence, startX, startY, startAngle, stepLength) {
   let x = startX;
   let y = startY;
   let angle = startAngle;
-  
+
   const vertices = [];
   vertices.push(x, y);
-  
+
   // Draw each segment
   for (let i = 0; i < sequence.length; i++) {
     // Move forward
     x += Math.cos(angle) * stepLength;
     y += Math.sin(angle) * stepLength;
     vertices.push(x, y);
-    
+
     // Turn based on the sequence value
     // 1 = turn right (clockwise), -1 = turn left (counter-clockwise)
     // Use 90-degree turns like the Heighway Dragon
-    angle += sequence[i] * Math.PI / 2;
+    angle += (sequence[i] * Math.PI) / 2;
   }
-  
+
   return vertices;
 }
 
@@ -125,7 +125,7 @@ export function render(regl, params, canvas) {
 
   // Calculate iteration level based on params.iterations
   const iterationLevel = Math.max(0, Math.min(15, Math.floor(params.iterations / 13)));
-  
+
   // Generate vertices for current iteration level
   const vertices = generateTerdragon(iterationLevel);
 
@@ -188,4 +188,3 @@ export const config = {
     zoom: 1,
   },
 };
-

@@ -75,5 +75,3 @@ describe('dom-cache module', () => {
     expect(getAllCached().size).toBe(1);
   });
 });
-
-

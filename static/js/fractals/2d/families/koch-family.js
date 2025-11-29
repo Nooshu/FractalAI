@@ -11,7 +11,6 @@ import * as quadraticKoch from '../quadratic-koch.js';
 // Export as a mapping object for easy lookup
 export const fractals = {
   'fractal-islands': fractalIslands,
-  'koch': koch,
+  koch: koch,
   'quadratic-koch': quadraticKoch,
 };
-

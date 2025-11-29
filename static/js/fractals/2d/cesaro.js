@@ -8,7 +8,7 @@ function generateCesaro(iterations, angle = 85) {
     [0.5, -0.5],
     [0.5, 0.5],
     [-0.5, 0.5],
-    [-0.5, -0.5] // Close the square
+    [-0.5, -0.5], // Close the square
   ];
 
   // Convert angle to radians
@@ -17,60 +17,51 @@ function generateCesaro(iterations, angle = 85) {
   // Apply Cesàro transformation for each iteration
   for (let iter = 0; iter < iterations; iter++) {
     const newVertices = [];
-    
+
     for (let i = 0; i < vertices.length - 1; i++) {
       const p1 = vertices[i];
       const p2 = vertices[i + 1];
-      
+
       // Calculate direction vector
       const dx = p2[0] - p1[0];
       const dy = p2[1] - p1[1];
       const len = Math.sqrt(dx * dx + dy * dy);
-      
+
       // Normalized direction
       const ux = dx / len;
       const uy = dy / len;
-      
+
       // Cesàro fractal: divide into 4 equal parts
       // Pattern: forward, turn left by angle, forward, turn right by 2*angle, forward, turn left by angle, forward
       const segmentLen = len / 4;
-      
+
       // Point 1: Start
       const pt1 = p1;
-      
+
       // Point 2: Go forward 1/4
-      const pt2 = [
-        p1[0] + ux * segmentLen,
-        p1[1] + uy * segmentLen
-      ];
-      
+      const pt2 = [p1[0] + ux * segmentLen, p1[1] + uy * segmentLen];
+
       // Point 3: Turn left by angle and go forward 1/4
       const dir1x = ux * Math.cos(angleRad) - uy * Math.sin(angleRad);
       const dir1y = ux * Math.sin(angleRad) + uy * Math.cos(angleRad);
-      const pt3 = [
-        pt2[0] + dir1x * segmentLen,
-        pt2[1] + dir1y * segmentLen
-      ];
-      
+      const pt3 = [pt2[0] + dir1x * segmentLen, pt2[1] + dir1y * segmentLen];
+
       // Point 4: Turn right by 2*angle (so net angle is -angle from original) and go forward 1/4
       const dir2x = ux * Math.cos(-angleRad) - uy * Math.sin(-angleRad);
       const dir2y = ux * Math.sin(-angleRad) + uy * Math.cos(-angleRad);
-      const pt4 = [
-        pt3[0] + dir2x * segmentLen,
-        pt3[1] + dir2y * segmentLen
-      ];
-      
+      const pt4 = [pt3[0] + dir2x * segmentLen, pt3[1] + dir2y * segmentLen];
+
       // Point 5: Turn left by angle (back to original direction) and go forward 1/4 to reach p2
       // This should automatically be p2 if our math is correct
-      
+
       const points = [pt1, pt2, pt3, pt4, p2];
-      
+
       // Add all points except the last (it will be the first point of the next segment)
       for (let j = 0; j < points.length - 1; j++) {
         newVertices.push(points[j]);
       }
     }
-    
+
     // Close the curve by adding the first point
     newVertices.push(newVertices[0]);
     vertices = newVertices;
@@ -144,10 +135,10 @@ export function render(regl, params, canvas) {
   // Calculate iteration level based on params.iterations
   // Map 0-200 iterations to 0-6 levels
   const iterationLevel = Math.max(0, Math.min(6, Math.floor(params.iterations / 30)));
-  
+
   // Use xScale to control the angle (map 0.5-1.5 to 60-100 degrees)
   const angle = 60 + (params.xScale - 0.5) * 40; // Default at 1.0 gives 80°
-  
+
   // Generate vertices for current iteration level
   const vertices = generateCesaro(iterationLevel, angle);
 
@@ -210,4 +201,3 @@ export const config = {
     zoom: 1,
   },
 };
-

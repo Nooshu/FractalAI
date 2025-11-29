@@ -15,7 +15,7 @@ import * as hybridJulia from '../hybrid-julia.js';
 
 // Export as a mapping object for easy lookup
 export const fractals = {
-  'julia': julia,
+  julia: julia,
   'julia-snakes': juliaSnakes,
   'multibrot-julia': multibrotJulia,
   'burning-ship-julia': burningShipJulia,
@@ -24,4 +24,3 @@ export const fractals = {
   'lambda-julia': lambdaJulia,
   'hybrid-julia': hybridJulia,
 };
-

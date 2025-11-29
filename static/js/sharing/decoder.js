@@ -36,4 +36,3 @@ export function decodeFractalState(encoded) {
     return null;
   }
 }
-

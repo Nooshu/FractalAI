@@ -11,20 +11,19 @@ describe('LongTaskDetector', () => {
 
     // Mock PerformanceObserver
     mockObserver = {
-      observe: vi.fn(),
-      disconnect: vi.fn(),
+      observe: vi.fn(function () {
+        // Simulate successful observe call
+      }),
+      disconnect: vi.fn(function () {
+        // Simulate disconnect call
+      }),
     };
 
-    global.PerformanceObserver = vi.fn((callback) => {
+    global.PerformanceObserver = vi.fn(function (callback) {
       // Store callback for triggering
       mockObserver.callback = callback;
       // Return mockObserver, but also set it as the observer
       return mockObserver;
-    });
-    
-    // Ensure observe doesn't throw (simulating successful initialization)
-    mockObserver.observe = vi.fn(() => {
-      // Simulate successful observe call
     });
   });
 
@@ -76,11 +75,13 @@ describe('LongTaskDetector', () => {
     it('should handle missing PerformanceObserver gracefully', () => {
       delete global.PerformanceObserver;
       const detector = new LongTaskDetector();
-      
+
       const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
       detector.start();
-      
-      expect(consoleWarnSpy).toHaveBeenCalledWith('[LongTaskDetector] PerformanceObserver not supported');
+
+      expect(consoleWarnSpy).toHaveBeenCalledWith(
+        '[LongTaskDetector] PerformanceObserver not supported'
+      );
       consoleWarnSpy.mockRestore();
     });
 
@@ -158,7 +159,7 @@ describe('LongTaskDetector', () => {
     it('should stop observing', () => {
       const detector = new LongTaskDetector();
       detector.start();
-      
+
       // Verify observer was created (if PerformanceObserver is supported)
       if (detector.observer) {
         detector.stop();
@@ -235,4 +236,3 @@ describe('LongTaskDetector', () => {
     });
   });
 });
-

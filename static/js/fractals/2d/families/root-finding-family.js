@@ -10,8 +10,7 @@ import * as nova from '../nova.js';
 
 // Export as a mapping object for easy lookup
 export const fractals = {
-  'newton': newton,
-  'halley': halley,
-  'nova': nova,
+  newton: newton,
+  halley: halley,
+  nova: nova,
 };
-

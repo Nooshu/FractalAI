@@ -9,7 +9,6 @@ import * as barnsleyFern from '../barnsley-fern.js';
 
 // Export as a mapping object for easy lookup
 export const fractals = {
-  'plant': plant,
+  plant: plant,
   'barnsley-fern': barnsleyFern,
 };
-

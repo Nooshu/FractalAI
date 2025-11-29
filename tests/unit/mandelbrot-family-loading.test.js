@@ -27,14 +27,14 @@ describe('Mandelbrot Family Code Splitting', () => {
   for (const fractalType of mandelbrotFamilyFractals) {
     it(`should load ${fractalType} from Mandelbrot family`, async () => {
       const module = await loader.loadFractal(fractalType);
-      
+
       // Verify module has required exports
       expect(module).toBeDefined();
       expect(module.render).toBeDefined();
       expect(typeof module.render).toBe('function');
       expect(module.is2D).toBe(true);
       expect(module.config).toBeDefined();
-      
+
       // Verify it's cached
       expect(loader.isCached(fractalType)).toBe(true);
     });
@@ -44,14 +44,14 @@ describe('Mandelbrot Family Code Splitting', () => {
     // Load first fractal
     const module1 = await loader.loadFractal('mandelbrot');
     expect(loader.isCached('mandelbrot')).toBe(true);
-    
+
     // Load another fractal from same family
     await loader.loadFractal('burning-ship');
     expect(loader.isCached('burning-ship')).toBe(true);
-    
+
     // Both should be cached
     expect(loader.cache.size).toBe(2);
-    
+
     // Loading again should return cached version
     const module1Cached = await loader.loadFractal('mandelbrot');
     expect(module1Cached).toBe(module1);
@@ -59,21 +59,21 @@ describe('Mandelbrot Family Code Splitting', () => {
 
   it('should load all Mandelbrot family fractals sequentially', async () => {
     const loadedModules = [];
-    
+
     for (const fractalType of mandelbrotFamilyFractals) {
       const module = await loader.loadFractal(fractalType);
       loadedModules.push({ fractalType, module });
-      
+
       // Verify each module is valid
       expect(module.render).toBeDefined();
       expect(typeof module.render).toBe('function');
     }
-    
+
     // All should be cached
     expect(loader.cache.size).toBe(mandelbrotFamilyFractals.length);
-    
+
     // Verify all modules are different instances
-    const uniqueModules = new Set(loadedModules.map(m => m.module));
+    const uniqueModules = new Set(loadedModules.map((m) => m.module));
     expect(uniqueModules.size).toBe(mandelbrotFamilyFractals.length);
   });
 
@@ -81,18 +81,18 @@ describe('Mandelbrot Family Code Splitting', () => {
     // Load mandelbrot
     const mandelbrot = await loader.loadFractal('mandelbrot');
     expect(mandelbrot).toBeDefined();
-    
+
     // Switch to burning-ship
     const burningShip = await loader.loadFractal('burning-ship');
     expect(burningShip).toBeDefined();
     expect(burningShip).not.toBe(mandelbrot);
-    
+
     // Switch to tricorn
     const tricorn = await loader.loadFractal('tricorn');
     expect(tricorn).toBeDefined();
     expect(tricorn).not.toBe(mandelbrot);
     expect(tricorn).not.toBe(burningShip);
-    
+
     // All should be cached
     expect(loader.cache.size).toBe(3);
   });
@@ -100,7 +100,7 @@ describe('Mandelbrot Family Code Splitting', () => {
   it('should maintain backward compatibility with individual imports', async () => {
     // Clear cache to force fresh load
     loader.clearCache();
-    
+
     // Load a non-Mandelbrot family fractal (should use individual import)
     // Using julia as it's not in Mandelbrot family
     try {
@@ -115,4 +115,3 @@ describe('Mandelbrot Family Code Splitting', () => {
     }
   });
 });
-

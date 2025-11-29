@@ -20,7 +20,7 @@ describe('FractalLoader', () => {
     const mockModule = {
       render: vi.fn(),
     };
-    
+
     vi.doMock('../../static/js/fractals/2d/mandelbrot.js', () => ({
       default: mockModule,
       ...mockModule,
@@ -34,7 +34,7 @@ describe('FractalLoader', () => {
   it('should clear cache', () => {
     loader.cache.set('test', {});
     expect(loader.cache.size).toBe(1);
-    
+
     loader.clearCache();
     expect(loader.cache.size).toBe(0);
   });
@@ -46,7 +46,7 @@ describe('FractalLoader', () => {
     // Suppress expected error and warning logs
     const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    
+
     try {
       await loader.loadFractal('nonexistent');
       // If it doesn't throw, it should have loaded mandelbrot as fallback
@@ -60,4 +60,3 @@ describe('FractalLoader', () => {
     }
   });
 });
-

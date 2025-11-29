@@ -8,9 +8,9 @@ function generateLevyCCurve(iterations) {
     // Base case: just a line from start to end
     return new Float32Array([-0.5, 0, 0.5, 0]);
   }
-  
+
   const vertices = [];
-  
+
   // Recursive function to generate the curve
   // Each segment is replaced by two perpendicular segments
   function levyC(x1, y1, x2, y2, depth) {
@@ -19,51 +19,53 @@ function generateLevyCCurve(iterations) {
       vertices.push(x2, y2);
       return;
     }
-    
+
     // Calculate the midpoint and the perpendicular point
     // The two new segments form a right angle (C shape)
     const dx = x2 - x1;
     const dy = y2 - y1;
-    
+
     // Midpoint of the original segment
     const midX = (x1 + x2) / 2;
     const midY = (y1 + y2) / 2;
-    
+
     // Perpendicular vector (rotate 90 degrees)
     // For a right angle, we rotate the direction vector by 90 degrees
-    const perpX = -dy / 2;  // Perpendicular component
+    const perpX = -dy / 2; // Perpendicular component
     const perpY = dx / 2;
-    
+
     // The three points: start, corner (midpoint + perpendicular), end
     const cornerX = midX + perpX;
     const cornerY = midY + perpY;
-    
+
     // Recursively generate the two segments
     levyC(x1, y1, cornerX, cornerY, depth + 1);
     levyC(cornerX, cornerY, x2, y2, depth + 1);
   }
-  
+
   // Start from left, end at right
   vertices.push(-0.5, 0);
   levyC(-0.5, 0, 0.5, 0, 0);
-  
+
   // Calculate bounding box and scale to fit
-  let minX = Infinity, maxX = -Infinity;
-  let minY = Infinity, maxY = -Infinity;
+  let minX = Infinity,
+    maxX = -Infinity;
+  let minY = Infinity,
+    maxY = -Infinity;
   for (let i = 0; i < vertices.length; i += 2) {
     minX = Math.min(minX, vertices[i]);
     maxX = Math.max(maxX, vertices[i]);
     minY = Math.min(minY, vertices[i + 1]);
     maxY = Math.max(maxY, vertices[i + 1]);
   }
-  
+
   // Calculate center and size
   const centerX = (minX + maxX) / 2;
   const centerY = (minY + maxY) / 2;
   const width = maxX - minX;
   const height = maxY - minY;
   const maxSize = Math.max(width, height);
-  
+
   // Scale to fit in a reasonable range and center at origin
   // Use a larger scale factor to make it clearly visible
   const scale = maxSize > 0 ? 3.0 / maxSize : 1.0;
@@ -72,7 +74,7 @@ function generateLevyCCurve(iterations) {
     scaledVertices[i] = (vertices[i] - centerX) * scale;
     scaledVertices[i + 1] = (vertices[i + 1] - centerY) * scale;
   }
-  
+
   return scaledVertices;
 }
 
@@ -135,7 +137,7 @@ export function render(regl, params, canvas) {
   // Calculate iteration level based on params.iterations
   // Map 0-200 iterations to 0-12 levels
   const iterationLevel = Math.max(0, Math.min(12, Math.floor(params.iterations / 15)));
-  
+
   // Generate vertices for current iteration level
   const vertices = generateLevyCCurve(iterationLevel);
   const vertexCount = vertices.length / 2;
@@ -199,4 +201,3 @@ export const config = {
     zoom: 1,
   },
 };
-

@@ -3,76 +3,82 @@ import { generatePaletteTexture } from '../utils.js';
 // Generate vertices for the generalized H-tree fractal with rotation and scaling
 function generateGeneralizedHTree(iterations, rotationFactor, scaleFactor) {
   const segments = [];
-  
+
   // rotationFactor: 0.0 = no rotation (classic H-tree), 1.0 = 45 degrees, 2.0 = 90 degrees
   // scaleFactor: controls size reduction at each level (0.3 to 0.6 typically)
-  
-  const rotationAngle = rotationFactor * Math.PI / 4; // 0 to 90 degrees (or more)
-  
+
+  const rotationAngle = (rotationFactor * Math.PI) / 4; // 0 to 90 degrees (or more)
+
   // Helper function to add a generalized H at a given center with rotation
   function addH(cx, cy, size, rotation, depth) {
     if (depth >= iterations) return;
-    
+
     const halfSize = size / 2;
-    
+
     // Calculate rotated positions for the H
     const cos = Math.cos(rotation);
     const sin = Math.sin(rotation);
-    
+
     // The H consists of:
     // - Two vertical lines (left and right)
     // - One horizontal line connecting them
-    
+
     // In local coordinates (before rotation):
     // Left line: from (-halfSize, -halfSize) to (-halfSize, +halfSize)
     // Right line: from (+halfSize, -halfSize) to (+halfSize, +halfSize)
     // Middle line: from (-halfSize, 0) to (+halfSize, 0)
-    
+
     // Apply rotation to each point
     const leftX = -halfSize;
     const rightX = halfSize;
     const topY = halfSize;
     const bottomY = -halfSize;
     const midY = 0;
-    
+
     // Rotate and translate each point
     function transform(x, y) {
       return {
         x: cx + x * cos - y * sin,
-        y: cy + x * sin + y * cos
+        y: cy + x * sin + y * cos,
       };
     }
-    
+
     const leftTop = transform(leftX, topY);
     const leftBottom = transform(leftX, bottomY);
     const rightTop = transform(rightX, topY);
     const rightBottom = transform(rightX, bottomY);
     const leftMid = transform(leftX, midY);
     const rightMid = transform(rightX, midY);
-    
+
     // Add the three lines that make up the H:
     // Left vertical line
     segments.push({
-      x1: leftBottom.x, y1: leftBottom.y,
-      x2: leftTop.x, y2: leftTop.y
+      x1: leftBottom.x,
+      y1: leftBottom.y,
+      x2: leftTop.x,
+      y2: leftTop.y,
     });
-    
+
     // Horizontal middle line
     segments.push({
-      x1: leftMid.x, y1: leftMid.y,
-      x2: rightMid.x, y2: rightMid.y
+      x1: leftMid.x,
+      y1: leftMid.y,
+      x2: rightMid.x,
+      y2: rightMid.y,
     });
-    
+
     // Right vertical line
     segments.push({
-      x1: rightBottom.x, y1: rightBottom.y,
-      x2: rightTop.x, y2: rightTop.y
+      x1: rightBottom.x,
+      y1: rightBottom.y,
+      x2: rightTop.x,
+      y2: rightTop.y,
     });
-    
+
     // Recursively add smaller H's at the four corners with additional rotation
     const newSize = size * scaleFactor;
     const newRotation = rotation + rotationAngle;
-    
+
     // Top-left
     addH(leftTop.x, leftTop.y, newSize, newRotation, depth + 1);
     // Top-right
@@ -82,21 +88,21 @@ function generateGeneralizedHTree(iterations, rotationFactor, scaleFactor) {
     // Bottom-right
     addH(rightBottom.x, rightBottom.y, newSize, newRotation, depth + 1);
   }
-  
+
   // Start with the root H at center with no initial rotation
   addH(0, 0, 0.8, 0, 0);
-  
+
   // Convert segments to vertex array for line rendering
   const vertices = new Float32Array(segments.length * 4);
   let idx = 0;
-  
+
   for (const seg of segments) {
     vertices[idx++] = seg.x1;
     vertices[idx++] = seg.y1;
     vertices[idx++] = seg.x2;
     vertices[idx++] = seg.y2;
   }
-  
+
   return vertices;
 }
 
@@ -161,19 +167,19 @@ export function render(regl, params, canvas) {
 
   // Calculate iteration level based on params.iterations
   const iterationLevel = Math.max(0, Math.min(8, Math.floor(params.iterations / 25)));
-  
+
   // Map xScale (0-2) to rotation factor:
   // 0.0 = no rotation (classic H-tree)
   // 1.0 = 45 degrees rotation per level
   // 2.0 = 90 degrees rotation per level
   const rotationFactor = params.xScale;
-  
+
   // Map yScale (0-2) to scaling factor:
   // 0.5 = small children (0.35 size)
   // 1.0 = medium children (0.5 size - classic H-tree)
   // 1.5+ = large children (0.6+ size)
   const scaleFactor = 0.3 + params.yScale * 0.15; // 0.3 to 0.6
-  
+
   // Generate vertices for current parameters
   const vertices = generateGeneralizedHTree(iterationLevel, rotationFactor, scaleFactor);
 
@@ -236,4 +242,3 @@ export const config = {
     zoom: 1,
   },
 };
-

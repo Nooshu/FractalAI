@@ -22,7 +22,8 @@ function formatCoordinate(value, precision = 3) {
  */
 function showCopyFeedback(button, duration = 1000) {
   const originalHTML = button.innerHTML;
-  button.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"></path></svg>';
+  button.innerHTML =
+    '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"></path></svg>';
   button.style.color = 'var(--accent-blue)';
 
   setTimeout(() => {
@@ -38,34 +39,34 @@ function showCopyFeedback(button, duration = 1000) {
  */
 function formatThemeName(theme) {
   const nameMap = {
-    'classic': 'Classic',
-    'fire': 'Fire',
-    'ocean': 'Ocean',
-    'rainbow': 'Rainbow',
+    classic: 'Classic',
+    fire: 'Fire',
+    ocean: 'Ocean',
+    rainbow: 'Rainbow',
     'rainbow-pastel': 'Rainbow Pastel',
     'rainbow-dark': 'Rainbow Dark',
     'rainbow-vibrant': 'Rainbow Vibrant',
     'rainbow-double': 'Rainbow Double',
     'rainbow-shifted': 'Rainbow Shifted',
-    'monochrome': 'Monochrome',
-    'forest': 'Forest',
-    'sunset': 'Sunset',
-    'purple': 'Purple',
-    'cyan': 'Cyan',
-    'gold': 'Gold',
-    'ice': 'Ice',
-    'neon': 'Neon',
-    'cosmic': 'Cosmic',
-    'aurora': 'Aurora',
-    'coral': 'Coral',
-    'autumn': 'Autumn',
-    'midnight': 'Midnight',
-    'emerald': 'Emerald',
-    'rosegold': 'Rose Gold',
-    'electric': 'Electric',
-    'vintage': 'Vintage',
-    'tropical': 'Tropical',
-    'galaxy': 'Galaxy',
+    monochrome: 'Monochrome',
+    forest: 'Forest',
+    sunset: 'Sunset',
+    purple: 'Purple',
+    cyan: 'Cyan',
+    gold: 'Gold',
+    ice: 'Ice',
+    neon: 'Neon',
+    cosmic: 'Cosmic',
+    aurora: 'Aurora',
+    coral: 'Coral',
+    autumn: 'Autumn',
+    midnight: 'Midnight',
+    emerald: 'Emerald',
+    rosegold: 'Rose Gold',
+    electric: 'Electric',
+    vintage: 'Vintage',
+    tropical: 'Tropical',
+    galaxy: 'Galaxy',
   };
   return nameMap[theme] || theme.charAt(0).toUpperCase() + theme.slice(1);
 }
@@ -175,7 +176,7 @@ export function setupDebugCopy(getCurrentFractalType, getParams) {
     copyAll.addEventListener('click', () => {
       const params = getParams();
       const fractalType = getCurrentFractalType();
-      
+
       if (!params) return;
 
       const fractalName = fractalType || '-';
@@ -188,7 +189,8 @@ export function setupDebugCopy(getCurrentFractalType, getParams) {
 
       navigator.clipboard.writeText(allInfo).then(() => {
         const originalHTML = copyAll.innerHTML;
-        copyAll.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"></path></svg>Copied!';
+        copyAll.innerHTML =
+          '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"></path></svg>Copied!';
         copyAll.style.background = 'var(--accent-blue)';
 
         setTimeout(() => {
@@ -199,4 +201,3 @@ export function setupDebugCopy(getCurrentFractalType, getParams) {
     });
   }
 }
-

@@ -56,9 +56,12 @@ export function createTileRequest(tileId, x, y, width, height, params, fractalTy
       zoom: params.zoom,
       offset: { x: params.offset.x, y: params.offset.y },
       iterations: params.iterations,
-      juliaC: params.juliaC !== undefined && params.juliaC !== null
-        ? { x: params.juliaC.x, y: params.juliaC.y }
-        : (params.juliaC === null ? null : undefined),
+      juliaC:
+        params.juliaC !== undefined && params.juliaC !== null
+          ? { x: params.juliaC.x, y: params.juliaC.y }
+          : params.juliaC === null
+            ? null
+            : undefined,
       xScale: params.xScale,
       yScale: params.yScale,
       colorScheme: params.colorScheme,
@@ -105,4 +108,3 @@ export function isTileResponse(message) {
 export function isCancelRequest(message) {
   return !!(message && message.type === 'cancel');
 }
-

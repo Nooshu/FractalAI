@@ -17,7 +17,7 @@ import * as triangularSubdivision from '../triangular-subdivision.js';
 
 // Export as a mapping object for easy lookup
 export const fractals = {
-  'sierpinski': sierpinski,
+  sierpinski: sierpinski,
   'sierpinski-arrowhead': sierpinskiArrowhead,
   'sierpinski-carpet': sierpinskiCarpet,
   'sierpinski-gasket': sierpinskiGasket,
@@ -28,4 +28,3 @@ export const fractals = {
   'recursive-polygon-splitting': recursivePolygonSplitting,
   'triangular-subdivision': triangularSubdivision,
 };
-

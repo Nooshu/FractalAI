@@ -72,7 +72,7 @@ describe('FrameCache', () => {
     };
     const key = cache.generateCacheKey(mockCanvas, 'mandelbrot', params);
     cache.cache.set(key, { framebuffer: mockFramebuffer, timestamp: Date.now() });
-    
+
     const cached = cache.getCachedFrame(mockCanvas, 'mandelbrot', params, mockRegl);
     expect(cached).toBeTruthy();
     expect(cached.framebuffer).toBe(mockFramebuffer);
@@ -116,19 +116,19 @@ describe('FrameCache', () => {
       yScale: 1.0,
       juliaC: { x: 0, y: 0 },
     };
-    
+
     // Fill cache to max size
     for (let i = 0; i < CONFIG.rendering.cacheSize; i++) {
       const framebuffer = { destroy: vi.fn(), color: {} };
       cache.cacheFrame(mockCanvas, 'mandelbrot', { ...params, zoom: i }, framebuffer);
     }
-    
+
     expect(cache.cache.size).toBe(CONFIG.rendering.cacheSize);
-    
+
     // Add one more - should evict oldest
     const newFramebuffer = { destroy: vi.fn(), color: {} };
     cache.cacheFrame(mockCanvas, 'mandelbrot', { ...params, zoom: 999 }, newFramebuffer);
-    
+
     expect(cache.cache.size).toBe(CONFIG.rendering.cacheSize);
   });
 
@@ -144,10 +144,9 @@ describe('FrameCache', () => {
     };
     cache.cacheFrame(mockCanvas, 'mandelbrot', params, mockFramebuffer);
     expect(cache.cache.size).toBe(1);
-    
+
     cache.clear();
     expect(cache.cache.size).toBe(0);
     expect(mockFramebuffer.destroy).toHaveBeenCalled();
   });
 });
-

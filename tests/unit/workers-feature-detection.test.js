@@ -178,4 +178,3 @@ describe('feature-detection', () => {
     });
   });
 });
-

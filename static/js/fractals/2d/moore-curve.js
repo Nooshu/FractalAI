@@ -6,7 +6,7 @@ import { generatePaletteTexture } from '../utils.js';
 // and connecting them in a specific pattern with rotations
 function generateMooreCurve(iterations) {
   const vertices = [];
-  
+
   // Helper function to generate a Moore curve segment
   // The curve fills a square from (x1, y1) to (x2, y2)
   // rot: rotation type (0, 1, 2, 3) determines how the pattern is oriented
@@ -16,30 +16,30 @@ function generateMooreCurve(iterations) {
       vertices.push(x2, y2);
       return;
     }
-    
+
     // Calculate the size of the square
     const width = x2 - x1;
     const height = y2 - y1;
-    
+
     // Divide into 4 sub-squares (2x2 grid)
     const halfWidth = width / 2;
     const halfHeight = height / 2;
-    
+
     // Define the 4 sub-squares in a 2x2 grid
     // Each square is defined by its top-left and bottom-right corners
     const squares = [
-      [x1, y1, x1 + halfWidth, y1 + halfHeight],                    // Top-left (0)
+      [x1, y1, x1 + halfWidth, y1 + halfHeight], // Top-left (0)
       [x1, y1 + halfHeight, x1 + halfWidth, y1 + halfHeight * 2], // Bottom-left (1)
       [x1 + halfWidth, y1 + halfHeight, x1 + halfWidth * 2, y1 + halfHeight * 2], // Bottom-right (2)
-      [x1 + halfWidth, y1, x1 + halfWidth * 2, y1 + halfHeight],   // Top-right (3)
+      [x1 + halfWidth, y1, x1 + halfWidth * 2, y1 + halfHeight], // Top-right (3)
     ];
-    
+
     // Moore curve pattern based on rotation
     // The pattern determines the order of visiting the 4 quadrants
     // and how each sub-curve is rotated
     // Moore curve is similar to Hilbert but forms a closed loop
     let pattern, rotations;
-    
+
     if (rot === 0) {
       // Standard orientation: top-left -> bottom-left -> bottom-right -> top-right -> back to start
       pattern = [0, 1, 2, 3];
@@ -52,29 +52,30 @@ function generateMooreCurve(iterations) {
       // Rotated 180°: bottom-right -> top-right -> top-left -> bottom-left
       pattern = [2, 3, 0, 1];
       rotations = [3, 2, 2, 1];
-    } else { // rot === 3
+    } else {
+      // rot === 3
       // Rotated 90° counter-clockwise: bottom-left -> bottom-right -> top-right -> top-left
       pattern = [1, 2, 3, 0];
       rotations = [2, 3, 3, 0];
     }
-    
+
     for (let i = 0; i < pattern.length; i++) {
       const idx = pattern[i];
       const [sqX1, sqY1, sqX2, sqY2] = squares[idx];
       const nextRot = rotations[i];
-      
+
       // Recursively generate the curve for this sub-square
       moore(sqX1, sqY1, sqX2, sqY2, depth + 1, nextRot);
     }
   }
-  
+
   // Start from top-left corner, fill the square from (-0.5, -0.5) to (0.5, 0.5)
   // Moore curve forms a closed loop, so we start and end at the same point
   vertices.push(-0.5, -0.5);
   moore(-0.5, -0.5, 0.5, 0.5, 0, 0);
   // Close the loop by returning to the starting point
   vertices.push(-0.5, -0.5);
-  
+
   return new Float32Array(vertices);
 }
 
@@ -139,7 +140,7 @@ export function render(regl, params, canvas) {
   // Map 0-200 iterations to 0-6 levels
   // Moore curve grows as 4^n, so keep it reasonable
   const iterationLevel = Math.max(0, Math.min(6, Math.floor(params.iterations / 33)));
-  
+
   // Generate vertices for current iteration level
   const vertices = generateMooreCurve(iterationLevel);
 
@@ -202,4 +203,3 @@ export const config = {
     zoom: 1,
   },
 };
-

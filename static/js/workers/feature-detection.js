@@ -44,10 +44,7 @@ export function getHardwareConcurrency() {
  * @returns {boolean}
  */
 export function shouldEnableWorkerOptimizations(options = {}) {
-  const {
-    requireSharedArrayBuffer = false,
-    minCores = 2,
-  } = options;
+  const { requireSharedArrayBuffer = false, minCores = 2 } = options;
 
   // Basic requirement: Workers must be supported
   if (!supportsWorkers()) {
@@ -81,4 +78,3 @@ export function getWorkerCapabilities() {
     recommended: shouldEnableWorkerOptimizations(),
   };
 }
-

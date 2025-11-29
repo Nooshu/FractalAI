@@ -116,7 +116,8 @@ export class BenchmarkUI {
         resultsDiv.innerHTML = `<pre>${result.report}</pre>`;
         exportJsonBtn.disabled = false;
         exportTxtBtn.disabled = false;
-        statusDiv.innerHTML = '<div class="benchmark-success">✓ Benchmark completed successfully</div>';
+        statusDiv.innerHTML =
+          '<div class="benchmark-success">✓ Benchmark completed successfully</div>';
       } else {
         statusDiv.innerHTML = `<div class="benchmark-error">✗ Benchmark failed: ${result.error}</div>`;
       }
@@ -207,4 +208,3 @@ export function addBenchmarkButton(benchmarkUI) {
     benchmarkUI.show();
   });
 }
-

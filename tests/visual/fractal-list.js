@@ -12,7 +12,7 @@ export const FRACTAL_TYPES = [
   'burning-ship',
   'tricorn',
   'nebulabrot',
-  
+
   // Julia Sets
   'julia',
   'julia-snakes',
@@ -22,7 +22,7 @@ export const FRACTAL_TYPES = [
   'phoenix-julia',
   'lambda-julia',
   'hybrid-julia',
-  
+
   // Sierpinski Family
   'sierpinski',
   'sierpinski-arrowhead',
@@ -34,12 +34,12 @@ export const FRACTAL_TYPES = [
   'quadrilateral-subdivision',
   'recursive-polygon-splitting',
   'triangular-subdivision',
-  
+
   // Koch Family
   'fractal-islands',
   'koch',
   'quadratic-koch',
-  
+
   // Cantor Family
   'cantor',
   'cantor-dust-base-expansion',
@@ -47,7 +47,7 @@ export const FRACTAL_TYPES = [
   'fat-cantor',
   'smith-volterra-cantor',
   'random-cantor',
-  
+
   // Dragon Curves
   'binary-dragon',
   'dragon-lsystem',
@@ -55,28 +55,28 @@ export const FRACTAL_TYPES = [
   'heighway-dragon',
   'terdragon',
   'twindragon',
-  
+
   // Space-Filling Curves
   'gosper-curve',
   'hilbert-curve',
   'levy-c-curve',
   'moore-curve',
   'peano-curve',
-  
+
   // Root-Finding Fractals
   'newton',
   'halley',
   'nova',
-  
+
   // Plant Family
   'plant',
   'barnsley-fern',
-  
+
   // Tilings
   'domino-substitution',
   'pinwheel-tiling',
   'snowflake-tiling',
-  
+
   // Other Fractals
   'amman-tiling',
   'apollonian-gasket',
@@ -120,7 +120,7 @@ export const FRACTAL_CONFIGS = {
     threshold: 0.2, // Pixel difference threshold (0-1)
     maxDiffPixels: 20000, // Maximum number of different pixels (default)
   },
-  
+
   // Fractals that need more iterations
   highDetail: {
     iterations: 200,
@@ -129,7 +129,7 @@ export const FRACTAL_CONFIGS = {
     threshold: 0.2,
     maxDiffPixels: 20000,
   },
-  
+
   // Fractals that may have slight variations (random elements)
   variable: {
     iterations: 125,
@@ -138,10 +138,10 @@ export const FRACTAL_CONFIGS = {
     threshold: 0.3, // Higher threshold for random fractals
     maxDiffPixels: 200000, // Much higher limit for highly random fractals (allows significant variation)
   },
-  
+
   // Specific fractal overrides
   fractals: {
-    'nebulabrot': { iterations: 100, waitForRender: 4000, threshold: 0.25, maxDiffPixels: 20000 },
+    nebulabrot: { iterations: 100, waitForRender: 4000, threshold: 0.25, maxDiffPixels: 20000 },
     'random-cantor': { threshold: 0.3, maxDiffPixels: 30000 },
     'random-midpoint-displacement': { threshold: 0.3, maxDiffPixels: 30000 },
     'diffusion-limited-aggregation': { threshold: 0.3, maxDiffPixels: 30000 },
@@ -159,13 +159,13 @@ export function getFractalConfig(fractalType) {
   if (specific) {
     return { ...FRACTAL_CONFIGS.default, ...specific };
   }
-  
+
   // Check if it's a high-detail fractal
   const highDetailFractals = ['mandelbrot', 'julia', 'multibrot', 'burning-ship'];
   if (highDetailFractals.includes(fractalType)) {
     return { ...FRACTAL_CONFIGS.default, ...FRACTAL_CONFIGS.highDetail };
   }
-  
+
   // Check if it's a variable/random fractal
   const variableFractals = [
     'random-cantor',
@@ -177,7 +177,6 @@ export function getFractalConfig(fractalType) {
   if (variableFractals.includes(fractalType)) {
     return { ...FRACTAL_CONFIGS.default, ...FRACTAL_CONFIGS.variable };
   }
-  
+
   return FRACTAL_CONFIGS.default;
 }
-

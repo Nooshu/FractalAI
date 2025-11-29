@@ -23,4 +23,3 @@ export function getVersion() {
 export function getVersionString() {
   return `FractalAI v${APP_VERSION}`;
 }
-

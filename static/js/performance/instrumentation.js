@@ -12,9 +12,7 @@ export class PerformanceInstrumentation {
    * @param {boolean} options.enabled - Whether instrumentation is enabled (default: true in dev)
    */
   constructor(options = {}) {
-    this.enabled = options.enabled !== undefined 
-      ? options.enabled 
-      : (import.meta.env?.DEV || false);
+    this.enabled = options.enabled !== undefined ? options.enabled : import.meta.env?.DEV || false;
     this.metrics = {
       renderCount: 0,
       cacheHits: 0,
@@ -88,15 +86,16 @@ export class PerformanceInstrumentation {
   getMetrics() {
     return {
       ...this.metrics,
-      cacheHitRate: this.metrics.cacheHits + this.metrics.cacheMisses > 0
-        ? this.metrics.cacheHits / (this.metrics.cacheHits + this.metrics.cacheMisses)
-        : 0,
-      avgWorkerTaskTime: this.metrics.workerTasks > 0
-        ? this.metrics.workerTaskTime / this.metrics.workerTasks
-        : 0,
-      avgFrameTime: this.metrics.frameTime.length > 0
-        ? this.metrics.frameTime.reduce((a, b) => a + b, 0) / this.metrics.frameTime.length
-        : 0,
+      cacheHitRate:
+        this.metrics.cacheHits + this.metrics.cacheMisses > 0
+          ? this.metrics.cacheHits / (this.metrics.cacheHits + this.metrics.cacheMisses)
+          : 0,
+      avgWorkerTaskTime:
+        this.metrics.workerTasks > 0 ? this.metrics.workerTaskTime / this.metrics.workerTasks : 0,
+      avgFrameTime:
+        this.metrics.frameTime.length > 0
+          ? this.metrics.frameTime.reduce((a, b) => a + b, 0) / this.metrics.frameTime.length
+          : 0,
     };
   }
 
@@ -127,4 +126,3 @@ export class PerformanceInstrumentation {
 
 // Export singleton instance
 export const performanceInstrumentation = new PerformanceInstrumentation();
-

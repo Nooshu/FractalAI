@@ -3,41 +3,47 @@ import { generatePaletteTexture } from '../utils.js';
 // Generate vertices for the H-tree fractal
 function generateHTree(iterations) {
   const segments = [];
-  
+
   // Helper function to add an H at a given center with a given size
   function addH(cx, cy, size, depth) {
     if (depth >= iterations) return;
-    
+
     const halfSize = size / 2;
-    
+
     // Vertical lines on left and right
     const leftX = cx - halfSize;
     const rightX = cx + halfSize;
     const topY = cy + halfSize;
     const bottomY = cy - halfSize;
-    
+
     // Add the three lines that make up the H:
     // Left vertical line
     segments.push({
-      x1: leftX, y1: bottomY,
-      x2: leftX, y2: topY
+      x1: leftX,
+      y1: bottomY,
+      x2: leftX,
+      y2: topY,
     });
-    
+
     // Horizontal middle line
     segments.push({
-      x1: leftX, y1: cy,
-      x2: rightX, y2: cy
+      x1: leftX,
+      y1: cy,
+      x2: rightX,
+      y2: cy,
     });
-    
+
     // Right vertical line
     segments.push({
-      x1: rightX, y1: bottomY,
-      x2: rightX, y2: topY
+      x1: rightX,
+      y1: bottomY,
+      x2: rightX,
+      y2: topY,
     });
-    
+
     // Recursively add smaller H's at the four corners
     const newSize = size / 2;
-    
+
     // Top-left
     addH(leftX, topY, newSize, depth + 1);
     // Top-right
@@ -47,21 +53,21 @@ function generateHTree(iterations) {
     // Bottom-right
     addH(rightX, bottomY, newSize, depth + 1);
   }
-  
+
   // Start with the root H at center with size 0.8
   addH(0, 0, 0.8, 0);
-  
+
   // Convert segments to vertex array for line rendering
   const vertices = new Float32Array(segments.length * 4);
   let idx = 0;
-  
+
   for (const seg of segments) {
     vertices[idx++] = seg.x1;
     vertices[idx++] = seg.y1;
     vertices[idx++] = seg.x2;
     vertices[idx++] = seg.y2;
   }
-  
+
   return vertices;
 }
 
@@ -123,7 +129,7 @@ export function render(regl, params, canvas) {
   // Calculate iteration level based on params.iterations
   // Map 0-200 iterations to 0-8 levels (H-tree gets very dense quickly)
   const iterationLevel = Math.max(0, Math.min(8, Math.floor(params.iterations / 25)));
-  
+
   // Generate vertices for current iteration level
   const vertices = generateHTree(iterationLevel);
 
@@ -186,4 +192,3 @@ export const config = {
     zoom: 1,
   },
 };
-

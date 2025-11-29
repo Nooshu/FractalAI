@@ -14,17 +14,20 @@ Visual regression testing captures screenshots of each fractal and compares them
 ## Setup
 
 1. **Install Playwright:**
+
 ```bash
 npm install --save-dev @playwright/test
 npx playwright install chromium
 ```
 
 2. **Update baselines (first run):**
+
 ```bash
 npm run test:visual:update
 ```
 
 3. **Run tests:**
+
 ```bash
 npm run test:visual
 ```
@@ -48,6 +51,7 @@ npm run test:visual:update
 ```
 
 Or update a specific fractal:
+
 ```bash
 npx playwright test --update-snapshots -g "mandelbrot"
 ```
@@ -91,6 +95,7 @@ npx playwright show-report
 ```
 
 This opens an interactive report showing:
+
 - Passed/failed tests
 - Screenshot comparisons
 - Diff images highlighting differences
@@ -152,4 +157,3 @@ const screenshot = await canvas.screenshot();
 const baseline = await fs.readFile('baseline.png');
 const diff = await compareImages(screenshot, baseline);
 ```
-

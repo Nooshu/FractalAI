@@ -5,7 +5,7 @@ import { generatePaletteTexture } from '../utils.js';
 // and connecting them in a specific pattern
 function generatePeanoCurve(iterations) {
   const vertices = [];
-  
+
   // Helper function to generate a Peano curve segment
   // The curve fills a square from (x1, y1) to (x2, y2)
   // direction: 1 = forward, -1 = reverse
@@ -15,20 +15,20 @@ function generatePeanoCurve(iterations) {
       vertices.push(x2, y2);
       return;
     }
-    
+
     // Calculate the size of the square
     const width = x2 - x1;
     const height = y2 - y1;
-    
+
     // Divide into 9 sub-squares (3x3 grid)
     const thirdWidth = width / 3;
     const thirdHeight = height / 3;
-    
+
     // Define the 9 sub-squares in a 3x3 grid
     // Each square is defined by its top-left and bottom-right corners
     const squares = [
       // Row 1 (top)
-      [x1, y1, x1 + thirdWidth, y1 + thirdHeight],                    // Top-left
+      [x1, y1, x1 + thirdWidth, y1 + thirdHeight], // Top-left
       [x1 + thirdWidth, y1, x1 + thirdWidth * 2, y1 + thirdHeight], // Top-center
       [x1 + thirdWidth * 2, y1, x1 + thirdWidth * 3, y1 + thirdHeight], // Top-right
       // Row 2 (middle)
@@ -40,29 +40,29 @@ function generatePeanoCurve(iterations) {
       [x1 + thirdWidth, y1 + thirdHeight * 2, x1 + thirdWidth * 2, y1 + thirdHeight * 3], // Bottom-center
       [x1 + thirdWidth * 2, y1 + thirdHeight * 2, x1 + thirdWidth * 3, y1 + thirdHeight * 3], // Bottom-right
     ];
-    
+
     // Peano curve pattern: visit all 9 squares in a specific order
     // The pattern alternates direction based on depth to create the space-filling curve
     const forwardPattern = [0, 1, 2, 5, 4, 3, 6, 7, 8]; // Forward traversal
     const reversePattern = [8, 7, 6, 3, 4, 5, 2, 1, 0]; // Reverse traversal
     const pattern = direction === 1 ? forwardPattern : reversePattern;
-    
+
     for (let i = 0; i < pattern.length; i++) {
       const idx = pattern[i];
       const [sqX1, sqY1, sqX2, sqY2] = squares[idx];
-      
+
       // Alternate direction for next level to create the Peano pattern
-      const nextDirection = (i % 2 === 0) ? direction : -direction;
-      
+      const nextDirection = i % 2 === 0 ? direction : -direction;
+
       // Recursively generate the curve for this sub-square
       peano(sqX1, sqY1, sqX2, sqY2, depth + 1, nextDirection);
     }
   }
-  
+
   // Start from top-left corner, fill the square from (-0.5, -0.5) to (0.5, 0.5)
   vertices.push(-0.5, -0.5);
   peano(-0.5, -0.5, 0.5, 0.5, 0, 1);
-  
+
   return new Float32Array(vertices);
 }
 
@@ -127,7 +127,7 @@ export function render(regl, params, canvas) {
   // Map 0-200 iterations to 0-5 levels
   // Peano curve grows as 9^n, so keep it reasonable
   const iterationLevel = Math.max(0, Math.min(5, Math.floor(params.iterations / 40)));
-  
+
   // Generate vertices for current iteration level
   const vertices = generatePeanoCurve(iterationLevel);
 
@@ -190,4 +190,3 @@ export const config = {
     zoom: 1,
   },
 };
-

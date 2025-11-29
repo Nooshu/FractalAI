@@ -163,20 +163,12 @@ describe('fractals utils module', () => {
       return () => {};
     });
 
-    const factory1 = createCachedShaderDrawCommand(
-      regl,
-      'mandelbrot',
-      'vert',
-      'frag',
-      { attributes: {} }
-    );
-    const factory2 = createCachedShaderDrawCommand(
-      regl,
-      'mandelbrot',
-      'vert',
-      'frag',
-      { attributes: {} }
-    );
+    const factory1 = createCachedShaderDrawCommand(regl, 'mandelbrot', 'vert', 'frag', {
+      attributes: {},
+    });
+    const factory2 = createCachedShaderDrawCommand(regl, 'mandelbrot', 'vert', 'frag', {
+      attributes: {},
+    });
 
     expect(factory1).toBe(factory2);
     const draw = factory1({ uZoom: 1 });
@@ -185,5 +177,3 @@ describe('fractals utils module', () => {
     clearShaderCache();
   });
 });
-
-

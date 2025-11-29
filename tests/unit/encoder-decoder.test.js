@@ -58,7 +58,11 @@ describe('encodeFractalState and decodeFractalState', () => {
       expect(decoded.yScale).toBeCloseTo(testCase.params.yScale, 2);
 
       // Only check Julia parameters if it's a Julia-type fractal
-      if (testCase.type === 'julia' || testCase.type === 'multibrot-julia' || testCase.type.includes('julia')) {
+      if (
+        testCase.type === 'julia' ||
+        testCase.type === 'multibrot-julia' ||
+        testCase.type.includes('julia')
+      ) {
         if (testCase.params.juliaC) {
           expect(decoded.juliaCX).toBeCloseTo(testCase.params.juliaC.x, 5);
           expect(decoded.juliaCY).toBeCloseTo(testCase.params.juliaC.y, 5);
@@ -102,4 +106,3 @@ describe('encodeFractalState and decodeFractalState', () => {
     expect(encoded).not.toContain('=');
   });
 });
-

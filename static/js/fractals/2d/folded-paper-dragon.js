@@ -7,27 +7,27 @@ function generateFoldedPaperDragon(iterations) {
   // Generate the paper-folding sequence
   // Start with an empty sequence (no folds)
   let sequence = [];
-  
+
   // Build the sequence by repeatedly folding the paper
   // Each fold creates a crease pattern: existing sequence + 1 (right) + reverse of sequence with flipped signs
   for (let iter = 0; iter < iterations; iter++) {
     const newSequence = [...sequence];
     newSequence.push(1); // Add a right turn (crease) in the middle
-    
+
     // Append the reverse of the sequence with signs flipped
     for (let i = sequence.length - 1; i >= 0; i--) {
       newSequence.push(-sequence[i]);
     }
-    
+
     sequence = newSequence;
   }
-  
+
   // Now convert the sequence to vertices
   // Starting position and direction
   let x = -0.5;
   let y = 0;
   let angle = 0; // Start facing right
-  
+
   // Calculate step size to fit the curve in view
   // Optimized: replace Math.pow with explicit calculation
   const sqrt2 = 1.4142135623730951;
@@ -36,22 +36,22 @@ function generateFoldedPaperDragon(iterations) {
     sqrt2Power *= sqrt2;
   }
   const stepLength = 1.0 / sqrt2Power;
-  
+
   const vertices = [];
   vertices.push(x, y);
-  
+
   // Draw each segment based on the paper-folding sequence
   for (let i = 0; i < sequence.length; i++) {
     // Move forward
     x += Math.cos(angle) * stepLength;
     y += Math.sin(angle) * stepLength;
     vertices.push(x, y);
-    
+
     // Turn based on the sequence value
     // 1 = turn right (clockwise), -1 = turn left (counter-clockwise)
-    angle += sequence[i] * Math.PI / 2;
+    angle += (sequence[i] * Math.PI) / 2;
   }
-  
+
   return new Float32Array(vertices);
 }
 
@@ -116,7 +116,7 @@ export function render(regl, params, canvas) {
   // Map 0-200 iterations to 0-15 levels
   // Paper-folding dragon doubles in complexity each iteration, so keep it reasonable
   const iterationLevel = Math.max(0, Math.min(15, Math.floor(params.iterations / 13)));
-  
+
   // Generate vertices for current iteration level
   const vertices = generateFoldedPaperDragon(iterationLevel);
 
@@ -179,4 +179,3 @@ export const config = {
     zoom: 1,
   },
 };
-

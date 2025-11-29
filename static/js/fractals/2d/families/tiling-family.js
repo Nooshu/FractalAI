@@ -14,4 +14,3 @@ export const fractals = {
   'pinwheel-tiling': pinwheelTiling,
   'snowflake-tiling': snowflakeTiling,
 };
-

@@ -26,16 +26,15 @@ export function calculatePixelRatio(zoom) {
  */
 export function updatePixelRatio(canvas, zoom) {
   if (!canvas) return;
-  
+
   const pixelRatio = calculatePixelRatio(zoom);
   const container = canvas.parentElement;
   const rect = container.getBoundingClientRect();
   const width = rect.width || container.clientWidth || CONFIG.canvas.defaultWidth;
   const height = rect.height || container.clientHeight || CONFIG.canvas.defaultHeight;
-  
+
   canvas.width = width * pixelRatio;
   canvas.height = height * pixelRatio;
   canvas.style.width = width + 'px';
   canvas.style.height = height + 'px';
 }
-

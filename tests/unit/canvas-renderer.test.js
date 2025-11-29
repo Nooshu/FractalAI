@@ -57,5 +57,3 @@ describe('initCanvasRenderer', () => {
     expect(updatePixelRatio).toHaveBeenCalledWith(canvas, 2);
   });
 });
-
-

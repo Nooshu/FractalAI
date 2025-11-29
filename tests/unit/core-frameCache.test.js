@@ -88,5 +88,3 @@ describe('core FrameCache', () => {
     expect(mockFramebuffer.destroy).toHaveBeenCalled();
   });
 });
-
-

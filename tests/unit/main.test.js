@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
 /**
  * Functional tests for main.js
- * 
+ *
  * Since main.js uses global state and DOM dependencies, these tests:
  * - Mock DOM elements and browser APIs
  * - Mock regl and WebGL context
@@ -74,7 +74,6 @@ describe('main.js functional tests', () => {
       },
     };
 
-
     // Create mock document
     mockDocument = {
       getElementById: vi.fn((id) => {
@@ -107,11 +106,13 @@ describe('main.js functional tests', () => {
         if (id === 'debug-copy-offset-x') return { addEventListener: vi.fn() };
         if (id === 'debug-copy-offset-y') return { addEventListener: vi.fn() };
         if (id === 'debug-copy-all') return { addEventListener: vi.fn(), innerHTML: '', style: {} };
-        if (id === 'share-fractal-btn') return { addEventListener: vi.fn(), innerHTML: '', style: {} };
-        if (id === 'selection-box') return {
-          style: { left: '', top: '', width: '', height: '' },
-          classList: { add: vi.fn(), remove: vi.fn() },
-        };
+        if (id === 'share-fractal-btn')
+          return { addEventListener: vi.fn(), innerHTML: '', style: {} };
+        if (id === 'selection-box')
+          return {
+            style: { left: '', top: '', width: '', height: '' },
+            classList: { add: vi.fn(), remove: vi.fn() },
+          };
         if (id === 'update-fractal') return { addEventListener: vi.fn() };
         if (id === 'reset-view') return { addEventListener: vi.fn() };
         if (id === 'screenshot') return { addEventListener: vi.fn() };
@@ -167,7 +168,7 @@ describe('main.js functional tests', () => {
       writable: true,
       configurable: true,
     });
-    
+
     Object.defineProperty(global, 'window', {
       value: mockWindow,
       writable: true,
@@ -709,4 +710,3 @@ describe('main.js functional tests', () => {
     });
   });
 });
-

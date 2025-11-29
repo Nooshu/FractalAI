@@ -20,7 +20,7 @@ describe('LifecycleManager', () => {
   describe('startSession', () => {
     it('should start a new session', () => {
       const sessionId = manager.startSession('fractal-change', 'mandelbrot');
-      
+
       expect(sessionId).toBeDefined();
       expect(sessionId).toContain('fractal-change');
       expect(sessionId).toContain('mandelbrot');
@@ -30,10 +30,10 @@ describe('LifecycleManager', () => {
 
     it('should end previous session when starting new one', () => {
       const cancelSpy = vi.spyOn(appState, 'cancelWorkerTasks');
-      
+
       manager.startSession('fractal-change', 'mandelbrot');
       manager.startSession('zoom', 'julia');
-      
+
       expect(cancelSpy).toHaveBeenCalled();
       expect(manager.getCurrentSessionId()).toContain('zoom');
     });
@@ -44,10 +44,10 @@ describe('LifecycleManager', () => {
       const cancelSpy = vi.spyOn(appState, 'cancelWorkerTasks');
       const frameCache = appState.getFrameCache();
       const clearSpy = vi.spyOn(frameCache, 'clear');
-      
+
       manager.startSession('fractal-change', 'mandelbrot');
       manager.endSession();
-      
+
       expect(cancelSpy).toHaveBeenCalled();
       expect(clearSpy).toHaveBeenCalled();
       expect(clearPaletteCache).toHaveBeenCalled();
@@ -57,22 +57,22 @@ describe('LifecycleManager', () => {
 
     it('should do nothing if no active session', () => {
       const cancelSpy = vi.spyOn(appState, 'cancelWorkerTasks');
-      
+
       manager.endSession();
-      
+
       expect(cancelSpy).not.toHaveBeenCalled();
     });
 
     it('should run registered cleanup callbacks', () => {
       const callback1 = vi.fn();
       const callback2 = vi.fn();
-      
+
       manager.registerCleanup(callback1);
       manager.registerCleanup(callback2);
-      
+
       manager.startSession('fractal-change', 'mandelbrot');
       manager.endSession();
-      
+
       expect(callback1).toHaveBeenCalled();
       expect(callback2).toHaveBeenCalled();
     });
@@ -82,11 +82,11 @@ describe('LifecycleManager', () => {
         throw new Error('Callback error');
       });
       const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-      
+
       manager.registerCleanup(errorCallback);
       manager.startSession('fractal-change', 'mandelbrot');
       manager.endSession();
-      
+
       expect(errorCallback).toHaveBeenCalled();
       expect(consoleErrorSpy).toHaveBeenCalled();
       consoleErrorSpy.mockRestore();
@@ -97,10 +97,10 @@ describe('LifecycleManager', () => {
     it('should register cleanup callbacks', () => {
       const callback = vi.fn();
       manager.registerCleanup(callback);
-      
+
       manager.startSession('fractal-change', 'mandelbrot');
       manager.endSession();
-      
+
       expect(callback).toHaveBeenCalled();
     });
   });
@@ -110,10 +110,10 @@ describe('LifecycleManager', () => {
       const callback = vi.fn();
       manager.registerCleanup(callback);
       manager.unregisterCleanup(callback);
-      
+
       manager.startSession('fractal-change', 'mandelbrot');
       manager.endSession();
-      
+
       expect(callback).not.toHaveBeenCalled();
     });
   });
@@ -121,10 +121,10 @@ describe('LifecycleManager', () => {
   describe('getSessionDuration', () => {
     it('should return session duration', async () => {
       manager.startSession('fractal-change', 'mandelbrot');
-      
+
       // Wait a bit
       await new Promise((resolve) => setTimeout(resolve, 10));
-      
+
       const duration = manager.getSessionDuration();
       expect(duration).toBeGreaterThanOrEqual(10);
     });
@@ -134,4 +134,3 @@ describe('LifecycleManager', () => {
     });
   });
 });
-

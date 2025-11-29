@@ -412,7 +412,7 @@ describe('panels module', () => {
 
       const exifSection = document.querySelector('[data-section="exif-editor"]')?.parentElement;
       const debugSection = document.querySelector('[data-section="debug"]')?.parentElement;
-      
+
       expect(exifSection).toBeDefined();
       expect(debugSection).toBeDefined();
       expect(exifSection.classList.contains('exif-hidden')).toBe(false);
@@ -431,5 +431,3 @@ describe('panels module', () => {
     });
   });
 });
-
-

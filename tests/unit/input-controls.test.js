@@ -15,14 +15,14 @@ describe('input controls module', () => {
     `;
     canvas = document.getElementById('fractal-canvas');
     selectionBox = document.getElementById('selection-box');
-    
+
     // Store original PointerEvent and ensure it's undefined for mouse event fallback testing
     originalPointerEvent = window.PointerEvent;
     if (window.PointerEvent) {
       delete window.PointerEvent;
     }
   });
-  
+
   // Restore PointerEvent after each test
   afterEach(() => {
     if (originalPointerEvent) {
@@ -63,7 +63,7 @@ describe('input controls module', () => {
       events.push(type);
       return originalAdd(type, listener, options);
     };
-    
+
     // Also track window events
     const windowEvents = [];
     const originalWindowAdd = window.addEventListener.bind(window);
@@ -103,18 +103,18 @@ describe('input controls module', () => {
     expect(windowEvents).toContain('mousemove');
     expect(windowEvents).toContain('mouseup');
   });
-  
+
   it('attaches pointer event listeners when PointerEvent is available', () => {
     // Mock PointerEvent as available
     window.PointerEvent = class PointerEvent {};
-    
+
     const events = [];
     const originalAdd = canvas.addEventListener.bind(canvas);
     canvas.addEventListener = (type, listener, options) => {
       events.push(type);
       return originalAdd(type, listener, options);
     };
-    
+
     const windowEvents = [];
     const originalWindowAdd = window.addEventListener.bind(window);
     window.addEventListener = (type, listener, options) => {
@@ -152,10 +152,8 @@ describe('input controls module', () => {
     expect(events).toContain('wheel');
     expect(windowEvents).toContain('pointermove');
     expect(windowEvents).toContain('pointerup');
-    
+
     // Should not use mouse events when pointer events are available
     expect(events).not.toContain('mousedown');
   });
 });
-
-

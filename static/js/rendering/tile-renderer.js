@@ -53,14 +53,25 @@ export class TileRenderer {
         const height = Math.min(tileSize, canvasHeight - y);
         const tileId = `tile-${tx}-${ty}`;
 
-        const promise = this.workerPool.computeTile(tileId, x, y, width, height, params, fractalType)
+        const promise = this.workerPool
+          .computeTile(tileId, x, y, width, height, params, fractalType)
           .then((response) => {
             if (!this.activeTiles.has(tileId) || this.activeTiles.get(tileId).cancelled) {
               return; // Tile was cancelled
             }
 
             // Convert scalar field to RGBA pixels
-            this.renderTileToImageData(data, canvasWidth, canvasHeight, x, y, width, height, response.data, params.colorScheme);
+            this.renderTileToImageData(
+              data,
+              canvasWidth,
+              canvasHeight,
+              x,
+              y,
+              width,
+              height,
+              response.data,
+              params.colorScheme
+            );
 
             // Call completion callback if provided
             if (this.onTileComplete) {
@@ -105,7 +116,17 @@ export class TileRenderer {
    * @param {Float32Array} scalarField - Scalar field data (normalized 0-1)
    * @param {number} colorScheme - Color scheme index
    */
-  renderTileToImageData(imageData, canvasWidth, canvasHeight, tileX, tileY, tileWidth, tileHeight, scalarField, colorScheme) {
+  renderTileToImageData(
+    imageData,
+    canvasWidth,
+    canvasHeight,
+    tileX,
+    tileY,
+    tileWidth,
+    tileHeight,
+    scalarField,
+    colorScheme
+  ) {
     const colorOut = new Float32Array(3);
 
     for (let py = 0; py < tileHeight; py++) {
@@ -164,4 +185,3 @@ export class TileRenderer {
     // Note: We don't shutdown the worker pool here as it may be shared
   }
 }
-

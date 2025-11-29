@@ -99,4 +99,3 @@ export default defineConfig({
   // globalSetup: './tests/visual/global-setup.js',
   // globalTeardown: './tests/visual/global-teardown.js',
 });
-

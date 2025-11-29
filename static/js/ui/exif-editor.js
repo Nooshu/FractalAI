@@ -13,34 +13,34 @@ import { getVersionString } from '../core/version.js';
  */
 function formatThemeName(theme) {
   const nameMap = {
-    'classic': 'Classic',
-    'fire': 'Fire',
-    'ocean': 'Ocean',
-    'rainbow': 'Rainbow',
+    classic: 'Classic',
+    fire: 'Fire',
+    ocean: 'Ocean',
+    rainbow: 'Rainbow',
     'rainbow-pastel': 'Rainbow Pastel',
     'rainbow-dark': 'Rainbow Dark',
     'rainbow-vibrant': 'Rainbow Vibrant',
     'rainbow-double': 'Rainbow Double',
     'rainbow-shifted': 'Rainbow Shifted',
-    'monochrome': 'Monochrome',
-    'forest': 'Forest',
-    'sunset': 'Sunset',
-    'purple': 'Purple',
-    'cyan': 'Cyan',
-    'gold': 'Gold',
-    'ice': 'Ice',
-    'neon': 'Neon',
-    'cosmic': 'Cosmic',
-    'aurora': 'Aurora',
-    'coral': 'Coral',
-    'autumn': 'Autumn',
-    'midnight': 'Midnight',
-    'emerald': 'Emerald',
-    'rosegold': 'Rose Gold',
-    'electric': 'Electric',
-    'vintage': 'Vintage',
-    'tropical': 'Tropical',
-    'galaxy': 'Galaxy',
+    monochrome: 'Monochrome',
+    forest: 'Forest',
+    sunset: 'Sunset',
+    purple: 'Purple',
+    cyan: 'Cyan',
+    gold: 'Gold',
+    ice: 'Ice',
+    neon: 'Neon',
+    cosmic: 'Cosmic',
+    aurora: 'Aurora',
+    coral: 'Coral',
+    autumn: 'Autumn',
+    midnight: 'Midnight',
+    emerald: 'Emerald',
+    rosegold: 'Rose Gold',
+    electric: 'Electric',
+    vintage: 'Vintage',
+    tropical: 'Tropical',
+    galaxy: 'Galaxy',
   };
   return nameMap[theme] || theme.charAt(0).toUpperCase() + theme.slice(1);
 }
@@ -64,16 +64,16 @@ function formatCoordinate(value, precision = 3) {
  */
 function generateExifData(fractalType, params) {
   return {
-    "FractalAI": {
-      "version": "1.0",
-      "fractal": fractalType || "mandelbrot",
-      "zoom": formatCoordinate(params.zoom, 3),
-      "offsetX": formatCoordinate(params.offset.x, 4),
-      "offsetY": formatCoordinate(params.offset.y, 4),
-      "theme": params.colorScheme || "classic",
-      "timestamp": new Date().toISOString(),
-      "generator": getVersionString()
-    }
+    FractalAI: {
+      version: '1.0',
+      fractal: fractalType || 'mandelbrot',
+      zoom: formatCoordinate(params.zoom, 3),
+      offsetX: formatCoordinate(params.offset.x, 4),
+      offsetY: formatCoordinate(params.offset.y, 4),
+      theme: params.colorScheme || 'classic',
+      timestamp: new Date().toISOString(),
+      generator: getVersionString(),
+    },
   };
 }
 
@@ -91,7 +91,7 @@ function updateCurrentFractalData(getCurrentFractalType, getParams) {
     zoom: document.getElementById('current-zoom'),
     offsetX: document.getElementById('current-offset-x'),
     offsetY: document.getElementById('current-offset-y'),
-    theme: document.getElementById('current-theme')
+    theme: document.getElementById('current-theme'),
   };
 
   if (elements.fractalType) {
@@ -148,16 +148,16 @@ function writeExifAndDownload(imageDataURL, exifData, filename) {
   try {
     // Load existing EXIF data
     const exifObj = piexif.load(imageDataURL);
-    
+
     // Add our fractal data to UserComment field
     exifObj.Exif[piexif.ExifIFD.UserComment] = JSON.stringify(exifData);
-    
+
     // Dump EXIF data
     const exifBytes = piexif.dump(exifObj);
-    
+
     // Insert EXIF data into image
     const newDataURL = piexif.insert(exifBytes, imageDataURL);
-    
+
     // Create download link
     const link = document.createElement('a');
     link.href = newDataURL;
@@ -165,7 +165,7 @@ function writeExifAndDownload(imageDataURL, exifData, filename) {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    
+
     return true;
   } catch (error) {
     console.error('Error writing EXIF data:', error);
@@ -198,7 +198,7 @@ export function setupExifEditor(getCurrentFractalType, getParams) {
   const resetForm = () => {
     currentImageData = null;
     currentFilename = '';
-    
+
     if (imagePreview) {
       imagePreview.style.display = 'none';
     }
@@ -226,31 +226,31 @@ export function setupExifEditor(getCurrentFractalType, getParams) {
 
   // Update display when parameters change
   window.addEventListener('fractal-updated', updateDisplay);
-  
+
   // Also listen for parameter changes (for fullscreen controls)
   const handleParamChange = () => {
     setTimeout(updateDisplay, 100); // Small delay to ensure state is updated
   };
-  
+
   // Event handler functions for cleanup
   const handleChangeEvent = (e) => {
     if (e.target.matches('#color-scheme, #iterations, #fractal-type')) {
       handleParamChange();
     }
   };
-  
+
   const handleInputEvent = (e) => {
     if (e.target.matches('#iterations, #julia-c-real, #julia-c-imag, #x-scale, #y-scale')) {
       handleParamChange();
     }
   };
-  
+
   const handleClickEvent = (e) => {
     if (e.target.closest('.fullscreen-control-btn, .fullscreen-color-cycle-btn')) {
       handleParamChange();
     }
   };
-  
+
   // Listen for various parameter change events
   document.addEventListener('change', handleChangeEvent);
   document.addEventListener('input', handleInputEvent);
@@ -262,7 +262,7 @@ export function setupExifEditor(getCurrentFractalType, getParams) {
       const fractalType = getCurrentFractalType();
       const params = getParams();
       const exifData = generateExifData(fractalType, params);
-      
+
       if (jsonEditor) {
         jsonEditor.value = JSON.stringify(exifData, null, 2);
       }
@@ -305,7 +305,7 @@ export function setupExifEditor(getCurrentFractalType, getParams) {
       const fractalType = getCurrentFractalType();
       const params = getParams();
       const exifData = generateExifData(fractalType, params);
-      
+
       if (jsonEditor) {
         jsonEditor.value = JSON.stringify(exifData, null, 2);
       }
@@ -315,7 +315,7 @@ export function setupExifEditor(getCurrentFractalType, getParams) {
         writeExifBtn.disabled = false;
         writeExifBtn.style.display = 'flex';
       }
-      
+
       if (clearImageBtn) {
         clearImageBtn.style.display = 'flex';
       }
@@ -324,7 +324,6 @@ export function setupExifEditor(getCurrentFractalType, getParams) {
       if (dropZone) {
         dropZone.style.display = 'none';
       }
-
     } catch (error) {
       console.error('Error processing file:', error);
       alert('Error processing file: ' + error.message);
@@ -363,7 +362,7 @@ export function setupExifEditor(getCurrentFractalType, getParams) {
     dropZone.addEventListener('drop', (e) => {
       e.preventDefault();
       dropZone.classList.remove('drag-over');
-      
+
       const files = e.dataTransfer.files;
       if (files.length > 0) {
         handleFile(files[0]);
@@ -386,19 +385,18 @@ export function setupExifEditor(getCurrentFractalType, getParams) {
 
       try {
         const exifData = JSON.parse(jsonEditor.value);
-        
+
         // Validate EXIF data structure
         if (!exifData.FractalAI) {
           throw new Error('Invalid EXIF data structure. Must contain "FractalAI" object.');
         }
 
         const success = writeExifAndDownload(currentImageData, exifData, currentFilename);
-        
+
         if (success) {
           // Reset the form
           resetForm();
         }
-
       } catch (error) {
         console.error('Error parsing JSON:', error);
         alert('Error parsing JSON: ' + error.message);

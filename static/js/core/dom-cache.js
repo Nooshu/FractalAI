@@ -61,4 +61,3 @@ export function clearCache() {
 export function getAllCached() {
   return new Map(cache);
 }
-

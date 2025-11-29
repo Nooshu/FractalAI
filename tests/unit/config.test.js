@@ -58,4 +58,3 @@ describe('CONFIG', () => {
     expect(CONFIG.fractal.defaultType).toBe('mandelbrot');
   });
 });
-

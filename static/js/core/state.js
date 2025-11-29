@@ -13,12 +13,12 @@ export class AppState {
     // Regl and canvas references
     this.regl = null;
     this.canvas = null;
-    
+
     // Fractal state
     this.currentFractalType = CONFIG.fractal.defaultType;
     this.currentFractalModule = null;
     this.drawFractal = null;
-    
+
     // Rendering state
     this.needsRender = false;
     this.isDisplayingCached = false;
@@ -27,12 +27,12 @@ export class AppState {
     this.isProgressiveRendering = false;
     this.currentProgressiveIterations = 0;
     this.targetIterations = 0;
-    
+
     // Performance tracking
     this.lastTime = 0;
     this.frameCount = 0;
     this.fps = 0;
-    
+
     // Parameters
     this.params = {
       iterations: CONFIG.rendering.defaultIterations,
@@ -44,7 +44,7 @@ export class AppState {
       xScale: 1.0,
       yScale: 1.0,
     };
-    
+
     // Renderer size update function
     this.updateRendererSize = null;
   }
@@ -84,4 +84,3 @@ export class AppState {
 
 // Export singleton instance
 export const appState = new AppState();
-

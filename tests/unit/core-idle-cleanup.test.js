@@ -93,17 +93,17 @@ describe('IdleCleanupManager', () => {
       const originalNow = performance.now;
       let mockTime = 0;
       performance.now = vi.fn(() => mockTime);
-      
+
       manager.lastCleanupTime = 0;
       mockTime = 30001; // 30 seconds + 1ms (past cleanup interval)
-      
+
       manager.start();
-      
+
       // Wait for setTimeout
       await new Promise((resolve) => setTimeout(resolve, 10));
-      
+
       expect(global.requestIdleCallback).toHaveBeenCalled();
-      
+
       // Restore
       performance.now = originalNow;
     });
@@ -111,7 +111,7 @@ describe('IdleCleanupManager', () => {
     it('should not start if disabled', () => {
       manager.enabled = false;
       manager.start();
-      
+
       expect(global.requestIdleCallback).not.toHaveBeenCalled();
     });
   });
@@ -190,7 +190,7 @@ describe('IdleCleanupManager', () => {
     it('should handle setTimeout fallback', () => {
       delete global.cancelIdleCallback;
       global.clearTimeout = vi.fn();
-      
+
       manager.idleCallbackId = 123;
       manager.stop();
 
@@ -209,4 +209,3 @@ describe('IdleCleanupManager', () => {
     });
   });
 });
-

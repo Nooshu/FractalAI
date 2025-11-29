@@ -32,5 +32,3 @@ describe('loading-bar module', () => {
     expect(el.classList.contains('active')).toBe(false);
   });
 });
-
-

@@ -126,21 +126,25 @@ GPU timing requires WebGL2 with `EXT_disjoint_timer_query_webgl2` extension. If 
 ## Test Suites
 
 ### Quick Suite
+
 - Fast validation (2 tests)
 - Good for development iterations
 - ~10 seconds total
 
 ### Standard Suite
+
 - Balanced coverage (5 tests)
 - Recommended for most use cases
 - ~25 seconds total
 
 ### Comprehensive Suite
+
 - Thorough analysis (13 tests)
 - Multiple fractals, iterations, zoom levels
 - ~65 seconds total
 
 ### Mandelbrot Deep Dive
+
 - Single fractal, multiple configurations
 - Tests iterations (50-500) and zoom (1-1000)
 - ~40 seconds total
@@ -189,4 +193,3 @@ High-level test runner with predefined suites.
 const runner = new TestRunner(regl, canvas, loadFractal, setParams);
 const results = await runner.run('standard');
 ```
-

@@ -3,10 +3,7 @@
  * Manages worker lifecycle, load balancing, and graceful degradation
  */
 
-import {
-  createTileRequest,
-  isTileResponse,
-} from './tile-protocol.js';
+import { createTileRequest, isTileResponse } from './tile-protocol.js';
 
 /**
  * Worker pool manager
@@ -179,7 +176,9 @@ export class WorkerPool {
 
     // Adaptive sizing: if overhead is consistently high, consider shrinking
     if (this.performanceHistory.length >= this.performanceWindow) {
-      const avgOverhead = this.performanceHistory.reduce((sum, p) => sum + p.overhead, 0) / this.performanceHistory.length;
+      const avgOverhead =
+        this.performanceHistory.reduce((sum, p) => sum + p.overhead, 0) /
+        this.performanceHistory.length;
       if (avgOverhead > this.overheadThreshold && this.currentWorkerCount > this.minWorkers) {
         // Shrink pool by 1
         this.resize(this.currentWorkerCount - 1);
@@ -330,4 +329,3 @@ export class WorkerPool {
     this.currentWorkerCount = 0;
   }
 }
-

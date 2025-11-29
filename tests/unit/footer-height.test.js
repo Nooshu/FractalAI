@@ -64,5 +64,3 @@ describe('footer-height module', () => {
     expect(document.documentElement.style.getPropertyValue('--footer-height')).toBe('55px');
   });
 });
-
-

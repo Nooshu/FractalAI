@@ -56,5 +56,3 @@ describe('debug-display module', () => {
     expect(writeText).toHaveBeenCalledWith('0.1');
   });
 });
-
-

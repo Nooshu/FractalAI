@@ -7,13 +7,13 @@ import { generatePaletteTexture } from '../utils.js';
 // Angle: 60 degrees
 function generateSierpinskiLSystem(iterations, angle = 60) {
   const angleRad = (angle * Math.PI) / 180;
-  
+
   // L-system rules
   // Axiom: A
   // A → B-A-B
   // B → A+B+A
   let lsystemString = 'A';
-  
+
   // Iteratively apply the rules
   for (let i = 0; i < iterations; i++) {
     let newString = '';
@@ -33,22 +33,22 @@ function generateSierpinskiLSystem(iterations, angle = 60) {
     }
     lsystemString = newString;
   }
-  
+
   // Now interpret the L-system string to generate vertices
   const vertices = [];
   let x = 0;
   let y = -0.5; // Start at bottom
   let currentAngle = Math.PI / 2; // Start facing up
-  
+
   // Use a fixed step length - we'll scale the entire curve to fit later
   const stepLength = 1.0;
-  
+
   vertices.push(x, y);
-  
+
   // Process each character in the L-system string
   for (let i = 0; i < lsystemString.length; i++) {
     const char = lsystemString[i];
-    
+
     switch (char) {
       case 'A':
       case 'B':
@@ -67,24 +67,26 @@ function generateSierpinskiLSystem(iterations, angle = 60) {
         break;
     }
   }
-  
+
   // Calculate bounding box and scale to fit
-  let minX = Infinity, maxX = -Infinity;
-  let minY = Infinity, maxY = -Infinity;
+  let minX = Infinity,
+    maxX = -Infinity;
+  let minY = Infinity,
+    maxY = -Infinity;
   for (let i = 0; i < vertices.length; i += 2) {
     minX = Math.min(minX, vertices[i]);
     maxX = Math.max(maxX, vertices[i]);
     minY = Math.min(minY, vertices[i + 1]);
     maxY = Math.max(maxY, vertices[i + 1]);
   }
-  
+
   // Calculate center and size
   const centerX = (minX + maxX) / 2;
   const centerY = (minY + maxY) / 2;
   const width = maxX - minX;
   const height = maxY - minY;
   const maxSize = Math.max(width, height);
-  
+
   // Scale to fit in a reasonable range and center at origin
   // Use a larger scale factor to make it clearly visible
   const scale = maxSize > 0 ? 2.5 / maxSize : 1.0;
@@ -93,7 +95,7 @@ function generateSierpinskiLSystem(iterations, angle = 60) {
     scaledVertices[i] = (vertices[i] - centerX) * scale;
     scaledVertices[i + 1] = (vertices[i + 1] - centerY) * scale;
   }
-  
+
   return scaledVertices;
 }
 
@@ -158,7 +160,7 @@ export function render(regl, params, canvas) {
   const iterationLevel = Math.max(0, Math.min(8, Math.floor(params.iterations / 25)));
   // Use xScale to control turn angle (45-75 degrees)
   const angle = 45 + params.xScale * 30;
-  
+
   // Generate vertices for current iteration level
   const vertices = generateSierpinskiLSystem(iterationLevel, angle);
   const vertexCount = vertices.length / 2;
@@ -211,4 +213,3 @@ export const config = {
     zoom: 1,
   },
 };
-

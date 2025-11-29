@@ -125,4 +125,3 @@ export function initCanvasRenderer(canvasId, options = {}) {
     cleanup,
   };
 }
-

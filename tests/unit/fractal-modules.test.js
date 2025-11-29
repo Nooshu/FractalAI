@@ -22,11 +22,11 @@ describe('Fractal Modules Structure', () => {
     it(`should load ${fractalType} module with required exports`, async () => {
       try {
         const module = await import(`../../static/js/fractals/2d/${fractalType}.js`);
-        
+
         // Check that module has render function
         expect(module).toHaveProperty('render');
         expect(typeof module.render).toBe('function');
-        
+
         // Render function should return a draw command (function)
         // We can't fully test this without a regl context, but we can check it exists
       } catch (error) {
@@ -43,13 +43,12 @@ describe('Fractal Modules Structure', () => {
   it('should have consistent module structure', async () => {
     // Test with mandelbrot as a reference
     const module = await import('../../static/js/fractals/2d/mandelbrot.js');
-    
+
     expect(module).toHaveProperty('render');
     expect(typeof module.render).toBe('function');
-    
+
     // The render function should accept regl, params, and canvas
     // We can't fully test the function signature without mocking regl
     // but we can verify it's a function
   });
 });
-

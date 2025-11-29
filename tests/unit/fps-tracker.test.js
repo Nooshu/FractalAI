@@ -65,5 +65,3 @@ describe('fps-tracker module', () => {
     expect(getFrameCount()).toBe(2);
   });
 });
-
-

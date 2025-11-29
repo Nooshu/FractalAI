@@ -71,5 +71,3 @@ describe('coordinate-display module', () => {
     expect(spy).toHaveBeenCalledWith('julia', params);
   });
 });
-
-

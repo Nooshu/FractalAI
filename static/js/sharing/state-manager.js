@@ -51,11 +51,7 @@ export function getShareableSeed(fractalType, params) {
 export async function applyFractalState(state, getters, setters) {
   if (!state || !getters || !setters) return false;
 
-  const {
-    getCurrentFractalType,
-    getCurrentFractalModule,
-    getParams,
-  } = getters;
+  const { getCurrentFractalType, getCurrentFractalModule, getParams } = getters;
 
   const {
     setFractalType,
@@ -215,7 +211,7 @@ export function setupShareFractal(getCurrentFractalType, getParams) {
   shareBtn.addEventListener('click', async () => {
     const fractalType = getCurrentFractalType();
     const params = getParams();
-    
+
     if (!fractalType || !params) return;
 
     const url = getShareableURL(fractalType, params);
@@ -226,7 +222,8 @@ export function setupShareFractal(getCurrentFractalType, getParams) {
       try {
         await navigator.clipboard.writeText(url);
         const originalText = shareBtn.innerHTML;
-        shareBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"></path></svg>Copied!';
+        shareBtn.innerHTML =
+          '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"></path></svg>Copied!';
         shareBtn.style.background = 'var(--accent-blue)';
 
         setTimeout(() => {
@@ -240,7 +237,8 @@ export function setupShareFractal(getCurrentFractalType, getParams) {
         try {
           await navigator.clipboard.writeText(seed);
           const originalText = shareBtn.innerHTML;
-          shareBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"></path></svg>Copied Seed!';
+          shareBtn.innerHTML =
+            '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"></path></svg>Copied Seed!';
           shareBtn.style.background = 'var(--accent-blue)';
 
           setTimeout(() => {
@@ -258,4 +256,3 @@ export function setupShareFractal(getCurrentFractalType, getParams) {
     alert(`Failed to copy. Please copy manually:\n\nURL: ${url}\n\nSeed: ${seed}`);
   });
 }
-

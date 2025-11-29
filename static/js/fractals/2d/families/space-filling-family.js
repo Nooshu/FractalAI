@@ -18,4 +18,3 @@ export const fractals = {
   'moore-curve': mooreCurve,
   'peano-curve': peanoCurve,
 };
-

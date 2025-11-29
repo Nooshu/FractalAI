@@ -48,5 +48,3 @@ describe('All JS modules importable', () => {
     });
   }
 });
-
-

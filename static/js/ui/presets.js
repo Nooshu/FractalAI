@@ -64,46 +64,44 @@ async function readExifFromImage(imageUrl) {
  * @param {Function} loadFractalFromPreset - Function to load fractal from preset data
  */
 export async function setupPresets(loadFractalFromPreset) {
-    // Set up interactions first (they use event delegation, so they'll work even if items are added later)
-    setupPresetInteractions(loadFractalFromPreset);
-    // Then load and render presets (await to ensure presets are loaded)
-    await loadPresets();
+  // Set up interactions first (they use event delegation, so they'll work even if items are added later)
+  setupPresetInteractions(loadFractalFromPreset);
+  // Then load and render presets (await to ensure presets are loaded)
+  await loadPresets();
 }
-
 
 /**
  * Load preset images from directory only (no JSON file)
  */
 async function loadPresets() {
-    // Start with empty presets - only use images from directory
-    presetsData = [];
+  // Start with empty presets - only use images from directory
+  presetsData = [];
 
-    // Scan for images and create presets from them
-    await autoScanAndUpdatePresets();
+  // Scan for images and create presets from them
+  await autoScanAndUpdatePresets();
 }
 
 /**
  * Automatically scan for EXIF data and update presets on load
  */
 async function autoScanAndUpdatePresets() {
-    try {
-        // Show loading indicator
-        showLoadingIndicator();
+  try {
+    // Show loading indicator
+    showLoadingIndicator();
 
-        const scannedPresets = await scanPresetsFromImages();
+    const scannedPresets = await scanPresetsFromImages();
 
-        if (scannedPresets.length > 0) {
-            // Update presets data in memory
-            updatePresetsDataFromScan(scannedPresets);
-        }
-
-        // Render the presets (whether from EXIF or empty)
-        renderPresets();
-
-    } catch {
-        // Still render whatever presets we have
-        renderPresets();
+    if (scannedPresets.length > 0) {
+      // Update presets data in memory
+      updatePresetsDataFromScan(scannedPresets);
     }
+
+    // Render the presets (whether from EXIF or empty)
+    renderPresets();
+  } catch {
+    // Still render whatever presets we have
+    renderPresets();
+  }
 }
 
 /**
@@ -111,25 +109,25 @@ async function autoScanAndUpdatePresets() {
  * @param {Array} scannedPresets - Array of preset objects from image scanning
  */
 function updatePresetsDataFromScan(scannedPresets) {
-    // Replace all presets data with scanned data (no merging with JSON)
-    presetsData = [...scannedPresets];
+  // Replace all presets data with scanned data (no merging with JSON)
+  presetsData = [...scannedPresets];
 
-    // Sort presets by order number
-    presetsData.sort((a, b) => {
-        const orderA = a.order !== undefined ? a.order : 999;
-        const orderB = b.order !== undefined ? b.order : 999;
-        return orderA - orderB;
-    });
+  // Sort presets by order number
+  presetsData.sort((a, b) => {
+    const orderA = a.order !== undefined ? a.order : 999;
+    const orderB = b.order !== undefined ? b.order : 999;
+    return orderA - orderB;
+  });
 }
 
 /**
  * Show loading indicator while scanning
  */
 function showLoadingIndicator() {
-    const presetsGrid = document.getElementById('presets-grid');
-    if (!presetsGrid) return;
+  const presetsGrid = document.getElementById('presets-grid');
+  if (!presetsGrid) return;
 
-    presetsGrid.innerHTML = `
+  presetsGrid.innerHTML = `
         <div class="preset-loading">
             <div class="loading-content">
                 <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="loading-spinner">
@@ -146,22 +144,22 @@ function showLoadingIndicator() {
  * Render the presets grid
  */
 function renderPresets() {
-    const presetsGrid = document.getElementById('presets-grid');
-    if (!presetsGrid) return;
+  const presetsGrid = document.getElementById('presets-grid');
+  if (!presetsGrid) return;
 
-    if (presetsData.length === 0) {
-        showPlaceholder();
-        return;
-    }
+  if (presetsData.length === 0) {
+    showPlaceholder();
+    return;
+  }
 
-    // Clear existing content
-    presetsGrid.innerHTML = '';
+  // Clear existing content
+  presetsGrid.innerHTML = '';
 
-    // Create preset items
-    presetsData.forEach((preset, index) => {
-        const presetItem = createPresetItem(preset, index);
-        presetsGrid.appendChild(presetItem);
-    });
+  // Create preset items
+  presetsData.forEach((preset, index) => {
+    const presetItem = createPresetItem(preset, index);
+    presetsGrid.appendChild(presetItem);
+  });
 }
 
 /**
@@ -171,11 +169,11 @@ function renderPresets() {
  * @returns {HTMLElement} Preset item element
  */
 function createPresetItem(preset, index) {
-    const item = document.createElement('div');
-    item.className = 'preset-item';
-    item.dataset.presetIndex = index;
+  const item = document.createElement('div');
+  item.className = 'preset-item';
+  item.dataset.presetIndex = index;
 
-    item.innerHTML = `
+  item.innerHTML = `
         <img
             class="preset-image"
             src="/static/presets/images/${preset.image}"
@@ -192,7 +190,7 @@ function createPresetItem(preset, index) {
         </div>
     `;
 
-    return item;
+  return item;
 }
 
 /**
@@ -201,23 +199,23 @@ function createPresetItem(preset, index) {
  * @returns {string} Formatted zoom string
  */
 function formatZoom(zoom) {
-    if (zoom >= 1000000) {
-        return `${(zoom / 1000000).toFixed(1)}M`;
-    } else if (zoom >= 1000) {
-        return `${(zoom / 1000).toFixed(1)}K`;
-    } else {
-        return zoom.toFixed(1);
-    }
+  if (zoom >= 1000000) {
+    return `${(zoom / 1000000).toFixed(1)}M`;
+  } else if (zoom >= 1000) {
+    return `${(zoom / 1000).toFixed(1)}K`;
+  } else {
+    return zoom.toFixed(1);
+  }
 }
 
 /**
  * Show placeholder when no presets are available
  */
 function showPlaceholder() {
-    const presetsGrid = document.getElementById('presets-grid');
-    if (!presetsGrid) return;
+  const presetsGrid = document.getElementById('presets-grid');
+  if (!presetsGrid) return;
 
-    presetsGrid.innerHTML = `
+  presetsGrid.innerHTML = `
         <div class="preset-placeholder">
             <div class="placeholder-content">
                 <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -237,58 +235,57 @@ function showPlaceholder() {
  * @param {Function} loadFractalFromPreset - Function to load fractal from preset data
  */
 function setupPresetInteractions(loadFractalFromPreset) {
-    const presetsGrid = document.getElementById('presets-grid');
-    if (!presetsGrid) return;
+  const presetsGrid = document.getElementById('presets-grid');
+  if (!presetsGrid) return;
 
-    presetsGrid.addEventListener('click', async (event) => {
-        const presetItem = event.target.closest('.preset-item');
-        if (!presetItem) return;
+  presetsGrid.addEventListener('click', async (event) => {
+    const presetItem = event.target.closest('.preset-item');
+    if (!presetItem) return;
 
-        const presetIndex = parseInt(presetItem.dataset.presetIndex);
-        const preset = presetsData[presetIndex];
+    const presetIndex = parseInt(presetItem.dataset.presetIndex);
+    const preset = presetsData[presetIndex];
 
-        if (preset && loadFractalFromPreset) {
-            // Visual feedback - start loading state
-            presetItem.style.transform = 'scale(0.95)';
-            presetItem.style.opacity = '0.7';
+    if (preset && loadFractalFromPreset) {
+      // Visual feedback - start loading state
+      presetItem.style.transform = 'scale(0.95)';
+      presetItem.style.opacity = '0.7';
 
-            try {
-                // Try to read EXIF data from the image
-                const imageUrl = `/static/presets/images/${preset.image}`;
-                const exifData = await readExifFromImage(imageUrl);
+      try {
+        // Try to read EXIF data from the image
+        const imageUrl = `/static/presets/images/${preset.image}`;
+        const exifData = await readExifFromImage(imageUrl);
 
-                let finalPreset = preset;
+        let finalPreset = preset;
 
-                if (exifData) {
-                    // Use EXIF data if available, with fallback to JSON preset data
-                    finalPreset = {
-                        ...preset, // Keep original data as fallback
-                        fractal: exifData.fractal || preset.fractal,
-                        zoom: exifData.zoom !== undefined ? exifData.zoom : preset.zoom,
-                        offsetX: exifData.offsetX !== undefined ? exifData.offsetX : preset.offsetX,
-                        offsetY: exifData.offsetY !== undefined ? exifData.offsetY : preset.offsetY,
-                        theme: exifData.theme || preset.theme
-                    };
-                } else {
-                    console.log('No EXIF data found, using JSON preset data');
-                }
-
-                // Load the fractal with the final preset data
-                loadFractalFromPreset(finalPreset);
-
-            } catch (error) {
-                console.error('Error loading preset:', error);
-                // Fallback to original preset data
-                loadFractalFromPreset(preset);
-            } finally {
-                // Reset visual feedback
-                setTimeout(() => {
-                    presetItem.style.transform = '';
-                    presetItem.style.opacity = '';
-                }, 150);
-            }
+        if (exifData) {
+          // Use EXIF data if available, with fallback to JSON preset data
+          finalPreset = {
+            ...preset, // Keep original data as fallback
+            fractal: exifData.fractal || preset.fractal,
+            zoom: exifData.zoom !== undefined ? exifData.zoom : preset.zoom,
+            offsetX: exifData.offsetX !== undefined ? exifData.offsetX : preset.offsetX,
+            offsetY: exifData.offsetY !== undefined ? exifData.offsetY : preset.offsetY,
+            theme: exifData.theme || preset.theme,
+          };
+        } else {
+          console.log('No EXIF data found, using JSON preset data');
         }
-    });
+
+        // Load the fractal with the final preset data
+        loadFractalFromPreset(finalPreset);
+      } catch (error) {
+        console.error('Error loading preset:', error);
+        // Fallback to original preset data
+        loadFractalFromPreset(preset);
+      } finally {
+        // Reset visual feedback
+        setTimeout(() => {
+          presetItem.style.transform = '';
+          presetItem.style.opacity = '';
+        }, 150);
+      }
+    }
+  });
 }
 
 /**
@@ -325,7 +322,7 @@ async function scanPresetsFromImages() {
             description: exifData.description || `Generated from ${imageFile}`,
             order: parsed.order, // Add order from filename
             lastUpdated: new Date().toISOString(),
-            hasExifData: true
+            hasExifData: true,
           };
 
           scannedPresets.push(preset);
@@ -343,7 +340,7 @@ async function scanPresetsFromImages() {
             description: `Generated from ${imageFile}`,
             order: parsed.order,
             lastUpdated: new Date().toISOString(),
-            hasExifData: false
+            hasExifData: false,
           };
 
           scannedPresets.push(preset);
@@ -385,8 +382,8 @@ async function getPresetImageFiles() {
     const response = await fetch('/static/presets/images/', {
       method: 'GET',
       headers: {
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
-      }
+        Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+      },
     });
 
     if (response.ok) {
@@ -451,24 +448,22 @@ function parseFilename(filename) {
     // Convert title part: replace hyphens/underscores with spaces and capitalize
     const title = titlePart
       .replace(/[-_]/g, ' ') // Replace hyphens and underscores with spaces
-      .replace(/\b\w/g, l => l.toUpperCase()); // Capitalize each word
+      .replace(/\b\w/g, (l) => l.toUpperCase()); // Capitalize each word
 
     return {
       order: orderNumber,
       title: title,
-      cleanFilename: titlePart
+      cleanFilename: titlePart,
     };
   }
 
   // Fallback for files without order prefix
-  const title = nameWithoutExt
-    .replace(/[-_]/g, ' ')
-    .replace(/\b\w/g, l => l.toUpperCase());
+  const title = nameWithoutExt.replace(/[-_]/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
 
   return {
     order: 999, // Put unordered files at the end
     title: title,
-    cleanFilename: nameWithoutExt
+    cleanFilename: nameWithoutExt,
   };
 }
 
@@ -487,24 +482,23 @@ function generatePresetTitle(filename, exifData) {
   return parsed.title;
 }
 
-
 /**
  * Add a new preset (for future use)
  * @param {Object} presetData - Preset configuration data
  * @param {string} imagePath - Path to the preset image
  */
 export function addPreset(presetData, imagePath) {
-    const newPreset = {
-        ...presetData,
-        image: imagePath,
-        id: Date.now().toString()
-    };
+  const newPreset = {
+    ...presetData,
+    image: imagePath,
+    id: Date.now().toString(),
+  };
 
-    presetsData.push(newPreset);
-    renderPresets();
+  presetsData.push(newPreset);
+  renderPresets();
 
-    // Note: In a real implementation, this would also update the presets.json file
-    console.log('Preset added:', newPreset);
+  // Note: In a real implementation, this would also update the presets.json file
+  console.log('Preset added:', newPreset);
 }
 
 /**
@@ -512,12 +506,12 @@ export function addPreset(presetData, imagePath) {
  * @returns {Array} Array of preset objects
  */
 export function getPresets() {
-    return [...presetsData];
+  return [...presetsData];
 }
 
 /**
  * Refresh presets from server
  */
 export function refreshPresets() {
-    loadPresets();
+  loadPresets();
 }

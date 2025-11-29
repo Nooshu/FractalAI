@@ -169,7 +169,7 @@ describe('TileRenderer', () => {
 
       expect(canvasWithSpy.getContext).toHaveBeenCalledWith('2d');
       expect(putImageDataSpy).toHaveBeenCalledWith(imageData, 0, 0);
-      
+
       vi.useRealTimers();
     });
 
@@ -204,7 +204,7 @@ describe('TileRenderer', () => {
 
       expect(imageData.width).toBe(1024);
       expect(imageData.height).toBe(512);
-      
+
       vi.useRealTimers();
     });
 
@@ -233,7 +233,7 @@ describe('TileRenderer', () => {
 
       // Should be called for each tile (2x2 = 4 tiles for 512x512 canvas with 256 tile size)
       expect(onTileComplete).toHaveBeenCalled();
-      
+
       vi.useRealTimers();
     });
 
@@ -268,7 +268,7 @@ describe('TileRenderer', () => {
 
       expect(imageData.width).toBe(200);
       expect(imageData.height).toBe(150);
-      
+
       vi.useRealTimers();
     });
   });
@@ -351,13 +351,13 @@ describe('TileRenderer', () => {
       };
 
       const promise = renderer.render(mockCanvas, params, 'mandelbrot');
-      
+
       // Cancel immediately before workers respond
       renderer.cancelAllTiles();
-      
+
       // Advance timers - workers might still respond, but tiles are marked cancelled
       await vi.runAllTimersAsync();
-      
+
       // The promise might resolve (if workers already responded) or reject (if cancelled first)
       // Either way, activeTiles should be empty after cancellation
       try {
@@ -366,9 +366,9 @@ describe('TileRenderer', () => {
         // Expected if cancelled before workers respond
         expect(error.message).toContain('cancelled');
       }
-      
+
       expect(renderer.activeTiles.size).toBe(0);
-      
+
       vi.useRealTimers();
     });
   });
@@ -390,4 +390,3 @@ describe('TileRenderer', () => {
     });
   });
 });
-

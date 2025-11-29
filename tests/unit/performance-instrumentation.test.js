@@ -25,7 +25,7 @@ describe('PerformanceInstrumentation', () => {
     it('should record render operations', () => {
       instrumentation.recordRender();
       instrumentation.recordRender();
-      
+
       const metrics = instrumentation.getMetrics();
       expect(metrics.renderCount).toBe(2);
     });
@@ -33,7 +33,7 @@ describe('PerformanceInstrumentation', () => {
     it('should not record if disabled', () => {
       instrumentation.enabled = false;
       instrumentation.recordRender();
-      
+
       const metrics = instrumentation.getMetrics();
       expect(metrics.renderCount).toBe(0);
     });
@@ -43,7 +43,7 @@ describe('PerformanceInstrumentation', () => {
     it('should record cache hits', () => {
       instrumentation.recordCacheHit();
       instrumentation.recordCacheHit();
-      
+
       const metrics = instrumentation.getMetrics();
       expect(metrics.cacheHits).toBe(2);
     });
@@ -52,7 +52,7 @@ describe('PerformanceInstrumentation', () => {
   describe('recordCacheMiss', () => {
     it('should record cache misses', () => {
       instrumentation.recordCacheMiss();
-      
+
       const metrics = instrumentation.getMetrics();
       expect(metrics.cacheMisses).toBe(1);
     });
@@ -62,7 +62,7 @@ describe('PerformanceInstrumentation', () => {
     it('should record worker tasks', () => {
       instrumentation.recordWorkerTask(10);
       instrumentation.recordWorkerTask(20);
-      
+
       const metrics = instrumentation.getMetrics();
       expect(metrics.workerTasks).toBe(2);
       expect(metrics.workerTaskTime).toBe(30);
@@ -73,7 +73,7 @@ describe('PerformanceInstrumentation', () => {
     it('should record frame times', () => {
       instrumentation.recordFrameTime(16.67);
       instrumentation.recordFrameTime(33.33);
-      
+
       const metrics = instrumentation.getMetrics();
       expect(metrics.frameTime).toHaveLength(2);
     });
@@ -82,7 +82,7 @@ describe('PerformanceInstrumentation', () => {
       for (let i = 0; i < 150; i++) {
         instrumentation.recordFrameTime(16.67);
       }
-      
+
       const metrics = instrumentation.getMetrics();
       expect(metrics.frameTime.length).toBeLessThanOrEqual(100);
     });
@@ -92,7 +92,7 @@ describe('PerformanceInstrumentation', () => {
     it('should record invalidations', () => {
       instrumentation.recordInvalidation();
       instrumentation.recordInvalidation();
-      
+
       const metrics = instrumentation.getMetrics();
       expect(metrics.invalidationCount).toBe(2);
     });
@@ -103,7 +103,7 @@ describe('PerformanceInstrumentation', () => {
       instrumentation.recordCacheHit();
       instrumentation.recordCacheHit();
       instrumentation.recordCacheMiss();
-      
+
       const metrics = instrumentation.getMetrics();
       expect(metrics.cacheHitRate).toBeCloseTo(2 / 3, 2);
     });
@@ -112,7 +112,7 @@ describe('PerformanceInstrumentation', () => {
       instrumentation.recordWorkerTask(10);
       instrumentation.recordWorkerTask(20);
       instrumentation.recordWorkerTask(30);
-      
+
       const metrics = instrumentation.getMetrics();
       expect(metrics.avgWorkerTaskTime).toBe(20);
     });
@@ -121,7 +121,7 @@ describe('PerformanceInstrumentation', () => {
       instrumentation.recordFrameTime(16.67);
       instrumentation.recordFrameTime(33.33);
       instrumentation.recordFrameTime(20.0);
-      
+
       const metrics = instrumentation.getMetrics();
       expect(metrics.avgFrameTime).toBeCloseTo(23.33, 1);
     });
@@ -139,7 +139,7 @@ describe('PerformanceInstrumentation', () => {
       instrumentation.recordRender();
       instrumentation.recordCacheHit();
       instrumentation.reset();
-      
+
       const metrics = instrumentation.getMetrics();
       expect(metrics.renderCount).toBe(0);
       expect(metrics.cacheHits).toBe(0);
@@ -149,10 +149,10 @@ describe('PerformanceInstrumentation', () => {
   describe('logMetrics', () => {
     it('should log metrics when enabled', () => {
       const consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
-      
+
       instrumentation.recordRender();
       instrumentation.logMetrics();
-      
+
       expect(consoleLogSpy).toHaveBeenCalled();
       consoleLogSpy.mockRestore();
     });
@@ -160,12 +160,11 @@ describe('PerformanceInstrumentation', () => {
     it('should not log when disabled', () => {
       instrumentation.enabled = false;
       const consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
-      
+
       instrumentation.logMetrics();
-      
+
       expect(consoleLogSpy).not.toHaveBeenCalled();
       consoleLogSpy.mockRestore();
     });
   });
 });
-

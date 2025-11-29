@@ -55,7 +55,7 @@ export function loadFractalFromURL() {
     } catch {
       // If decoding fails, use the seed as-is
     }
-    
+
     const state = decodeFractalState(seed);
     if (state) {
       return state;
@@ -66,4 +66,3 @@ export function loadFractalFromURL() {
 
   return null;
 }
-

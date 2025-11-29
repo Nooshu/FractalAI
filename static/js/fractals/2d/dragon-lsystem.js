@@ -18,13 +18,13 @@ let cachedVertexCount = 0;
  */
 function generateDragonLSystem(iterations, angle = 90) {
   const angleRad = (angle * Math.PI) / 180;
-  
+
   // L-system rules
   // Axiom: FX
   // X → X+YF+
   // Y → -FX-Y
   let lsystemString = 'FX';
-  
+
   // Iteratively apply the rules
   for (let i = 0; i < iterations; i++) {
     let newString = '';
@@ -44,22 +44,22 @@ function generateDragonLSystem(iterations, angle = 90) {
     }
     lsystemString = newString;
   }
-  
+
   // Now interpret the L-system string to generate vertices
   const vertices = [];
   let x = 0;
   let y = 0;
   let currentAngle = 0; // Start facing right
-  
+
   // Use a fixed step length - we'll scale the entire curve to fit later
   const stepLength = 1.0;
-  
+
   vertices.push(x, y);
-  
+
   // Process each character in the L-system string
   for (let i = 0; i < lsystemString.length; i++) {
     const char = lsystemString[i];
-    
+
     switch (char) {
       case 'F':
         // Move forward
@@ -81,24 +81,26 @@ function generateDragonLSystem(iterations, angle = 90) {
         break;
     }
   }
-  
+
   // Calculate bounding box
-  let minX = Infinity, maxX = -Infinity;
-  let minY = Infinity, maxY = -Infinity;
+  let minX = Infinity,
+    maxX = -Infinity;
+  let minY = Infinity,
+    maxY = -Infinity;
   for (let i = 0; i < vertices.length; i += 2) {
     minX = Math.min(minX, vertices[i]);
     maxX = Math.max(maxX, vertices[i]);
     minY = Math.min(minY, vertices[i + 1]);
     maxY = Math.max(maxY, vertices[i + 1]);
   }
-  
+
   // Calculate center and size
   const centerX = (minX + maxX) / 2;
   const centerY = (minY + maxY) / 2;
   const width = maxX - minX;
   const height = maxY - minY;
   const maxSize = Math.max(width, height);
-  
+
   // Scale to fit in a larger range and center at origin
   // Use a much larger scale factor to make it clearly visible
   const scale = maxSize > 0 ? 8.0 / maxSize : 1.0;
@@ -107,7 +109,7 @@ function generateDragonLSystem(iterations, angle = 90) {
     scaledVertices[i] = (vertices[i] - centerX) * scale;
     scaledVertices[i + 1] = (vertices[i + 1] - centerY) * scale;
   }
-  
+
   return scaledVertices;
 }
 
@@ -116,7 +118,7 @@ export function render(regl, params, canvas) {
   const iterations = Math.max(0, Math.min(10, Math.floor(params.iterations / 20)));
   // Use xScale to control turn angle (45-135 degrees)
   const angle = 45 + params.xScale * 90;
-  
+
   const positions = generateDragonLSystem(iterations, angle);
   const vertexCount = positions.length / 2;
 
@@ -397,4 +399,3 @@ export const config = {
     zoom: 1,
   },
 };
-

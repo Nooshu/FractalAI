@@ -116,4 +116,3 @@ export class LifecycleManager {
 
 // Export singleton instance
 export const lifecycleManager = new LifecycleManager();
-

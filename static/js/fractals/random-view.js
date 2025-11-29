@@ -18,7 +18,37 @@ export function isValidInterestingView(offset, zoom, fractalType, getParams, get
   const params = getParams();
   const canvas = getCanvas();
   // For geometric fractals and chaotic maps, they're generally always interesting
-  if (fractalType === 'sierpinski' || fractalType === 'sierpinski-arrowhead' || fractalType === 'sierpinski-carpet' || fractalType === 'sierpinski-pentagon' || fractalType === 'sierpinski-hexagon' || fractalType === 'sierpinski-gasket' || fractalType === 'koch' || fractalType === 'quadratic-koch' || fractalType === 'minkowski-sausage' || fractalType === 'cesaro' || fractalType === 'vicsek' || fractalType === 'cross' || fractalType === 'box-variants' || fractalType === 'h-tree' || fractalType === 'h-tree-generalized' || fractalType === 'heighway-dragon' || fractalType === 'hilbert-curve' || fractalType === 'twindragon' || fractalType === 'terdragon' || fractalType === 'binary-dragon' || fractalType === 'folded-paper-dragon' || fractalType === 'peano-curve' || fractalType === 'popcorn' || fractalType === 'rose' || fractalType === 'mutant-mandelbrot' || fractalType === 'cantor' || fractalType === 'fat-cantor' || fractalType === 'smith-volterra-cantor' || fractalType === 'random-cantor') {
+  if (
+    fractalType === 'sierpinski' ||
+    fractalType === 'sierpinski-arrowhead' ||
+    fractalType === 'sierpinski-carpet' ||
+    fractalType === 'sierpinski-pentagon' ||
+    fractalType === 'sierpinski-hexagon' ||
+    fractalType === 'sierpinski-gasket' ||
+    fractalType === 'koch' ||
+    fractalType === 'quadratic-koch' ||
+    fractalType === 'minkowski-sausage' ||
+    fractalType === 'cesaro' ||
+    fractalType === 'vicsek' ||
+    fractalType === 'cross' ||
+    fractalType === 'box-variants' ||
+    fractalType === 'h-tree' ||
+    fractalType === 'h-tree-generalized' ||
+    fractalType === 'heighway-dragon' ||
+    fractalType === 'hilbert-curve' ||
+    fractalType === 'twindragon' ||
+    fractalType === 'terdragon' ||
+    fractalType === 'binary-dragon' ||
+    fractalType === 'folded-paper-dragon' ||
+    fractalType === 'peano-curve' ||
+    fractalType === 'popcorn' ||
+    fractalType === 'rose' ||
+    fractalType === 'mutant-mandelbrot' ||
+    fractalType === 'cantor' ||
+    fractalType === 'fat-cantor' ||
+    fractalType === 'smith-volterra-cantor' ||
+    fractalType === 'random-cantor'
+  ) {
     return true;
   }
 
@@ -230,20 +260,21 @@ export function getRandomInterestingView(getters) {
     if (fractalType === 'sierpinski-gasket') {
       // Generalised Sierpinski Gasket - randomly select polygon type
       const polygonTypes = [
-        { sides: 3, name: 'Triangle' },   // xScale = 0.0
-        { sides: 4, name: 'Square' },     // xScale = 0.167
-        { sides: 5, name: 'Pentagon' },   // xScale = 0.333
-        { sides: 6, name: 'Hexagon' },    // xScale = 0.5
-        { sides: 7, name: 'Heptagon' },   // xScale = 0.667
-        { sides: 8, name: 'Octagon' },    // xScale = 0.833
-        { sides: 9, name: 'Nonagon' },    // xScale = 1.0
-        { sides: 10, name: 'Decagon' },   // xScale = 1.167
+        { sides: 3, name: 'Triangle' }, // xScale = 0.0
+        { sides: 4, name: 'Square' }, // xScale = 0.167
+        { sides: 5, name: 'Pentagon' }, // xScale = 0.333
+        { sides: 6, name: 'Hexagon' }, // xScale = 0.5
+        { sides: 7, name: 'Heptagon' }, // xScale = 0.667
+        { sides: 8, name: 'Octagon' }, // xScale = 0.833
+        { sides: 9, name: 'Nonagon' }, // xScale = 1.0
+        { sides: 10, name: 'Decagon' }, // xScale = 1.167
         { sides: 12, name: 'Dodecagon' }, // xScale = 1.5
       ];
       const polygonType = polygonTypes[Math.floor(Math.random() * polygonTypes.length)];
       const xScale = (polygonType.sides - 3) / 6.0;
 
-      const location = interestingLocations[Math.floor(Math.random() * interestingLocations.length)];
+      const location =
+        interestingLocations[Math.floor(Math.random() * interestingLocations.length)];
       const zoom = location.zoom * (0.8 + Math.random() * 0.4);
 
       // Update xScale slider
@@ -273,7 +304,8 @@ export function getRandomInterestingView(getters) {
         { name: 'H-Pattern', xScale: 1.3 },
       ];
       const pattern = patterns[Math.floor(Math.random() * patterns.length)];
-      const location = interestingLocations[Math.floor(Math.random() * interestingLocations.length)];
+      const location =
+        interestingLocations[Math.floor(Math.random() * interestingLocations.length)];
       const zoom = location.zoom * (0.8 + Math.random() * 0.4);
 
       params.xScale = pattern.xScale;
@@ -299,7 +331,8 @@ export function getRandomInterestingView(getters) {
         { rotation: 1.5, scale: 1.5 }, // Large rotation, loose scaling
       ];
       const config = configurations[Math.floor(Math.random() * configurations.length)];
-      const location = interestingLocations[Math.floor(Math.random() * interestingLocations.length)];
+      const location =
+        interestingLocations[Math.floor(Math.random() * interestingLocations.length)];
       const zoom = location.zoom * (0.8 + Math.random() * 0.4);
 
       params.xScale = config.rotation;
@@ -315,7 +348,8 @@ export function getRandomInterestingView(getters) {
     if (fractalType === 'julia' || fractalType === 'julia-snakes') {
       // Try up to 10 times to find a valid interesting view
       for (let attempt = 0; attempt < 10; attempt++) {
-        const juliaSet = interestingLocations[Math.floor(Math.random() * interestingLocations.length)];
+        const juliaSet =
+          interestingLocations[Math.floor(Math.random() * interestingLocations.length)];
         const zoom = juliaSet.zoom * (0.8 + Math.random() * 0.4);
         const offset = { x: juliaSet.x, y: juliaSet.y };
 
@@ -335,8 +369,10 @@ export function getRandomInterestingView(getters) {
           const juliaCImagValue = document.getElementById('julia-c-imag-value');
           if (juliaCReal && juliaSet.cReal !== undefined) juliaCReal.value = juliaSet.cReal;
           if (juliaCImag && juliaSet.cImag !== undefined) juliaCImag.value = juliaSet.cImag;
-          if (juliaCRealValue && juliaSet.cReal !== undefined) juliaCRealValue.textContent = juliaSet.cReal.toFixed(4);
-          if (juliaCImagValue && juliaSet.cImag !== undefined) juliaCImagValue.textContent = juliaSet.cImag.toFixed(4);
+          if (juliaCRealValue && juliaSet.cReal !== undefined)
+            juliaCRealValue.textContent = juliaSet.cReal.toFixed(4);
+          if (juliaCImagValue && juliaSet.cImag !== undefined)
+            juliaCImagValue.textContent = juliaSet.cImag.toFixed(4);
           return { offset, zoom };
         }
 
@@ -366,13 +402,22 @@ export function getRandomInterestingView(getters) {
     }
 
     // For fractals that need validation (mandelbrot, multibrot, burning-ship, buffalo)
-    if (fractalType === 'mandelbrot' || fractalType === 'multibrot' ||
-        fractalType === 'burning-ship' || fractalType === 'buffalo') {
-      interestingLocations = removeDuplicatePoints(interestingLocations, fractalType, generateRandomInterestingPoint);
+    if (
+      fractalType === 'mandelbrot' ||
+      fractalType === 'multibrot' ||
+      fractalType === 'burning-ship' ||
+      fractalType === 'buffalo'
+    ) {
+      interestingLocations = removeDuplicatePoints(
+        interestingLocations,
+        fractalType,
+        generateRandomInterestingPoint
+      );
 
       // Try up to 10 times to find a valid interesting view
       for (let attempt = 0; attempt < 10; attempt++) {
-        const location = interestingLocations[Math.floor(Math.random() * interestingLocations.length)];
+        const location =
+          interestingLocations[Math.floor(Math.random() * interestingLocations.length)];
         const zoomVariation = fractalType === 'multibrot' ? 0.2 : 0.4;
         const zoom = location.zoom * (0.8 + Math.random() * zoomVariation);
         const offset = { x: location.x, y: location.y };
@@ -422,7 +467,11 @@ export function getRandomInterestingView(getters) {
         { x: -0.235125, y: 0.827215, zoom: 400 }, // Another interesting area
         { x: 0.286932, y: 0.008287, zoom: 250 }, // Right side detail
       ];
-      interestingLocations = removeDuplicatePoints(interestingLocations, 'mandelbrot', generateRandomInterestingPoint);
+      interestingLocations = removeDuplicatePoints(
+        interestingLocations,
+        'mandelbrot',
+        generateRandomInterestingPoint
+      );
 
       // Try up to 10 times to find a valid interesting view
       for (let attempt = 0; attempt < 10; attempt++) {
@@ -463,7 +512,11 @@ export function getRandomInterestingView(getters) {
         { x: 0.6, y: 0.2, zoom: 5 }, // Right side detail
         { x: -0.2, y: 0.6, zoom: 5 }, // Top detail
       ];
-      interestingLocations = removeDuplicatePoints(interestingLocations, 'multibrot', generateRandomInterestingPoint);
+      interestingLocations = removeDuplicatePoints(
+        interestingLocations,
+        'multibrot',
+        generateRandomInterestingPoint
+      );
 
       // Try up to 10 times to find a valid interesting view
       for (let attempt = 0; attempt < 10; attempt++) {
@@ -496,4 +549,3 @@ export function getRandomInterestingView(getters) {
       };
   }
 }
-

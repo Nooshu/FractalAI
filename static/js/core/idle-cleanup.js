@@ -106,10 +106,7 @@ export class IdleCleanupManager {
     }
 
     let taskIndex = 0;
-    while (
-      taskIndex < this.cleanupTasks.length &&
-      deadline.timeRemaining() > 0
-    ) {
+    while (taskIndex < this.cleanupTasks.length && deadline.timeRemaining() > 0) {
       const { task } = this.cleanupTasks[taskIndex];
       try {
         task(deadline);
@@ -150,4 +147,3 @@ export class IdleCleanupManager {
 
 // Export singleton instance
 export const idleCleanupManager = new IdleCleanupManager();
-

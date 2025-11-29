@@ -16,11 +16,13 @@ static/presets/
 ### 1. Add Image Files
 
 Place your fractal images in the `images/` directory. Supported formats:
+
 - `.jpg` / `.jpeg`
 - `.png`
 - `.webp`
 
 **Required image specifications:**
+
 - Size: 310px × 194px (exact dimensions)
 - Format: JPG (for smaller file sizes)
 - Quality: High enough to show fractal detail
@@ -51,7 +53,7 @@ Add an entry to the `presets.json` file with the following structure:
 - **fractal**: Fractal type (`mandelbrot`, `julia`, etc.)
 - **zoom**: Zoom level (number)
 - **offsetX**: X offset coordinate (number)
-- **offsetY**: Y offset coordinate (number)  
+- **offsetY**: Y offset coordinate (number)
 - **theme**: Color scheme name (`Classic`, `Rainbow`, `Fire`, etc.)
 - **description**: Optional description text
 
@@ -62,7 +64,7 @@ Add an entry to the `presets.json` file with the following structure:
   "id": "seahorse_valley",
   "title": "Seahorse Valley",
   "image": "seahorse_valley.jpg",
-  "fractal": "mandelbrot", 
+  "fractal": "mandelbrot",
   "zoom": 364.091,
   "offsetX": -0.2351,
   "offsetY": 0.8272,

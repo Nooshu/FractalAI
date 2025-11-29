@@ -57,21 +57,51 @@ export class AppStateManager {
   }
 
   // Getters
-  getRegl() { return this.regl; }
-  getCanvas() { return this.canvas; }
-  getUpdateRendererSize() { return this.updateRendererSize; }
-  getCurrentFractalType() { return this.currentFractalType; }
-  getCurrentFractalModule() { return this.currentFractalModule; }
-  getDrawFractal() { return this.drawFractal; }
-  getNeedsRender() { return this.needsRender; }
-  getIsDisplayingCached() { return this.isDisplayingCached; }
-  getCachedDrawCommand() { return this.cachedDrawCommand; }
-  getIsProgressiveRendering() { return this.isProgressiveRendering; }
-  getCurrentProgressiveIterations() { return this.currentProgressiveIterations; }
-  getTargetIterations() { return this.targetIterations; }
-  getFrameCache() { return this.frameCache; }
-  getRenderingEngine() { return this.renderingEngine; }
-  getParams() { return this.params; }
+  getRegl() {
+    return this.regl;
+  }
+  getCanvas() {
+    return this.canvas;
+  }
+  getUpdateRendererSize() {
+    return this.updateRendererSize;
+  }
+  getCurrentFractalType() {
+    return this.currentFractalType;
+  }
+  getCurrentFractalModule() {
+    return this.currentFractalModule;
+  }
+  getDrawFractal() {
+    return this.drawFractal;
+  }
+  getNeedsRender() {
+    return this.needsRender;
+  }
+  getIsDisplayingCached() {
+    return this.isDisplayingCached;
+  }
+  getCachedDrawCommand() {
+    return this.cachedDrawCommand;
+  }
+  getIsProgressiveRendering() {
+    return this.isProgressiveRendering;
+  }
+  getCurrentProgressiveIterations() {
+    return this.currentProgressiveIterations;
+  }
+  getTargetIterations() {
+    return this.targetIterations;
+  }
+  getFrameCache() {
+    return this.frameCache;
+  }
+  getRenderingEngine() {
+    return this.renderingEngine;
+  }
+  getParams() {
+    return this.params;
+  }
   getWorkerPool() {
     // Lazy initialization of worker pool (only if feature is enabled)
     if (!this.workerPool && this.areWorkersEnabled()) {
@@ -83,7 +113,7 @@ export class AppStateManager {
         maxWorkers,
         minWorkers: 1,
       });
-      
+
       // Log that worker optimizations are being used
       console.log(
         `%c[Worker Optimizations]%c Enabled with ${maxWorkers} worker(s) (${navigator.hardwareConcurrency || 4} CPU cores detected)`,
@@ -123,19 +153,45 @@ export class AppStateManager {
   }
 
   // Setters
-  setRegl(value) { this.regl = value; }
-  setCanvas(value) { this.canvas = value; }
-  setUpdateRendererSize(value) { this.updateRendererSize = value; }
-  setCurrentFractalType(value) { this.currentFractalType = value; }
-  setCurrentFractalModule(value) { this.currentFractalModule = value; }
-  setDrawFractal(value) { this.drawFractal = value; }
-  setNeedsRender(value) { this.needsRender = value; }
-  setIsDisplayingCached(value) { this.isDisplayingCached = value; }
-  setCachedDrawCommand(value) { this.cachedDrawCommand = value; }
-  setIsProgressiveRendering(value) { this.isProgressiveRendering = value; }
-  setCurrentProgressiveIterations(value) { this.currentProgressiveIterations = value; }
-  setTargetIterations(value) { this.targetIterations = value; }
-  setRenderingEngine(value) { this.renderingEngine = value; }
+  setRegl(value) {
+    this.regl = value;
+  }
+  setCanvas(value) {
+    this.canvas = value;
+  }
+  setUpdateRendererSize(value) {
+    this.updateRendererSize = value;
+  }
+  setCurrentFractalType(value) {
+    this.currentFractalType = value;
+  }
+  setCurrentFractalModule(value) {
+    this.currentFractalModule = value;
+  }
+  setDrawFractal(value) {
+    this.drawFractal = value;
+  }
+  setNeedsRender(value) {
+    this.needsRender = value;
+  }
+  setIsDisplayingCached(value) {
+    this.isDisplayingCached = value;
+  }
+  setCachedDrawCommand(value) {
+    this.cachedDrawCommand = value;
+  }
+  setIsProgressiveRendering(value) {
+    this.isProgressiveRendering = value;
+  }
+  setCurrentProgressiveIterations(value) {
+    this.currentProgressiveIterations = value;
+  }
+  setTargetIterations(value) {
+    this.targetIterations = value;
+  }
+  setRenderingEngine(value) {
+    this.renderingEngine = value;
+  }
 
   /**
    * Get getters object for passing to modules
@@ -237,4 +293,3 @@ export class AppStateManager {
 
 // Export singleton instance
 export const appState = new AppStateManager();
-

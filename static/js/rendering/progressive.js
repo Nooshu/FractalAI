@@ -43,12 +43,7 @@ export class ProgressiveRenderer {
     }
 
     // Check cache first
-    const cached = this.frameCache.getCachedFrame(
-      canvas,
-      fractalType,
-      params,
-      regl
-    );
+    const cached = this.frameCache.getCachedFrame(canvas, fractalType, params, regl);
     if (cached && cached.framebuffer) {
       this.renderer.displayCachedFrame(regl, canvas, cached.framebuffer);
       hideLoadingBar();
@@ -136,4 +131,3 @@ export class ProgressiveRenderer {
     }
   }
 }
-

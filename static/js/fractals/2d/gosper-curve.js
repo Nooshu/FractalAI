@@ -5,7 +5,7 @@ import { generatePaletteTexture } from '../utils.js';
 // It uses 7 sub-hexagons arranged in a specific pattern
 function generateGosperCurve(iterations) {
   const vertices = [];
-  
+
   // Helper function to generate a Gosper curve segment
   // The curve fills a hexagon from center with a given size and orientation
   // rot: rotation type (0-5) determines how the pattern is oriented
@@ -15,59 +15,56 @@ function generateGosperCurve(iterations) {
       vertices.push(cx, cy);
       return;
     }
-    
+
     // Calculate the positions of 7 sub-hexagons
     // The Gosper curve uses 7 hexagons: 1 center + 6 around it
     // Scale factor for Gosper: sqrt(7)
     const subSize = size / Math.sqrt(7);
     const angle60 = Math.PI / 3;
-    
+
     // Center hexagon
     const centers = [
       [cx, cy], // Center (0)
     ];
-    
+
     // 6 surrounding hexagons arranged in a hexagon pattern
     // Distance from center to surrounding hexagons
-    const distance = size * 2.0 / Math.sqrt(7);
+    const distance = (size * 2.0) / Math.sqrt(7);
     for (let i = 0; i < 6; i++) {
       const angle = rot * angle60 + i * angle60;
-      centers.push([
-        cx + Math.cos(angle) * distance,
-        cy + Math.sin(angle) * distance
-      ]);
+      centers.push([cx + Math.cos(angle) * distance, cy + Math.sin(angle) * distance]);
     }
-    
+
     // Gosper curve pattern: visit all 7 hexagons in a specific order
     // The pattern determines the order of visiting the hexagons
     // and how each sub-curve is rotated
     // Standard Gosper pattern visits: center, then surrounding hexagons in order
     const pattern = [0, 1, 2, 3, 4, 5, 6];
-    
+
     // Rotations for each sub-hexagon to create the space-filling pattern
     const rotations = [
-      (rot + 0) % 6,  // Center - no rotation change
-      (rot + 1) % 6,  // Hex 1 - rotate 60°
-      (rot + 2) % 6,  // Hex 2 - rotate 120°
-      (rot + 3) % 6,  // Hex 3 - rotate 180°
-      (rot + 4) % 6,  // Hex 4 - rotate 240°
-      (rot + 5) % 6,  // Hex 5 - rotate 300°
-      (rot + 0) % 6,  // Hex 6 - back to original
+      (rot + 0) % 6, // Center - no rotation change
+      (rot + 1) % 6, // Hex 1 - rotate 60°
+      (rot + 2) % 6, // Hex 2 - rotate 120°
+      (rot + 3) % 6, // Hex 3 - rotate 180°
+      (rot + 4) % 6, // Hex 4 - rotate 240°
+      (rot + 5) % 6, // Hex 5 - rotate 300°
+      (rot + 0) % 6, // Hex 6 - back to original
     ];
-    
+
     for (let i = 0; i < pattern.length; i++) {
       const idx = pattern[i];
       const [subCx, subCy] = centers[idx];
       const nextRot = rotations[i];
-      
+
       // Recursively generate the curve for this sub-hexagon
       gosper(subCx, subCy, subSize, depth + 1, nextRot);
     }
   }
-  
+
   // Start from center, fill a hexagon centered at (0, 0) with size 0.8
   gosper(0, 0, 0.8, 0, 0);
-  
+
   return new Float32Array(vertices);
 }
 
@@ -132,7 +129,7 @@ export function render(regl, params, canvas) {
   // Map 0-200 iterations to 0-5 levels
   // Gosper curve grows as 7^n, so keep it reasonable
   const iterationLevel = Math.max(0, Math.min(5, Math.floor(params.iterations / 40)));
-  
+
   // Generate vertices for current iteration level
   const vertices = generateGosperCurve(iterationLevel);
 
@@ -195,4 +192,3 @@ export const config = {
     zoom: 1,
   },
 };
-

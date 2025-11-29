@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { PerformanceBenchmark, WebGLTiming, BenchmarkSuite } from '../../static/js/performance/benchmark.js';
+import {
+  PerformanceBenchmark,
+  WebGLTiming,
+  BenchmarkSuite,
+} from '../../static/js/performance/benchmark.js';
 
 describe('PerformanceBenchmark', () => {
   it('computes basic statistics from frameTimes', () => {
@@ -39,8 +43,8 @@ describe('WebGLTiming', () => {
     const deleted = [];
     const gl = {
       getExtension: () => ({
-        TIME_ELAPSED_EXT: 0x88BF,
-        GPU_DISJOINT_EXT: 0x8FBB,
+        TIME_ELAPSED_EXT: 0x88bf,
+        GPU_DISJOINT_EXT: 0x8fbb,
       }),
       createQuery: () => ({}),
       beginQuery: () => {},
@@ -59,9 +63,12 @@ describe('WebGLTiming', () => {
 
 describe('BenchmarkSuite', () => {
   it('can be constructed with minimal arguments', () => {
-    const suite = new BenchmarkSuite(null, null, async () => {}, () => {});
+    const suite = new BenchmarkSuite(
+      null,
+      null,
+      async () => {},
+      () => {}
+    );
     expect(suite.results).toEqual([]);
   });
 });
-
-

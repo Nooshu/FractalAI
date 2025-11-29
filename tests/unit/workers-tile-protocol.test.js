@@ -157,4 +157,3 @@ describe('tile-protocol', () => {
     });
   });
 });
-

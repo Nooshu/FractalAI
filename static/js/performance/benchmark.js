@@ -53,8 +53,7 @@ export class PerformanceBenchmark {
 
     // Calculate current stats
     const elapsed = currentTime - this.startTime;
-    const avgFrameTime =
-      this.frameTimes.reduce((a, b) => a + b, 0) / this.frameTimes.length;
+    const avgFrameTime = this.frameTimes.reduce((a, b) => a + b, 0) / this.frameTimes.length;
     const fps = 1000 / avgFrameTime;
 
     this.samples.push({
@@ -191,19 +190,11 @@ export class WebGLTiming {
 
     const results = [];
     const available = this.queries.filter((query) => {
-      const available = this.gl.getQueryParameter(
-        query,
-        this.gl.QUERY_RESULT_AVAILABLE
-      );
-      const disjoint = this.gl.getParameter(
-        this.ext.GPU_DISJOINT_EXT
-      );
+      const available = this.gl.getQueryParameter(query, this.gl.QUERY_RESULT_AVAILABLE);
+      const disjoint = this.gl.getParameter(this.ext.GPU_DISJOINT_EXT);
 
       if (available && !disjoint) {
-        const timeElapsed = this.gl.getQueryParameter(
-          query,
-          this.gl.QUERY_RESULT
-        );
+        const timeElapsed = this.gl.getQueryParameter(query, this.gl.QUERY_RESULT);
         results.push(timeElapsed / 1000000); // Convert to milliseconds
         return false; // Remove from queries
       }
@@ -288,12 +279,15 @@ export class BenchmarkSuite {
     const fullResults = {
       ...results,
       config,
-      gpuTimings: gpuTimings.length > 0 ? {
-        avg: gpuTimings.reduce((a, b) => a + b, 0) / gpuTimings.length,
-        min: Math.min(...gpuTimings),
-        max: Math.max(...gpuTimings),
-        samples: gpuTimings,
-      } : null,
+      gpuTimings:
+        gpuTimings.length > 0
+          ? {
+              avg: gpuTimings.reduce((a, b) => a + b, 0) / gpuTimings.length,
+              min: Math.min(...gpuTimings),
+              max: Math.max(...gpuTimings),
+              samples: gpuTimings,
+            }
+          : null,
     };
 
     this.results.push(fullResults);
@@ -345,12 +339,9 @@ export class BenchmarkSuite {
       const baseline = baselineMap.get(key);
 
       if (baseline) {
-        const fpsImprovement =
-          ((opt.avgFPS - baseline.avgFPS) / baseline.avgFPS) * 100;
+        const fpsImprovement = ((opt.avgFPS - baseline.avgFPS) / baseline.avgFPS) * 100;
         const frameTimeImprovement =
-          ((baseline.avgFrameTime - opt.avgFrameTime) /
-            baseline.avgFrameTime) *
-          100;
+          ((baseline.avgFrameTime - opt.avgFrameTime) / baseline.avgFrameTime) * 100;
 
         comparison.tests.push({
           config: opt.config,
@@ -375,10 +366,8 @@ export class BenchmarkSuite {
     });
 
     if (comparison.summary.totalTests > 0) {
-      comparison.summary.avgFPSImprovement /=
-        comparison.summary.totalTests;
-      comparison.summary.avgFrameTimeImprovement /=
-        comparison.summary.totalTests;
+      comparison.summary.avgFPSImprovement /= comparison.summary.totalTests;
+      comparison.summary.avgFrameTimeImprovement /= comparison.summary.totalTests;
     }
 
     return comparison;
@@ -402,8 +391,7 @@ export class BenchmarkSuite {
     let report = '\n=== Benchmark Results ===\n\n';
 
     this.results.forEach((result, index) => {
-      const { config, avgFPS, avgFrameTime, p95FrameTime, gpuTimings } =
-        result;
+      const { config, avgFPS, avgFrameTime, p95FrameTime, gpuTimings } = result;
 
       report += `Test ${index + 1}: ${config.fractalType}\n`;
       report += `  Iterations: ${config.iterations}, Zoom: ${config.zoom}\n`;
@@ -419,12 +407,9 @@ export class BenchmarkSuite {
     });
 
     // Summary
-    const avgFPS =
-      this.results.reduce((sum, r) => sum + r.avgFPS, 0) /
-      this.results.length;
+    const avgFPS = this.results.reduce((sum, r) => sum + r.avgFPS, 0) / this.results.length;
     const avgFrameTime =
-      this.results.reduce((sum, r) => sum + r.avgFrameTime, 0) /
-      this.results.length;
+      this.results.reduce((sum, r) => sum + r.avgFrameTime, 0) / this.results.length;
 
     report += `Summary:\n`;
     report += `  Average FPS: ${avgFPS.toFixed(2)}\n`;
@@ -433,4 +418,3 @@ export class BenchmarkSuite {
     return report;
   }
 }
-

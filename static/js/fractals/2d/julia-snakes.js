@@ -130,4 +130,3 @@ export const config = {
     cImag: 0.6,
   },
 };
-

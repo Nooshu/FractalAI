@@ -80,7 +80,12 @@ export class RenderingEngine {
     }
 
     // Check cache first - if we have a cached frame, use it immediately
-    const cached = this.frameCache.getCachedFrame(canvas, this.getCurrentFractalType(), params, regl);
+    const cached = this.frameCache.getCachedFrame(
+      canvas,
+      this.getCurrentFractalType(),
+      params,
+      regl
+    );
     if (cached && cached.framebuffer) {
       // Display cached frame
       this.displayCachedFrame(cached.framebuffer);
@@ -136,10 +141,7 @@ export class RenderingEngine {
     const progressiveStep = () => {
       const currentIterations = this.getCurrentProgressiveIterations();
       if (currentIterations < targetIterations) {
-        const newIterations = Math.min(
-          currentIterations + stepSize,
-          targetIterations
-        );
+        const newIterations = Math.min(currentIterations + stepSize, targetIterations);
         this.setCurrentProgressiveIterations(newIterations);
 
         // Recreate draw command with updated iterations
@@ -195,7 +197,12 @@ export class RenderingEngine {
     }
 
     // Check cache first
-    const cached = this.frameCache.getCachedFrame(canvas, this.getCurrentFractalType(), params, regl);
+    const cached = this.frameCache.getCachedFrame(
+      canvas,
+      this.getCurrentFractalType(),
+      params,
+      regl
+    );
     if (cached && cached.framebuffer) {
       performanceInstrumentation.recordCacheHit();
       this.displayCachedFrame(cached.framebuffer);
@@ -203,7 +210,7 @@ export class RenderingEngine {
       this.setIsProgressiveRendering(false);
       return;
     }
-    
+
     performanceInstrumentation.recordCacheMiss();
     performanceInstrumentation.recordRender();
 
@@ -424,4 +431,3 @@ export class RenderingEngine {
     // Note: Worker pool cleanup is handled by appState.cleanup()
   }
 }
-

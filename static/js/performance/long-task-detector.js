@@ -122,7 +122,7 @@ export class LongTaskDetector {
    */
   getRecentLongTasks(seconds = 5) {
     const now = performance.now();
-    const cutoff = now - (seconds * 1000);
+    const cutoff = now - seconds * 1000;
     return this.longTasks.filter((task) => task.startTime >= cutoff);
   }
 
@@ -159,4 +159,3 @@ export class LongTaskDetector {
     };
   }
 }
-

@@ -137,7 +137,7 @@ const fragmentShader = createFragmentShader(fractalFunction);
 
 export function render(regl, params, canvas) {
   const paletteTexture = generatePaletteTexture(regl, params.colorScheme);
-  
+
   const drawFractal = regl({
     frag: fragmentShader,
     vert: `
@@ -199,4 +199,3 @@ export const config = {
     zoom: 1,
   },
 };
-
