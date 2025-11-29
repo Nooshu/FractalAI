@@ -1,4 +1,8 @@
-import { generatePaletteTexture, createFragmentShader } from '../utils.js';
+import {
+  generatePaletteTexture,
+  createFragmentShader,
+  getVertexShader,
+} from '../utils.js';
 
 const fractalFunction = `
 // Fractal Islands
@@ -87,39 +91,43 @@ float computeFractal(vec2 c) {
 }
 `;
 
-const fragmentShader = createFragmentShader(fractalFunction);
+export function render(regl, params, canvas, options = {}) {
+  // Check if UBOs should be used (WebGL2 optimization)
+  const webglCapabilities = options.webglCapabilities;
+  const ubo = options.ubo;
+  const useUBO = webglCapabilities?.isWebGL2 && ubo;
 
-export function render(regl, params, canvas) {
+  // Create fragment shader with UBO support if available
+  const fragmentShader = createFragmentShader(fractalFunction, useUBO);
+
+  // Use standard vertex shader (getVertexShader handles UBO mode)
+  const vertexShaderSource = getVertexShader(useUBO);
+
   const paletteTexture = generatePaletteTexture(regl, params.colorScheme);
 
   const drawFractal = regl({
     frag: fragmentShader,
-    vert: `
-      precision mediump float;
-      attribute vec2 position;
-      varying vec2 vUv;
-      void main() {
-        vUv = position;
-        gl_Position = vec4(position, 0, 1);
-      }
-    `,
+    vert: vertexShaderSource,
     attributes: {
-      position: [
-        [-1, -1],
-        [1, -1],
-        [-1, 1],
-        [1, 1],
-      ],
+      position: [-1, -1, 1, -1, -1, 1, 1, 1],
     },
-    uniforms: {
-      uResolution: [canvas.width, canvas.height],
-      uZoom: params.zoom,
-      uOffset: [params.offset.x, params.offset.y],
-      uIterations: params.iterations,
-      uPalette: paletteTexture,
-      uXScale: params.xScale,
-      uYScale: params.yScale,
-    },
+    uniforms: useUBO
+      ? {
+          uTime: 0,
+          uResolution: [canvas.width, canvas.height],
+          uPalette: paletteTexture,
+        }
+      : {
+          uTime: 0,
+          uIterations: params.iterations,
+          uZoom: params.zoom,
+          uOffset: [params.offset.x, params.offset.y],
+          uResolution: [canvas.width, canvas.height],
+          uJuliaC: [0, 0],
+          uPalette: paletteTexture,
+          uXScale: params.xScale,
+          uYScale: params.yScale,
+        },
     primitive: 'triangle strip',
     count: 4,
     viewport: {
@@ -128,6 +136,27 @@ export function render(regl, params, canvas) {
       width: canvas.width,
       height: canvas.height,
     },
+    // Bind UBO if available
+    ...(useUBO && ubo?.glBuffer && ubo?.bind
+      ? {
+          context: { ubo: ubo },
+          before: function bindUBO(context) {
+            const gl = regl._gl;
+            const program = gl.getParameter(gl.CURRENT_PROGRAM);
+            if (program && context.ubo) {
+              context.ubo.update({
+                iterations: params.iterations,
+                zoom: params.zoom,
+                offset: params.offset,
+                juliaC: { x: 0, y: 0 },
+                xScale: params.xScale,
+                yScale: params.yScale,
+              });
+              context.ubo.bind(program);
+            }
+          },
+        }
+      : {}),
   });
 
   return drawFractal;

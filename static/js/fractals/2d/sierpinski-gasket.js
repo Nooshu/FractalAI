@@ -1,4 +1,7 @@
-import { vertexShader, generatePaletteTexture } from '../utils.js';
+import {
+  getVertexShader,
+  generatePaletteTexture,
+} from '../utils.js';
 
 const fractalFunction = `
     // Generalised Sierpinski Gasket
@@ -147,9 +150,33 @@ const fractalFunction = `
     }
 `;
 
-// Custom fragment shader matching sierpinski-hexagon approach but without uXScale in coordinates
-const fragmentShader = `
+// Helper function to create UBO-aware fragment shader for sierpinski-gasket
+function createSierpinskiGasketFragmentShader(useUBO) {
+  const uniformDeclarations = useUBO
+    ? `#version 300 es
     #ifdef GL_ES
+    precision mediump float;
+    #endif
+    
+    layout(std140) uniform FractalParams {
+      float uIterations;
+      float uZoom;
+      vec2 uOffset;
+      vec2 uJuliaC;
+      vec2 uScale; // xScale, yScale
+    };
+    
+    // Provide aliases for compatibility
+    #define uXScale uScale.x
+    #define uYScale uScale.y
+    
+    uniform float uTime;
+    uniform vec2 uResolution;
+    uniform sampler2D uPalette;
+    
+    in vec2 vUv;
+    out vec4 fragColor;`
+    : `#ifdef GL_ES
     precision mediump float;
     #endif
     
@@ -163,7 +190,14 @@ const fragmentShader = `
     uniform float uXScale;
     uniform float uYScale;
     
-    varying vec2 vUv;
+    varying vec2 vUv;`;
+
+  const textureFunction = useUBO ? 'texture' : 'texture2D';
+  const outputVariable = useUBO ? 'fragColor' : 'gl_FragColor';
+  // In UBO mode, use uScale.y; in non-UBO mode, use uYScale
+  const yScaleAccess = useUBO ? 'uScale.y' : 'uYScale';
+
+  return `${uniformDeclarations}
     
     ${fractalFunction}
     
@@ -180,7 +214,7 @@ const fragmentShader = `
         vec2 uvCentered = uv - 0.5;
         vec2 c = vec2(
             uvCentered.x * scale * aspect + uOffset.x,
-            uvCentered.y * scale * uYScale + uOffset.y
+            uvCentered.y * scale * ${yScaleAccess} + uOffset.y
         );
         
         float iterations = computeFractal(c);
@@ -190,38 +224,53 @@ const fragmentShader = `
         float t = clamp(iterations * invIterations, 0.0, 1.0);
         
         // Texture-based palette lookup
-        vec3 color = texture2D(uPalette, vec2(t, 0.5)).rgb;
+        vec3 color = ${textureFunction}(uPalette, vec2(t, 0.5)).rgb;
         
         // Points in the set are black - use step() to avoid branch
         float isInSet = step(uIterations, iterations);
         color = mix(color, vec3(0.0), isInSet);
         
-        gl_FragColor = vec4(color, 1.0);
-    }
-`;
+        ${outputVariable} = vec4(color, 1.0);
+    }`;
+}
 
-export function render(regl, params, canvas) {
-  // Generate palette texture for the current color scheme
+export function render(regl, params, canvas, options = {}) {
+  // Check if UBOs should be used (WebGL2 optimization)
+  const webglCapabilities = options.webglCapabilities;
+  const ubo = options.ubo;
+  const useUBO = webglCapabilities?.isWebGL2 && ubo;
+
+  // Create custom fragment shader with UBO support if available
+  const fragmentShader = createSierpinskiGasketFragmentShader(useUBO);
+
+  // Use standard vertex shader (getVertexShader handles UBO mode)
+  const vertexShaderSource = getVertexShader(useUBO);
+
   const paletteTexture = generatePaletteTexture(regl, params.colorScheme);
 
-  // Create or update the draw command
-  const drawFractal = regl({
-    vert: vertexShader,
+  return regl({
+    vert: vertexShaderSource,
     frag: fragmentShader,
     attributes: {
       position: [-1, -1, 1, -1, -1, 1, 1, 1], // Full-screen quad
     },
-    uniforms: {
-      uTime: 0,
-      uIterations: params.iterations,
-      uZoom: params.zoom,
-      uOffset: [params.offset.x, params.offset.y],
-      uResolution: [canvas.width, canvas.height],
-      uJuliaC: [0, 0], // Not used
-      uPalette: paletteTexture,
-      uXScale: params.xScale, // Used for number of sides
-      uYScale: params.yScale,
-    },
+    uniforms: useUBO
+      ? {
+          uTime: 0,
+          uResolution: [canvas.width, canvas.height],
+          uPalette: paletteTexture,
+        }
+      : {
+          uTime: 0,
+          uIterations: params.iterations,
+          uZoom: params.zoom,
+          uOffset: [params.offset.x, params.offset.y],
+          uResolution: [canvas.width, canvas.height],
+          uJuliaC: [0, 0], // Not used
+          uPalette: paletteTexture,
+          uXScale: params.xScale, // Used for number of sides
+          uYScale: params.yScale,
+        },
     viewport: {
       x: 0,
       y: 0,
@@ -230,9 +279,28 @@ export function render(regl, params, canvas) {
     },
     count: 4,
     primitive: 'triangle strip',
+    // Bind UBO if available
+    ...(useUBO && ubo?.glBuffer && ubo?.bind
+      ? {
+          context: { ubo: ubo },
+          before: function bindUBO(context) {
+            const gl = regl._gl;
+            const program = gl.getParameter(gl.CURRENT_PROGRAM);
+            if (program && context.ubo) {
+              context.ubo.update({
+                iterations: params.iterations,
+                zoom: params.zoom,
+                offset: params.offset,
+                juliaC: { x: 0, y: 0 },
+                xScale: params.xScale,
+                yScale: params.yScale,
+              });
+              context.ubo.bind(program);
+            }
+          },
+        }
+      : {}),
   });
-
-  return drawFractal;
 }
 
 export const is2D = true;
