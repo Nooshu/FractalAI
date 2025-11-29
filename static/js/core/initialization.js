@@ -68,6 +68,22 @@ function initCanvasAndRenderer(appState) {
   appState.setUpdateRendererSize(updateSize);
   appState.setWebGLCapabilities(webglCapabilities);
 
+  // Create UBO for WebGL2 if available
+  if (webglCapabilities?.isWebGL2) {
+    import('../rendering/uniform-buffer.js').then(({ createFractalParamsUBO }) => {
+      const ubo = createFractalParamsUBO(reglContext, webglCapabilities);
+      appState.setFractalParamsUBO(ubo);
+      
+      if (ubo && import.meta.env?.DEV) {
+        console.log(
+          '%c[WebGL2 UBO]%c Uniform Buffer Objects enabled for fractal parameters',
+          'color: #4CAF50; font-weight: bold;',
+          'color: inherit;'
+        );
+      }
+    });
+  }
+
   return { canvasElement, reglContext, updateSize };
 }
 

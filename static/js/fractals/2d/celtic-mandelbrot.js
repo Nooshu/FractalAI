@@ -1,4 +1,7 @@
-import { vertexShader, createFragmentShader, generatePaletteTexture } from '../utils.js';
+import {
+  createFragmentShader,
+  createStandardDrawCommand,
+} from '../utils.js';
 
 const fractalFunction = `
     float computeFractal(vec2 c) {
@@ -13,9 +16,9 @@ const fractalFunction = `
         // Iteration 0
         zx2 = z.x * z.x;
         zy2 = z.y * z.y;
-        if (zx2 + zy2 > 4.0) {
+        if (zx2 + zy2 > ESCAPE_RADIUS_SQ) {
             float log_zn = log(zx2 + zy2) * 0.5;
-            float nu = log(log_zn / log(2.0)) / log(2.0);
+            float nu = log(log_zn * INV_LOG2) * INV_LOG2;
             return 0.0 + 1.0 - nu;
         }
         // Compute z^2 normally, then take abs of real part only
@@ -26,9 +29,9 @@ const fractalFunction = `
         // Iteration 1
         zx2 = z.x * z.x;
         zy2 = z.y * z.y;
-        if (zx2 + zy2 > 4.0) {
+        if (zx2 + zy2 > ESCAPE_RADIUS_SQ) {
             float log_zn = log(zx2 + zy2) * 0.5;
-            float nu = log(log_zn / log(2.0)) / log(2.0);
+            float nu = log(log_zn * INV_LOG2) * INV_LOG2;
             return 1.0 + 1.0 - nu;
         }
         z2_real = zx2 - zy2;
@@ -38,9 +41,9 @@ const fractalFunction = `
         // Iteration 2
         zx2 = z.x * z.x;
         zy2 = z.y * z.y;
-        if (zx2 + zy2 > 4.0) {
+        if (zx2 + zy2 > ESCAPE_RADIUS_SQ) {
             float log_zn = log(zx2 + zy2) * 0.5;
-            float nu = log(log_zn / log(2.0)) / log(2.0);
+            float nu = log(log_zn * INV_LOG2) * INV_LOG2;
             return 2.0 + 1.0 - nu;
         }
         z2_real = zx2 - zy2;
@@ -56,10 +59,10 @@ const fractalFunction = `
             zy2 = z.y * z.y;
             
             // Check for escape
-            if (zx2 + zy2 > 4.0) {
+            if (zx2 + zy2 > ESCAPE_RADIUS_SQ) {
                 // Smooth coloring using continuous escape
                 float log_zn = log(zx2 + zy2) * 0.5;
-                float nu = log(log_zn / log(2.0)) / log(2.0);
+                float nu = log(log_zn * INV_LOG2) * INV_LOG2;
                 return float(i) + 1.0 - nu;
             }
             
@@ -74,41 +77,21 @@ const fractalFunction = `
     }
 `;
 
-const fragmentShader = createFragmentShader(fractalFunction);
+export function render(regl, params, canvas, options = {}) {
+  // Check if UBOs should be used (WebGL2 optimization)
+  const webglCapabilities = options.webglCapabilities;
+  const ubo = options.ubo;
+  const useUBO = webglCapabilities?.isWebGL2 && ubo;
 
-export function render(regl, params, canvas) {
-  // Generate palette texture for the current color scheme
-  const paletteTexture = generatePaletteTexture(regl, params.colorScheme);
+  // Create fragment shader with UBO support if available
+  const fragmentShader = createFragmentShader(fractalFunction, useUBO);
 
-  // Create or update the draw command
-  const drawFractal = regl({
-    vert: vertexShader,
-    frag: fragmentShader,
-    attributes: {
-      position: [-1, -1, 1, -1, -1, 1, 1, 1], // Full-screen quad
-    },
-    uniforms: {
-      uTime: 0,
-      uIterations: params.iterations,
-      uZoom: params.zoom,
-      uOffset: [params.offset.x, params.offset.y],
-      uResolution: [canvas.width, canvas.height],
-      uJuliaC: [0, 0], // Not used for Celtic Mandelbrot
-      uPalette: paletteTexture,
-      uXScale: params.xScale,
-      uYScale: params.yScale,
-    },
-    viewport: {
-      x: 0,
-      y: 0,
-      width: canvas.width,
-      height: canvas.height,
-    },
-    count: 4,
-    primitive: 'triangle strip',
+  // Use createStandardDrawCommand for UBO support
+  return createStandardDrawCommand(regl, params, canvas, fragmentShader, {
+    webglCapabilities,
+    ubo,
+    juliaC: { x: 0, y: 0 }, // Not used for Celtic Mandelbrot
   });
-
-  return drawFractal;
 }
 
 export const is2D = true;

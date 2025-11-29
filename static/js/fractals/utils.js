@@ -576,7 +576,74 @@ export const vertexShader = `
 
 // Base fragment shader template for 2D fractals
 // Optimized for performance: uses mediump precision, precomputed constants
-export function createFragmentShader(fractalFunction) {
+// Supports both WebGL1 (regular uniforms) and WebGL2 (UBOs)
+export function createFragmentShader(fractalFunction, useUBO = false) {
+  // WebGL2 UBO version
+  if (useUBO) {
+    return `#version 300 es
+    #ifdef GL_ES
+    precision mediump float;
+    #endif
+    
+    layout(std140) uniform FractalParams {
+      float uIterations;
+      float uZoom;
+      vec2 uOffset;
+      vec2 uJuliaC;
+      vec2 uScale; // xScale, yScale
+    };
+    
+    // Provide aliases for compatibility with fractal functions
+    #define uXScale uScale.x
+    #define uYScale uScale.y
+    
+    uniform float uTime;
+    uniform vec2 uResolution;
+    uniform sampler2D uPalette;
+    
+    in vec2 vUv;
+    out vec4 fragColor;
+    
+    // Precomputed constants for better performance
+    const float LOG2 = 0.6931471805599453; // log(2.0)
+    const float INV_LOG2 = 1.4426950408889634; // 1.0 / log(2.0)
+    const float ESCAPE_RADIUS_SQ = 4.0; // Escape radius squared (2.0^2)
+    
+    ${fractalFunction}
+    
+    void main() {
+        vec2 uv = vUv;
+        
+        // Precompute aspect ratio and scale once
+        float aspect = uResolution.x / uResolution.y;
+        float scale = 4.0 / uZoom;
+        
+        // Optimize coordinate calculation
+        vec2 uvCentered = uv - 0.5;
+        vec2 c = vec2(
+            uvCentered.x * scale * aspect * uScale.x + uOffset.x,
+            uvCentered.y * scale * uScale.y + uOffset.y
+        );
+        
+        float iterations = computeFractal(c);
+        
+        // Normalized iteration value for color lookup
+        // Use multiplication instead of division where possible
+        float invIterations = 1.0 / uIterations;
+        float t = clamp(iterations * invIterations, 0.0, 1.0);
+        
+        // Texture-based palette lookup (much faster than computed colors)
+        vec3 color = texture(uPalette, vec2(t, 0.5)).rgb;
+        
+        // Points in the set are black - use step() to avoid branch
+        float isInSet = step(uIterations, iterations);
+        color = mix(color, vec3(0.0), isInSet);
+        
+        fragColor = vec4(color, 1.0);
+    }`;
+  }
+
+  // WebGL1 regular uniforms version (default)
   return `
     #ifdef GL_ES
     precision mediump float;

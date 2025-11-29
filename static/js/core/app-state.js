@@ -20,6 +20,7 @@ export class AppStateManager {
     this.canvas = null;
     this.updateRendererSize = null;
     this.webglCapabilities = null;
+    this.fractalParamsUBO = null; // Uniform Buffer Object for WebGL2
 
     // Fractal state
     this.currentFractalType = CONFIG.fractal.defaultType;
@@ -69,6 +70,9 @@ export class AppStateManager {
   }
   getWebGLCapabilities() {
     return this.webglCapabilities;
+  }
+  getFractalParamsUBO() {
+    return this.fractalParamsUBO;
   }
   getCurrentFractalType() {
     return this.currentFractalType;
@@ -169,6 +173,9 @@ export class AppStateManager {
   setWebGLCapabilities(value) {
     this.webglCapabilities = value;
   }
+  setFractalParamsUBO(value) {
+    this.fractalParamsUBO = value;
+  }
   setCurrentFractalType(value) {
     this.currentFractalType = value;
   }
@@ -208,6 +215,7 @@ export class AppStateManager {
     return {
       getRegl: () => this.getRegl(),
       getWebGLCapabilities: () => this.getWebGLCapabilities(),
+      getFractalParamsUBO: () => this.getFractalParamsUBO(),
       getCanvas: () => this.getCanvas(),
       getUpdateRendererSize: () => this.getUpdateRendererSize(),
       getCurrentFractalType: () => this.getCurrentFractalType(),

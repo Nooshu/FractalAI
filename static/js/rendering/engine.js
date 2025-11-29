@@ -28,6 +28,8 @@ export class RenderingEngine {
     this.getCachedDrawCommand = getters.getCachedDrawCommand;
     this.getCurrentProgressiveIterations = getters.getCurrentProgressiveIterations;
     this.getTargetIterations = getters.getTargetIterations;
+    this.getWebGLCapabilities = getters.getWebGLCapabilities;
+    this.getFractalParamsUBO = getters.getFractalParamsUBO;
 
     // Setters for updating state
     this.setDrawFractal = setters.setDrawFractal;
@@ -238,7 +240,27 @@ export class RenderingEngine {
     });
 
     // Call the fractal's render function to create draw command
-    const drawFractal = currentFractalModule.render(regl, params, canvas);
+    // Pass UBO and capabilities if available for WebGL2 optimization
+    const webglCapabilities = this.getWebGLCapabilities();
+    const ubo = this.getFractalParamsUBO();
+    
+    // Check if fractal render function supports UBO (new signature)
+    // For backward compatibility, try new signature first, then fall back to old
+    let drawFractal;
+    if (
+      currentFractalModule.render.length >= 4 ||
+      (webglCapabilities?.isWebGL2 && ubo)
+    ) {
+      // New signature: render(regl, params, canvas, options)
+      drawFractal = currentFractalModule.render(regl, params, canvas, {
+        webglCapabilities,
+        ubo,
+      });
+    } else {
+      // Old signature: render(regl, params, canvas)
+      drawFractal = currentFractalModule.render(regl, params, canvas);
+    }
+    
     this.setDrawFractal(drawFractal);
 
     // Execute the draw command
