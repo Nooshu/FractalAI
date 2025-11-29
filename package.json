@@ -1,6 +1,6 @@
 {
   "name": "fractalai",
-  "version": "3.0.0",
+  "version": "3.5.0",
   "description": "A web-based fractal generator using regl and WebGL",
   "license": "CC-BY-4.0",
   "type": "module",

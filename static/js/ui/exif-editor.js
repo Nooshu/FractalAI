@@ -4,6 +4,7 @@
  */
 
 import piexif from 'piexifjs';
+import { getVersionString } from '../core/version.js';
 
 /**
  * Format theme name for display
@@ -71,7 +72,7 @@ function generateExifData(fractalType, params) {
       "offsetY": formatCoordinate(params.offset.y, 4),
       "theme": params.colorScheme || "classic",
       "timestamp": new Date().toISOString(),
-      "generator": "FractalAI v3.0.0"
+      "generator": getVersionString()
     }
   };
 }

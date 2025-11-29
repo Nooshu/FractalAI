@@ -3,7 +3,16 @@ import { copyFileSync, readFileSync, writeFileSync, cpSync, existsSync } from 'f
 import { resolve } from 'path';
 import { execSync } from 'child_process';
 
+// Read app version from package.json
+const packageJsonPath = resolve(process.cwd(), 'package.json');
+const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
+const appVersion = packageJson.version;
+
 export default defineConfig({
+  define: {
+    // Inject app version as a global constant
+    __APP_VERSION__: JSON.stringify(appVersion),
+  },
   server: {
     port: 5173,
     open: true,
@@ -135,10 +144,7 @@ export default defineConfig({
         // Replace {{BUILD_YEAR}} placeholder with current year at build time
         const currentYear = new Date().getFullYear();
 
-        // Read app version from package.json (semver)
-        const packageJsonPath = resolve(process.cwd(), 'package.json');
-        const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
-        const appVersion = packageJson.version;
+        // Use the app version already read from package.json above
 
         // Get short git SHA for current commit; fall back gracefully if git is unavailable
         let gitSha = 'dev';
