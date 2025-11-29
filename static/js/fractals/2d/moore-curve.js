@@ -1,4 +1,6 @@
-import { generatePaletteTexture } from '../utils.js';
+import {
+  generatePaletteTexture,
+} from '../utils.js';
 
 // Generate vertices for the Moore space-filling curve
 // The Moore curve is a closed variant of the Hilbert curve that forms a loop
@@ -79,60 +81,125 @@ function generateMooreCurve(iterations) {
   return new Float32Array(vertices);
 }
 
-const vertexShader = `
-  precision mediump float;
-  attribute vec2 position;
-  uniform float uZoom;
-  uniform vec2 uOffset;
-  uniform vec2 uResolution;
-  uniform float uXScale;
-  uniform float uYScale;
-  varying vec2 vPosition;
+// Helper function to create UBO-aware vertex shader for line-based fractals
+function createLineFractalVertexShader(useUBO) {
+  if (useUBO) {
+    return `#version 300 es
+    precision mediump float;
+    in vec2 position;
+    uniform float uZoom;
+    uniform vec2 uOffset;
+    uniform vec2 uResolution;
+    uniform vec2 uScale; // xScale, yScale
+    out vec2 vPosition;
 
-  void main() {
-    float aspect = uResolution.x / uResolution.y;
-    float scale = 4.0 / uZoom;
-    
-    // Transform vertex position to match the standard fractal coordinate system
-    // For line-based fractals, maintain aspect ratio correctly
-    vec2 fractalCoord = position;
-    vec2 relative = fractalCoord - uOffset;
-    
-    // Scale uniformly (same factor for x and y) to preserve shape
-    vec2 scaled = vec2(
-      relative.x / (scale * uXScale),
-      relative.y / (scale * uYScale)
-    );
-    
-    // Apply aspect ratio correction to maintain shape across different window sizes
-    // Divide x by aspect to compensate for wider screens, preserving the curve's proportions
-    scaled.x /= aspect;
-    
-    // Convert to clip space (-1 to 1) by multiplying by 2.0
-    gl_Position = vec4(scaled * 2.0, 0.0, 1.0);
-    vPosition = position;
+    void main() {
+      float aspect = uResolution.x / uResolution.y;
+      float scale = 4.0 / uZoom;
+      
+      // Transform vertex position to match the standard fractal coordinate system
+      // For line-based fractals, maintain aspect ratio correctly
+      vec2 fractalCoord = position;
+      vec2 relative = fractalCoord - uOffset;
+      
+      // Scale uniformly (same factor for x and y) to preserve shape
+      vec2 scaled = vec2(
+        relative.x / (scale * uScale.x),
+        relative.y / (scale * uScale.y)
+      );
+      
+      // Apply aspect ratio correction to maintain shape across different window sizes
+      // Divide x by aspect to compensate for wider screens, preserving the curve's proportions
+      scaled.x /= aspect;
+      
+      // Convert to clip space (-1 to 1) by multiplying by 2.0
+      gl_Position = vec4(scaled * 2.0, 0.0, 1.0);
+      vPosition = position;
+    }`;
   }
-`;
+  
+  return `
+    precision mediump float;
+    attribute vec2 position;
+    uniform float uZoom;
+    uniform vec2 uOffset;
+    uniform vec2 uResolution;
+    uniform float uXScale;
+    uniform float uYScale;
+    varying vec2 vPosition;
 
-const fragmentShader = `
-  precision mediump float;
-  uniform sampler2D uPalette;
-  uniform float uIterations;
-  varying vec2 vPosition;
+    void main() {
+      float aspect = uResolution.x / uResolution.y;
+      float scale = 4.0 / uZoom;
+      
+      // Transform vertex position to match the standard fractal coordinate system
+      // For line-based fractals, maintain aspect ratio correctly
+      vec2 fractalCoord = position;
+      vec2 relative = fractalCoord - uOffset;
+      
+      // Scale uniformly (same factor for x and y) to preserve shape
+      vec2 scaled = vec2(
+        relative.x / (scale * uXScale),
+        relative.y / (scale * uYScale)
+      );
+      
+      // Apply aspect ratio correction to maintain shape across different window sizes
+      // Divide x by aspect to compensate for wider screens, preserving the curve's proportions
+      scaled.x /= aspect;
+      
+      // Convert to clip space (-1 to 1) by multiplying by 2.0
+      gl_Position = vec4(scaled * 2.0, 0.0, 1.0);
+      vPosition = position;
+    }
+  `;
+}
 
-  void main() {
-    // Color based on position along the curve
-    // Create interesting patterns with both distance and angle
-    float dist = length(vPosition);
-    float angle = atan(vPosition.y, vPosition.x);
-    float t = fract(dist * 1.8 + angle * 0.3);
-    
-    vec3 color = texture2D(uPalette, vec2(t, 0.5)).rgb;
-    gl_FragColor = vec4(color, 1.0);
+// Helper function to create UBO-aware fragment shader for line-based fractals
+function createLineFractalFragmentShader(useUBO) {
+  if (useUBO) {
+    return `#version 300 es
+    precision mediump float;
+    uniform sampler2D uPalette;
+    uniform float uIterations;
+    in vec2 vPosition;
+    out vec4 fragColor;
+
+    void main() {
+      // Color based on position along the curve
+      // Create interesting patterns with both distance and angle
+      float dist = length(vPosition);
+      float angle = atan(vPosition.y, vPosition.x);
+      float t = fract(dist * 1.8 + angle * 0.3);
+      
+      vec3 color = texture(uPalette, vec2(t, 0.5)).rgb;
+      fragColor = vec4(color, 1.0);
+    }`;
   }
-`;
+  
+  return `
+    precision mediump float;
+    uniform sampler2D uPalette;
+    uniform float uIterations;
+    varying vec2 vPosition;
 
-export function render(regl, params, canvas) {
+    void main() {
+      // Color based on position along the curve
+      // Create interesting patterns with both distance and angle
+      float dist = length(vPosition);
+      float angle = atan(vPosition.y, vPosition.x);
+      float t = fract(dist * 1.8 + angle * 0.3);
+      
+      vec3 color = texture2D(uPalette, vec2(t, 0.5)).rgb;
+      gl_FragColor = vec4(color, 1.0);
+    }
+  `;
+}
+
+export function render(regl, params, canvas, options = {}) {
+  // Check if UBOs should be used (WebGL2 optimization)
+  const webglCapabilities = options.webglCapabilities;
+  const ubo = options.ubo;
+  const useUBO = webglCapabilities?.isWebGL2 && ubo;
   // Generate palette texture for the current color scheme
   const paletteTexture = generatePaletteTexture(regl, params.colorScheme);
 
@@ -144,26 +211,39 @@ export function render(regl, params, canvas) {
   // Generate vertices for current iteration level
   const vertices = generateMooreCurve(iterationLevel);
 
+  // Create UBO-aware shaders
+  const vertexShaderSource = createLineFractalVertexShader(useUBO);
+  const fragmentShaderSource = createLineFractalFragmentShader(useUBO);
+
   const drawMooreCurve = regl({
-    vert: vertexShader,
-    frag: fragmentShader,
+    vert: vertexShaderSource,
+    frag: fragmentShaderSource,
     attributes: {
       position: vertices,
     },
-    uniforms: {
-      uZoom: params.zoom,
-      uOffset: [params.offset.x, params.offset.y],
-      uResolution: () => [canvas.width, canvas.height], // Use function to read current canvas dimensions,
-      uPalette: paletteTexture,
-      uIterations: params.iterations,
-      uXScale: () => params.xScale, // Use function to read current value
-      uYScale: () => params.yScale, // Use function to read current value
-    },
+    uniforms: useUBO
+      ? {
+          uZoom: params.zoom,
+          uOffset: [params.offset.x, params.offset.y],
+          uResolution: () => [canvas.width, canvas.height],
+          uPalette: paletteTexture,
+          uIterations: params.iterations,
+          uScale: () => [params.xScale, params.yScale],
+        }
+      : {
+          uZoom: params.zoom,
+          uOffset: [params.offset.x, params.offset.y],
+          uResolution: () => [canvas.width, canvas.height],
+          uPalette: paletteTexture,
+          uIterations: params.iterations,
+          uXScale: () => params.xScale,
+          uYScale: () => params.yScale,
+        },
     viewport: {
       x: 0,
       y: 0,
-      width: () => canvas.width, // Use function to read current canvas width,
-      height: () => canvas.height, // Use function to read current canvas height,
+      width: () => canvas.width,
+      height: () => canvas.height,
     },
     count: vertices.length / 2,
     primitive: 'line strip',
