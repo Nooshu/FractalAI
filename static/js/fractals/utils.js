@@ -565,7 +565,21 @@ export function getColorSchemeIndex(scheme) {
 }
 
 // Vertex shader for 2D fractals (regl uses a full-screen quad)
-export const vertexShader = `
+// Supports both WebGL1 and WebGL2
+export function getVertexShader(useUBO = false) {
+  if (useUBO) {
+    // WebGL2 version
+    return `#version 300 es
+    in vec2 position;
+    out vec2 vUv;
+    void main() {
+        vUv = position * 0.5 + 0.5;
+        gl_Position = vec4(position, 0, 1);
+    }`;
+  }
+  
+  // WebGL1 version (default)
+  return `
     attribute vec2 position;
     varying vec2 vUv;
     void main() {
@@ -573,6 +587,10 @@ export const vertexShader = `
         gl_Position = vec4(position, 0, 1);
     }
 `;
+}
+
+// Export default WebGL1 vertex shader for backward compatibility
+export const vertexShader = getVertexShader(false);
 
 // Base fragment shader template for 2D fractals
 // Optimized for performance: uses mediump precision, precomputed constants
