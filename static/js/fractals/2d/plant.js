@@ -1,4 +1,6 @@
-import { getColorSchemeIndex } from '../utils.js';
+import {
+  getColorSchemeIndex,
+} from '../utils.js';
 
 // Buffer cache for reuse
 let cachedBuffer = null;
@@ -51,66 +53,14 @@ function generatePlant(iterations, angle = 25, lengthRatio = 0.7) {
   return new Float32Array(vertexList);
 }
 
-export function render(regl, params, canvas) {
-  // Generate vertices based on iteration count (clamp to reasonable range)
-  const iterations = Math.max(0, Math.min(6, Math.floor(params.iterations / 25)));
-  // Use xScale to control branch angle (0-45 degrees)
-  const angle = params.xScale * 45;
-  // Use yScale to control length ratio (0.5-0.9)
-  const lengthRatio = 0.5 + params.yScale * 0.4;
+export function render(regl, params, canvas, options = {}) {
+  // Check if UBOs should be used (WebGL2 optimization)
+  const webglCapabilities = options.webglCapabilities;
+  const ubo = options.ubo;
+  const useUBO = webglCapabilities?.isWebGL2 && ubo;
 
-  const positions = generatePlant(iterations, angle, lengthRatio);
-  const vertexCount = positions.length / 2;
-
-  // Reuse buffer if possible, otherwise create new one
-  if (!cachedBuffer || cachedVertexCount !== vertexCount) {
-    if (cachedBuffer) {
-      cachedBuffer.destroy();
-    }
-    cachedBuffer = regl.buffer(positions);
-    cachedVertexCount = vertexCount;
-  } else {
-    // Buffer exists with same size, just update the data
-    cachedBuffer.subdata(positions);
-  }
-
-  // Shaders
-  const vertexShader = `
-    precision mediump float;
-    attribute vec2 position;
-    uniform float uZoom;
-    uniform vec2 uOffset;
-    uniform vec2 uResolution;
-    uniform float uXScale;
-    uniform float uYScale;
-    varying vec2 vPosition;
-
-    void main() {
-      float aspect = uResolution.x / uResolution.y;
-      float scale = 4.0 / uZoom;
-      
-      // Transform vertex position to match the standard fractal coordinate system
-      // For line-based fractals, maintain aspect ratio correctly
-      vec2 fractalCoord = position;
-      vec2 relative = fractalCoord - uOffset;
-      
-      // Scale uniformly (same factor for x and y) to preserve shape
-      vec2 scaled = vec2(
-        relative.x / (scale * uXScale),
-        relative.y / (scale * uYScale)
-      );
-      
-      // Apply aspect ratio correction to maintain shape across different window sizes
-      // Divide x by aspect to compensate for wider screens, preserving the curve's proportions
-      scaled.x /= aspect;
-      
-      // Convert to clip space (-1 to 1) by multiplying by 2.0
-      gl_Position = vec4(scaled * 2.0, 0.0, 1.0);
-      vPosition = position;
-    }
-  `;
-
-  const fragmentShader = `
+  // Original fragment shader (for WebGL1 fallback) - must be defined before createPlantFragmentShader
+  const originalFragmentShader = `
     precision mediump float;
     uniform int uColorScheme;
     varying vec2 vPosition;
@@ -275,26 +225,142 @@ export function render(regl, params, canvas) {
     }
   `;
 
+  // Helper function to create UBO-aware vertex shader for line-based fractals
+  function createLineFractalVertexShader(useUBO) {
+    if (useUBO) {
+      return `#version 300 es
+      precision mediump float;
+      in vec2 position;
+      uniform float uZoom;
+      uniform vec2 uOffset;
+      uniform vec2 uResolution;
+      uniform vec2 uScale; // xScale, yScale
+      out vec2 vPosition;
+
+      void main() {
+        float aspect = uResolution.x / uResolution.y;
+        float scale = 4.0 / uZoom;
+        
+        // Transform vertex position to match the standard fractal coordinate system
+        // For line-based fractals, maintain aspect ratio correctly
+        vec2 fractalCoord = position;
+        vec2 relative = fractalCoord - uOffset;
+        
+        // Scale uniformly (same factor for x and y) to preserve shape
+        vec2 scaled = vec2(
+          relative.x / (scale * uScale.x),
+          relative.y / (scale * uScale.y)
+        );
+        
+        // Apply aspect ratio correction to maintain shape across different window sizes
+        // Divide x by aspect to compensate for wider screens, preserving the curve's proportions
+        scaled.x /= aspect;
+        
+        // Convert to clip space (-1 to 1) by multiplying by 2.0
+        gl_Position = vec4(scaled * 2.0, 0.0, 1.0);
+        vPosition = position;
+      }`;
+    }
+    
+    return `
+      precision mediump float;
+      attribute vec2 position;
+      uniform float uZoom;
+      uniform vec2 uOffset;
+      uniform vec2 uResolution;
+      uniform float uXScale;
+      uniform float uYScale;
+      varying vec2 vPosition;
+
+      void main() {
+        float aspect = uResolution.x / uResolution.y;
+        float scale = 4.0 / uZoom;
+        
+        // Transform vertex position to match the standard fractal coordinate system
+        // For line-based fractals, maintain aspect ratio correctly
+        vec2 fractalCoord = position;
+        vec2 relative = fractalCoord - uOffset;
+        
+        // Scale uniformly (same factor for x and y) to preserve shape
+        vec2 scaled = vec2(
+          relative.x / (scale * uXScale),
+          relative.y / (scale * uYScale)
+        );
+        
+        // Apply aspect ratio correction to maintain shape across different window sizes
+        // Divide x by aspect to compensate for wider screens, preserving the curve's proportions
+        scaled.x /= aspect;
+        
+        // Convert to clip space (-1 to 1) by multiplying by 2.0
+        gl_Position = vec4(scaled * 2.0, 0.0, 1.0);
+        vPosition = position;
+      }
+    `;
+  }
+
+  // Helper function to create UBO-aware fragment shader
+  function createPlantFragmentShader(useUBO) {
+    if (useUBO) {
+      // WebGL2 version - same logic but with WebGL2 syntax
+      return originalFragmentShader.replace('varying vec2 vPosition;', 'in vec2 vPosition;').replace('gl_FragColor', 'fragColor').replace('precision mediump float;', '#version 300 es\n    precision mediump float;').replace('void main()', 'out vec4 fragColor;\n\n    void main()');
+    }
+    return originalFragmentShader;
+  }
+
+  // Generate vertices based on iteration count (clamp to reasonable range)
+  const iterations = Math.max(0, Math.min(6, Math.floor(params.iterations / 25)));
+  // Use xScale to control branch angle (0-45 degrees)
+  const angle = params.xScale * 45;
+  // Use yScale to control length ratio (0.5-0.9)
+  const lengthRatio = 0.5 + params.yScale * 0.4;
+
+  const positions = generatePlant(iterations, angle, lengthRatio);
+  const vertexCount = positions.length / 2;
+
+  // Reuse buffer if possible, otherwise create new one
+  if (!cachedBuffer || cachedVertexCount !== vertexCount) {
+    if (cachedBuffer) {
+      cachedBuffer.destroy();
+    }
+    cachedBuffer = regl.buffer(positions);
+    cachedVertexCount = vertexCount;
+  } else {
+    // Buffer exists with same size, just update the data
+    cachedBuffer.subdata(positions);
+  }
+
+  // Create UBO-aware shaders
+  const vertexShaderSource = createLineFractalVertexShader(useUBO);
+  const fragmentShaderSource = createPlantFragmentShader(useUBO);
+
   // Get color based on color scheme
   const colorSchemeIndex = getColorSchemeIndex(params.colorScheme);
 
   // Create the draw command
   const drawFractal = regl({
-    vert: vertexShader,
-    frag: fragmentShader,
+    vert: vertexShaderSource,
+    frag: fragmentShaderSource,
 
     attributes: {
       position: cachedBuffer,
     },
 
-    uniforms: {
-      uZoom: params.zoom,
-      uOffset: [params.offset.x, params.offset.y],
-      uResolution: [canvas.width, canvas.height],
-      uXScale: params.xScale,
-      uYScale: params.yScale,
-      uColorScheme: colorSchemeIndex,
-    },
+    uniforms: useUBO
+      ? {
+          uZoom: params.zoom,
+          uOffset: [params.offset.x, params.offset.y],
+          uResolution: [canvas.width, canvas.height],
+          uScale: [params.xScale, params.yScale],
+          uColorScheme: colorSchemeIndex,
+        }
+      : {
+          uZoom: params.zoom,
+          uOffset: [params.offset.x, params.offset.y],
+          uResolution: [canvas.width, canvas.height],
+          uXScale: params.xScale,
+          uYScale: params.yScale,
+          uColorScheme: colorSchemeIndex,
+        },
 
     primitive: 'lines',
     count: vertexCount,

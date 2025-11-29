@@ -1,4 +1,7 @@
-import { generatePaletteTexture } from '../utils.js';
+import {
+  generatePaletteTexture,
+  getVertexShader,
+} from '../utils.js';
 
 const fractalFunction = `
 // Barnsley Fern - Iterated Function System (IFS)
@@ -91,9 +94,33 @@ float computeFractal(vec2 c) {
 }
 `;
 
-// Custom fragment shader for Barnsley Fern
-const fragmentShader = `
+// Helper function to create UBO-aware fragment shader for Barnsley Fern
+function createBarnsleyFernFragmentShader(useUBO) {
+  const uniformDeclarations = useUBO
+    ? `#version 300 es
     #ifdef GL_ES
+    precision mediump float;
+    #endif
+    
+    layout(std140) uniform FractalParams {
+      float uIterations;
+      float uZoom;
+      vec2 uOffset;
+      vec2 uJuliaC;
+      vec2 uScale; // xScale, yScale
+    };
+    
+    // Provide aliases for compatibility
+    #define uXScale uScale.x
+    #define uYScale uScale.y
+    
+    uniform float uTime;
+    uniform vec2 uResolution;
+    uniform sampler2D uPalette;
+    
+    in vec2 vUv;
+    out vec4 fragColor;`
+    : `#ifdef GL_ES
     precision mediump float;
     #endif
     
@@ -107,7 +134,12 @@ const fragmentShader = `
     uniform float uXScale;
     uniform float uYScale;
     
-    varying vec2 vUv;
+    varying vec2 vUv;`;
+
+  const textureFunction = useUBO ? 'texture' : 'texture2D';
+  const outputVariable = useUBO ? 'fragColor' : 'gl_FragColor';
+
+  return `${uniformDeclarations}
     
     ${fractalFunction}
     
@@ -125,48 +157,71 @@ const fragmentShader = `
         
         // Optimized color lookup - use multiplication instead of division
         float t = clamp(iterations / uIterations, 0.0, 1.0);
-        vec3 color = texture2D(uPalette, vec2(t, 0.5)).rgb;
+        vec3 color = ${textureFunction}(uPalette, vec2(t, 0.5)).rgb;
         
         // Points outside the set are black - use step() for branchless code
         color = mix(color, vec3(0.0), step(uIterations, iterations));
         
-        gl_FragColor = vec4(color, 1.0);
-    }
-`;
+        ${outputVariable} = vec4(color, 1.0);
+    }`;
+}
 
-export function render(regl, params, canvas) {
+export function render(regl, params, canvas, options = {}) {
+  // Check if UBOs should be used (WebGL2 optimization)
+  const webglCapabilities = options.webglCapabilities;
+  const ubo = options.ubo;
+  const useUBO = webglCapabilities?.isWebGL2 && ubo;
+
   const paletteTexture = generatePaletteTexture(regl, params.colorScheme);
 
+  // Create UBO-aware shaders
+  const vertexShaderSource = getVertexShader(useUBO);
+  const fragmentShaderSource = createBarnsleyFernFragmentShader(useUBO);
+
   const drawFractal = regl({
-    frag: fragmentShader,
-    vert: `
-      precision mediump float;
-      attribute vec2 position;
-      varying vec2 vUv;
-      void main() {
-        vUv = position;
-        gl_Position = vec4(position, 0, 1);
-      }
-    `,
+    frag: fragmentShaderSource,
+    vert: vertexShaderSource,
     attributes: {
-      position: [
-        [-1, -1],
-        [1, -1],
-        [-1, 1],
-        [1, 1],
-      ],
+      position: [-1, -1, 1, -1, -1, 1, 1, 1],
     },
-    uniforms: {
-      uResolution: [canvas.width, canvas.height],
-      uZoom: params.zoom,
-      uOffset: [params.offset.x, params.offset.y],
-      uIterations: params.iterations,
-      uPalette: paletteTexture,
-      uXScale: params.xScale,
-      uYScale: params.yScale,
-      // Debug uniform - can be used to visualize intermediate values
-      uDebug: 0.0, // 0 = normal, 1 = show density, 2 = show coordinates
-    },
+    uniforms: useUBO
+      ? {
+          uTime: 0,
+          uResolution: [canvas.width, canvas.height],
+          uPalette: paletteTexture,
+        }
+      : {
+          uTime: 0,
+          uResolution: [canvas.width, canvas.height],
+          uZoom: params.zoom,
+          uOffset: [params.offset.x, params.offset.y],
+          uIterations: params.iterations,
+          uJuliaC: [params.juliaC.x, params.juliaC.y],
+          uPalette: paletteTexture,
+          uXScale: params.xScale,
+          uYScale: params.yScale,
+        },
+    // Bind UBO if available
+    ...(useUBO && ubo?.glBuffer && ubo?.bind
+      ? {
+          context: { ubo: ubo },
+          before: function bindUBO(context) {
+            const gl = regl._gl;
+            const program = gl.getParameter(gl.CURRENT_PROGRAM);
+            if (program && context.ubo) {
+              context.ubo.update({
+                iterations: params.iterations,
+                zoom: params.zoom,
+                offset: params.offset,
+                juliaC: params.juliaC,
+                xScale: params.xScale,
+                yScale: params.yScale,
+              });
+              context.ubo.bind(program);
+            }
+          },
+        }
+      : {}),
     primitive: 'triangle strip',
     count: 4,
     viewport: {
