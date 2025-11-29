@@ -1,4 +1,6 @@
-import { getColorSchemeIndex } from '../utils.js';
+import {
+  getColorSchemeIndex,
+} from '../utils.js';
 
 // Buffer cache for reuse
 let cachedBuffer = null;
@@ -113,64 +115,14 @@ function generateDragonLSystem(iterations, angle = 90) {
   return scaledVertices;
 }
 
-export function render(regl, params, canvas) {
-  // Generate vertices based on iteration count (clamp to reasonable range)
-  const iterations = Math.max(0, Math.min(10, Math.floor(params.iterations / 20)));
-  // Use xScale to control turn angle (45-135 degrees)
-  const angle = 45 + params.xScale * 90;
+export function render(regl, params, canvas, options = {}) {
+  // Check if UBOs should be used (WebGL2 optimization)
+  const webglCapabilities = options.webglCapabilities;
+  const ubo = options.ubo;
+  const useUBO = webglCapabilities?.isWebGL2 && ubo;
 
-  const positions = generateDragonLSystem(iterations, angle);
-  const vertexCount = positions.length / 2;
-
-  // Reuse buffer if possible, otherwise create new one
-  if (!cachedBuffer || cachedVertexCount !== vertexCount) {
-    if (cachedBuffer) {
-      cachedBuffer.destroy();
-    }
-    cachedBuffer = regl.buffer(positions);
-    cachedVertexCount = vertexCount;
-  } else {
-    // Buffer exists with same size, just update the data
-    cachedBuffer.subdata(positions);
-  }
-
-  // Shaders
-  const vertexShader = `
-    precision mediump float;
-    attribute vec2 position;
-    uniform float uZoom;
-    uniform vec2 uOffset;
-    uniform vec2 uResolution;
-    uniform float uXScale;
-    uniform float uYScale;
-    varying vec2 vPosition;
-
-    void main() {
-      float aspect = uResolution.x / uResolution.y;
-      float scale = 4.0 / uZoom;
-      
-      // Transform vertex position to match the standard fractal coordinate system
-      // For line-based fractals, maintain aspect ratio correctly
-      vec2 fractalCoord = position;
-      vec2 relative = fractalCoord - uOffset;
-      
-      // Scale uniformly (same factor for x and y) to preserve shape
-      vec2 scaled = vec2(
-        relative.x / (scale * uXScale),
-        relative.y / (scale * uYScale)
-      );
-      
-      // Apply aspect ratio correction to maintain shape across different window sizes
-      // Divide x by aspect to compensate for wider screens, preserving the curve's proportions
-      scaled.x /= aspect;
-      
-      // Convert to clip space (-1 to 1) by multiplying by 2.0
-      gl_Position = vec4(scaled * 2.0, 0.0, 1.0);
-      vPosition = position;
-    }
-  `;
-
-  const fragmentShader = `
+  // Original fragment shader (for WebGL1 fallback) - must be defined before use
+  const originalFragmentShader = `
     precision mediump float;
     uniform int uColorScheme;
     varying vec2 vPosition;
@@ -335,26 +287,140 @@ export function render(regl, params, canvas) {
     }
   `;
 
+  // Helper function to create UBO-aware vertex shader for line-based fractals
+  function createLineFractalVertexShader(useUBO) {
+    if (useUBO) {
+      return `#version 300 es
+      precision mediump float;
+      in vec2 position;
+      uniform float uZoom;
+      uniform vec2 uOffset;
+      uniform vec2 uResolution;
+      uniform vec2 uScale; // xScale, yScale
+      out vec2 vPosition;
+
+      void main() {
+        float aspect = uResolution.x / uResolution.y;
+        float scale = 4.0 / uZoom;
+        
+        // Transform vertex position to match the standard fractal coordinate system
+        // For line-based fractals, maintain aspect ratio correctly
+        vec2 fractalCoord = position;
+        vec2 relative = fractalCoord - uOffset;
+        
+        // Scale uniformly (same factor for x and y) to preserve shape
+        vec2 scaled = vec2(
+          relative.x / (scale * uScale.x),
+          relative.y / (scale * uScale.y)
+        );
+        
+        // Apply aspect ratio correction to maintain shape across different window sizes
+        // Divide x by aspect to compensate for wider screens, preserving the curve's proportions
+        scaled.x /= aspect;
+        
+        // Convert to clip space (-1 to 1) by multiplying by 2.0
+        gl_Position = vec4(scaled * 2.0, 0.0, 1.0);
+        vPosition = position;
+      }`;
+    }
+    
+    return `
+      precision mediump float;
+      attribute vec2 position;
+      uniform float uZoom;
+      uniform vec2 uOffset;
+      uniform vec2 uResolution;
+      uniform float uXScale;
+      uniform float uYScale;
+      varying vec2 vPosition;
+
+      void main() {
+        float aspect = uResolution.x / uResolution.y;
+        float scale = 4.0 / uZoom;
+        
+        // Transform vertex position to match the standard fractal coordinate system
+        // For line-based fractals, maintain aspect ratio correctly
+        vec2 fractalCoord = position;
+        vec2 relative = fractalCoord - uOffset;
+        
+        // Scale uniformly (same factor for x and y) to preserve shape
+        vec2 scaled = vec2(
+          relative.x / (scale * uXScale),
+          relative.y / (scale * uYScale)
+        );
+        
+        // Apply aspect ratio correction to maintain shape across different window sizes
+        // Divide x by aspect to compensate for wider screens, preserving the curve's proportions
+        scaled.x /= aspect;
+        
+        // Convert to clip space (-1 to 1) by multiplying by 2.0
+        gl_Position = vec4(scaled * 2.0, 0.0, 1.0);
+        vPosition = position;
+      }
+    `;
+  }
+
+  // Generate vertices based on iteration count (clamp to reasonable range)
+  const iterations = Math.max(0, Math.min(10, Math.floor(params.iterations / 20)));
+  // Use xScale to control turn angle (45-135 degrees)
+  const angle = 45 + params.xScale * 90;
+
+  const positions = generateDragonLSystem(iterations, angle);
+  const vertexCount = positions.length / 2;
+
+  // Reuse buffer if possible, otherwise create new one
+  if (!cachedBuffer || cachedVertexCount !== vertexCount) {
+    if (cachedBuffer) {
+      cachedBuffer.destroy();
+    }
+    cachedBuffer = regl.buffer(positions);
+    cachedVertexCount = vertexCount;
+  } else {
+    // Buffer exists with same size, just update the data
+    cachedBuffer.subdata(positions);
+  }
+
+  // Helper function to create UBO-aware fragment shader
+  function createDragonLSystemFragmentShader(useUBO) {
+    if (useUBO) {
+      // WebGL2 version - same logic but with WebGL2 syntax
+      return originalFragmentShader.replace('varying vec2 vPosition;', 'in vec2 vPosition;').replace('gl_FragColor', 'fragColor').replace('precision mediump float;', '#version 300 es\n    precision mediump float;').replace('void main()', 'out vec4 fragColor;\n\n    void main()');
+    }
+    return originalFragmentShader;
+  }
+
+  // Create UBO-aware shaders
+  const vertexShaderSource = createLineFractalVertexShader(useUBO);
+  const fragmentShaderSource = createDragonLSystemFragmentShader(useUBO);
+
   // Get color based on color scheme
   const colorSchemeIndex = getColorSchemeIndex(params.colorScheme);
 
   // Create the draw command
   const drawFractal = regl({
-    vert: vertexShader,
-    frag: fragmentShader,
+    vert: vertexShaderSource,
+    frag: fragmentShaderSource,
 
     attributes: {
       position: cachedBuffer,
     },
 
-    uniforms: {
-      uZoom: params.zoom,
-      uOffset: [params.offset.x, params.offset.y],
-      uResolution: [canvas.width, canvas.height],
-      uXScale: params.xScale,
-      uYScale: params.yScale,
-      uColorScheme: colorSchemeIndex,
-    },
+    uniforms: useUBO
+      ? {
+          uZoom: params.zoom,
+          uOffset: [params.offset.x, params.offset.y],
+          uResolution: [canvas.width, canvas.height],
+          uScale: [params.xScale, params.yScale],
+          uColorScheme: colorSchemeIndex,
+        }
+      : {
+          uZoom: params.zoom,
+          uOffset: [params.offset.x, params.offset.y],
+          uResolution: [canvas.width, canvas.height],
+          uXScale: params.xScale,
+          uYScale: params.yScale,
+          uColorScheme: colorSchemeIndex,
+        },
 
     primitive: 'line strip',
     count: vertexCount,
