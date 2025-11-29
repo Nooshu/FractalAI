@@ -8,6 +8,7 @@
 import { getColorSchemeIndex, computeColorForScheme, isJuliaType } from '../fractals/utils.js';
 import { CONFIG } from '../core/config.js';
 import { getInitialRenderPosition } from '../fractals/fractal-config.js';
+import { lifecycleManager } from '../core/lifecycle-manager.js';
 
 /**
  * Setup all UI controls
@@ -251,6 +252,10 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
 
   fractalTypeSelect.addEventListener('change', async (e) => {
     const newFractalType = e.target.value;
+    
+    // Start new lifecycle session
+    lifecycleManager.startSession('fractal-change', newFractalType);
+    
     setCurrentFractalType(newFractalType);
     updateWikipediaLink();
     updateCoordinateDisplay();
@@ -269,7 +274,7 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
     // Clear the cache for this fractal type to force a fresh load
     fractalLoader.removeFromCache(newFractalType);
 
-    // Clear frame cache when fractal type changes
+    // Clear frame cache when fractal type changes (lifecycle manager handles this, but explicit for clarity)
     frameCache.clear();
 
     // Load the new fractal module

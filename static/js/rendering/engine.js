@@ -7,6 +7,7 @@
 import { showLoadingBar, hideLoadingBar } from '../ui/loading-bar.js';
 import { updatePixelRatio } from './pixel-ratio.js';
 import { incrementFrameCount } from '../performance/fps-tracker.js';
+import { performanceInstrumentation } from '../performance/instrumentation.js';
 
 /**
  * Rendering Engine class
@@ -196,11 +197,15 @@ export class RenderingEngine {
     // Check cache first
     const cached = this.frameCache.getCachedFrame(canvas, this.getCurrentFractalType(), params, regl);
     if (cached && cached.framebuffer) {
+      performanceInstrumentation.recordCacheHit();
       this.displayCachedFrame(cached.framebuffer);
       hideLoadingBar();
       this.setIsProgressiveRendering(false);
       return;
     }
+    
+    performanceInstrumentation.recordCacheMiss();
+    performanceInstrumentation.recordRender();
 
     // Not using cache, so we're not displaying cached
     this.setIsDisplayingCached(false);

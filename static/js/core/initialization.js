@@ -23,6 +23,10 @@ import { appState } from './app-state.js';
 import { getColorSchemeIndex, computeColorForScheme } from '../fractals/utils.js';
 import { shouldEnableWorkerOptimizations, getWorkerCapabilities } from '../workers/feature-detection.js';
 import { CONFIG } from './config.js';
+import { LongTaskDetector } from '../performance/long-task-detector.js';
+import { lifecycleManager } from './lifecycle-manager.js';
+import { idleCleanupManager } from './idle-cleanup.js';
+import { clearPaletteCache, clearShaderCache } from '../fractals/utils.js';
 
 /**
  * Initialize DOM cache and basic UI modules
@@ -83,9 +87,22 @@ function initRenderingEngine(appState) {
 /**
  * Setup cleanup handlers
  * @param {Object} appState - Application state instance
+ * @param {LongTaskDetector} longTaskDetector - Long task detector instance
  */
-function setupCleanupHandlers(appState) {
+function setupCleanupHandlers(appState, longTaskDetector) {
   window.addEventListener('beforeunload', () => {
+    // Stop long-task detection
+    if (longTaskDetector) {
+      longTaskDetector.stop();
+    }
+    
+    // Stop idle cleanup
+    idleCleanupManager.stop();
+    
+    // End current session
+    lifecycleManager.endSession();
+    
+    // Cleanup app state
     appState.cleanup();
   });
 }
@@ -442,6 +459,38 @@ export async function init() {
   // Initialize DOM cache first
   initDOMCache();
 
+  // Initialize long-task detection
+  const longTaskDetector = new LongTaskDetector({
+    onLongTask: (task) => {
+      // Log long tasks in development
+      if (import.meta.env?.DEV) {
+        console.warn(
+          `[Long Task] ${task.duration.toFixed(2)}ms blocking operation detected`
+        );
+      }
+    },
+  });
+  longTaskDetector.start();
+
+  // Initialize idle cleanup
+  idleCleanupManager.registerTask((deadline) => {
+    // Trim frame cache during idle time
+    const frameCache = appState.getFrameCache();
+    if (frameCache && deadline.timeRemaining() > 0) {
+      frameCache.trim();
+    }
+  }, 10); // High priority
+
+  idleCleanupManager.registerTask((deadline) => {
+    // Remove old cache entries (older than 5 minutes)
+    const frameCache = appState.getFrameCache();
+    if (frameCache && deadline.timeRemaining() > 0) {
+      frameCache.removeOldEntries(5 * 60 * 1000); // 5 minutes
+    }
+  }, 20); // Medium priority
+
+  idleCleanupManager.start();
+
   // Initialize canvas and regl renderer
   initCanvasAndRenderer(appState);
 
@@ -449,7 +498,7 @@ export async function init() {
   const renderingEngine = initRenderingEngine(appState);
 
   // Cleanup on page unload
-  setupCleanupHandlers(appState);
+  setupCleanupHandlers(appState, longTaskDetector);
 
   // Setup UI controls (after rendering engine is initialized)
   setupUIControlsModule(appState, renderingEngine, loadFractal, updateWikipediaLinkFn, updateCoordinateDisplayFn);
@@ -462,6 +511,9 @@ export async function init() {
    * @param {Object} preset - Preset configuration
    */
   function loadFractalFromPreset(preset) {
+    // Start new lifecycle session for preset load
+    lifecycleManager.startSession('preset-load', preset.fractal || appState.getCurrentFractalType());
+    
     const setters = appState.getSetters();
 
     // Update fractal parameters from preset

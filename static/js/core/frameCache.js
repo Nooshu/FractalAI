@@ -161,5 +161,63 @@ export class FrameCache {
   size() {
     return this.cache.size;
   }
+
+  /**
+   * Trim cache to target size (LRU eviction)
+   * Removes oldest entries until cache size is at or below target
+   * @param {number} targetSize - Target cache size (default: maxSize * 0.7)
+   */
+  trim(targetSize = null) {
+    const target = targetSize !== null ? targetSize : Math.floor(this.maxSize * 0.7);
+    
+    if (this.cache.size <= target) {
+      return; // No trimming needed
+    }
+
+    // Convert to array and sort by timestamp (oldest first)
+    const entries = Array.from(this.cache.entries())
+      .map(([key, value]) => ({ key, timestamp: value.timestamp }))
+      .sort((a, b) => a.timestamp - b.timestamp);
+
+    // Remove oldest entries
+    const toRemove = entries.slice(0, this.cache.size - target);
+    for (const { key } of toRemove) {
+      const entry = this.cache.get(key);
+      if (entry && entry.framebuffer) {
+        try {
+          entry.framebuffer.destroy();
+        } catch (error) {
+          console.warn('Error destroying framebuffer during trim:', error);
+        }
+      }
+      this.cache.delete(key);
+    }
+  }
+
+  /**
+   * Remove entries older than specified age
+   * @param {number} maxAgeMs - Maximum age in milliseconds
+   * @returns {number} Number of entries removed
+   */
+  removeOldEntries(maxAgeMs) {
+    const now = Date.now();
+    let removed = 0;
+
+    for (const [key, entry] of this.cache.entries()) {
+      if (now - entry.timestamp > maxAgeMs) {
+        if (entry.framebuffer) {
+          try {
+            entry.framebuffer.destroy();
+          } catch (error) {
+            console.warn('Error destroying old framebuffer:', error);
+          }
+        }
+        this.cache.delete(key);
+        removed++;
+      }
+    }
+
+    return removed;
+  }
 }
 
