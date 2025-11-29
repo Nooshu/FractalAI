@@ -21,6 +21,8 @@ import { getRandomInterestingView } from '../fractals/random-view.js';
 import { appState } from './app-state.js';
 // Footer height tracking is deferred using requestIdleCallback (non-critical for first render)
 import { getColorSchemeIndex, computeColorForScheme } from '../fractals/utils.js';
+import { shouldEnableWorkerOptimizations, getWorkerCapabilities } from '../workers/feature-detection.js';
+import { CONFIG } from './config.js';
 
 /**
  * Initialize DOM cache and basic UI modules
@@ -127,6 +129,7 @@ function setupUIControlsModule(appState, renderingEngine, loadFractal, updateWik
       updateCoordinateDisplay: updateCoordinateDisplay,
       renderFractalProgressive: () => renderingEngine.renderFractalProgressive(),
       renderFractal: () => renderingEngine.renderFractal(),
+      cancelWorkerTasks: () => appState.cancelWorkerTasks(),
       getRandomInterestingView: () => getRandomInterestingView({
         getCurrentFractalType: getters.getCurrentFractalType,
         getCurrentFractalModule: getters.getCurrentFractalModule,
@@ -411,6 +414,31 @@ function createUpdateCoordinateDisplay() {
 export async function init() {
   const updateWikipediaLinkFn = createUpdateWikipediaLink();
   const updateCoordinateDisplayFn = createUpdateCoordinateDisplay();
+  
+  // Detect and configure worker optimizations
+  const workerCapabilities = getWorkerCapabilities();
+  if (workerCapabilities.recommended) {
+    // Enable workers in config if browser supports them
+    CONFIG.workers.enabled = true;
+    // Log that worker optimizations are available (will be used when worker pool is created)
+    console.log(
+      `%c[Worker Optimizations]%c Available - Will be enabled when needed (${workerCapabilities.hardwareConcurrency} CPU cores, ${workerCapabilities.sharedArrayBuffer ? 'SharedArrayBuffer' : 'no SharedArrayBuffer'}, ${workerCapabilities.offscreenCanvas ? 'OffscreenCanvas' : 'no OffscreenCanvas'})`,
+      'color: #2196F3; font-weight: bold;',
+      'color: inherit;'
+    );
+  } else {
+    CONFIG.workers.enabled = false;
+    // Log why workers are disabled
+    const reason = !workerCapabilities.workers ? 'Workers not supported' :
+                   workerCapabilities.hardwareConcurrency < CONFIG.workers.minCores ? `Insufficient CPU cores (${workerCapabilities.hardwareConcurrency} < ${CONFIG.workers.minCores})` :
+                   'Unknown';
+    console.log(
+      `%c[Worker Optimizations]%c Disabled - ${reason}`,
+      'color: #FF9800; font-weight: bold;',
+      'color: inherit;'
+    );
+  }
+  
   // Initialize DOM cache first
   initDOMCache();
 

@@ -35,6 +35,7 @@ import { getInitialRenderPosition } from '../fractals/fractal-config.js';
  * @param {Function} callbacks.renderFractalProgressive - Render fractal progressively
  * @param {Function} callbacks.renderFractal - Render fractal
  * @param {Function} callbacks.getRandomInterestingView - Get random interesting view
+ * @param {Function} callbacks.cancelWorkerTasks - Cancel pending worker tasks
  * @returns {Object} Object with cleanup function
  */
 export function setupUIControls(getters, setters, dependencies, callbacks) {
@@ -65,6 +66,7 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
     renderFractal,
     getRandomInterestingView,
     cancelProgressiveRender,
+    cancelWorkerTasks = () => {}, // Optional callback to cancel worker tasks
   } = callbacks;
 
   // Get DOM elements
@@ -255,6 +257,9 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
 
     // Reset random view counter when fractal type changes
     resetRandomViewCounter();
+
+    // Cancel any pending worker tasks when fractal type changes
+    cancelWorkerTasks();
 
     // Clear previous fractal draw command
     setDrawFractal(null);

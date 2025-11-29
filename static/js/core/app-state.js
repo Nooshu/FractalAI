@@ -6,6 +6,8 @@
 
 import { CONFIG } from './config.js';
 import { FrameCache } from './frameCache.js';
+import { WorkerPool } from '../workers/pool.js';
+import { shouldEnableWorkerOptimizations } from '../workers/feature-detection.js';
 
 /**
  * Application State Manager
@@ -38,6 +40,9 @@ export class AppStateManager {
     // Rendering engine reference
     this.renderingEngine = null;
 
+    // Worker pool (lazy initialized)
+    this.workerPool = null;
+
     // Fractal parameters
     this.params = {
       iterations: CONFIG.rendering.defaultIterations,
@@ -67,6 +72,55 @@ export class AppStateManager {
   getFrameCache() { return this.frameCache; }
   getRenderingEngine() { return this.renderingEngine; }
   getParams() { return this.params; }
+  getWorkerPool() {
+    // Lazy initialization of worker pool (only if feature is enabled)
+    if (!this.workerPool && this.areWorkersEnabled()) {
+      const maxWorkers = Math.min(
+        CONFIG.workers.maxWorkers,
+        Math.max(1, (navigator.hardwareConcurrency || 4) - 1)
+      );
+      this.workerPool = new WorkerPool({
+        maxWorkers,
+        minWorkers: 1,
+      });
+      
+      // Log that worker optimizations are being used
+      console.log(
+        `%c[Worker Optimizations]%c Enabled with ${maxWorkers} worker(s) (${navigator.hardwareConcurrency || 4} CPU cores detected)`,
+        'color: #4CAF50; font-weight: bold;',
+        'color: inherit;'
+      );
+    }
+    return this.workerPool;
+  }
+
+  /**
+   * Check if worker optimizations are enabled
+   * @returns {boolean}
+   */
+  areWorkersEnabled() {
+    // Check config flag first
+    if (!CONFIG.workers.enabled) {
+      return false;
+    }
+
+    // Check browser compatibility
+    return shouldEnableWorkerOptimizations({
+      requireSharedArrayBuffer: CONFIG.workers.requireSharedArrayBuffer,
+      minCores: CONFIG.workers.minCores,
+    });
+  }
+
+  /**
+   * Cancel all pending worker tasks
+   * Useful when switching fractal types or parameters
+   */
+  cancelWorkerTasks() {
+    if (this.workerPool) {
+      // Cancel all pending tasks (empty array cancels all)
+      this.workerPool.cancelTiles([]);
+    }
+  }
 
   // Setters
   setRegl(value) { this.regl = value; }
@@ -173,6 +227,10 @@ export class AppStateManager {
     }
     if (this.renderingEngine) {
       this.renderingEngine.cleanup();
+    }
+    if (this.workerPool) {
+      this.workerPool.shutdown();
+      this.workerPool = null;
     }
   }
 }

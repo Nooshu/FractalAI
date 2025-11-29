@@ -416,6 +416,7 @@ export class RenderingEngine {
   cleanup() {
     this.stopAnimation();
     this.cancelProgressiveRender();
+    // Note: Worker pool cleanup is handled by appState.cleanup()
   }
 }
 

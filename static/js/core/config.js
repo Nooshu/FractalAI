@@ -71,5 +71,15 @@ export const CONFIG = {
   performance: {
     resizeThrottleMs: 100,
   },
+  workers: {
+    // Feature flag: enable worker-based optimizations if browser supports them
+    enabled: true, // Will be overridden by feature detection
+    // Minimum CPU cores required to enable workers (avoid overhead on single-core)
+    minCores: 2,
+    // Maximum number of workers (will be capped by hardwareConcurrency)
+    maxWorkers: 4,
+    // Require SharedArrayBuffer (for future optimizations, currently optional)
+    requireSharedArrayBuffer: false,
+  },
 };
 
