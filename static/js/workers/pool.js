@@ -5,10 +5,7 @@
 
 import {
   createTileRequest,
-  createCancelRequest,
-  isTileRequest,
   isTileResponse,
-  isCancelRequest,
 } from './tile-protocol.js';
 
 /**
@@ -264,7 +261,7 @@ export class WorkerPool {
   cancelTiles(tileIds) {
     if (tileIds.length === 0) {
       // Cancel all pending tasks
-      for (const [tileId, task] of this.pendingTasks.entries()) {
+      for (const [, task] of this.pendingTasks.entries()) {
         // Update worker state
         const state = this.workerStates.get(task.worker);
         if (state) {

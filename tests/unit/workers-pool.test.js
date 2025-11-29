@@ -19,7 +19,7 @@ class MockWorker {
     this.listeners[event].push(handler);
   }
 
-  postMessage(message, transfer) {
+  postMessage(message, _transfer) {
     if (this.terminated) {
       throw new Error('Worker is terminated');
     }
@@ -105,7 +105,7 @@ describe('WorkerPool', () => {
     });
 
     it('should use custom worker script', () => {
-      const pool = new WorkerPool({ workerScript: 'custom-worker.js' });
+      new WorkerPool({ workerScript: 'custom-worker.js' });
       expect(mockWorkers[0].script).toBe('custom-worker.js');
     });
   });

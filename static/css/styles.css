@@ -38,8 +38,8 @@
   --button-blue-bg-active: rgb(58 122 199 / 95%);
   --button-blue-shadow: 0 4px 12px rgb(74 158 255 / 30%);
   --button-blue-shadow-hover: 0 6px 20px rgb(74 158 255 / 50%);
-  --button-blue-focus-shadow: 0 0 0 4px rgba(74, 158, 255, 0.2);
-  --button-blue-focus-shadow-full: 0 0 0 4px rgba(74, 158, 255, 0.3);
+  --button-blue-focus-shadow: 0 0 0 4px rgb(74 158 255 / 20%);
+  --button-blue-focus-shadow-full: 0 0 0 4px rgb(74 158 255 / 30%);
 
   /* Panel Button Variables */
   --panel-btn-size: 44px;
@@ -177,8 +177,8 @@ body {
   gap: 10px;
   padding: 12px 16px;
   margin: 8px 12px;
-  background: rgba(255, 193, 7, 0.15);
-  border: 1px solid rgba(255, 193, 7, 0.3);
+  background: rgb(255 193 7 / 15%);
+  border: 1px solid rgb(255 193 7 / 30%);
   border-radius: 6px;
   color: #ffc107;
   font-size: 0.85rem;
@@ -266,6 +266,11 @@ body {
   margin-bottom: 0;
 }
 
+/* Modern browsers with :has() support - hides entire control div */
+.side-panel .panel-content .section-content .control:has(.coordinate-display) {
+  display: none;
+}
+
 /* Add padding below y-axis slider to prevent footer overlap */
 .control:has(#y-scale) {
   margin-bottom: 25px; /* 20px default + 5px extra */
@@ -303,7 +308,7 @@ body {
   -webkit-appearance: none;
   -moz-appearance: none;
   background-image:
-    linear-gradient(to right, var(--text-secondary) 0px, var(--text-secondary) 1px, transparent 1px),
+    linear-gradient(to right, var(--text-secondary) 0, var(--text-secondary) 1px, transparent 1px),
     url("data:image/svg+xml,%3Csvg width='12' height='12' viewBox='0 0 12 12' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M2 4L6 8L10 4' stroke='%23ffffff' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat, no-repeat;
   background-position: right 37px center, right 14px center;
@@ -349,7 +354,7 @@ body {
   padding: 0;
   margin: -1px;
   overflow: hidden;
-  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
   white-space: nowrap;
   border-width: 0;
 }
@@ -464,10 +469,6 @@ body {
 }
 
 /* Hide Coordinates panel */
-/* Modern browsers with :has() support - hides entire control div */
-.side-panel .panel-content .section-content .control:has(.coordinate-display) {
-  display: none;
-}
 
 /* Fallback for older browsers: Hide coordinate display and label */
 .side-panel .panel-content .section-content .coordinate-display,
@@ -519,9 +520,6 @@ body {
   gap: 8px;
   transition: all var(--transition-fast);
   margin-top: 8px;
-}
-
-.copy-coords-btn {
   will-change: transform;
 }
 
@@ -624,7 +622,7 @@ body {
   background: rgb(74 158 255 / 90%);
   border-color: var(--accent-blue);
   color: white;
-  box-shadow: 0 0 0 4px rgba(74, 158, 255, 0.2), 0 4px 12px rgb(74 158 255 / 30%);
+  box-shadow: 0 0 0 4px rgb(74 158 255 / 20%), 0 4px 12px rgb(74 158 255 / 30%);
 }
 
 .wikipedia-link svg {
@@ -917,8 +915,7 @@ body {
 /* Right Panel Content */
 .right-panel .panel-content {
   flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden auto;
   padding: 8px 0;
   padding-bottom: 150px; /* Extra padding at bottom to ensure buttons are visible */
 }
@@ -957,8 +954,8 @@ body {
 }
 
 /* Show right panel button when right panel is hidden */
-.right-panel.hidden ~ * .show-right-panel-btn,
-.show-right-panel-btn {
+.show-right-panel-btn,
+.right-panel.hidden ~ * .show-right-panel-btn {
   display: flex;
 }
 
@@ -1077,7 +1074,7 @@ body {
 
 .image-drop-zone.drag-over {
   border-color: var(--accent-blue);
-  background: rgba(74, 158, 255, 0.1);
+  background: rgb(74 158 255 / 10%);
   border-style: solid;
 }
 
@@ -1161,7 +1158,7 @@ body {
 .exif-json-textarea:focus {
   outline: none;
   border-color: var(--accent-blue);
-  box-shadow: 0 0 0 2px rgba(74, 158, 255, 0.2);
+  box-shadow: 0 0 0 2px rgb(74 158 255 / 20%);
 }
 
 .exif-json-textarea::placeholder {
@@ -1240,7 +1237,7 @@ body {
 .preset-item:hover {
   border-color: var(--accent-blue);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 12px rgb(0 0 0 / 30%);
 }
 
 .preset-item:active {
@@ -1259,7 +1256,7 @@ body {
   bottom: 0;
   left: 0;
   right: 0;
-  background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+  background: linear-gradient(transparent, rgb(0 0 0 / 80%));
   color: white;
   padding: var(--spacing-sm);
   font-size: 0.75rem;
@@ -1324,6 +1321,7 @@ body {
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
@@ -1371,6 +1369,7 @@ body {
     width var(--transition-normal);
   display: flex;
   flex-direction: column;
+
   /* Use CSS to calculate and set footer height */
   height: fit-content;
   min-height: fit-content;
@@ -1433,9 +1432,6 @@ body {
 .github-link svg {
   vertical-align: middle;
   transition: transform 0.2s ease;
-}
-
-.github-link svg {
   will-change: transform;
 }
 
@@ -1720,11 +1716,11 @@ div.canvas-container:fullscreen > #info-panel {
 }
 
 /* Hide benchmark button in fullscreen */
-.canvas-area:has(.canvas-container:fullscreen) .top-action-bar #benchmark-toggle {
+body.is-fullscreen .canvas-area .top-action-bar #benchmark-toggle {
   display: none;
 }
 
-body.is-fullscreen .canvas-area .top-action-bar #benchmark-toggle {
+.canvas-area:has(.canvas-container:fullscreen) .top-action-bar #benchmark-toggle {
   display: none;
 }
 
@@ -1842,21 +1838,18 @@ body.is-fullscreen .app-container .side-panel {
   font-weight: 600;
   cursor: pointer;
   transition: all var(--transition-fast);
+  will-change: transform;
 }
 
-.benchmark-btn {
-  will-change: transform;
+.benchmark-btn:disabled {
+  opacity: var(--disabled-opacity);
+  cursor: not-allowed;
 }
 
 .benchmark-btn:hover:not(:disabled) {
   background: var(--accent-blue-dim);
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgb(74 158 255 / 30%);
-}
-
-.benchmark-btn:disabled {
-  opacity: var(--disabled-opacity);
-  cursor: not-allowed;
 }
 
 .benchmark-status {
@@ -1886,7 +1879,7 @@ body.is-fullscreen .app-container .side-panel {
   border: 1px solid var(--border-color);
   border-radius: 4px;
   padding: 16px;
-  font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+  font-family: Monaco, Menlo, 'Courier New', monospace;
   font-size: 12px;
   line-height: 1.6;
   color: var(--text-primary);
@@ -1897,7 +1890,7 @@ body.is-fullscreen .app-container .side-panel {
 .benchmark-results pre {
   margin: 0;
   white-space: pre-wrap;
-  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 /* Hide footer in fullscreen mode */

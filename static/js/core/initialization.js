@@ -21,12 +21,11 @@ import { getRandomInterestingView } from '../fractals/random-view.js';
 import { appState } from './app-state.js';
 // Footer height tracking is deferred using requestIdleCallback (non-critical for first render)
 import { getColorSchemeIndex, computeColorForScheme } from '../fractals/utils.js';
-import { shouldEnableWorkerOptimizations, getWorkerCapabilities } from '../workers/feature-detection.js';
+import { getWorkerCapabilities } from '../workers/feature-detection.js';
 import { CONFIG } from './config.js';
 import { LongTaskDetector } from '../performance/long-task-detector.js';
 import { lifecycleManager } from './lifecycle-manager.js';
 import { idleCleanupManager } from './idle-cleanup.js';
-import { clearPaletteCache, clearShaderCache } from '../fractals/utils.js';
 
 /**
  * Initialize DOM cache and basic UI modules

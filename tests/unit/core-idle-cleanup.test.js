@@ -12,7 +12,7 @@ describe('IdleCleanupManager', () => {
     originalCancelIdleCallback = global.cancelIdleCallback;
 
     // Mock requestIdleCallback
-    global.requestIdleCallback = vi.fn((callback, options) => {
+    global.requestIdleCallback = vi.fn((callback) => {
       // Simulate idle callback immediately
       setTimeout(() => {
         callback({

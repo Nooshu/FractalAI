@@ -3,7 +3,7 @@
  * Computes fractal tiles on CPU, returning scalar fields (GPU-ready format)
  */
 
-import { computeColorForScheme } from '../fractals/utils.js';
+// Note: computeColorForScheme is not used in worker - color mapping happens on main thread
 
 /**
  * Compute Mandelbrot set iteration count for a point

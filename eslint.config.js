@@ -33,6 +33,10 @@ export default [
         btoa: 'readonly',
         atob: 'readonly',
         requestIdleCallback: 'readonly',
+        cancelIdleCallback: 'readonly',
+        PerformanceObserver: 'readonly',
+        ImageData: 'readonly',
+        Worker: 'readonly',
         CustomEvent: 'readonly',
         FileReader: 'readonly',
         Event: 'readonly',
@@ -54,6 +58,16 @@ export default [
     },
   },
   {
+    // Web Worker files
+    files: ['**/workers/**/*.js'],
+    languageOptions: {
+      globals: {
+        self: 'readonly', // Web Worker global
+        importScripts: 'readonly', // Web Worker API
+      },
+    },
+  },
+  {
     // Node.js environment for test files and config files
     files: ['**/*.test.js', '**/playwright.config.js', '**/vite.config.js', 'tests/**/*.js', 'scripts/**/*.js'],
     languageOptions: {
@@ -70,6 +84,9 @@ export default [
         afterAll: 'readonly', // Vitest
         Event: 'readonly', // DOM API for tests
         HTMLElement: 'readonly', // DOM API for tests
+        ImageData: 'readonly', // DOM API for tests
+        Worker: 'readonly', // Web Workers for tests
+        self: 'readonly', // Web Worker global
       },
     },
   },

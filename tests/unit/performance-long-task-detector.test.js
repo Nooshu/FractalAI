@@ -4,14 +4,10 @@ import { LongTaskDetector } from '../../static/js/performance/long-task-detector
 describe('LongTaskDetector', () => {
   let originalPerformanceObserver;
   let mockObserver;
-  let mockEntries;
 
   beforeEach(() => {
     // Save original
     originalPerformanceObserver = global.PerformanceObserver;
-
-    // Mock entries
-    mockEntries = [];
 
     // Mock PerformanceObserver
     mockObserver = {
