@@ -76,8 +76,8 @@ export async function initCanvasRenderer(canvasId, options = {}) {
   // Fallback to WebGL if WebGPU is not available or not enabled
   if (!webgpuRenderer) {
     // Initialize regl
-    // Note: regl automatically tries to get a WebGL2 context if available,
-    // and falls back to WebGL1 if WebGL2 is not supported
+    // Explicitly request WebGL2 context for access to WebGL2-only features (UBOs, immutable textures, etc.)
+    // regl will fall back to WebGL1 if WebGL2 is not supported
     regl = createRegl({
       canvas,
       attributes: {
@@ -86,6 +86,7 @@ export async function initCanvasRenderer(canvasId, options = {}) {
         stencil: false,
         depth: false,
         alpha: false, // Disable transparency to prevent background bleed-through
+        webglVersion: 2, // Explicitly request WebGL2 (regl supports this)
       },
     });
 
