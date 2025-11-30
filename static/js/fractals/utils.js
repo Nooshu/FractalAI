@@ -592,15 +592,76 @@ export function getVertexShader(useUBO = false) {
 // Export default WebGL1 vertex shader for backward compatibility
 export const vertexShader = getVertexShader(false);
 
+/**
+ * Determines optimal precision level based on zoom level
+ * @param {number} zoom - Current zoom level
+ * @returns {string} Precision level: 'highp' for deep zooms, 'mediump' for normal, 'lowp' for fast
+ */
+export function getOptimalPrecision(zoom) {
+  // Use highp for deep zooms (> 1e6) to maintain precision
+  if (zoom > 1e6) {
+    return 'highp';
+  }
+  // Use mediump for normal zooms (default)
+  return 'mediump';
+}
+
+/**
+ * Generates unrolled loop code for fractal iterations
+ * Optimizes performance by reducing loop overhead for common iteration counts
+ * @param {number} count - Number of iterations to unroll
+ * @param {function} iterationFn - Function that generates code for a single iteration (i) => string
+ * @returns {string} Unrolled loop code
+ */
+export function generateUnrolledLoop(count, iterationFn) {
+  let code = '';
+  for (let i = 0; i < count; i++) {
+    code += iterationFn(i);
+  }
+  return code;
+}
+
+/**
+ * Helper to generate adaptive unrolled loop based on iteration count
+ * Unrolls more iterations for common cases to improve performance
+ * @param {number} maxIterations - Maximum iteration count
+ * @param {function} iterationFn - Function that generates code for a single iteration
+ * @param {number} unrollCount - Number of iterations to unroll (default: 8)
+ * @returns {string} Unrolled loop code followed by regular loop
+ */
+export function generateAdaptiveUnrolledLoop(maxIterations, iterationFn, unrollCount = 8) {
+  // Unroll first N iterations (common case optimization)
+  const unrolled = generateUnrolledLoop(unrollCount, iterationFn);
+  
+  // Continue with regular loop for remaining iterations
+  const loopCode = `
+    for (int i = ${unrollCount}; i < 200; i++) {
+      if (i >= int(uIterations)) break;
+      ${iterationFn('i')}
+    }
+  `;
+  
+  return unrolled + loopCode;
+}
+
 // Base fragment shader template for 2D fractals
-// Optimized for performance: uses mediump precision, precomputed constants
+// Optimized for performance: adaptive precision, precomputed constants, early exits
 // Supports both WebGL1 (regular uniforms) and WebGL2 (UBOs)
-export function createFragmentShader(fractalFunction, useUBO = false) {
+// @param {string} fractalFunction - The fractal computation function
+// @param {boolean} useUBO - Whether to use WebGL2 UBOs
+// @param {string} precision - Precision level: 'highp' (deep zooms), 'mediump' (default), 'lowp' (fast)
+export function createFragmentShader(fractalFunction, useUBO = false, precision = 'mediump') {
+  // Determine precision qualifiers
+  // Use highp for critical calculations, lowp for colors/textures
+  const calcPrecision = precision === 'highp' ? 'highp' : precision === 'lowp' ? 'lowp' : 'mediump';
+  const colorPrecision = 'lowp'; // Colors don't need high precision
+  
   // WebGL2 UBO version
   if (useUBO) {
     return `#version 300 es
     #ifdef GL_ES
-    precision mediump float;
+    precision ${calcPrecision} float; // For fractal calculations
+    precision ${colorPrecision} sampler2D; // For texture lookups
     #endif
     
     layout(std140) uniform FractalParams {
@@ -626,6 +687,7 @@ export function createFragmentShader(fractalFunction, useUBO = false) {
     const float LOG2 = 0.6931471805599453; // log(2.0)
     const float INV_LOG2 = 1.4426950408889634; // 1.0 / log(2.0)
     const float ESCAPE_RADIUS_SQ = 4.0; // Escape radius squared (2.0^2)
+    const float ESCAPE_RADIUS_SQ_EARLY = 2.0; // Early exit threshold for faster bailout
     
     ${fractalFunction}
     
@@ -636,7 +698,7 @@ export function createFragmentShader(fractalFunction, useUBO = false) {
         float aspect = uResolution.x / uResolution.y;
         float scale = 4.0 / uZoom;
         
-        // Optimize coordinate calculation
+        // Optimize coordinate calculation using vector operations
         vec2 uvCentered = uv - 0.5;
         vec2 c = vec2(
             uvCentered.x * scale * aspect * uScale.x + uOffset.x,
@@ -651,7 +713,8 @@ export function createFragmentShader(fractalFunction, useUBO = false) {
         float t = clamp(iterations * invIterations, 0.0, 1.0);
         
         // Texture-based palette lookup (much faster than computed colors)
-        vec3 color = texture(uPalette, vec2(t, 0.5)).rgb;
+        // Use lowp precision for color operations (faster, sufficient precision)
+        ${colorPrecision} vec3 color = texture(uPalette, vec2(t, 0.5)).rgb;
         
         // Points in the set are black - use step() to avoid branch
         float isInSet = step(uIterations, iterations);
@@ -664,7 +727,8 @@ export function createFragmentShader(fractalFunction, useUBO = false) {
   // WebGL1 regular uniforms version (default)
   return `
     #ifdef GL_ES
-    precision mediump float;
+    precision ${calcPrecision} float; // For fractal calculations
+    precision ${colorPrecision} sampler2D; // For texture lookups
     #endif
     
     uniform float uTime;
@@ -683,6 +747,7 @@ export function createFragmentShader(fractalFunction, useUBO = false) {
     const float LOG2 = 0.6931471805599453; // log(2.0)
     const float INV_LOG2 = 1.4426950408889634; // 1.0 / log(2.0)
     const float ESCAPE_RADIUS_SQ = 4.0; // Escape radius squared (2.0^2)
+    const float ESCAPE_RADIUS_SQ_EARLY = 2.0; // Early exit threshold for faster bailout
     
     ${fractalFunction}
     
@@ -693,7 +758,7 @@ export function createFragmentShader(fractalFunction, useUBO = false) {
         float aspect = uResolution.x / uResolution.y;
         float scale = 4.0 / uZoom;
         
-        // Optimize coordinate calculation
+        // Optimize coordinate calculation using vector operations
         vec2 uvCentered = uv - 0.5;
         vec2 c = vec2(
             uvCentered.x * scale * aspect * uXScale + uOffset.x,
@@ -708,7 +773,8 @@ export function createFragmentShader(fractalFunction, useUBO = false) {
         float t = clamp(iterations * invIterations, 0.0, 1.0);
         
         // Texture-based palette lookup (much faster than computed colors)
-        vec3 color = texture2D(uPalette, vec2(t, 0.5)).rgb;
+        // Use lowp precision for color operations (faster, sufficient precision)
+        ${colorPrecision} vec3 color = texture2D(uPalette, vec2(t, 0.5)).rgb;
         
         // Points in the set are black - use step() to avoid branch
         float isInSet = step(uIterations, iterations);

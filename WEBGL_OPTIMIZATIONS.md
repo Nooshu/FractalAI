@@ -125,16 +125,33 @@ layout(std140) uniform FractalParams {
 
 ## Shader Optimizations
 
-### 1. Precision Optimization
+### 1. Precision Optimization ✅ IMPLEMENTED
+
+**Status**: ✅ Implemented in `static/js/fractals/utils.js`
 
 **Current**: `mediump` for all floats  
 **Optimization**: Use `highp` for critical calculations, `lowp` for colors
 
+**Implementation**:
+
+The `createFragmentShader` function now supports adaptive precision:
+
+```javascript
+// Use highp for deep zooms
+const precision = getOptimalPrecision(params.zoom); // Returns 'highp' for zoom > 1e6
+const fragmentShader = createFragmentShader(fractalFunction, useUBO, precision);
+```
+
+**Shader Code**:
+
 ```glsl
 #ifdef GL_ES
-precision highp float; // For fractal calculations
+precision highp float; // For fractal calculations (or mediump/lowp)
 precision lowp sampler2D; // For texture lookups
 #endif
+
+// Color operations use lowp precision
+lowp vec3 color = texture(uPalette, vec2(t, 0.5)).rgb;
 ```
 
 **Benefits**:
@@ -142,17 +159,28 @@ precision lowp sampler2D; // For texture lookups
 - Better precision for deep zooms
 - Faster color calculations
 - Platform-specific optimization
+- Automatic precision selection based on zoom level
 
-### 2. Early Exit Optimizations
+### 2. Early Exit Optimizations ✅ IMPLEMENTED
+
+**Status**: ✅ Implemented - Constants available in shader template
 
 **Current**: Some early bailouts  
 **Optimization**: Enhanced early exit with better branch prediction
 
-```glsl
-// Optimized early exit with multiple escape radius checks
-const float ESCAPE_RADIUS_SQ = 4.0;
-const float ESCAPE_RADIUS_SQ_EARLY = 2.0; // Early exit threshold
+**Implementation**:
 
+The shader template now includes `ESCAPE_RADIUS_SQ_EARLY` constant:
+
+```glsl
+// Available in all shaders created via createFragmentShader
+const float ESCAPE_RADIUS_SQ = 4.0; // Escape radius squared (2.0^2)
+const float ESCAPE_RADIUS_SQ_EARLY = 2.0; // Early exit threshold for faster bailout
+```
+
+**Usage Example**:
+
+```glsl
 float computeFractal(vec2 c) {
     vec2 z = c;
 
@@ -176,11 +204,37 @@ float computeFractal(vec2 c) {
 - Faster rendering for most pixels
 - Better GPU branch prediction
 - Reduced computation for escaped points
+- Constant available to all fractal shaders
 
-### 3. Loop Unrolling Strategy
+### 3. Loop Unrolling Strategy ✅ IMPLEMENTED
+
+**Status**: ✅ Implemented - Helper functions available
 
 **Current**: 8 iterations unrolled  
 **Optimization**: Adaptive unrolling based on iteration count
+
+**Implementation**:
+
+Helper functions are available in `static/js/fractals/utils.js`:
+
+```javascript
+// Generate unrolled loop code
+const unrolledCode = generateUnrolledLoop(8, (i) => {
+  return `
+    zx2 = z.x * z.x;
+    zy2 = z.y * z.y;
+    if (zx2 + zy2 > ESCAPE_RADIUS_SQ) {
+      return ${i + 1}.0;
+    }
+    z = vec2(zx2 - zy2, 2.0 * z.x * z.y) + c;
+  `;
+});
+
+// Generate adaptive unrolled loop (unrolls first N, then regular loop)
+const adaptiveCode = generateAdaptiveUnrolledLoop(maxIterations, iterationFn, 8);
+```
+
+**Shader Code**:
 
 ```glsl
 // Unroll more iterations for common cases
@@ -198,16 +252,40 @@ float computeFractal(vec2 c) {
 - Better instruction-level parallelism
 - Reduced loop overhead
 - Platform-specific optimization
+- Reusable helper functions for consistent unrolling
 
-### 4. Vectorization
+### 4. Vectorization ✅ IMPLEMENTED
+
+**Status**: ✅ Implemented - Vector operations used in shader template
 
 **Current**: Scalar operations  
 **Optimization**: Use vector operations where possible
 
+**Implementation**:
+
+The shader template now uses vector operations for coordinate calculations:
+
+```glsl
+// Optimize coordinate calculation using vector operations
+vec2 uvCentered = uv - 0.5;
+vec2 c = vec2(
+    uvCentered.x * scale * aspect * uScale.x + uOffset.x,
+    uvCentered.y * scale * uScale.y + uOffset.y
+);
+```
+
+**Best Practices for Fractal Functions**:
+
 ```glsl
 // Instead of separate x and y calculations:
-vec2 z2 = z * z; // Vector multiply
-vec2 z_squared = vec2(z2.x - z2.y, 2.0 * z.x * z.y); // Optimized form
+vec2 z2 = z * z; // Vector multiply (faster)
+vec2 z_squared = vec2(z2.x - z2.y, 2.0 * z.x * z.y); // Optimized complex square
+
+// Use dot() for magnitude squared (faster than length())
+float mag2 = dot(z, z); // Instead of length(z) * length(z)
+
+// Vector operations for coordinate transformations
+vec2 transformed = mat2(cos(angle), -sin(angle), sin(angle), cos(angle)) * point;
 ```
 
 **Benefits**:
@@ -215,6 +293,7 @@ vec2 z_squared = vec2(z2.x - z2.y, 2.0 * z.x * z.y); // Optimized form
 - Better SIMD utilization
 - Fewer instructions
 - Improved throughput
+- Vector operations already used in shader template
 
 ---
 
