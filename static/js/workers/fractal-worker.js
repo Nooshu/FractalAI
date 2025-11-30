@@ -119,10 +119,17 @@ function pixelToComplex(px, py, canvasWidth, canvasHeight, params) {
  */
 function computeTile(request) {
   const startTime = performance.now();
-  const { x, y, width, height, params, fractalType } = request;
+  const { x, y, width, height, params, fractalType, sharedBuffer, useSharedBuffer } = request;
 
-  // Create Float32Array for scalar field (GPU-ready format)
-  const data = new Float32Array(width * height);
+  // Use SharedArrayBuffer if provided, otherwise create new array
+  let data;
+  if (useSharedBuffer && sharedBuffer) {
+    // Create view on shared memory (zero-copy)
+    data = new Float32Array(sharedBuffer);
+  } else {
+    // Create new Float32Array (will be transferred)
+    data = new Float32Array(width * height);
+  }
 
   // Compute fractal for each pixel in the tile
   for (let py = 0; py < height; py++) {
@@ -149,7 +156,8 @@ function computeTile(request) {
   return {
     type: 'tile-response',
     tileId: request.tileId,
-    data,
+    data: useSharedBuffer ? null : data, // Don't send data if using shared buffer
+    useSharedBuffer, // Indicate that data is in shared memory
     metadata: {
       computationTime,
       width,
@@ -164,8 +172,15 @@ self.addEventListener('message', (event) => {
 
   if (message.type === 'tile-request') {
     const response = computeTile(message);
-    // Transfer the Float32Array to avoid copying
-    self.postMessage(response, [response.data.buffer]);
+    
+    if (response.useSharedBuffer) {
+      // Data is already in shared memory, just send metadata
+      // The main thread can read directly from the shared buffer
+      self.postMessage(response);
+    } else {
+      // Transfer the Float32Array to avoid copying
+      self.postMessage(response, [response.data.buffer]);
+    }
   } else if (message.type === 'cancel') {
     // Cancel is handled by the pool, but we acknowledge it
     // In a more complex implementation, we could track in-flight work

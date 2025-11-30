@@ -22,6 +22,7 @@ import { appState } from './app-state.js';
 // Footer height tracking is deferred using requestIdleCallback (non-critical for first render)
 import { getColorSchemeIndex, computeColorForScheme } from '../fractals/utils.js';
 import { getWorkerCapabilities } from '../workers/feature-detection.js';
+import { logSharedArrayBufferStatus } from '../workers/shared-array-buffer-utils.js';
 import { CONFIG } from './config.js';
 import { LongTaskDetector } from '../performance/long-task-detector.js';
 import { lifecycleManager } from './lifecycle-manager.js';
@@ -512,6 +513,11 @@ export async function init() {
       'color: #FF9800; font-weight: bold;',
       'color: inherit;'
     );
+  }
+
+  // Log SharedArrayBuffer status if enabled
+  if (CONFIG.features.sharedArrayBuffer) {
+    logSharedArrayBufferStatus();
   }
 
   // Initialize DOM cache first

@@ -4,6 +4,11 @@
  */
 
 import { createTileRequest, isTileResponse } from './tile-protocol.js';
+import {
+  canUseSharedArrayBuffer,
+  createSharedScalarBuffer,
+  logSharedArrayBufferStatus,
+} from './shared-array-buffer-utils.js';
 
 /**
  * Worker pool manager
@@ -33,6 +38,13 @@ export class WorkerPool {
     this.performanceHistory = []; // Track recent task performance
     this.currentWorkerCount = 0;
     this.isShuttingDown = false;
+    this.useSharedArrayBuffer = false; // Whether to use SharedArrayBuffer
+
+    // Check if SharedArrayBuffer can be used
+    this.useSharedArrayBuffer = canUseSharedArrayBuffer();
+    if (this.useSharedArrayBuffer) {
+      logSharedArrayBufferStatus();
+    }
 
     // Initialize worker pool
     this.resize(this.maxWorkers);
@@ -125,11 +137,22 @@ export class WorkerPool {
         const totalTime = performance.now() - task.startTime;
         this.recordPerformance(totalTime, message.metadata.computationTime);
 
+        // If using SharedArrayBuffer, read data directly from shared memory
+        if (task.sharedBuffer && message.useSharedBuffer) {
+          // Data is already in shared memory, create response with view
+          const response = {
+            ...message,
+            data: task.sharedBuffer.view, // Direct access to shared memory
+          };
+          task.resolve(response);
+        } else {
+          // Regular response with copied data
+          task.resolve(message);
+        }
+
         this.pendingTasks.delete(message.tileId);
         this.workerStates.get(workerId).available = true;
         this.workerStates.get(workerId).taskCount--;
-
-        task.resolve(message);
       }
     }
   }
@@ -233,10 +256,27 @@ export class WorkerPool {
     // Create request
     const request = createTileRequest(tileId, x, y, width, height, params, fractalType);
 
+    // Create SharedArrayBuffer for zero-copy communication if available
+    let sharedBuffer = null;
+    if (this.useSharedArrayBuffer) {
+      sharedBuffer = createSharedScalarBuffer(width, height);
+      if (sharedBuffer) {
+        // Add shared buffer to request
+        request.sharedBuffer = sharedBuffer.buffer;
+        request.useSharedBuffer = true;
+      }
+    }
+
     // Create promise
     return new Promise((resolve, reject) => {
       const startTime = performance.now();
-      this.pendingTasks.set(tileId, { resolve, reject, startTime, worker: workerId });
+      this.pendingTasks.set(tileId, {
+        resolve,
+        reject,
+        startTime,
+        worker: workerId,
+        sharedBuffer, // Store reference to shared buffer
+      });
 
       // Update worker state
       const state = this.workerStates.get(workerId);
@@ -244,7 +284,14 @@ export class WorkerPool {
 
       // Send request to worker
       try {
-        this.workers[workerId].postMessage(request);
+        if (sharedBuffer) {
+          // SharedArrayBuffer is shared, not transferred (zero-copy)
+          // The buffer reference is passed directly
+          this.workers[workerId].postMessage(request);
+        } else {
+          // Regular message (data will be copied)
+          this.workers[workerId].postMessage(request);
+        }
       } catch (error) {
         this.pendingTasks.delete(tileId);
         state.taskCount--;
