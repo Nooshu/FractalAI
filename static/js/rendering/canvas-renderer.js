@@ -7,16 +7,17 @@
 import createRegl from 'regl';
 import { updatePixelRatio } from './pixel-ratio.js';
 import { detectWebGLCapabilities, formatCapabilities } from './webgl-capabilities.js';
+import { initWebGPURenderer } from './webgpu-renderer.js';
 
 /**
- * Initialize canvas and regl renderer
+ * Initialize canvas and renderer (WebGPU or WebGL)
  * @param {string} canvasId - ID of the canvas element
  * @param {Object} options - Configuration options
  * @param {Function} options.getZoom - Function to get current zoom level
  * @param {Function} options.onResize - Optional callback when resize occurs
- * @returns {Object} Object containing canvas, regl, and updateRendererSize function
+ * @returns {Promise<Object>} Promise resolving to object containing canvas, regl/webgpuRenderer, and updateRendererSize function
  */
-export function initCanvasRenderer(canvasId, options = {}) {
+export async function initCanvasRenderer(canvasId, options = {}) {
   const { getZoom, onResize } = options;
 
   const canvas = document.getElementById(canvasId);
@@ -41,39 +42,73 @@ export function initCanvasRenderer(canvasId, options = {}) {
   canvas.style.height = initialHeight + 'px';
   canvas.style.display = 'block';
 
-  // Initialize regl
-  // Note: regl automatically tries to get a WebGL2 context if available,
-  // and falls back to WebGL1 if WebGL2 is not supported
-  const regl = createRegl({
-    canvas,
-    attributes: {
-      antialias: true,
-      powerPreference: 'high-performance',
-      stencil: false,
-      depth: false,
-      alpha: false, // Disable transparency to prevent background bleed-through
-    },
-  });
-
-  // Detect and store WebGL capabilities
-  // regl automatically prefers WebGL2 if available, so we detect what we got
+  // Check for WebGPU support first (if enabled)
+  let webgpuRenderer = null;
+  let regl = null;
   let webglCapabilities = null;
-  try {
-    const gl = regl._gl;
-    if (gl) {
-      webglCapabilities = detectWebGLCapabilities(gl);
 
-      // Log capabilities in development mode
-      if (import.meta.env?.DEV) {
+  // Try to initialize WebGPU if enabled
+  const { CONFIG } = await import('../core/config.js');
+  if (CONFIG.features.webgpu && 'gpu' in navigator) {
+    try {
+      webgpuRenderer = await initWebGPURenderer(canvas, {
+        powerPreference: 'high-performance',
+      });
+      if (webgpuRenderer && import.meta.env?.DEV) {
         console.log(
-          `%c[WebGL Capabilities]%c\n${formatCapabilities(webglCapabilities)}`,
-          'color: #4CAF50; font-weight: bold;',
-          'color: inherit; font-family: monospace; font-size: 11px;'
+          '%c[Renderer]%c Using WebGPU renderer',
+          'color: #9C27B0; font-weight: bold;',
+          'color: inherit;'
+        );
+      }
+    } catch (error) {
+      if (import.meta.env?.DEV) {
+        console.warn(
+          '%c[Renderer]%c WebGPU initialization failed, falling back to WebGL:',
+          'color: #FF9800; font-weight: bold;',
+          'color: inherit;',
+          error
         );
       }
     }
-  } catch (error) {
-    console.warn('Failed to detect WebGL capabilities:', error);
+  }
+
+  // Fallback to WebGL if WebGPU is not available or not enabled
+  if (!webgpuRenderer) {
+    // Initialize regl
+    // Note: regl automatically tries to get a WebGL2 context if available,
+    // and falls back to WebGL1 if WebGL2 is not supported
+    regl = createRegl({
+      canvas,
+      attributes: {
+        antialias: true,
+        powerPreference: 'high-performance',
+        stencil: false,
+        depth: false,
+        alpha: false, // Disable transparency to prevent background bleed-through
+      },
+    });
+
+    // Detect and store WebGL capabilities (only if using WebGL)
+    if (regl) {
+      try {
+        const gl = regl._gl;
+        if (gl) {
+          webglCapabilities = detectWebGLCapabilities(gl);
+
+          // Log capabilities in development mode
+          if (import.meta.env?.DEV) {
+            console.log(
+              `%c[WebGL Capabilities]%c\n${formatCapabilities(webglCapabilities)}`,
+              'color: #4CAF50; font-weight: bold;',
+              'color: inherit; font-family: monospace; font-size: 11px;'
+            );
+          }
+        }
+      } catch (error) {
+        console.warn('Failed to detect WebGL capabilities:', error);
+      }
+    }
   }
 
   // Function to update canvas size and pixel ratio
@@ -132,9 +167,11 @@ export function initCanvasRenderer(canvasId, options = {}) {
 
   return {
     canvas,
-    regl,
+    regl, // null if using WebGPU
+    webgpuRenderer, // null if using WebGL
     updateRendererSize,
     cleanup,
-    webglCapabilities, // Expose capabilities for use throughout the app
+    webglCapabilities, // null if using WebGPU
+    rendererType: webgpuRenderer ? 'webgpu' : 'webgl', // Indicate which renderer is active
   };
 }

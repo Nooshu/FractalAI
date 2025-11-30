@@ -81,4 +81,18 @@ export const CONFIG = {
     // Require SharedArrayBuffer (for future optimizations, currently optional)
     requireSharedArrayBuffer: false,
   },
+  features: {
+    // WebGPU support (experimental, behind feature flag)
+    webgpu: false, // Enable when stable
+    // WebGL compute shaders (experimental, when available)
+    computeShaders: false,
+    // SharedArrayBuffer for multi-threaded rendering (requires COOP/COEP headers)
+    sharedArrayBuffer: false,
+    // OffscreenCanvas optimization
+    offscreenCanvas: true,
+    // WebCodecs API for video export
+    webCodecs: false,
+    // WebAssembly SIMD for CPU fallback
+    wasmSimd: false,
+  },
 };

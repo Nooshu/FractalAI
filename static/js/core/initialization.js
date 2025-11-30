@@ -47,13 +47,15 @@ function initDOMCache() {
  * @param {Object} appState - Application state instance
  * @returns {Object} Canvas, regl context, and updateRendererSize function
  */
-function initCanvasAndRenderer(appState) {
+async function initCanvasAndRenderer(appState) {
   const {
     canvas: canvasElement,
     regl: reglContext,
+    webgpuRenderer,
     updateRendererSize: updateSize,
     webglCapabilities,
-  } = initCanvasRenderer('fractal-canvas', {
+    rendererType,
+  } = await initCanvasRenderer('fractal-canvas', {
     getZoom: () => appState.getParams().zoom,
     onResize: () => {
       const renderingEngine = appState.getRenderingEngine();
@@ -67,6 +69,20 @@ function initCanvasAndRenderer(appState) {
   appState.setRegl(reglContext);
   appState.setUpdateRendererSize(updateSize);
   appState.setWebGLCapabilities(webglCapabilities);
+  
+  // Store WebGPU renderer if available
+  if (webgpuRenderer) {
+    appState.setWebGPURenderer(webgpuRenderer);
+  }
+  
+  // Log renderer type in development
+  if (import.meta.env?.DEV && rendererType) {
+    console.log(
+      `%c[Renderer]%c Using ${rendererType.toUpperCase()} renderer`,
+      'color: #2196F3; font-weight: bold;',
+      'color: inherit;'
+    );
+  }
 
   // Create UBO for WebGL2 if available
   if (webglCapabilities?.isWebGL2) {
@@ -531,8 +547,8 @@ export async function init() {
 
   idleCleanupManager.start();
 
-  // Initialize canvas and regl renderer
-  initCanvasAndRenderer(appState);
+  // Initialize canvas and renderer (WebGPU or WebGL)
+  await initCanvasAndRenderer(appState);
 
   // Initialize rendering engine
   const renderingEngine = initRenderingEngine(appState);

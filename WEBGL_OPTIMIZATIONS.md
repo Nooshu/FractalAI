@@ -590,9 +590,10 @@ canvas.addEventListener('webglcontextrestored', () => {
 
 ## Future Features (Behind Feature Flags)
 
-### 1. WebGPU Support (Experimental)
+### 1. WebGPU Support (Experimental) ✅ IMPLEMENTED
 
-**Status**: Behind feature flag, fallback to WebGL  
+**Status**: ✅ Implemented in `static/js/rendering/webgpu-renderer.js` and `static/js/rendering/webgpu-capabilities.js`
+
 **Implementation**:
 
 ```javascript
@@ -632,6 +633,46 @@ CONFIG.features = {
   // ...
 };
 ```
+
+**Implementation Details**:
+
+The WebGPU renderer is integrated into the canvas renderer initialization:
+
+1. **Capabilities Detection** (`webgpu-capabilities.js`):
+   - Detects WebGPU availability via `'gpu' in navigator`
+   - Initializes adapter and device with power preference
+   - Extracts features and limits
+   - Provides formatted logging for development
+
+2. **WebGPU Renderer** (`webgpu-renderer.js`):
+   - Creates compute shader pipeline for Mandelbrot set computation
+   - Implements render pipeline for displaying computed fractals
+   - Uses compute shaders for parallel pixel iteration
+   - Automatically falls back to WebGL if WebGPU is unavailable or disabled
+
+3. **Integration** (`canvas-renderer.js`):
+   - Checks `CONFIG.features.webgpu` flag
+   - Attempts WebGPU initialization first
+   - Falls back to WebGL if WebGPU fails or is disabled
+   - Returns renderer type indicator (`'webgpu'` or `'webgl'`)
+
+4. **State Management** (`app-state.js`):
+   - Stores WebGPU renderer instance when available
+   - Provides getter/setter for WebGPU renderer
+   - Maintains compatibility with existing WebGL code
+
+**Usage**:
+
+To enable WebGPU, set the feature flag:
+```javascript
+CONFIG.features.webgpu = true;
+```
+
+The renderer will automatically:
+- Detect WebGPU support
+- Initialize WebGPU if available and enabled
+- Fall back to WebGL if WebGPU is unavailable
+- Log renderer type in development mode
 
 ### 2. WebGL Compute Shaders (When Available)
 
