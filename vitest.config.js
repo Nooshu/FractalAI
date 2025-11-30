@@ -23,5 +23,29 @@ export default defineConfig({
       // Visual regression tests are run by Playwright, not Vitest
       'tests/visual/**',
     ],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html'],
+      exclude: [
+        'node_modules/**',
+        'dist/**',
+        'tests/**',
+        'scripts/**',
+        '**/*.config.js',
+        '**/*.test.js',
+        '**/index.html',
+        '**/site.webmanifest',
+        '**/_headers',
+        '**/_redirects',
+        '**/_routes.json',
+      ],
+      include: ['static/js/**/*.js'],
+      thresholds: {
+        lines: 100,
+        functions: 100,
+        branches: 100,
+        statements: 100,
+      },
+    },
   },
 });

@@ -208,4 +208,79 @@ describe('IdleCleanupManager', () => {
       expect(task).toHaveBeenCalled();
     });
   });
+
+  describe('scheduleCleanup', () => {
+    it('should not schedule if already scheduled', () => {
+      manager.idleCallbackId = 123;
+      manager.scheduleCleanup();
+
+      expect(global.requestIdleCallback).not.toHaveBeenCalled();
+    });
+
+    it('should delay scheduling if not enough time has passed', async () => {
+      const originalNow = performance.now;
+      let mockTime = 0;
+      performance.now = vi.fn(() => mockTime);
+
+      manager.lastCleanupTime = 0;
+      mockTime = 1000; // Only 1 second has passed (less than 30s interval)
+
+      const setTimeoutSpy = vi.spyOn(global, 'setTimeout');
+
+      manager.scheduleCleanup();
+
+      expect(setTimeoutSpy).toHaveBeenCalled();
+      expect(global.requestIdleCallback).not.toHaveBeenCalled();
+
+      performance.now = originalNow;
+      setTimeoutSpy.mockRestore();
+    });
+
+    it('should use setTimeout fallback when requestIdleCallback is not available', async () => {
+      delete global.requestIdleCallback;
+      let callCount = 0;
+      const setTimeoutSpy = vi.spyOn(global, 'setTimeout').mockImplementation((fn, delay) => {
+        callCount++;
+        // Only call the function on the first setTimeout (the actual cleanup scheduling)
+        // Don't call it on subsequent calls (which would be the recursive scheduleCleanup)
+        if (callCount === 1 && delay === manager.cleanupInterval) {
+          // This is the cleanup interval setTimeout, don't call it to avoid recursion
+          return 456;
+        }
+        // For other setTimeouts, call normally but don't cause recursion
+        if (typeof fn === 'function' && delay !== undefined && delay < manager.cleanupInterval) {
+          fn();
+        }
+        return 456;
+      });
+
+      const originalNow = performance.now;
+      let mockTime = 0;
+      performance.now = vi.fn(() => mockTime);
+
+      manager.lastCleanupTime = 0;
+      mockTime = 30001; // Past cleanup interval
+
+      manager.scheduleCleanup();
+
+      expect(setTimeoutSpy).toHaveBeenCalled();
+      expect(manager.idleCallbackId).toBe(456);
+
+      performance.now = originalNow;
+      setTimeoutSpy.mockRestore();
+      // Restore requestIdleCallback for other tests
+      global.requestIdleCallback = vi.fn();
+    });
+
+    it('should handle empty cleanup tasks', () => {
+      const deadline = {
+        timeRemaining: () => 50,
+      };
+
+      manager.runCleanup(deadline);
+
+      // Should not throw or error
+      expect(manager.cleanupTasks).toHaveLength(0);
+    });
+  });
 });

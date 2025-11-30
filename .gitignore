@@ -9,6 +9,7 @@ dist/
 # Only ignore actual test results and artifacts
 test-results/
 playwright-report/
+coverage/
 
 # Environment variables
 .env
