@@ -23,6 +23,7 @@ import { appState } from './app-state.js';
 import { getColorSchemeIndex, computeColorForScheme } from '../fractals/utils.js';
 import { getWorkerCapabilities } from '../workers/feature-detection.js';
 import { logSharedArrayBufferStatus } from '../workers/shared-array-buffer-utils.js';
+import { logWasmSimdStatus } from '../workers/wasm-simd-utils.js';
 import { CONFIG } from './config.js';
 import { LongTaskDetector } from '../performance/long-task-detector.js';
 import { lifecycleManager } from './lifecycle-manager.js';
@@ -518,6 +519,11 @@ export async function init() {
   // Log SharedArrayBuffer status if enabled
   if (CONFIG.features.sharedArrayBuffer) {
     logSharedArrayBufferStatus();
+  }
+
+  // Log WASM SIMD status if enabled
+  if (CONFIG.features.wasmSimd) {
+    logWasmSimdStatus();
   }
 
   // Initialize DOM cache first

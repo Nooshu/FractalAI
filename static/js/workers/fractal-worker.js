@@ -1,9 +1,39 @@
 /**
  * Fractal computation worker
  * Computes fractal tiles on CPU, returning scalar fields (GPU-ready format)
+ * Supports WebAssembly SIMD acceleration when available
  */
 
 // Note: computeColorForScheme is not used in worker - color mapping happens on main thread
+
+// Lazy-load WASM SIMD utilities
+let wasmSimdUtils = null;
+let wasmInstance = null;
+let wasmModule = null;
+
+async function initWasmSimd() {
+  if (wasmSimdUtils) {
+    return; // Already initialized
+  }
+
+  try {
+    wasmSimdUtils = await import('./wasm-simd-utils.js');
+    const { canUseWasmSimd, loadWasmModule, instantiateWasmModule } = wasmSimdUtils;
+
+    if (canUseWasmSimd()) {
+      // Try to load WASM module (would load from file in production)
+      wasmModule = await loadWasmModule();
+      if (wasmModule) {
+        wasmInstance = await instantiateWasmModule(wasmModule);
+      }
+    }
+  } catch (error) {
+    // WASM not available, continue with JavaScript
+    if (import.meta.env?.DEV) {
+      console.warn('WASM SIMD initialization failed:', error);
+    }
+  }
+}
 
 /**
  * Compute Mandelbrot set iteration count for a point
@@ -115,11 +145,14 @@ function pixelToComplex(px, py, canvasWidth, canvasHeight, params) {
 /**
  * Compute a fractal tile
  * @param {Object} request - Tile request
- * @returns {Object} Tile response with scalar field data
+ * @returns {Promise<Object>} Promise resolving to tile response with scalar field data
  */
-function computeTile(request) {
+async function computeTile(request) {
   const startTime = performance.now();
   const { x, y, width, height, params, fractalType, sharedBuffer, useSharedBuffer } = request;
+
+  // Initialize WASM SIMD if not already done
+  await initWasmSimd();
 
   // Use SharedArrayBuffer if provided, otherwise create new array
   let data;
@@ -131,23 +164,43 @@ function computeTile(request) {
     data = new Float32Array(width * height);
   }
 
-  // Compute fractal for each pixel in the tile
-  for (let py = 0; py < height; py++) {
-    for (let px = 0; px < width; px++) {
-      // Convert pixel coordinates to complex plane
-      const complex = pixelToComplex(
-        x + px,
-        y + py,
-        width, // Use tile dimensions for aspect ratio
-        height,
-        params
-      );
+  // Try WASM SIMD first if available
+  let useWasm = false;
+  if (wasmSimdUtils && wasmInstance) {
+    const { computeTileWasm, computeTileOptimized } = wasmSimdUtils;
+    
+    // Try WASM computation
+    useWasm = computeTileWasm(wasmInstance, data, width, height, x, y, params, fractalType);
+    
+    // If WASM failed, use optimized JavaScript
+    if (!useWasm) {
+      computeTileOptimized(data, width, height, x, y, params, fractalType, computeFractalPoint);
+    }
+  } else {
+    // Use optimized JavaScript computation
+    if (wasmSimdUtils) {
+      const { computeTileOptimized } = wasmSimdUtils;
+      computeTileOptimized(data, width, height, x, y, params, fractalType, computeFractalPoint);
+    } else {
+      // Fallback to original implementation
+      for (let py = 0; py < height; py++) {
+        for (let px = 0; px < width; px++) {
+          // Convert pixel coordinates to complex plane
+          const complex = pixelToComplex(
+            x + px,
+            y + py,
+            width, // Use tile dimensions for aspect ratio
+            height,
+            params
+          );
 
-      // Compute fractal value
-      const value = computeFractalPoint(complex.x, complex.y, params, fractalType);
+          // Compute fractal value
+          const value = computeFractalPoint(complex.x, complex.y, params, fractalType);
 
-      // Store in scalar field (row-major order)
-      data[py * width + px] = value;
+          // Store in scalar field (row-major order)
+          data[py * width + px] = value;
+        }
+      }
     }
   }
 
@@ -158,6 +211,7 @@ function computeTile(request) {
     tileId: request.tileId,
     data: useSharedBuffer ? null : data, // Don't send data if using shared buffer
     useSharedBuffer, // Indicate that data is in shared memory
+    useWasm, // Indicate if WASM was used
     metadata: {
       computationTime,
       width,
@@ -167,11 +221,11 @@ function computeTile(request) {
 }
 
 // Worker message handler
-self.addEventListener('message', (event) => {
+self.addEventListener('message', async (event) => {
   const message = event.data;
 
   if (message.type === 'tile-request') {
-    const response = computeTile(message);
+    const response = await computeTile(message);
     
     if (response.useSharedBuffer) {
       // Data is already in shared memory, just send metadata
