@@ -310,6 +310,7 @@ export function computeColorForScheme(t, schemeIndex, out = null) {
 
 /**
  * Generates a palette texture for a given color scheme
+ * Uses immutable texture storage for WebGL2 (better memory allocation and performance)
  * @param {Object} regl - The regl context
  * @param {string} colorScheme - Name of the color scheme
  * @returns {Object} regl texture object
@@ -339,17 +340,51 @@ export function generatePaletteTexture(regl, colorScheme) {
     paletteData[offset + 3] = 255; // A (fully opaque)
   }
 
-  // Create 1D texture (using a 1xN 2D texture as WebGL doesn't have true 1D textures)
-  const texture = regl.texture({
-    width: PALETTE_SIZE,
-    height: 1,
-    data: paletteData,
-    format: 'rgba',
-    type: 'uint8',
-    min: 'linear',
-    mag: 'linear',
-    wrap: 'clamp',
-  });
+  // Check if WebGL2 is available for immutable texture storage
+  const gl = regl._gl;
+  const isWebGL2 = gl && typeof WebGL2RenderingContext !== 'undefined' && gl instanceof WebGL2RenderingContext;
+
+  let texture;
+
+  if (isWebGL2) {
+    // WebGL2: Use immutable texture storage for better memory allocation and performance
+    // Create texture using raw WebGL2 API for immutable storage
+    const webglTexture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, webglTexture);
+    
+    // Allocate immutable storage (texStorage2D instead of texImage2D)
+    gl.texStorage2D(gl.TEXTURE_2D, 1, gl.RGBA8, PALETTE_SIZE, 1);
+    
+    // Upload texture data
+    gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, PALETTE_SIZE, 1, gl.RGBA, gl.UNSIGNED_BYTE, paletteData);
+    
+    // Set texture parameters
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    
+    gl.bindTexture(gl.TEXTURE_2D, null);
+    
+    // Wrap the WebGL texture in a regl texture object
+    texture = regl.texture({
+      texture: webglTexture,
+      width: PALETTE_SIZE,
+      height: 1,
+    });
+  } else {
+    // WebGL1: Use standard texture creation
+    texture = regl.texture({
+      width: PALETTE_SIZE,
+      height: 1,
+      data: paletteData,
+      format: 'rgba',
+      type: 'uint8',
+      min: 'linear',
+      mag: 'linear',
+      wrap: 'clamp',
+    });
+  }
 
   // Cache the texture
   paletteTextureCache.set(cacheKey, texture);

@@ -299,19 +299,40 @@ vec2 transformed = mat2(cos(angle), -sin(angle), sin(angle), cos(angle)) * point
 
 ## Texture Optimizations
 
-### 1. Texture Storage (WebGL2)
+### 1. Texture Storage (WebGL2) ✅ IMPLEMENTED
+
+**Status**: ✅ Implemented in `static/js/fractals/utils.js`
 
 **Current**: Standard textures  
 **Optimization**: Use immutable texture storage
 
+**Implementation**:
+
+The `generatePaletteTexture` function now uses immutable texture storage for WebGL2:
+
 ```javascript
-// WebGL2 immutable texture storage
-const paletteTexture = regl.texture({
+// WebGL2: Use immutable texture storage for better memory allocation and performance
+// Create texture using raw WebGL2 API for immutable storage
+const webglTexture = gl.createTexture();
+gl.bindTexture(gl.TEXTURE_2D, webglTexture);
+
+// Allocate immutable storage (texStorage2D instead of texImage2D)
+gl.texStorage2D(gl.TEXTURE_2D, 1, gl.RGBA8, PALETTE_SIZE, 1);
+
+// Upload texture data
+gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, PALETTE_SIZE, 1, gl.RGBA, gl.UNSIGNED_BYTE, paletteData);
+
+// Set texture parameters
+gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+// Wrap the WebGL texture in a regl texture object
+texture = regl.texture({
+  texture: webglTexture,
   width: PALETTE_SIZE,
   height: 1,
-  format: 'rgba8', // Explicit format
-  immutable: true, // Immutable storage
-  mipmap: false,
 });
 ```
 
@@ -320,6 +341,7 @@ const paletteTexture = regl.texture({
 - Better memory allocation
 - Faster texture creation
 - More efficient GPU usage
+- Automatic fallback to standard textures for WebGL1
 
 ### 2. Texture Filtering Optimization
 

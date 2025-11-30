@@ -25,6 +25,9 @@ describe('LongTaskDetector', () => {
       // Return mockObserver, but also set it as the observer
       return mockObserver;
     });
+
+    // Mock supportedEntryTypes to include 'longtask' so the detector will actually create an observer
+    global.PerformanceObserver.supportedEntryTypes = ['longtask'];
   });
 
   afterEach(() => {
