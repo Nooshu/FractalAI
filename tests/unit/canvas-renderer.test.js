@@ -41,6 +41,9 @@ describe('initCanvasRenderer', () => {
   });
 
   it('initializes canvas and returns updateRendererSize', () => {
+    // Mock console.log to suppress WebGL capabilities logging during tests
+    const consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
     const getZoom = vi.fn(() => 2);
     const onResize = vi.fn();
 
@@ -55,5 +58,7 @@ describe('initCanvasRenderer', () => {
     // Calling updateRendererSize should call updatePixelRatio with zoom
     updateRendererSize();
     expect(updatePixelRatio).toHaveBeenCalledWith(canvas, 2);
+
+    consoleLogSpy.mockRestore();
   });
 });

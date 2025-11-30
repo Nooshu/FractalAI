@@ -7,6 +7,32 @@ const PALETTE_SIZE = 512; // Number of colors in the palette texture
 const shaderCache = new Map();
 const MAX_SHADER_CACHE_SIZE = 50; // Maximum number of cached shaders
 
+// Shared vertex buffer cache for full-screen quad
+// Reused across all fractals to reduce memory allocations and improve GPU cache usage
+const vertexBufferCache = new Map();
+
+/**
+ * Gets or creates a persistent vertex buffer for the full-screen quad
+ * Reuses the same buffer across all fractals for better performance
+ * @param {Object} regl - The regl context
+ * @returns {Object} regl buffer object for the full-screen quad vertices
+ */
+export function getFullScreenQuadBuffer(regl) {
+  // Use regl context as cache key (each regl instance should have its own buffer)
+  const cacheKey = regl._gl || regl;
+  
+  if (vertexBufferCache.has(cacheKey)) {
+    return vertexBufferCache.get(cacheKey);
+  }
+
+  // Create persistent vertex buffer for full-screen quad
+  // Vertices: [-1, -1, 1, -1, -1, 1, 1, 1] forms a triangle strip covering the entire screen
+  const quadBuffer = regl.buffer([-1, -1, 1, -1, -1, 1, 1, 1]);
+  vertexBufferCache.set(cacheKey, quadBuffer);
+  
+  return quadBuffer;
+}
+
 /**
  * Generates a color value for a given t value (0-1) and scheme
  * Optimized version that writes to out array to avoid allocations
@@ -359,6 +385,8 @@ export function generatePaletteTexture(regl, colorScheme) {
     gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, PALETTE_SIZE, 1, gl.RGBA, gl.UNSIGNED_BYTE, paletteData);
     
     // Set texture parameters
+    // Use linear filtering for smooth color gradients in palette textures
+    // The overhead is minimal for 1D textures (512x1), and the visual quality benefit is significant
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -374,14 +402,16 @@ export function generatePaletteTexture(regl, colorScheme) {
     });
   } else {
     // WebGL1: Use standard texture creation
+    // Use linear filtering for smooth color gradients in palette textures
+    // The overhead is minimal for 1D textures (512x1), and the visual quality benefit is significant
     texture = regl.texture({
       width: PALETTE_SIZE,
       height: 1,
       data: paletteData,
       format: 'rgba',
       type: 'uint8',
-      min: 'linear',
-      mag: 'linear',
+      min: 'linear', // Smooth gradients
+      mag: 'linear', // Smooth gradients
       wrap: 'clamp',
     });
   }
@@ -401,6 +431,19 @@ export function clearPaletteCache() {
     texture.destroy();
   }
   paletteTextureCache.clear();
+}
+
+/**
+ * Clears the vertex buffer cache
+ * Call this when cleaning up resources
+ */
+export function clearVertexBufferCache() {
+  for (const buffer of vertexBufferCache.values()) {
+    if (buffer && typeof buffer.destroy === 'function') {
+      buffer.destroy();
+    }
+  }
+  vertexBufferCache.clear();
 }
 
 /**
@@ -521,11 +564,14 @@ export function createStandardDrawCommand(regl, params, canvas, fragmentShader, 
         ? [params.juliaC.x, params.juliaC.y]
         : [0, 0];
 
+  // Use persistent vertex buffer for better performance
+  const quadBuffer = getFullScreenQuadBuffer(regl);
+
   return regl({
     vert: vertexShaderSource,
     frag: fragmentShader,
     attributes: {
-      position: [-1, -1, 1, -1, -1, 1, 1, 1], // Full-screen quad
+      position: quadBuffer, // Reuse persistent buffer instead of inline data
     },
     uniforms: {
       uTime: options.uTime ?? 0,

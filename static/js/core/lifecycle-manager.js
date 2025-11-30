@@ -5,7 +5,7 @@
  */
 
 import { appState } from './app-state.js';
-import { clearPaletteCache, clearShaderCache } from '../fractals/utils.js';
+import { clearPaletteCache, clearShaderCache, clearVertexBufferCache } from '../fractals/utils.js';
 
 /**
  * Lifecycle manager for fractal sessions
@@ -54,9 +54,10 @@ export class LifecycleManager {
       frameCache.clear();
     }
 
-    // Clear palette and shader caches
+    // Clear palette, shader, and vertex buffer caches
     clearPaletteCache();
     clearShaderCache();
+    clearVertexBufferCache();
 
     // Release references to large typed arrays
     // (handled by garbage collector, but we can help by clearing caches)

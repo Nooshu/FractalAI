@@ -99,6 +99,17 @@ describe('LongTaskDetector', () => {
   });
 
   describe('handleLongTask', () => {
+    let consoleWarnSpy;
+
+    beforeEach(() => {
+      // Mock console.warn to suppress development mode warnings during tests
+      consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      consoleWarnSpy.mockRestore();
+    });
+
     it('should record long tasks above threshold', () => {
       const onLongTask = vi.fn();
       const detector = new LongTaskDetector({ onLongTask, threshold: 50 });
@@ -178,6 +189,9 @@ describe('LongTaskDetector', () => {
 
   describe('getRecentLongTasks', () => {
     it('should return tasks within time window', () => {
+      // Mock console.warn to suppress development mode warnings during tests
+      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
       const detector = new LongTaskDetector();
       detector.start();
 
@@ -199,11 +213,16 @@ describe('LongTaskDetector', () => {
       const recent = detector.getRecentLongTasks(1.5); // 1.5 seconds
       expect(recent).toHaveLength(1);
       expect(recent[0].name).toBe('recent-task');
+
+      consoleWarnSpy.mockRestore();
     });
   });
 
   describe('getStats', () => {
     it('should return statistics about long tasks', () => {
+      // Mock console.warn to suppress development mode warnings during tests
+      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
       const detector = new LongTaskDetector();
       detector.start();
 
@@ -216,6 +235,8 @@ describe('LongTaskDetector', () => {
       expect(stats.avgDuration).toBe(60);
       expect(stats.maxDuration).toBe(70);
       expect(stats.minDuration).toBe(50);
+
+      consoleWarnSpy.mockRestore();
     });
 
     it('should return zero stats when no tasks', () => {
@@ -228,6 +249,9 @@ describe('LongTaskDetector', () => {
 
   describe('clear', () => {
     it('should clear all recorded tasks', () => {
+      // Mock console.warn to suppress development mode warnings during tests
+      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
       const detector = new LongTaskDetector();
       detector.start();
 
@@ -236,6 +260,8 @@ describe('LongTaskDetector', () => {
 
       detector.clear();
       expect(detector.longTasks).toEqual([]);
+
+      consoleWarnSpy.mockRestore();
     });
   });
 });

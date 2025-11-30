@@ -5,6 +5,7 @@
 
 import { showLoadingBar, hideLoadingBar } from '../ui/loading-bar.js';
 import { updatePixelRatio } from './pixel-ratio.js';
+import { createOptimizedFramebuffer } from './framebuffer-utils.js';
 
 /**
  * Renderer class
@@ -159,21 +160,12 @@ export class Renderer {
   cacheCurrentFrame(regl, canvas, drawFractal) {
     if (!drawFractal || !regl || !canvas) return;
 
+    // Create optimized framebuffer to capture the current frame
+    // Uses half-float textures when available for 2x memory savings
     const width = canvas.width;
     const height = canvas.height;
 
-    const framebuffer = regl.framebuffer({
-      width,
-      height,
-      color: regl.texture({
-        width,
-        height,
-        min: 'linear',
-        mag: 'linear',
-      }),
-      depth: false,
-      stencil: false,
-    });
+    const framebuffer = createOptimizedFramebuffer(regl, width, height);
 
     // Render to framebuffer
     framebuffer.use(() => {

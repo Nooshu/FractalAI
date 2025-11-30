@@ -257,6 +257,11 @@ body {
   padding: 16px 20px;
 }
 
+/* Right panel section content should not clip - parent handles scrolling */
+.right-panel .section-content.active {
+  overflow: visible; /* Allow content to be fully visible, parent panel-content handles scrolling */
+}
+
 /* Controls */
 .control {
   margin-bottom: 20px;
@@ -1232,6 +1237,7 @@ body {
   grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
   gap: var(--spacing-md);
   padding: 0;
+  padding-bottom: 32px; /* Ensure last preset (194px height) is fully visible with gap */
   justify-items: center;
 }
 

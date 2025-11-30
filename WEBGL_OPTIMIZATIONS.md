@@ -343,16 +343,32 @@ texture = regl.texture({
 - More efficient GPU usage
 - Automatic fallback to standard textures for WebGL1
 
-### 2. Texture Filtering Optimization
+### 2. Texture Filtering Optimization ✅ IMPLEMENTED
+
+**Status**: ✅ Implemented in `static/js/fractals/utils.js`
 
 **Current**: Linear filtering  
 **Note**: Linear filtering is appropriate for palette textures to enable smooth color gradients. The overhead is minimal for 1D textures (512x1), and the visual quality benefit is significant.
 
+**Implementation**:
+
+The `generatePaletteTexture` function uses linear filtering for both WebGL1 and WebGL2:
+
+**WebGL2 (Immutable Textures)**:
 ```javascript
-const paletteTexture = regl.texture({
+// Use linear filtering for smooth color gradients in palette textures
+// The overhead is minimal for 1D textures (512x1), and the visual quality benefit is significant
+gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+```
+
+**WebGL1 (Standard Textures)**:
+```javascript
+texture = regl.texture({
   // ...
   min: 'linear', // Smooth gradients
   mag: 'linear', // Smooth gradients
+  wrap: 'clamp',
 });
 ```
 
@@ -361,24 +377,52 @@ const paletteTexture = regl.texture({
 - Smooth color transitions
 - Minimal performance overhead for small textures
 - Better visual quality
+- Consistent filtering across WebGL1 and WebGL2
 
 ---
 
 ## Buffer and Memory Optimizations
 
-### 1. Vertex Buffer Optimization
+### 1. Vertex Buffer Optimization ✅ IMPLEMENTED
+
+**Status**: ✅ Implemented in `static/js/fractals/utils.js`
 
 **Current**: Inline vertex data  
 **Optimization**: Use persistent vertex buffer
 
-```javascript
-// Create persistent vertex buffer
-const quadBuffer = regl.buffer([-1, -1, 1, -1, -1, 1, 1, 1]);
+**Implementation**:
 
-// Reuse for all fractals
-const drawFractal = regl({
+The `getFullScreenQuadBuffer` function creates and caches a persistent vertex buffer that is reused across all fractals:
+
+```javascript
+/**
+ * Gets or creates a persistent vertex buffer for the full-screen quad
+ * Reuses the same buffer across all fractals for better performance
+ */
+export function getFullScreenQuadBuffer(regl) {
+  const cacheKey = regl._gl || regl;
+  
+  if (vertexBufferCache.has(cacheKey)) {
+    return vertexBufferCache.get(cacheKey);
+  }
+
+  // Create persistent vertex buffer for full-screen quad
+  const quadBuffer = regl.buffer([-1, -1, 1, -1, -1, 1, 1, 1]);
+  vertexBufferCache.set(cacheKey, quadBuffer);
+  
+  return quadBuffer;
+}
+```
+
+The `createStandardDrawCommand` function now uses the persistent buffer:
+
+```javascript
+// Use persistent vertex buffer for better performance
+const quadBuffer = getFullScreenQuadBuffer(regl);
+
+return regl({
   attributes: {
-    position: quadBuffer, // Reuse buffer
+    position: quadBuffer, // Reuse persistent buffer instead of inline data
   },
   // ...
 });
@@ -389,54 +433,114 @@ const drawFractal = regl({
 - Reduced memory allocations
 - Better GPU cache usage
 - Faster attribute setup
+- Consistent buffer reuse across all fractals
+- Automatic cleanup via lifecycle manager
 
 ---
 
 ## Extension-Based Optimizations
 
-### 1. EXT_color_buffer_half_float
+### 1. EXT_color_buffer_half_float ✅ IMPLEMENTED
+
+**Status**: ✅ Implemented in `static/js/rendering/framebuffer-utils.js`
 
 **Current**: Full float precision  
 **Optimization**: Use half-float for intermediate calculations
 
+**Implementation**:
+
+The `createOptimizedFramebuffer` function automatically uses half-float textures when the extension is available:
+
 ```javascript
-const ext = gl.getExtension('EXT_color_buffer_half_float');
-if (ext) {
-  // Use half-float framebuffer
-  const halfFloatFBO = regl.framebuffer({
+/**
+ * Creates an optimized framebuffer for frame caching
+ * Uses half-float textures when EXT_color_buffer_half_float is available for 2x memory savings
+ */
+export function createOptimizedFramebuffer(regl, width, height, webglCapabilities = null) {
+  // Check for half-float support
+  let supportsHalfFloat = false;
+  let supportsHalfFloatLinear = false;
+  
+  if (webglCapabilities?.features?.halfFloat) {
+    supportsHalfFloat = webglCapabilities.features.halfFloat.colorBuffer;
+    supportsHalfFloatLinear = webglCapabilities.features.halfFloat.linear;
+  } else {
+    // Fallback: check extensions directly
+    const halfFloatExt = gl.getExtension('EXT_color_buffer_half_float');
+    const halfFloatLinearExt = gl.getExtension('OES_texture_half_float_linear');
+    supportsHalfFloat = !!halfFloatExt;
+    supportsHalfFloatLinear = !!halfFloatLinearExt;
+  }
+
+  // Use half-float (16-bit) when available, otherwise fallback to uint8
+  const textureType = supportsHalfFloat ? 'half float' : 'uint8';
+  
+  // Only use linear filtering if supported for half-float
+  const minFilter = supportsHalfFloat && !supportsHalfFloatLinear ? 'nearest' : 'linear';
+  const magFilter = supportsHalfFloat && !supportsHalfFloatLinear ? 'nearest' : 'linear';
+
+  return regl.framebuffer({
+    width,
+    height,
     color: regl.texture({
-      type: 'half float', // 16-bit float
-      // ...
+      width,
+      height,
+      type: textureType,
+      min: minFilter,
+      mag: magFilter,
     }),
+    depth: false,
+    stencil: false,
   });
 }
 ```
 
+This function is used in:
+- `static/js/rendering/engine.js` - `cacheCurrentFrame()` method
+- `static/js/rendering/renderer.js` - `cacheCurrentFrame()` method
+
 **Benefits**:
 
-- 2x memory savings
+- 2x memory savings (16-bit vs 32-bit float)
 - Faster rendering
 - Sufficient precision for most fractals
+- Automatic fallback to uint8 if half-float not supported
+- Respects OES_texture_half_float_linear for filtering support
 
-### 2. OES_texture_half_float_linear
+### 2. OES_texture_half_float_linear ✅ IMPLEMENTED
+
+**Status**: ✅ Implemented in `static/js/rendering/framebuffer-utils.js`
 
 **Current**: No half-float filtering  
 **Optimization**: Enable linear filtering for half-float textures
 
+**Implementation**:
+
+The `createOptimizedFramebuffer` function automatically checks for `OES_texture_half_float_linear` and uses linear filtering when available:
+
 ```javascript
-const ext = gl.getExtension('OES_texture_half_float_linear');
-if (ext) {
-  // Can use linear filtering with half-float
-  texture.min = 'linear';
-  texture.mag = 'linear';
+// Only use linear filtering if the extension supports it
+if (supportsHalfFloat && !supportsHalfFloatLinear) {
+  // Fallback to nearest if linear filtering not supported for half-float
+  minFilter = 'nearest';
+  magFilter = 'nearest';
+} else {
+  minFilter = 'linear';
+  magFilter = 'linear';
 }
 ```
+
+This ensures that:
+- Linear filtering is used when `OES_texture_half_float_linear` is available
+- Nearest filtering is used as fallback when half-float is supported but linear filtering is not
+- Full quality is maintained when both extensions are available
 
 **Benefits**:
 
 - Better quality with half-float
 - Smoother gradients
 - Maintains performance benefits
+- Automatic detection and fallback
 
 ### 3. EXT_disjoint_timer_query / EXT_disjoint_timer_query_webgl2
 

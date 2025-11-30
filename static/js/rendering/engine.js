@@ -8,6 +8,7 @@ import { showLoadingBar, hideLoadingBar } from '../ui/loading-bar.js';
 import { updatePixelRatio } from './pixel-ratio.js';
 import { incrementFrameCount } from '../performance/fps-tracker.js';
 import { performanceInstrumentation } from '../performance/instrumentation.js';
+import { createOptimizedFramebuffer } from './framebuffer-utils.js';
 
 /**
  * Rendering Engine class
@@ -354,22 +355,13 @@ export class RenderingEngine {
 
     if (!drawFractal || !regl || !canvas) return;
 
-    // Create framebuffer to capture the current frame
+    // Create optimized framebuffer to capture the current frame
+    // Uses half-float textures when available for 2x memory savings
     const width = canvas.width;
     const height = canvas.height;
+    const webglCapabilities = this.getWebGLCapabilities();
 
-    const framebuffer = regl.framebuffer({
-      width,
-      height,
-      color: regl.texture({
-        width,
-        height,
-        min: 'linear',
-        mag: 'linear',
-      }),
-      depth: false,
-      stencil: false,
-    });
+    const framebuffer = createOptimizedFramebuffer(regl, width, height, webglCapabilities);
 
     // Render to framebuffer using regl context
     framebuffer.use(() => {

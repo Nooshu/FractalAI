@@ -1,12 +1,13 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { LifecycleManager } from '../../static/js/core/lifecycle-manager.js';
 import { appState } from '../../static/js/core/app-state.js';
-import { clearPaletteCache, clearShaderCache } from '../../static/js/fractals/utils.js';
+import { clearPaletteCache, clearShaderCache, clearVertexBufferCache } from '../../static/js/fractals/utils.js';
 
 // Mock the utils functions
 vi.mock('../../static/js/fractals/utils.js', () => ({
   clearPaletteCache: vi.fn(),
   clearShaderCache: vi.fn(),
+  clearVertexBufferCache: vi.fn(),
 }));
 
 describe('LifecycleManager', () => {
@@ -52,6 +53,7 @@ describe('LifecycleManager', () => {
       expect(clearSpy).toHaveBeenCalled();
       expect(clearPaletteCache).toHaveBeenCalled();
       expect(clearShaderCache).toHaveBeenCalled();
+      expect(clearVertexBufferCache).toHaveBeenCalled();
       expect(manager.getCurrentSessionId()).toBeNull();
     });
 
