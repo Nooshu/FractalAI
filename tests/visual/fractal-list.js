@@ -72,6 +72,7 @@ export const FRACTAL_TYPES = [
   // Plant Family
   'plant',
   'barnsley-fern',
+  'fractal-tree',
 
   // Tilings
   'domino-substitution',
@@ -108,6 +109,9 @@ export const FRACTAL_TYPES = [
   'cesaro',
   'lyapunov',
   'pythagoras-tree',
+  'lorenz-attractor',
+  'rossler-attractor',
+  'menger-sponge',
 ];
 
 /**
