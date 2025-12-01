@@ -12,6 +12,7 @@ import * as phoenixMandelbrot from '../phoenix-mandelbrot.js';
 import * as burningShip from '../burning-ship.js';
 import * as tricorn from '../tricorn.js';
 import * as nebulabrot from '../nebulabrot.js';
+import * as buddhabrot from '../buddhabrot.js';
 
 // Export as a mapping object for easy lookup
 export const fractals = {
@@ -23,4 +24,5 @@ export const fractals = {
   'burning-ship': burningShip,
   tricorn: tricorn,
   nebulabrot: nebulabrot,
+  buddhabrot: buddhabrot,
 };

@@ -20,6 +20,7 @@ const FRACTAL_FAMILIES = {
   'burning-ship': 'mandelbrot-family',
   tricorn: 'mandelbrot-family',
   nebulabrot: 'mandelbrot-family',
+  buddhabrot: 'mandelbrot-family',
 
   // Julia Sets
   julia: 'julia-family',
@@ -113,6 +114,8 @@ const FRACTAL_FAMILIES = {
   'spider-set': 'other-family',
   magnet: 'other-family',
   cesaro: 'other-family',
+  lyapunov: 'other-family',
+  'pythagoras-tree': 'other-family',
 };
 
 /**

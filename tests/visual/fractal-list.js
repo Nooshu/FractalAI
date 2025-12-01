@@ -12,6 +12,7 @@ export const FRACTAL_TYPES = [
   'burning-ship',
   'tricorn',
   'nebulabrot',
+  'buddhabrot',
 
   // Julia Sets
   'julia',
@@ -105,6 +106,8 @@ export const FRACTAL_TYPES = [
   'spider-set',
   'magnet',
   'cesaro',
+  'lyapunov',
+  'pythagoras-tree',
 ];
 
 /**

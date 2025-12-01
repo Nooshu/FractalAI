@@ -31,6 +31,8 @@ import * as simplexNoise from '../simplex-noise.js';
 import * as spiderSet from '../spider-set.js';
 import * as magnet from '../magnet.js';
 import * as cesaro from '../cesaro.js';
+import * as lyapunov from '../lyapunov.js';
+import * as pythagorasTree from '../pythagoras-tree.js';
 
 // Export as a mapping object for easy lookup
 export const fractals = {
@@ -61,4 +63,6 @@ export const fractals = {
   'spider-set': spiderSet,
   magnet: magnet,
   cesaro: cesaro,
+  lyapunov: lyapunov,
+  'pythagoras-tree': pythagorasTree,
 };
