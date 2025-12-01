@@ -22,6 +22,8 @@ export class AppStateManager {
     this.webglCapabilities = null;
     this.fractalParamsUBO = null; // Uniform Buffer Object for WebGL2
     this.webgpuRenderer = null; // WebGPU renderer (if available)
+    this.occlusionQueryManager = null; // Occlusion query manager for tile-based rendering
+    this.adaptiveQualityManager = null; // Adaptive quality manager
 
     // Fractal state
     this.currentFractalType = CONFIG.fractal.defaultType;
@@ -77,6 +79,12 @@ export class AppStateManager {
   }
   getWebGPURenderer() {
     return this.webgpuRenderer;
+  }
+  getOcclusionQueryManager() {
+    return this.occlusionQueryManager;
+  }
+  getAdaptiveQualityManager() {
+    return this.adaptiveQualityManager;
   }
   getCurrentFractalType() {
     return this.currentFractalType;
@@ -183,6 +191,12 @@ export class AppStateManager {
   setWebGPURenderer(value) {
     this.webgpuRenderer = value;
   }
+  setOcclusionQueryManager(value) {
+    this.occlusionQueryManager = value;
+  }
+  setAdaptiveQualityManager(value) {
+    this.adaptiveQualityManager = value;
+  }
   setCurrentFractalType(value) {
     this.currentFractalType = value;
   }
@@ -224,6 +238,8 @@ export class AppStateManager {
       getWebGLCapabilities: () => this.getWebGLCapabilities(),
       getFractalParamsUBO: () => this.getFractalParamsUBO(),
       getWebGPURenderer: () => this.getWebGPURenderer(),
+      getOcclusionQueryManager: () => this.getOcclusionQueryManager(),
+      getAdaptiveQualityManager: () => this.getAdaptiveQualityManager(),
       getCanvas: () => this.getCanvas(),
       getUpdateRendererSize: () => this.getUpdateRendererSize(),
       getCurrentFractalType: () => this.getCurrentFractalType(),
@@ -251,6 +267,8 @@ export class AppStateManager {
       setCanvas: (value) => this.setCanvas(value),
       setUpdateRendererSize: (value) => this.setUpdateRendererSize(value),
       setWebGPURenderer: (value) => this.setWebGPURenderer(value),
+      setOcclusionQueryManager: (value) => this.setOcclusionQueryManager(value),
+      setAdaptiveQualityManager: (value) => this.setAdaptiveQualityManager(value),
       setCurrentFractalType: (value) => this.setCurrentFractalType(value),
       setCurrentFractalModule: (value) => this.setCurrentFractalModule(value),
       setDrawFractal: (value) => this.setDrawFractal(value),

@@ -31,6 +31,7 @@ export class RenderingEngine {
     this.getTargetIterations = getters.getTargetIterations;
     this.getWebGLCapabilities = getters.getWebGLCapabilities;
     this.getFractalParamsUBO = getters.getFractalParamsUBO;
+    this.getAdaptiveQualityManager = getters.getAdaptiveQualityManager;
 
     // Setters for updating state
     this.setDrawFractal = setters.setDrawFractal;
@@ -119,16 +120,38 @@ export class RenderingEngine {
       depth: 1,
     });
 
+    // Apply adaptive quality adjustments if enabled
+    const adaptiveQualityManager = this.getAdaptiveQualityManager();
+    let adjustedTargetIterations = targetIterations;
+    if (adaptiveQualityManager) {
+      adjustedTargetIterations = adaptiveQualityManager.getAdjustedIterations(targetIterations);
+    }
+
     // Start with low quality for immediate feedback
-    const initialIterations = startIterations || Math.max(20, Math.floor(targetIterations * 0.2));
+    const initialIterations = startIterations || Math.max(20, Math.floor(adjustedTargetIterations * 0.2));
     this.setCurrentProgressiveIterations(initialIterations);
+    this.setTargetIterations(adjustedTargetIterations);
 
     // Create or recreate draw command with progressive iterations
-    const drawFractal = currentFractalModule.render(
-      regl,
-      { ...params, iterations: initialIterations },
-      canvas
-    );
+    const progressiveParams = { ...params, iterations: initialIterations };
+    const webglCapabilities = this.getWebGLCapabilities();
+    const ubo = this.getFractalParamsUBO();
+    
+    // Check if fractal render function supports UBO (new signature)
+    let drawFractal;
+    if (
+      currentFractalModule.render.length >= 4 ||
+      (webglCapabilities?.isWebGL2 && ubo)
+    ) {
+      // New signature: render(regl, params, canvas, options)
+      drawFractal = currentFractalModule.render(regl, progressiveParams, canvas, {
+        webglCapabilities,
+        ubo,
+      });
+    } else {
+      // Old signature: render(regl, params, canvas)
+      drawFractal = currentFractalModule.render(regl, progressiveParams, canvas);
+    }
     this.setDrawFractal(drawFractal);
 
     // Render immediately
@@ -140,23 +163,57 @@ export class RenderingEngine {
     this.setIsProgressiveRendering(true);
 
     // Progressively increase quality
-    const stepSize = Math.max(10, Math.floor(targetIterations * 0.15));
+    const stepSize = Math.max(10, Math.floor(adjustedTargetIterations * 0.15));
     const progressiveStep = () => {
       const currentIterations = this.getCurrentProgressiveIterations();
-      if (currentIterations < targetIterations) {
-        const newIterations = Math.min(currentIterations + stepSize, targetIterations);
+      const target = this.getTargetIterations();
+      
+      if (currentIterations < target) {
+        const newIterations = Math.min(currentIterations + stepSize, target);
         this.setCurrentProgressiveIterations(newIterations);
 
         // Recreate draw command with updated iterations
-        const updatedDrawFractal = currentFractalModule.render(
-          regl,
-          { ...params, iterations: newIterations },
-          canvas
-        );
+        const updatedParams = { ...params, iterations: newIterations };
+        const webglCapabilities = this.getWebGLCapabilities();
+        const ubo = this.getFractalParamsUBO();
+        
+        let updatedDrawFractal;
+        if (
+          currentFractalModule.render.length >= 4 ||
+          (webglCapabilities?.isWebGL2 && ubo)
+        ) {
+          updatedDrawFractal = currentFractalModule.render(regl, updatedParams, canvas, {
+            webglCapabilities,
+            ubo,
+          });
+        } else {
+          updatedDrawFractal = currentFractalModule.render(regl, updatedParams, canvas);
+        }
         this.setDrawFractal(updatedDrawFractal);
+        
+        // Record frame time before rendering
+        const frameStartTime = performance.now();
+        
         if (updatedDrawFractal) {
           updatedDrawFractal();
         }
+        
+        // Record frame time and update adaptive quality
+        const frameEndTime = performance.now();
+        const frameTime = frameEndTime - frameStartTime;
+        
+        if (adaptiveQualityManager) {
+          adaptiveQualityManager.recordFrameTime(frameTime);
+          adaptiveQualityManager.updateQuality();
+          
+          // Update target iterations if quality changed
+          const newTarget = adaptiveQualityManager.getAdjustedIterations(params.iterations);
+          if (newTarget !== target) {
+            this.setTargetIterations(newTarget);
+          }
+        }
+        
+        performanceInstrumentation.recordFrameTime(frameTime);
         this.setNeedsRender(false); // Progressive rendering handles its own renders
 
         // Schedule next step using requestAnimationFrame for smooth rendering aligned with display refresh
@@ -240,6 +297,17 @@ export class RenderingEngine {
       depth: 1,
     });
 
+    // Apply adaptive quality adjustments if enabled
+    const adaptiveQualityManager = this.getAdaptiveQualityManager();
+    let adjustedParams = params;
+    if (adaptiveQualityManager) {
+      const adjustedIterations = adaptiveQualityManager.getAdjustedIterations(params.iterations);
+      adjustedParams = {
+        ...params,
+        iterations: adjustedIterations,
+      };
+    }
+
     // Call the fractal's render function to create draw command
     // Pass UBO and capabilities if available for WebGL2 optimization
     const webglCapabilities = this.getWebGLCapabilities();
@@ -253,21 +321,36 @@ export class RenderingEngine {
       (webglCapabilities?.isWebGL2 && ubo)
     ) {
       // New signature: render(regl, params, canvas, options)
-      drawFractal = currentFractalModule.render(regl, params, canvas, {
+      drawFractal = currentFractalModule.render(regl, adjustedParams, canvas, {
         webglCapabilities,
         ubo,
       });
     } else {
       // Old signature: render(regl, params, canvas)
-      drawFractal = currentFractalModule.render(regl, params, canvas);
+      drawFractal = currentFractalModule.render(regl, adjustedParams, canvas);
     }
     
     this.setDrawFractal(drawFractal);
+
+    // Record frame time before rendering
+    const frameStartTime = performance.now();
 
     // Execute the draw command
     if (drawFractal) {
       drawFractal();
     }
+
+    // Record frame time and update adaptive quality
+    const frameEndTime = performance.now();
+    const frameTime = frameEndTime - frameStartTime;
+    
+    if (adaptiveQualityManager) {
+      adaptiveQualityManager.recordFrameTime(frameTime);
+      adaptiveQualityManager.updateQuality();
+    }
+    
+    // Record frame time for performance instrumentation
+    performanceInstrumentation.recordFrameTime(frameTime);
 
     this.setNeedsRender(false); // Render complete (renderFractal handles its own render call)
     this.setIsDisplayingCached(false); // Not displaying cached frame

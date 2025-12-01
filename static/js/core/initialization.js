@@ -102,6 +102,43 @@ async function initCanvasAndRenderer(appState) {
     });
   }
 
+  // Initialize occlusion query manager if WebGL2 and feature enabled
+  if (CONFIG.features.occlusionQueries && webglCapabilities?.isWebGL2 && reglContext) {
+    import('../rendering/occlusion-query.js').then(({ createOcclusionQueryManager }) => {
+      const gl = reglContext._gl;
+      if (gl) {
+        const occlusionQueryManager = createOcclusionQueryManager(gl);
+        if (occlusionQueryManager) {
+          appState.setOcclusionQueryManager(occlusionQueryManager);
+          if (import.meta.env?.DEV) {
+            console.log(
+              '%c[Occlusion Queries]%c Enabled for tile-based rendering optimization',
+              'color: #4CAF50; font-weight: bold;',
+              'color: inherit;'
+            );
+          }
+        }
+      }
+    });
+  }
+
+  // Initialize adaptive quality manager if feature enabled
+  if (CONFIG.features.adaptiveQuality) {
+    import('../rendering/adaptive-quality.js').then(({ createAdaptiveQualityManager }) => {
+      const adaptiveQualityManager = createAdaptiveQualityManager({
+        targetFrameTime: CONFIG.performance?.maxFrameTime || 16.67,
+      });
+      appState.setAdaptiveQualityManager(adaptiveQualityManager);
+      if (import.meta.env?.DEV) {
+        console.log(
+          '%c[Adaptive Quality]%c Enabled for dynamic quality adjustment',
+          'color: #4CAF50; font-weight: bold;',
+          'color: inherit;'
+        );
+      }
+    });
+  }
+
   return { canvasElement, reglContext, updateSize };
 }
 

@@ -892,62 +892,97 @@ The optimized JavaScript fallback provides performance improvements even without
 
 ## Rendering Pipeline Optimizations
 
-### 1. Tile-Based Rendering with Occlusion Queries
+### 1. Tile-Based Rendering with Occlusion Queries ✅ IMPLEMENTED
+
+**Status**: ✅ Implemented in `static/js/rendering/occlusion-query.js`
 
 **Current**: Full-screen rendering  
 **Optimization**: Tile-based with occlusion culling
 
+**Implementation**:
+
+The `OcclusionQueryManager` class provides WebGL2 occlusion query support:
+
 ```javascript
-// WebGL2 occlusion queries
-const query = gl.createQuery();
-gl.beginQuery(gl.ANY_SAMPLES_PASSED, query);
+// Create occlusion query manager
+const occlusionQueryManager = createOcclusionQueryManager(gl);
+
+// Begin query for a tile
+occlusionQueryManager.beginQuery('tile-0-0');
 
 // Render tile
 renderTile(tile);
 
-gl.endQuery(gl.ANY_SAMPLES_PASSED);
+// End query
+occlusionQueryManager.endQuery('tile-0-0');
 
-// Check if tile is visible
-const visible = gl.getQueryParameter(query, gl.QUERY_RESULT);
-if (!visible) {
+// Check if tile is visible (asynchronously)
+const visibility = occlusionQueryManager.checkQueryResult('tile-0-0');
+if (visibility === false) {
   // Skip this tile in future frames
 }
 ```
+
+The manager is initialized in `initialization.js` when WebGL2 is available and `CONFIG.features.occlusionQueries` is enabled. It can be integrated with the tile renderer (`tile-renderer.js`) for full tile-based rendering optimization.
 
 **Benefits**:
 
 - Skip invisible tiles
 - Faster rendering for zoomed views
 - Better performance for large canvases
+- Infrastructure ready for tile-based rendering integration
 
-### 2. Adaptive Quality Based on Frame Time
+### 2. Adaptive Quality Based on Frame Time ✅ IMPLEMENTED
+
+**Status**: ✅ Implemented in `static/js/rendering/adaptive-quality.js` and integrated into `static/js/rendering/engine.js`
 
 **Current**: Fixed quality  
 **Optimization**: Dynamic quality adjustment
 
-```javascript
-let targetFrameTime = 16.67; // 60 FPS
-let currentQuality = 1.0;
+**Implementation**:
 
-function adaptiveQuality(frameTime) {
-  if (frameTime > targetFrameTime * 1.2) {
-    // Reduce quality
-    currentQuality *= 0.9;
-    reduceIterations();
-    reduceResolution();
-  } else if (frameTime < targetFrameTime * 0.8) {
-    // Increase quality
-    currentQuality = Math.min(1.0, currentQuality * 1.1);
-    increaseIterations();
-  }
-}
+The `AdaptiveQualityManager` class monitors frame time and adjusts quality parameters:
+
+```javascript
+// Create adaptive quality manager
+const adaptiveQualityManager = createAdaptiveQualityManager({
+  targetFrameTime: 16.67, // 60 FPS
+  minQuality: 0.5,
+  maxQuality: 1.0,
+  qualityStep: 0.1,
+  samplesToAverage: 10,
+});
+
+// Record frame time after each render
+adaptiveQualityManager.recordFrameTime(frameTime);
+
+// Update quality based on recent measurements
+adaptiveQualityManager.updateQuality();
+
+// Get adjusted iterations
+const adjustedIterations = adaptiveQualityManager.getAdjustedIterations(baseIterations);
 ```
+
+The manager is integrated into the rendering engine (`engine.js`) and automatically:
+- Records frame time after each render
+- Adjusts quality based on average frame time over the last 10 frames
+- Applies quality adjustments to iteration counts
+- Maintains target FPS by reducing quality when frame time is too high
+- Increases quality when frame time is low enough
+
+**Configuration**:
+
+- Enabled via `CONFIG.features.adaptiveQuality` (default: `true`)
+- Target FPS configurable via `CONFIG.performance.targetFPS` (default: 60)
+- Quality range: 0.5 to 1.0 (configurable)
 
 **Benefits**:
 
 - Maintains target framerate
 - Better user experience
 - Optimal quality/performance balance
+- Automatic adjustment without user intervention
+- Works with both regular and progressive rendering
 
 ### 3. Predictive Rendering
 

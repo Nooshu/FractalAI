@@ -94,5 +94,17 @@ export const CONFIG = {
     webCodecs: false,
     // WebAssembly SIMD for CPU fallback
     wasmSimd: false,
+    // Occlusion queries for tile-based rendering (WebGL2 only)
+    occlusionQueries: true,
+    // Adaptive quality based on frame time
+    adaptiveQuality: true,
+  },
+  performance: {
+    // Target FPS for adaptive quality
+    targetFPS: 60,
+    // Maximum frame time in milliseconds (1000 / targetFPS)
+    maxFrameTime: 16.67,
+    // Quality adjustment steps for adaptive quality
+    qualitySteps: [0.5, 0.75, 1.0, 1.5, 2.0],
   },
 };
