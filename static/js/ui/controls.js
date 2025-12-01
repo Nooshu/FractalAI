@@ -64,6 +64,7 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
     getRandomInterestingView,
     cancelProgressiveRender,
     cancelWorkerTasks = () => {}, // Optional callback to cancel worker tasks
+    resetPredictiveRendering = () => {}, // Optional callback to reset predictive rendering
   } = callbacks;
 
   // Get DOM elements
@@ -272,6 +273,9 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
 
     // Clear frame cache when fractal type changes (lifecycle manager handles this, but explicit for clarity)
     frameCache.clear();
+
+    // Reset predictive rendering when fractal type changes
+    resetPredictiveRendering();
 
     // Load the new fractal module
     try {

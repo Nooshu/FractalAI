@@ -139,6 +139,26 @@ async function initCanvasAndRenderer(appState) {
     });
   }
 
+  // Initialize predictive rendering manager if feature enabled
+  if (CONFIG.features.predictiveRendering) {
+    import('../rendering/predictive-rendering.js').then(({ createPredictiveRenderingManager }) => {
+      const predictiveRenderingManager = createPredictiveRenderingManager({
+        maxPredictions: 3,
+        velocityDecay: 0.9,
+        minVelocity: 0.01,
+        predictionDistance: 1.5,
+      });
+      appState.setPredictiveRenderingManager(predictiveRenderingManager);
+      if (import.meta.env?.DEV) {
+        console.log(
+          '%c[Predictive Rendering]%c Enabled for pre-rendering likely next frames',
+          'color: #4CAF50; font-weight: bold;',
+          'color: inherit;'
+        );
+      }
+    });
+  }
+
   return { canvasElement, reglContext, updateSize };
 }
 
@@ -229,6 +249,12 @@ function setupUIControlsModule(
       renderFractalProgressive: () => renderingEngine.renderFractalProgressive(),
       renderFractal: () => renderingEngine.renderFractal(),
       cancelWorkerTasks: () => appState.cancelWorkerTasks(),
+      resetPredictiveRendering: () => {
+        const predictiveRenderingManager = appState.getPredictiveRenderingManager();
+        if (predictiveRenderingManager) {
+          predictiveRenderingManager.clear();
+        }
+      },
       getRandomInterestingView: () =>
         getRandomInterestingView({
           getCurrentFractalType: getters.getCurrentFractalType,

@@ -24,6 +24,7 @@ export class AppStateManager {
     this.webgpuRenderer = null; // WebGPU renderer (if available)
     this.occlusionQueryManager = null; // Occlusion query manager for tile-based rendering
     this.adaptiveQualityManager = null; // Adaptive quality manager
+    this.predictiveRenderingManager = null; // Predictive rendering manager
 
     // Fractal state
     this.currentFractalType = CONFIG.fractal.defaultType;
@@ -85,6 +86,9 @@ export class AppStateManager {
   }
   getAdaptiveQualityManager() {
     return this.adaptiveQualityManager;
+  }
+  getPredictiveRenderingManager() {
+    return this.predictiveRenderingManager;
   }
   getCurrentFractalType() {
     return this.currentFractalType;
@@ -197,6 +201,9 @@ export class AppStateManager {
   setAdaptiveQualityManager(value) {
     this.adaptiveQualityManager = value;
   }
+  setPredictiveRenderingManager(value) {
+    this.predictiveRenderingManager = value;
+  }
   setCurrentFractalType(value) {
     this.currentFractalType = value;
   }
@@ -240,6 +247,7 @@ export class AppStateManager {
       getWebGPURenderer: () => this.getWebGPURenderer(),
       getOcclusionQueryManager: () => this.getOcclusionQueryManager(),
       getAdaptiveQualityManager: () => this.getAdaptiveQualityManager(),
+      getPredictiveRenderingManager: () => this.getPredictiveRenderingManager(),
       getCanvas: () => this.getCanvas(),
       getUpdateRendererSize: () => this.getUpdateRendererSize(),
       getCurrentFractalType: () => this.getCurrentFractalType(),
@@ -269,6 +277,7 @@ export class AppStateManager {
       setWebGPURenderer: (value) => this.setWebGPURenderer(value),
       setOcclusionQueryManager: (value) => this.setOcclusionQueryManager(value),
       setAdaptiveQualityManager: (value) => this.setAdaptiveQualityManager(value),
+      setPredictiveRenderingManager: (value) => this.setPredictiveRenderingManager(value),
       setCurrentFractalType: (value) => this.setCurrentFractalType(value),
       setCurrentFractalModule: (value) => this.setCurrentFractalModule(value),
       setDrawFractal: (value) => this.setDrawFractal(value),
@@ -326,6 +335,9 @@ export class AppStateManager {
     }
     if (this.renderingEngine) {
       this.renderingEngine.cleanup();
+    }
+    if (this.predictiveRenderingManager) {
+      this.predictiveRenderingManager.clear();
     }
     if (this.workerPool) {
       this.workerPool.shutdown();

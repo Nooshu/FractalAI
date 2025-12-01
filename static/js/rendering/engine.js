@@ -32,6 +32,7 @@ export class RenderingEngine {
     this.getWebGLCapabilities = getters.getWebGLCapabilities;
     this.getFractalParamsUBO = getters.getFractalParamsUBO;
     this.getAdaptiveQualityManager = getters.getAdaptiveQualityManager;
+    this.getPredictiveRenderingManager = getters.getPredictiveRenderingManager;
 
     // Setters for updating state
     this.setDrawFractal = setters.setDrawFractal;
@@ -352,6 +353,13 @@ export class RenderingEngine {
     // Record frame time for performance instrumentation
     performanceInstrumentation.recordFrameTime(frameTime);
 
+    // Update predictive rendering with current parameters
+    const predictiveRenderingManager = this.getPredictiveRenderingManager();
+    if (predictiveRenderingManager) {
+      predictiveRenderingManager.updateVelocity(params);
+      this.schedulePredictiveRendering();
+    }
+
     this.setNeedsRender(false); // Render complete (renderFractal handles its own render call)
     this.setIsDisplayingCached(false); // Not displaying cached frame
 
@@ -516,6 +524,142 @@ export class RenderingEngine {
       cancelAnimationFrame(this.progressiveRenderAnimationFrame);
       this.progressiveRenderAnimationFrame = null;
       this.setIsProgressiveRendering(false);
+    }
+  }
+
+  /**
+   * Schedule predictive rendering of likely next views
+   * Uses requestIdleCallback to pre-render in background
+   */
+  schedulePredictiveRendering() {
+    const predictiveRenderingManager = this.getPredictiveRenderingManager();
+    if (!predictiveRenderingManager || !predictiveRenderingManager.isEnabled) {
+      return;
+    }
+
+    // Don't schedule if already pre-rendering
+    if (predictiveRenderingManager.isPreRendering) {
+      return;
+    }
+
+    const regl = this.getRegl();
+    const canvas = this.getCanvas();
+    const currentFractalModule = this.getCurrentFractalModule();
+    const params = this.getParams();
+    const fractalType = this.getCurrentFractalType();
+
+    if (!regl || !canvas || !currentFractalModule || !currentFractalModule.render) {
+      return;
+    }
+
+    // Predict next views
+    const predictions = predictiveRenderingManager.predictNextViews(params, fractalType);
+    if (predictions.length === 0) {
+      return;
+    }
+
+    // Add predictions to queue
+    predictions.forEach(prediction => {
+      predictiveRenderingManager.addPrediction(prediction);
+    });
+
+    // Schedule pre-rendering in background
+    const preRenderNext = () => {
+      const prediction = predictiveRenderingManager.getNextPrediction();
+      if (!prediction) {
+        predictiveRenderingManager.isPreRendering = false;
+        return;
+      }
+
+      const { params: predictedParams, viewKey } = prediction;
+
+      // Check if already cached
+      const cached = this.frameCache.getCachedFrame(
+        canvas,
+        fractalType,
+        predictedParams,
+        regl
+      );
+
+      if (cached && cached.framebuffer) {
+        // Already cached, mark as completed
+        predictiveRenderingManager.markCompleted(viewKey);
+        // Continue with next prediction
+        if (typeof requestIdleCallback !== 'undefined') {
+          requestIdleCallback(preRenderNext, { timeout: 100 });
+        } else {
+          setTimeout(preRenderNext, 16);
+        }
+        return;
+      }
+
+      // Pre-render the predicted view
+      try {
+        const webglCapabilities = this.getWebGLCapabilities();
+        const ubo = this.getFractalParamsUBO();
+        const adaptiveQualityManager = this.getAdaptiveQualityManager();
+
+        // Apply adaptive quality if enabled
+        let adjustedParams = predictedParams;
+        if (adaptiveQualityManager) {
+          const adjustedIterations = adaptiveQualityManager.getAdjustedIterations(predictedParams.iterations);
+          adjustedParams = {
+            ...predictedParams,
+            iterations: adjustedIterations,
+          };
+        }
+
+        // Create draw command for predicted view
+        let drawFractal;
+        if (
+          currentFractalModule.render.length >= 4 ||
+          (webglCapabilities?.isWebGL2 && ubo)
+        ) {
+          drawFractal = currentFractalModule.render(regl, adjustedParams, canvas, {
+            webglCapabilities,
+            ubo,
+          });
+        } else {
+          drawFractal = currentFractalModule.render(regl, adjustedParams, canvas);
+        }
+
+        if (drawFractal) {
+          // Render to framebuffer and cache
+          const width = canvas.width;
+          const height = canvas.height;
+          const framebuffer = createOptimizedFramebuffer(regl, width, height, webglCapabilities);
+
+          framebuffer.use(() => {
+            drawFractal();
+          });
+
+          // Cache the predicted frame
+          this.frameCache.cacheFrame(canvas, fractalType, adjustedParams, framebuffer);
+        }
+
+        // Mark prediction as completed
+        predictiveRenderingManager.markCompleted(viewKey);
+      } catch (error) {
+        if (import.meta.env?.DEV) {
+          console.warn('[Predictive Rendering] Failed to pre-render view:', error);
+        }
+        // Remove failed prediction
+        predictiveRenderingManager.pendingPredictions.delete(viewKey);
+      }
+
+      // Continue with next prediction
+      if (typeof requestIdleCallback !== 'undefined') {
+        requestIdleCallback(preRenderNext, { timeout: 100 });
+      } else {
+        setTimeout(preRenderNext, 16);
+      }
+    };
+
+    predictiveRenderingManager.isPreRendering = true;
+    if (typeof requestIdleCallback !== 'undefined') {
+      requestIdleCallback(preRenderNext, { timeout: 100 });
+    } else {
+      setTimeout(preRenderNext, 16);
     }
   }
 

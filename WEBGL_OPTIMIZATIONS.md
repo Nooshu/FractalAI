@@ -984,26 +984,61 @@ The manager is integrated into the rendering engine (`engine.js`) and automatica
 - Automatic adjustment without user intervention
 - Works with both regular and progressive rendering
 
-### 3. Predictive Rendering
+### 3. Predictive Rendering ✅ IMPLEMENTED
+
+**Status**: ✅ Implemented in `static/js/rendering/predictive-rendering.js` and integrated into `static/js/rendering/engine.js`
 
 **Current**: Render on demand  
 **Optimization**: Pre-render likely next frames
 
-```javascript
-// Predict next view based on user input
-const predictedViews = predictNextViews(currentView, userInput);
+**Implementation**:
 
-// Pre-render in background
-predictedViews.forEach((view) => {
-  renderToCache(view);
+The `PredictiveRenderingManager` class tracks user input patterns and pre-renders likely next views:
+
+```javascript
+// Create predictive rendering manager
+const predictiveRenderingManager = createPredictiveRenderingManager({
+  maxPredictions: 3,
+  velocityDecay: 0.9,
+  minVelocity: 0.01,
+  predictionDistance: 1.5,
+});
+
+// Update velocity based on parameter changes (called automatically)
+predictiveRenderingManager.updateVelocity(currentParams);
+
+// Predict next views based on current velocity
+const predictions = predictiveRenderingManager.predictNextViews(currentParams, fractalType);
+
+// Pre-render predictions in background (handled automatically)
+predictions.forEach((prediction) => {
+  predictiveRenderingManager.addPrediction(prediction);
 });
 ```
 
+The manager is integrated into the rendering engine (`engine.js`) and automatically:
+- Tracks velocity from parameter changes (panning, zooming)
+- Predicts likely next views based on movement patterns
+- Pre-renders predicted views in the background using `requestIdleCallback`
+- Caches pre-rendered frames for instant display when user navigates to them
+- Only predicts when there's significant movement (above minimum velocity threshold)
+
+**Configuration**:
+
+- Enabled via `CONFIG.features.predictiveRendering` (default: `false` - experimental)
+- Configurable prediction parameters:
+  - `maxPredictions`: Maximum number of predictions to maintain (default: 3)
+  - `velocityDecay`: Velocity decay factor per frame (default: 0.9)
+  - `minVelocity`: Minimum velocity to trigger predictions (default: 0.01)
+  - `predictionDistance`: Distance multiplier for predictions (default: 1.5)
+
 **Benefits**:
 
-- Instant view changes
-- Smoother navigation
+- Instant view changes when navigating to predicted views
+- Smoother navigation experience
 - Better perceived performance
+- Works seamlessly with frame cache
+- Background rendering doesn't interfere with main rendering
 
 ### 4. Multi-Resolution Rendering
 

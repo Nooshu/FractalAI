@@ -98,6 +98,8 @@ export const CONFIG = {
     occlusionQueries: true,
     // Adaptive quality based on frame time
     adaptiveQuality: true,
+    // Predictive rendering (pre-render likely next frames)
+    predictiveRendering: false, // Disabled by default (experimental)
   },
   performance: {
     // Target FPS for adaptive quality
