@@ -33,6 +33,7 @@ export class RenderingEngine {
     this.getFractalParamsUBO = getters.getFractalParamsUBO;
     this.getAdaptiveQualityManager = getters.getAdaptiveQualityManager;
     this.getPredictiveRenderingManager = getters.getPredictiveRenderingManager;
+    this.getMultiResolutionManager = getters.getMultiResolutionManager;
 
     // Setters for updating state
     this.setDrawFractal = setters.setDrawFractal;
@@ -292,6 +293,37 @@ export class RenderingEngine {
     // Update pixel ratio based on zoom level for better quality when zoomed in
     updatePixelRatio(canvas, params.zoom);
 
+    // Check if multi-resolution rendering is enabled
+    const multiResolutionManager = this.getMultiResolutionManager();
+    const useMultiResolution = multiResolutionManager && multiResolutionManager.isEnabled;
+
+    if (useMultiResolution) {
+      // Multi-resolution rendering: render low-res first, then high-res
+      this.renderFractalMultiResolution(regl, canvas, currentFractalModule, params);
+    } else {
+      // Standard single-resolution rendering
+      this.renderFractalStandard(regl, canvas, currentFractalModule, params);
+    }
+
+    this.setNeedsRender(false); // Render complete (renderFractal handles its own render call)
+    this.setIsDisplayingCached(false); // Not displaying cached frame
+
+    // Cache the rendered frame after a short delay to ensure it's fully rendered
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        this.cacheCurrentFrame();
+        setTimeout(() => {
+          hideLoadingBar();
+        }, 100);
+      });
+    });
+  }
+
+  /**
+   * Render fractal at standard (full) resolution
+   * @private
+   */
+  renderFractalStandard(regl, canvas, currentFractalModule, params) {
     // Clear the canvas before rendering
     regl.clear({
       color: [0, 0, 0, 1],
@@ -310,24 +342,19 @@ export class RenderingEngine {
     }
 
     // Call the fractal's render function to create draw command
-    // Pass UBO and capabilities if available for WebGL2 optimization
     const webglCapabilities = this.getWebGLCapabilities();
     const ubo = this.getFractalParamsUBO();
     
-    // Check if fractal render function supports UBO (new signature)
-    // For backward compatibility, try new signature first, then fall back to old
     let drawFractal;
     if (
       currentFractalModule.render.length >= 4 ||
       (webglCapabilities?.isWebGL2 && ubo)
     ) {
-      // New signature: render(regl, params, canvas, options)
       drawFractal = currentFractalModule.render(regl, adjustedParams, canvas, {
         webglCapabilities,
         ubo,
       });
     } else {
-      // Old signature: render(regl, params, canvas)
       drawFractal = currentFractalModule.render(regl, adjustedParams, canvas);
     }
     
@@ -350,7 +377,6 @@ export class RenderingEngine {
       adaptiveQualityManager.updateQuality();
     }
     
-    // Record frame time for performance instrumentation
     performanceInstrumentation.recordFrameTime(frameTime);
 
     // Update predictive rendering with current parameters
@@ -359,19 +385,236 @@ export class RenderingEngine {
       predictiveRenderingManager.updateVelocity(params);
       this.schedulePredictiveRendering();
     }
+  }
 
-    this.setNeedsRender(false); // Render complete (renderFractal handles its own render call)
-    this.setIsDisplayingCached(false); // Not displaying cached frame
+  /**
+   * Render fractal using multi-resolution approach
+   * Renders at low resolution first, then upgrades to high resolution
+   * @private
+   */
+  renderFractalMultiResolution(regl, canvas, currentFractalModule, params) {
+    const multiResolutionManager = this.getMultiResolutionManager();
+    const webglCapabilities = this.getWebGLCapabilities();
+    const adaptiveQualityManager = this.getAdaptiveQualityManager();
+    
+    // Apply adaptive quality adjustments if enabled
+    let adjustedParams = params;
+    if (adaptiveQualityManager) {
+      const adjustedIterations = adaptiveQualityManager.getAdjustedIterations(params.iterations);
+      adjustedParams = {
+        ...params,
+        iterations: adjustedIterations,
+      };
+    }
 
-    // Cache the rendered frame after a short delay to ensure it's fully rendered
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        this.cacheCurrentFrame();
-        setTimeout(() => {
-          hideLoadingBar();
-        }, 100);
+    const fullWidth = canvas.width;
+    const fullHeight = canvas.height;
+    const { width: lowWidth, height: lowHeight } = multiResolutionManager.getLowResDimensions(fullWidth, fullHeight);
+
+    // Cleanup previous framebuffers
+    multiResolutionManager.cleanup();
+
+    // Create low-resolution framebuffer
+    const lowResFramebuffer = createOptimizedFramebuffer(regl, lowWidth, lowHeight, webglCapabilities);
+    multiResolutionManager.lowResFramebuffer = lowResFramebuffer;
+
+    // Create temporary canvas for low-res rendering
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = lowWidth;
+    tempCanvas.height = lowHeight;
+
+    // Render to low-res framebuffer
+    const ubo = this.getFractalParamsUBO();
+    let drawFractal;
+    if (
+      currentFractalModule.render.length >= 4 ||
+      (webglCapabilities?.isWebGL2 && ubo)
+    ) {
+      drawFractal = currentFractalModule.render(regl, adjustedParams, tempCanvas, {
+        webglCapabilities,
+        ubo,
       });
+    } else {
+      drawFractal = currentFractalModule.render(regl, adjustedParams, tempCanvas);
+    }
+
+    // Render to low-res framebuffer
+    lowResFramebuffer.use(() => {
+      regl.clear({
+        color: [0, 0, 0, 1],
+        depth: 1,
+      });
+      if (drawFractal) {
+        drawFractal();
+      }
     });
+
+    // Display low-res frame immediately using displayCachedFrame approach
+    const texture = lowResFramebuffer.color[0] || lowResFramebuffer.color;
+    const lowResDrawCommand = regl({
+      vert: `
+        attribute vec2 position;
+        varying vec2 vUv;
+        void main() {
+          vUv = position * 0.5 + 0.5;
+          gl_Position = vec4(position, 0, 1);
+        }
+      `,
+      frag: `
+        precision highp float;
+        uniform sampler2D texture;
+        varying vec2 vUv;
+        void main() {
+          gl_FragColor = texture2D(texture, vUv);
+        }
+      `,
+      attributes: {
+        position: [-1, -1, 1, -1, -1, 1, 1, 1],
+      },
+      uniforms: {
+        texture: texture,
+      },
+      viewport: {
+        x: 0,
+        y: 0,
+        width: fullWidth,
+        height: fullHeight,
+      },
+      count: 4,
+      primitive: 'triangle strip',
+    });
+
+    // Clear canvas and display low-res
+    regl.clear({
+      color: [0, 0, 0, 1],
+      depth: 1,
+    });
+    lowResDrawCommand();
+    
+    multiResolutionManager.currentResolution = 'low';
+    multiResolutionManager.isRendering = true;
+
+    // Schedule high-res rendering in background
+    if (multiResolutionManager.enableHighRes) {
+      const scheduleHighRes = () => {
+        // Create high-res framebuffer
+        const highResFramebuffer = createOptimizedFramebuffer(regl, fullWidth, fullHeight, webglCapabilities);
+        multiResolutionManager.highResFramebuffer = highResFramebuffer;
+
+        // Recreate draw command for full resolution
+        let highResDrawFractal;
+        if (
+          currentFractalModule.render.length >= 4 ||
+          (webglCapabilities?.isWebGL2 && ubo)
+        ) {
+          highResDrawFractal = currentFractalModule.render(regl, adjustedParams, canvas, {
+            webglCapabilities,
+            ubo,
+          });
+        } else {
+          highResDrawFractal = currentFractalModule.render(regl, adjustedParams, canvas);
+        }
+
+        // Record frame time before rendering
+        const frameStartTime = performance.now();
+
+        // Render to high-res framebuffer
+        highResFramebuffer.use(() => {
+          regl.clear({
+            color: [0, 0, 0, 1],
+            depth: 1,
+          });
+          if (highResDrawFractal) {
+            highResDrawFractal();
+          }
+        });
+
+        // Record frame time and update adaptive quality
+        const frameEndTime = performance.now();
+        const frameTime = frameEndTime - frameStartTime;
+        
+        if (adaptiveQualityManager) {
+          adaptiveQualityManager.recordFrameTime(frameTime);
+          adaptiveQualityManager.updateQuality();
+        }
+        
+        performanceInstrumentation.recordFrameTime(frameTime);
+
+        // Display high-res frame
+        const highResTexture = highResFramebuffer.color[0] || highResFramebuffer.color;
+        const highResDrawCommand = regl({
+          vert: `
+            attribute vec2 position;
+            varying vec2 vUv;
+            void main() {
+              vUv = position * 0.5 + 0.5;
+              gl_Position = vec4(position, 0, 1);
+            }
+          `,
+          frag: `
+            precision highp float;
+            uniform sampler2D texture;
+            varying vec2 vUv;
+            void main() {
+              gl_FragColor = texture2D(texture, vUv);
+            }
+          `,
+          attributes: {
+            position: [-1, -1, 1, -1, -1, 1, 1, 1],
+          },
+          uniforms: {
+            texture: highResTexture,
+          },
+          viewport: {
+            x: 0,
+            y: 0,
+            width: fullWidth,
+            height: fullHeight,
+          },
+          count: 4,
+          primitive: 'triangle strip',
+        });
+
+        regl.clear({
+          color: [0, 0, 0, 1],
+          depth: 1,
+        });
+        highResDrawCommand();
+        
+        multiResolutionManager.currentResolution = 'high';
+        multiResolutionManager.isRendering = false;
+
+        // Store high-res draw command
+        this.setDrawFractal(highResDrawFractal);
+
+        // Update predictive rendering
+        const predictiveRenderingManager = this.getPredictiveRenderingManager();
+        if (predictiveRenderingManager) {
+          predictiveRenderingManager.updateVelocity(params);
+          this.schedulePredictiveRendering();
+        }
+
+        // Cleanup low-res framebuffer
+        if (lowResFramebuffer) {
+          try {
+            lowResFramebuffer.destroy();
+          } catch (error) {
+            // Ignore cleanup errors
+          }
+          multiResolutionManager.lowResFramebuffer = null;
+        }
+      };
+
+      // Schedule high-res rendering
+      if (typeof requestIdleCallback !== 'undefined') {
+        multiResolutionManager.highResRenderId = requestIdleCallback(scheduleHighRes, { timeout: multiResolutionManager.highResDelay });
+      } else {
+        multiResolutionManager.highResRenderId = setTimeout(scheduleHighRes, multiResolutionManager.highResDelay);
+      }
+    }
+
+    // Store draw command for low-res (will be replaced by high-res)
+    this.setDrawFractal(drawFractal);
   }
 
   /**

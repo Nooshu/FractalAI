@@ -159,6 +159,25 @@ async function initCanvasAndRenderer(appState) {
     });
   }
 
+  // Initialize multi-resolution rendering manager if feature enabled
+  if (CONFIG.features.multiResolution) {
+    import('../rendering/multi-resolution.js').then(({ createMultiResolutionManager }) => {
+      const multiResolutionManager = createMultiResolutionManager({
+        lowResScale: 0.5,
+        enableHighRes: true,
+        highResDelay: 100,
+      });
+      appState.setMultiResolutionManager(multiResolutionManager);
+      if (import.meta.env?.DEV) {
+        console.log(
+          '%c[Multi-Resolution Rendering]%c Enabled for fast initial display and progressive quality',
+          'color: #4CAF50; font-weight: bold;',
+          'color: inherit;'
+        );
+      }
+    });
+  }
+
   return { canvasElement, reglContext, updateSize };
 }
 

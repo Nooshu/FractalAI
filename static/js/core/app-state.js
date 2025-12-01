@@ -25,6 +25,7 @@ export class AppStateManager {
     this.occlusionQueryManager = null; // Occlusion query manager for tile-based rendering
     this.adaptiveQualityManager = null; // Adaptive quality manager
     this.predictiveRenderingManager = null; // Predictive rendering manager
+    this.multiResolutionManager = null; // Multi-resolution rendering manager
 
     // Fractal state
     this.currentFractalType = CONFIG.fractal.defaultType;
@@ -89,6 +90,9 @@ export class AppStateManager {
   }
   getPredictiveRenderingManager() {
     return this.predictiveRenderingManager;
+  }
+  getMultiResolutionManager() {
+    return this.multiResolutionManager;
   }
   getCurrentFractalType() {
     return this.currentFractalType;
@@ -204,6 +208,9 @@ export class AppStateManager {
   setPredictiveRenderingManager(value) {
     this.predictiveRenderingManager = value;
   }
+  setMultiResolutionManager(value) {
+    this.multiResolutionManager = value;
+  }
   setCurrentFractalType(value) {
     this.currentFractalType = value;
   }
@@ -248,6 +255,7 @@ export class AppStateManager {
       getOcclusionQueryManager: () => this.getOcclusionQueryManager(),
       getAdaptiveQualityManager: () => this.getAdaptiveQualityManager(),
       getPredictiveRenderingManager: () => this.getPredictiveRenderingManager(),
+      getMultiResolutionManager: () => this.getMultiResolutionManager(),
       getCanvas: () => this.getCanvas(),
       getUpdateRendererSize: () => this.getUpdateRendererSize(),
       getCurrentFractalType: () => this.getCurrentFractalType(),
@@ -278,6 +286,7 @@ export class AppStateManager {
       setOcclusionQueryManager: (value) => this.setOcclusionQueryManager(value),
       setAdaptiveQualityManager: (value) => this.setAdaptiveQualityManager(value),
       setPredictiveRenderingManager: (value) => this.setPredictiveRenderingManager(value),
+      setMultiResolutionManager: (value) => this.setMultiResolutionManager(value),
       setCurrentFractalType: (value) => this.setCurrentFractalType(value),
       setCurrentFractalModule: (value) => this.setCurrentFractalModule(value),
       setDrawFractal: (value) => this.setDrawFractal(value),
@@ -338,6 +347,9 @@ export class AppStateManager {
     }
     if (this.predictiveRenderingManager) {
       this.predictiveRenderingManager.clear();
+    }
+    if (this.multiResolutionManager) {
+      this.multiResolutionManager.cleanup();
     }
     if (this.workerPool) {
       this.workerPool.shutdown();

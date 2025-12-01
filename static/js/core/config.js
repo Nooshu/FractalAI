@@ -100,6 +100,8 @@ export const CONFIG = {
     adaptiveQuality: true,
     // Predictive rendering (pre-render likely next frames)
     predictiveRendering: false, // Disabled by default (experimental)
+    // Multi-resolution rendering (render low-res first, then high-res)
+    multiResolution: true, // Enabled by default
   },
   performance: {
     // Target FPS for adaptive quality

@@ -1040,28 +1040,51 @@ The manager is integrated into the rendering engine (`engine.js`) and automatica
 - Works seamlessly with frame cache
 - Background rendering doesn't interfere with main rendering
 
-### 4. Multi-Resolution Rendering
+### 4. Multi-Resolution Rendering ✅ IMPLEMENTED
+
+**Status**: ✅ Implemented in `static/js/rendering/multi-resolution.js` and integrated into `static/js/rendering/engine.js`
 
 **Current**: Single resolution  
 **Optimization**: Render at multiple resolutions simultaneously
 
-```javascript
-// Render low-res for preview, high-res in background
-const lowResFBO = renderAtResolution(width / 2, height / 2);
-displayFrame(lowResFBO);
+**Implementation**:
 
-// Continue with high-res in background
-requestIdleCallback(() => {
-  const highResFBO = renderAtResolution(width, height);
-  displayFrame(highResFBO);
+The `MultiResolutionManager` class manages rendering at multiple resolutions:
+
+```javascript
+// Create multi-resolution manager
+const multiResolutionManager = createMultiResolutionManager({
+  lowResScale: 0.5,      // Low-res scale factor (default: 0.5 = 50%)
+  enableHighRes: true,  // Enable high-res rendering (default: true)
+  highResDelay: 100,    // Delay before high-res render in ms (default: 100)
 });
+
+// Get low-res dimensions
+const { width, height } = multiResolutionManager.getLowResDimensions(fullWidth, fullHeight);
 ```
+
+The manager is integrated into the rendering engine (`engine.js`) and automatically:
+- Renders at low resolution (default: 50% scale) first for fast initial display
+- Displays low-res frame immediately
+- Schedules high-res rendering in background using `requestIdleCallback`
+- Replaces low-res display with high-res when ready
+- Cleans up low-res framebuffer after high-res is displayed
+
+**Configuration**:
+
+- Enabled via `CONFIG.features.multiResolution` (default: `true`)
+- Configurable parameters:
+  - `lowResScale`: Scale factor for low-res rendering (default: 0.5)
+  - `enableHighRes`: Whether to enable high-res rendering (default: true)
+  - `highResDelay`: Delay before starting high-res render in ms (default: 100)
 
 **Benefits**:
 
-- Fast initial display
-- Progressive quality improvement
-- Better perceived performance
+- Fast initial display (low-res renders quickly)
+- Progressive quality improvement (upgrades to high-res automatically)
+- Better perceived performance (user sees result immediately)
+- Seamless transition from low-res to high-res
+- Works with all other optimizations (adaptive quality, predictive rendering, etc.)
 
 ---
 
