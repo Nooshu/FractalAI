@@ -53,7 +53,9 @@ describe('framebuffer-utils', () => {
       expect(result).toBe(mockFramebuffer);
     });
 
-    it('should create framebuffer with half-float texture when extension is available', () => {
+    it('should create framebuffer with uint8 texture (half-float disabled)', () => {
+      // Note: Half-float support is currently disabled in the implementation
+      // The function always uses uint8 textures for reliability
       const mockHalfFloatExt = {};
       mockGl.getExtension.mockImplementation((name) => {
         if (name === 'EXT_color_buffer_half_float') return mockHalfFloatExt;
@@ -63,13 +65,11 @@ describe('framebuffer-utils', () => {
 
       const result = createOptimizedFramebuffer(mockRegl, 1024, 768);
 
-      expect(mockGl.getExtension).toHaveBeenCalledWith('EXT_color_buffer_half_float');
-      expect(mockGl.getExtension).toHaveBeenCalledWith('OES_texture_half_float_linear');
-
+      // Implementation always uses uint8, regardless of extensions
       expect(mockRegl.texture).toHaveBeenCalledWith({
         width: 1024,
         height: 768,
-        type: 'half float',
+        type: 'uint8',
         min: 'linear',
         mag: 'linear',
       });
@@ -77,7 +77,8 @@ describe('framebuffer-utils', () => {
       expect(result).toBe(mockFramebuffer);
     });
 
-    it('should use nearest filtering when half-float supported but linear filtering not available', () => {
+    it('should use uint8 texture even when half-float extensions are available', () => {
+      // Implementation always uses uint8 for reliability
       const mockHalfFloatExt = {};
       mockGl.getExtension.mockImplementation((name) => {
         if (name === 'EXT_color_buffer_half_float') return mockHalfFloatExt;
@@ -90,13 +91,14 @@ describe('framebuffer-utils', () => {
       expect(mockRegl.texture).toHaveBeenCalledWith({
         width: 800,
         height: 600,
-        type: 'half float',
-        min: 'nearest',
-        mag: 'nearest',
+        type: 'uint8',
+        min: 'linear',
+        mag: 'linear',
       });
     });
 
-    it('should use webglCapabilities when provided', () => {
+    it('should use uint8 texture even when webglCapabilities indicate half-float support', () => {
+      // Implementation always uses uint8 for reliability
       const webglCapabilities = {
         features: {
           halfFloat: {
@@ -108,19 +110,18 @@ describe('framebuffer-utils', () => {
 
       createOptimizedFramebuffer(mockRegl, 800, 600, webglCapabilities);
 
-      // Should not call getExtension when capabilities are provided
-      expect(mockGl.getExtension).not.toHaveBeenCalled();
-
+      // Implementation ignores capabilities and always uses uint8
       expect(mockRegl.texture).toHaveBeenCalledWith({
         width: 800,
         height: 600,
-        type: 'half float',
+        type: 'uint8',
         min: 'linear',
         mag: 'linear',
       });
     });
 
-    it('should use nearest filtering when capabilities indicate no linear support', () => {
+    it('should use uint8 texture when capabilities indicate no linear support', () => {
+      // Implementation always uses uint8 for reliability
       const webglCapabilities = {
         features: {
           halfFloat: {
@@ -135,9 +136,9 @@ describe('framebuffer-utils', () => {
       expect(mockRegl.texture).toHaveBeenCalledWith({
         width: 800,
         height: 600,
-        type: 'half float',
-        min: 'nearest',
-        mag: 'nearest',
+        type: 'uint8',
+        min: 'linear',
+        mag: 'linear',
       });
     });
 
@@ -163,6 +164,7 @@ describe('framebuffer-utils', () => {
     });
 
     it('should handle missing webglCapabilities features gracefully', () => {
+      // Implementation always uses uint8, regardless of capabilities
       const webglCapabilities = {
         features: {},
       };
@@ -171,8 +173,7 @@ describe('framebuffer-utils', () => {
 
       createOptimizedFramebuffer(mockRegl, 800, 600, webglCapabilities);
 
-      // Should fallback to extension checking
-      expect(mockGl.getExtension).toHaveBeenCalled();
+      // Implementation doesn't check extensions, always uses uint8
       expect(mockRegl.texture).toHaveBeenCalledWith({
         width: 800,
         height: 600,
@@ -183,11 +184,12 @@ describe('framebuffer-utils', () => {
     });
 
     it('should handle null webglCapabilities', () => {
+      // Implementation always uses uint8, regardless of capabilities
       mockGl.getExtension.mockReturnValue(null);
 
       createOptimizedFramebuffer(mockRegl, 800, 600, null);
 
-      expect(mockGl.getExtension).toHaveBeenCalled();
+      // Implementation doesn't check extensions, always uses uint8
       expect(mockRegl.texture).toHaveBeenCalledWith({
         width: 800,
         height: 600,

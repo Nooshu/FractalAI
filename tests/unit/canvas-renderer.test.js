@@ -35,19 +35,19 @@ describe('initCanvasRenderer', () => {
     container.getBoundingClientRect = () => ({ width: 800, height: 600 });
   });
 
-  it('throws if canvas is not found', () => {
+  it('throws if canvas is not found', async () => {
     document.body.innerHTML = '';
-    expect(() => initCanvasRenderer('missing-id')).toThrow();
+    await expect(initCanvasRenderer('missing-id')).rejects.toThrow();
   });
 
-  it('initializes canvas and returns updateRendererSize', () => {
+  it('initializes canvas and returns updateRendererSize', async () => {
     // Mock console.log to suppress WebGL capabilities logging during tests
     const consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
     const getZoom = vi.fn(() => 2);
     const onResize = vi.fn();
 
-    const { canvas: returnedCanvas, updateRendererSize } = initCanvasRenderer('fractal-canvas', {
+    const { canvas: returnedCanvas, updateRendererSize } = await initCanvasRenderer('fractal-canvas', {
       getZoom,
       onResize,
     });

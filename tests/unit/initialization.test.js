@@ -49,15 +49,16 @@ vi.mock('../../static/js/fractals/loader.js', () => ({
   loadFractal: vi.fn(() => Promise.resolve()),
 }));
 
-vi.mock('../../static/js/rendering/engine.js', () => ({
-  RenderingEngine: vi.fn().mockImplementation(() => ({
-    renderFractal: vi.fn(),
-    renderFractalProgressive: vi.fn(),
-    scheduleRender: vi.fn(),
-    startAnimation: vi.fn(),
-    cancelProgressiveRender: vi.fn(),
-  })),
-}));
+vi.mock('../../static/js/rendering/engine.js', () => {
+  const RenderingEngineClass = vi.fn().mockImplementation(function() {
+    this.renderFractal = vi.fn();
+    this.renderFractalProgressive = vi.fn();
+    this.scheduleRender = vi.fn();
+    this.startAnimation = vi.fn();
+    this.cancelProgressiveRender = vi.fn();
+  });
+  return { RenderingEngine: RenderingEngineClass };
+});
 
 vi.mock('../../static/js/input/controls.js', () => ({
   setupInputControls: vi.fn(),
@@ -97,6 +98,10 @@ vi.mock('../../static/js/core/app-state.js', () => ({
       setDrawFractal: vi.fn(),
       setCachedDrawCommand: vi.fn(),
       setIsDisplayingCached: vi.fn(),
+      setMultiResolutionManager: vi.fn(),
+      setAdaptiveQualityManager: vi.fn(),
+      setPredictiveRenderingManager: vi.fn(),
+      setOcclusionQueryManager: vi.fn(),
     })),
     setCanvas: vi.fn(),
     setRegl: vi.fn(),
@@ -105,6 +110,10 @@ vi.mock('../../static/js/core/app-state.js', () => ({
     setRenderingEngine: vi.fn(),
     setFractalParamsUBO: vi.fn(),
     setCurrentFractalType: vi.fn(),
+    setMultiResolutionManager: vi.fn(),
+    setAdaptiveQualityManager: vi.fn(),
+    setPredictiveRenderingManager: vi.fn(),
+    setOcclusionQueryManager: vi.fn(),
     getFrameCache: vi.fn(() => ({
       trim: vi.fn(),
       removeOldEntries: vi.fn(),
@@ -135,19 +144,35 @@ vi.mock('../../static/js/core/config.js', () => ({
       enabled: false,
       minCores: 2,
     },
+    features: {
+      sharedArrayBuffer: false,
+      wasmSimd: false,
+      webgpu: false,
+      computeShaders: false,
+      offscreenCanvas: true,
+      webCodecs: false,
+      occlusionQueries: true,
+      adaptiveQuality: true,
+      predictiveRendering: false,
+      multiResolution: true,
+    },
+    performance: {
+      targetFPS: 60,
+      maxFrameTime: 16.67,
+      qualitySteps: [0.5, 0.75, 1.0, 1.5, 2.0],
+    },
   },
 }));
 
 vi.mock('../../static/js/performance/long-task-detector.js', () => {
   const mockStart = vi.fn();
   const mockStop = vi.fn();
+  const LongTaskDetectorClass = vi.fn().mockImplementation(function() {
+    this.start = mockStart;
+    this.stop = mockStop;
+  });
   return {
-    LongTaskDetector: class {
-      constructor() {
-        this.start = mockStart;
-        this.stop = mockStop;
-      }
-    },
+    LongTaskDetector: LongTaskDetectorClass,
   };
 });
 
@@ -167,6 +192,31 @@ vi.mock('../../static/js/core/idle-cleanup.js', () => ({
 
 vi.mock('../../static/js/rendering/uniform-buffer.js', () => ({
   createFractalParamsUBO: vi.fn(() => ({})),
+}));
+
+vi.mock('../../static/js/rendering/occlusion-query.js', () => ({
+  createOcclusionQueryManager: vi.fn(() => ({})),
+}));
+
+vi.mock('../../static/js/rendering/adaptive-quality.js', () => ({
+  createAdaptiveQualityManager: vi.fn(() => ({
+    adjustQuality: vi.fn(),
+    recordFrameTime: vi.fn(),
+  })),
+}));
+
+vi.mock('../../static/js/rendering/predictive-rendering.js', () => ({
+  createPredictiveRenderingManager: vi.fn(() => ({
+    predictNextFrame: vi.fn(),
+    updateVelocity: vi.fn(),
+  })),
+}));
+
+vi.mock('../../static/js/rendering/multi-resolution.js', () => ({
+  createMultiResolutionManager: vi.fn(() => ({
+    renderLowRes: vi.fn(),
+    renderHighRes: vi.fn(),
+  })),
 }));
 
 describe('initialization module', () => {
@@ -202,6 +252,9 @@ describe('initialization module', () => {
 
     // Mock import.meta.env
     global.import = { meta: { env: { DEV: false } } };
+
+    // Mock WebGL2RenderingContext for occlusion query tests
+    global.WebGL2RenderingContext = class WebGL2RenderingContext {};
 
     // Setup DOM elements
     document.body.innerHTML = `
