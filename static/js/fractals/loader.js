@@ -21,6 +21,10 @@ const FRACTAL_FAMILIES = {
   tricorn: 'mandelbrot-family',
   nebulabrot: 'mandelbrot-family',
   buddhabrot: 'mandelbrot-family',
+  buffalo: 'mandelbrot-family',
+  popcorn: 'mandelbrot-family',
+  'spider-set': 'mandelbrot-family',
+  magnet: 'mandelbrot-family',
 
   // Julia Sets
   julia: 'julia-family',
@@ -87,39 +91,43 @@ const FRACTAL_FAMILIES = {
   'domino-substitution': 'tiling-family',
   'pinwheel-tiling': 'tiling-family',
   'snowflake-tiling': 'tiling-family',
+  'amman-tiling': 'tiling-family',
+  'penrose-substitution': 'tiling-family',
+  rauzy: 'tiling-family',
+  'chair-tiling': 'tiling-family',
+
+  // Attractor Family
+  'lorenz-attractor': 'attractor-family',
+  'rossler-attractor': 'attractor-family',
+  lyapunov: 'attractor-family',
+
+  // Noise Family
+  'perlin-noise': 'noise-family',
+  'simplex-noise': 'noise-family',
+  'fractional-brownian-motion': 'noise-family',
+  'random-midpoint-displacement': 'noise-family',
+
+  // Physics Family
+  'diffusion-limited-aggregation': 'physics-family',
+  'percolation-cluster': 'physics-family',
+  'levy-flights': 'physics-family',
+
+  // Geometric Family
+  'apollonian-gasket': 'geometric-family',
+  'carpenter-square': 'geometric-family',
+  cross: 'geometric-family',
+  'box-variants': 'geometric-family',
+  'minkowski-sausage': 'geometric-family',
+  cesaro: 'geometric-family',
+  'recursive-circle-removal': 'geometric-family',
+  rose: 'geometric-family',
+  'menger-sponge': 'geometric-family',
 
   // Other Fractals
-  'amman-tiling': 'other-family',
-  'apollonian-gasket': 'other-family',
-  'carpenter-square': 'other-family',
-  'chair-tiling': 'other-family',
   'h-tree': 'other-family',
   'h-tree-generalized': 'other-family',
   vicsek: 'other-family',
-  cross: 'other-family',
-  'diffusion-limited-aggregation': 'other-family',
-  'fractional-brownian-motion': 'other-family',
   'fractal-flame': 'other-family',
-  'levy-flights': 'other-family',
-  'recursive-circle-removal': 'other-family',
-  rose: 'other-family',
-  'box-variants': 'other-family',
-  'minkowski-sausage': 'other-family',
-  'penrose-substitution': 'other-family',
-  'perlin-noise': 'other-family',
-  'percolation-cluster': 'other-family',
-  buffalo: 'other-family',
-  popcorn: 'other-family',
-  'random-midpoint-displacement': 'other-family',
-  rauzy: 'other-family',
-  'simplex-noise': 'other-family',
-  'spider-set': 'other-family',
-  magnet: 'other-family',
-  cesaro: 'other-family',
-  lyapunov: 'other-family',
-  'lorenz-attractor': 'other-family',
-  'rossler-attractor': 'other-family',
-  'menger-sponge': 'other-family',
 };
 
 /**

@@ -47,6 +47,11 @@ export default defineConfig({
             'burning-ship',
             'tricorn',
             'nebulabrot',
+            'buddhabrot',
+            'buffalo',
+            'popcorn',
+            'spider-set',
+            'magnet',
           ]);
           if (mandelbrotFamily) return mandelbrotFamily;
 
@@ -108,7 +113,12 @@ export default defineConfig({
           if (rootFindingFamily) return rootFindingFamily;
 
           // Plant Family
-          const plantFamily = isFamilyFractal('plant-family', ['plant', 'barnsley-fern']);
+          const plantFamily = isFamilyFractal('plant-family', [
+            'plant',
+            'barnsley-fern',
+            'fractal-tree',
+            'pythagoras-tree',
+          ]);
           if (plantFamily) return plantFamily;
 
           // Koch Family
@@ -135,38 +145,58 @@ export default defineConfig({
             'domino-substitution',
             'pinwheel-tiling',
             'snowflake-tiling',
+            'amman-tiling',
+            'penrose-substitution',
+            'rauzy',
+            'chair-tiling',
           ]);
           if (tilingFamily) return tilingFamily;
 
-          // Other Family
-          const otherFamily = isFamilyFractal('other-family', [
-            'amman-tiling',
+          // Attractor Family
+          const attractorFamily = isFamilyFractal('attractor-family', [
+            'lorenz-attractor',
+            'rossler-attractor',
+            'lyapunov',
+          ]);
+          if (attractorFamily) return attractorFamily;
+
+          // Noise Family
+          const noiseFamily = isFamilyFractal('noise-family', [
+            'perlin-noise',
+            'simplex-noise',
+            'fractional-brownian-motion',
+            'random-midpoint-displacement',
+          ]);
+          if (noiseFamily) return noiseFamily;
+
+          // Physics Family
+          const physicsFamily = isFamilyFractal('physics-family', [
+            'diffusion-limited-aggregation',
+            'percolation-cluster',
+            'levy-flights',
+          ]);
+          if (physicsFamily) return physicsFamily;
+
+          // Geometric Family
+          const geometricFamily = isFamilyFractal('geometric-family', [
             'apollonian-gasket',
             'carpenter-square',
-            'chair-tiling',
+            'cross',
+            'box-variants',
+            'minkowski-sausage',
+            'cesaro',
+            'recursive-circle-removal',
+            'rose',
+            'menger-sponge',
+          ]);
+          if (geometricFamily) return geometricFamily;
+
+          // Other Family
+          const otherFamily = isFamilyFractal('other-family', [
             'h-tree',
             'h-tree-generalized',
             'vicsek',
-            'cross',
-            'diffusion-limited-aggregation',
-            'fractional-brownian-motion',
             'fractal-flame',
-            'levy-flights',
-            'recursive-circle-removal',
-            'rose',
-            'box-variants',
-            'minkowski-sausage',
-            'penrose-substitution',
-            'perlin-noise',
-            'percolation-cluster',
-            'buffalo',
-            'popcorn',
-            'random-midpoint-displacement',
-            'rauzy',
-            'simplex-noise',
-            'spider-set',
-            'magnet',
-            'cesaro',
           ]);
           if (otherFamily) return otherFamily;
         },

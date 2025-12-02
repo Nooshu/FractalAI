@@ -13,6 +13,10 @@ import * as burningShip from '../burning-ship.js';
 import * as tricorn from '../tricorn.js';
 import * as nebulabrot from '../nebulabrot.js';
 import * as buddhabrot from '../buddhabrot.js';
+import * as buffalo from '../buffalo.js';
+import * as popcorn from '../popcorn.js';
+import * as spiderSet from '../spider-set.js';
+import * as magnet from '../magnet.js';
 
 // Export as a mapping object for easy lookup
 export const fractals = {
@@ -25,4 +29,8 @@ export const fractals = {
   tricorn: tricorn,
   nebulabrot: nebulabrot,
   buddhabrot: buddhabrot,
+  buffalo: buffalo,
+  popcorn: popcorn,
+  'spider-set': spiderSet,
+  magnet: magnet,
 };
