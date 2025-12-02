@@ -118,6 +118,7 @@ export function detectWebGLCapabilities(gl) {
       webgl2: !!extensions['EXT_disjoint_timer_query_webgl2'],
       webgl1: !!extensions['EXT_disjoint_timer_query'],
     },
+    computeShader: !!extensions['WEBGL_compute_shader'],
     standardDerivatives: !!extensions['OES_standard_derivatives'],
     shaderTextureLod: !!extensions['EXT_shader_texture_lod'],
     loseContext: !!extensions['WEBGL_lose_context'],

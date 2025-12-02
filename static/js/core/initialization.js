@@ -198,6 +198,32 @@ async function initCanvasAndRenderer(appState) {
     });
   }
 
+  // Initialize WebGL compute shader renderer if extension is available and feature is enabled
+  if (
+    webglCapabilities &&
+    reglContext &&
+    !webgpuRenderer &&
+    CONFIG.features.computeShaders &&
+    webglCapabilities.features?.computeShader
+  ) {
+    import('../rendering/webgl-compute-renderer.js').then(({ createWebGLComputeRenderer }) => {
+      const gl = reglContext._gl;
+      if (gl) {
+        const computeRenderer = createWebGLComputeRenderer(gl, webglCapabilities);
+        if (computeRenderer && computeRenderer.isComputeShaderAvailable()) {
+          appState.setWebGLComputeRenderer(computeRenderer);
+          if (import.meta.env?.DEV) {
+            console.log(
+              '%c[WebGL Compute]%c Compute shader rendering enabled',
+              'color: #4CAF50; font-weight: bold;',
+              'color: inherit;'
+            );
+          }
+        }
+      }
+    });
+  }
+
   // Initialize context loss handler if using WebGL
   if (canvasElement && reglContext && !webgpuRenderer) {
     import('../rendering/context-loss-handler.js').then(({ createContextLossHandler }) => {
@@ -312,6 +338,18 @@ async function reinitializeWebGLResources(appState, canvas) {
           const gpuTimer = createGPUTimer(gl, webglCapabilities);
           if (gpuTimer && gpuTimer.isGPUTimingAvailable()) {
             appState.setGPUTimer(gpuTimer);
+          }
+        }
+
+        // Reinitialize compute shader renderer if enabled
+        if (
+          CONFIG.features.computeShaders &&
+          webglCapabilities.features?.computeShader
+        ) {
+          const { createWebGLComputeRenderer } = await import('../rendering/webgl-compute-renderer.js');
+          const computeRenderer = createWebGLComputeRenderer(gl, webglCapabilities);
+          if (computeRenderer && computeRenderer.isComputeShaderAvailable()) {
+            appState.setWebGLComputeRenderer(computeRenderer);
           }
         }
       }
