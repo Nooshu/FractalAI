@@ -10,7 +10,7 @@ export const APP_VERSION = __APP_VERSION__;
 
 /**
  * Get the full version string for display
- * @returns {string} Version string (e.g., "3.5.0")
+ * @returns {string} Version string (e.g., "4.0.0")
  */
 export function getVersion() {
   return APP_VERSION;
@@ -18,7 +18,7 @@ export function getVersion() {
 
 /**
  * Get the version string with "FractalAI v" prefix
- * @returns {string} Version string (e.g., "FractalAI v3.5.0")
+ * @returns {string} Version string (e.g., "FractalAI v4.0.0")
  */
 export function getVersionString() {
   return `FractalAI v${APP_VERSION}`;
