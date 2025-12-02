@@ -499,6 +499,7 @@ function setupUIControlsModule(
       updateCoordinateDisplay: updateCoordinateDisplay,
       renderFractalProgressive: () => renderingEngine.renderFractalProgressive(),
       renderFractal: () => renderingEngine.renderFractal(),
+      getRenderingEngine: () => renderingEngine,
       cancelWorkerTasks: () => appState.cancelWorkerTasks(),
       resetPredictiveRendering: () => {
         const predictiveRenderingManager = appState.getPredictiveRenderingManager();

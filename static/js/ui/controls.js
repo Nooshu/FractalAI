@@ -975,6 +975,96 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
 
   screenshotBtn.addEventListener('click', captureScreenshot);
 
+  // Video export functionality (only if feature flag is enabled)
+  const videoExportBtn = document.getElementById('video-export');
+  if (videoExportBtn) {
+    // Hide button by default, show only if feature flag is enabled
+    if (CONFIG.features.webCodecs) {
+      videoExportBtn.style.display = '';
+      
+      const exportVideo = async () => {
+
+      // Check if video recording is available (WebCodecs or MediaRecorder)
+      const { isMediaRecorderAvailable, isWebCodecsAvailable } = await import('../export/video-encoder.js');
+      if (!isMediaRecorderAvailable() && !isWebCodecsAvailable()) {
+        alert('Video export is not available in this browser.\n\nRequires MediaRecorder API (Chrome 47+, Firefox 25+, Safari 14.1+, Edge 79+) or WebCodecs API (Chrome 94+, Edge 94+, Firefox 130+).');
+        return;
+      }
+
+      // Prompt for video duration
+      const durationInput = prompt('Enter video duration in seconds (1-30):', '5');
+      if (!durationInput) {
+        return; // User cancelled
+      }
+
+      const duration = parseFloat(durationInput);
+      if (isNaN(duration) || duration < 1 || duration > 30) {
+        alert('Please enter a valid duration between 1 and 30 seconds.');
+        return;
+      }
+
+      const canvas = getCanvas();
+      const currentFractalType = getCurrentFractalType();
+      const renderingEngine = callbacks.getRenderingEngine?.();
+
+      if (!canvas || !renderingEngine) {
+        alert('Canvas or rendering engine not available.');
+        return;
+      }
+
+      // Disable button and show progress
+      const originalHTML = videoExportBtn.innerHTML;
+      videoExportBtn.innerHTML = '<span>Recording...</span>';
+      videoExportBtn.disabled = true;
+
+      try {
+        const { recordFractalVideo, downloadVideo } = await import('../export/video-encoder.js');
+        const params = getParams();
+
+        // Record video
+        const blob = await recordFractalVideo(canvas, {
+          duration: duration,
+          fps: 60,
+          onFrame: async (canvas, frameNumber) => {
+            // Re-render fractal for each frame
+            // In a real animation, you might want to change parameters over time
+            renderingEngine.renderFractal();
+            
+            // Wait for render to complete
+            await new Promise((resolve) => {
+              requestAnimationFrame(() => {
+                requestAnimationFrame(resolve);
+              });
+            });
+          },
+          onProgress: (frameCount, totalFrames) => {
+            const progress = Math.round((frameCount / totalFrames) * 100);
+            videoExportBtn.innerHTML = `<span>Recording... ${progress}%</span>`;
+          },
+        });
+
+        // Download video
+        const filename = `fractal-${currentFractalType}-${Date.now()}.webm`;
+        downloadVideo(blob, filename);
+
+        // Re-enable button
+        videoExportBtn.innerHTML = originalHTML;
+        videoExportBtn.disabled = false;
+      } catch (error) {
+        console.error('Error exporting video:', error);
+        alert(`Failed to export video: ${error.message}`);
+        videoExportBtn.innerHTML = originalHTML;
+        videoExportBtn.disabled = false;
+      }
+    };
+
+      videoExportBtn.addEventListener('click', exportVideo);
+    } else {
+      // Feature flag is disabled - hide button
+      videoExportBtn.style.display = 'none';
+    }
+  }
+
   // Fullscreen API functionality
   const canvasContainer = document.querySelector('.canvas-container');
 
