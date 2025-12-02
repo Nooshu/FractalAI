@@ -77,6 +77,14 @@ vi.mock('../../static/js/core/app-state.js', () => ({
   appState: {
     getParams: vi.fn(() => ({ zoom: 1, offset: { x: 0, y: 0 } })),
     getCurrentFractalType: vi.fn(() => 'mandelbrot'),
+    getRenderingEngine: vi.fn(() => null),
+    getFrameCache: vi.fn(() => ({
+      trim: vi.fn(),
+      removeOldEntries: vi.fn(),
+      clear: vi.fn(),
+    })),
+    getGPUTimer: vi.fn(() => null),
+    getOcclusionQueryManager: vi.fn(() => null),
     getGetters: vi.fn(() => ({
       getParams: vi.fn(() => ({ zoom: 1, offset: { x: 0, y: 0 } })),
       getCurrentFractalType: vi.fn(() => 'mandelbrot'),
@@ -114,6 +122,11 @@ vi.mock('../../static/js/core/app-state.js', () => ({
     setAdaptiveQualityManager: vi.fn(),
     setPredictiveRenderingManager: vi.fn(),
     setOcclusionQueryManager: vi.fn(),
+    setContextLossHandler: vi.fn(),
+    setGPUTimer: vi.fn(),
+    setWebGLComputeRenderer: vi.fn(),
+    setOffscreenRenderer: vi.fn(),
+    setWebGPURenderer: vi.fn(),
     getFrameCache: vi.fn(() => ({
       trim: vi.fn(),
       removeOldEntries: vi.fn(),
