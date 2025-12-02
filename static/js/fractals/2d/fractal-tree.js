@@ -230,7 +230,7 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'forest',
+    colorScheme: 'cosmic',
   },
   initialPosition: {
     zoom: 2,

@@ -68,6 +68,7 @@ const FRACTAL_FAMILIES = {
   plant: 'plant-family',
   'barnsley-fern': 'plant-family',
   'fractal-tree': 'plant-family',
+  'pythagoras-tree': 'plant-family',
 
   // Koch Family
   'fractal-islands': 'koch-family',
@@ -116,7 +117,6 @@ const FRACTAL_FAMILIES = {
   magnet: 'other-family',
   cesaro: 'other-family',
   lyapunov: 'other-family',
-  'pythagoras-tree': 'other-family',
   'lorenz-attractor': 'other-family',
   'rossler-attractor': 'other-family',
   'menger-sponge': 'other-family',

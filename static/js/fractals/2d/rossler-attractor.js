@@ -101,11 +101,11 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'rainbow',
+    colorScheme: 'galaxy',
   },
   initialPosition: {
     zoom: 0.5,
-    offset: { x: 0, y: 0 },
+    offset: { x: 0.0253, y: 0.2417 },
   },
   interestingPoints: [
     { x: 0, y: 0, zoom: 0.5 }, // Classic view

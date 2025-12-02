@@ -123,11 +123,11 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'classic',
+    colorScheme: 'emerald',
   },
   initialPosition: {
-    zoom: 1,
-    offset: { x: 0, y: 0 },
+    zoom: 19.16,
+    offset: { x: -0.6697, y: 0.169 },
   },
   interestingPoints: [
     { x: 0, y: 0, zoom: 1 }, // Center view

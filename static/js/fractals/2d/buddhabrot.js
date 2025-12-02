@@ -100,11 +100,11 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'cosmic',
+    colorScheme: 'vintage',
   },
   initialPosition: {
-    zoom: 1,
-    offset: { x: 0, y: 0 },
+    zoom: 4,
+    offset: { x: -0.7566, y: 0.4428 },
   },
   interestingPoints: [
     { x: -0.75, y: 0.1, zoom: 50 }, // Seahorse valley

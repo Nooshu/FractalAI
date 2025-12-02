@@ -32,7 +32,6 @@ import * as spiderSet from '../spider-set.js';
 import * as magnet from '../magnet.js';
 import * as cesaro from '../cesaro.js';
 import * as lyapunov from '../lyapunov.js';
-import * as pythagorasTree from '../pythagoras-tree.js';
 import * as lorenzAttractor from '../lorenz-attractor.js';
 import * as rosslerAttractor from '../rossler-attractor.js';
 import * as mengerSponge from '../menger-sponge.js';
@@ -67,7 +66,6 @@ export const fractals = {
   magnet: magnet,
   cesaro: cesaro,
   lyapunov: lyapunov,
-  'pythagoras-tree': pythagorasTree,
   'lorenz-attractor': lorenzAttractor,
   'rossler-attractor': rosslerAttractor,
   'menger-sponge': mengerSponge,
