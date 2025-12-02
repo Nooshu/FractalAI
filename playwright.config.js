@@ -17,7 +17,7 @@ export default defineConfig({
 
   // Run tests in parallel
   fullyParallel: true, // Enable parallel execution
-  workers: 4, // Use 4 workers for parallel tests
+  workers: 8, // Use 4 workers for parallel tests
 
   // Retry failed tests
   retries: process.env.CI ? 2 : 0,
