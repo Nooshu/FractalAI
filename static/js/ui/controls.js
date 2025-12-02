@@ -87,6 +87,13 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
   const updateFractalBtn = document.getElementById('update-fractal');
   const autoRenderCheckbox = document.getElementById('auto-render');
 
+  // Check URL parameter for auto-render setting
+  const urlParams = new URLSearchParams(window.location.search);
+  const autoFromURL = urlParams.get('auto') === 'true';
+  if (autoFromURL && autoRenderCheckbox) {
+    autoRenderCheckbox.checked = true;
+  }
+
   // Random view counter (reset when fractal type changes)
   let currentInterestingPointIndex = 0;
   const fullscreenRandomNumberEl = document.getElementById('fullscreen-random-number');
@@ -98,7 +105,8 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
   };
 
   // Auto-render functionality
-  let autoRenderEnabled = false;
+  // Initialize from checkbox state (which may have been set from URL parameter)
+  let autoRenderEnabled = autoRenderCheckbox ? autoRenderCheckbox.checked : false;
 
   // Throttled render function for slider updates with batching
   // Updates UI immediately but batches render calls to reduce unnecessary renders
@@ -137,6 +145,12 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
       renderFractalProgressive();
     }
   });
+
+  // If auto-render was enabled from URL parameter, update button state and trigger initial render
+  if (autoFromURL && autoRenderEnabled) {
+    updateFractalBtn.disabled = true;
+    // Don't trigger render here - it will be triggered when the fractal loads
+  }
 
   // Initialize Julia controls state based on current fractal type
   const params = getParams();
