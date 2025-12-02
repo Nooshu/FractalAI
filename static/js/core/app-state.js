@@ -27,6 +27,7 @@ export class AppStateManager {
     this.predictiveRenderingManager = null; // Predictive rendering manager
     this.multiResolutionManager = null; // Multi-resolution rendering manager
     this.gpuTimer = null; // GPU timer for accurate GPU timing
+    this.contextLossHandler = null; // Context loss handler
 
     // Fractal state
     this.currentFractalType = CONFIG.fractal.defaultType;
@@ -97,6 +98,9 @@ export class AppStateManager {
   }
   getGPUTimer() {
     return this.gpuTimer;
+  }
+  getContextLossHandler() {
+    return this.contextLossHandler;
   }
   getCurrentFractalType() {
     return this.currentFractalType;
@@ -217,6 +221,9 @@ export class AppStateManager {
   }
   setGPUTimer(value) {
     this.gpuTimer = value;
+  }
+  setContextLossHandler(value) {
+    this.contextLossHandler = value;
   }
   setCurrentFractalType(value) {
     this.currentFractalType = value;
@@ -345,6 +352,36 @@ export class AppStateManager {
   }
 
   /**
+   * Save application state for context loss recovery
+   * @returns {Object} Saved state object
+   */
+  saveState() {
+    return {
+      currentFractalType: this.currentFractalType,
+      params: { ...this.params },
+      targetIterations: this.targetIterations,
+    };
+  }
+
+  /**
+   * Restore application state after context recovery
+   * @param {Object} savedState - Saved state object
+   */
+  restoreState(savedState) {
+    if (!savedState) return;
+
+    if (savedState.currentFractalType) {
+      this.currentFractalType = savedState.currentFractalType;
+    }
+    if (savedState.params) {
+      this.params = { ...savedState.params };
+    }
+    if (savedState.targetIterations !== undefined) {
+      this.targetIterations = savedState.targetIterations;
+    }
+  }
+
+  /**
    * Cleanup resources
    */
   cleanup() {
@@ -362,6 +399,9 @@ export class AppStateManager {
     }
     if (this.gpuTimer) {
       this.gpuTimer.dispose();
+    }
+    if (this.contextLossHandler) {
+      this.contextLossHandler.dispose();
     }
     if (this.workerPool) {
       this.workerPool.shutdown();

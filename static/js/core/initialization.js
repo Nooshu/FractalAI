@@ -198,7 +198,127 @@ async function initCanvasAndRenderer(appState) {
     });
   }
 
+  // Initialize context loss handler if using WebGL
+  if (canvasElement && reglContext && !webgpuRenderer) {
+    import('../rendering/context-loss-handler.js').then(({ createContextLossHandler }) => {
+      const contextLossHandler = createContextLossHandler(canvasElement, {
+        saveState: () => appState.saveState(),
+        restoreState: (savedState) => appState.restoreState(savedState),
+        onContextLost: async (savedState) => {
+          // Clear WebGL-dependent resources
+          appState.setRegl(null);
+          appState.setWebGLCapabilities(null);
+          appState.setFractalParamsUBO(null);
+          appState.setDrawFractal(null);
+          if (appState.getGPUTimer()) {
+            appState.getGPUTimer().dispose();
+            appState.setGPUTimer(null);
+          }
+          if (appState.getOcclusionQueryManager()) {
+            appState.setOcclusionQueryManager(null);
+          }
+          // Clear frame cache since framebuffers are now invalid
+          const frameCache = appState.getFrameCache();
+          if (frameCache) {
+            frameCache.clear();
+          }
+        },
+        onContextRestored: async (savedState) => {
+          // Reinitialize WebGL resources
+          await reinitializeWebGLResources(appState, canvasElement);
+          
+          // Reload current fractal to recreate draw function with new regl context
+          const currentFractalType = appState.getCurrentFractalType();
+          if (currentFractalType) {
+            try {
+              await loadFractal(currentFractalType);
+            } catch (error) {
+              console.error('[Context Restore] Failed to reload fractal:', error);
+            }
+          }
+          
+          // Trigger re-render after recovery
+          const renderingEngine = appState.getRenderingEngine();
+          if (renderingEngine) {
+            renderingEngine.renderFractal();
+          }
+        },
+      });
+      appState.setContextLossHandler(contextLossHandler);
+      if (import.meta.env?.DEV) {
+        console.log(
+          '%c[Context Loss Handler]%c Enabled for graceful context loss recovery',
+          'color: #4CAF50; font-weight: bold;',
+          'color: inherit;'
+        );
+      }
+    });
+  }
+
   return { canvasElement, reglContext, updateSize };
+}
+
+/**
+ * Reinitialize WebGL resources after context restoration
+ * @param {Object} appState - Application state instance
+ * @param {HTMLCanvasElement} canvas - Canvas element
+ */
+async function reinitializeWebGLResources(appState, canvas) {
+  const { CONFIG } = await import('./config.js');
+  
+  // Reinitialize regl
+  const createRegl = (await import('regl')).default;
+  const regl = createRegl({
+    canvas,
+    attributes: {
+      antialias: true,
+      powerPreference: 'high-performance',
+      stencil: false,
+      depth: false,
+      alpha: false,
+      webglVersion: 2,
+    },
+  });
+  appState.setRegl(regl);
+
+  // Reinitialize WebGL capabilities
+  if (regl) {
+    try {
+      const gl = regl._gl;
+      if (gl) {
+        const { detectWebGLCapabilities } = await import('../rendering/webgl-capabilities.js');
+        const webglCapabilities = detectWebGLCapabilities(gl);
+        appState.setWebGLCapabilities(webglCapabilities);
+
+        // Reinitialize UBO if WebGL2
+        if (webglCapabilities?.isWebGL2) {
+          const { createFractalParamsUBO } = await import('../rendering/uniform-buffer.js');
+          const ubo = createFractalParamsUBO(regl, webglCapabilities);
+          appState.setFractalParamsUBO(ubo);
+        }
+
+        // Reinitialize occlusion query manager if enabled
+        if (CONFIG.features.occlusionQueries && webglCapabilities?.isWebGL2) {
+          const { createOcclusionQueryManager } = await import('../rendering/occlusion-query.js');
+          const occlusionQueryManager = createOcclusionQueryManager(gl);
+          if (occlusionQueryManager) {
+            appState.setOcclusionQueryManager(occlusionQueryManager);
+          }
+        }
+
+        // Reinitialize GPU timer if enabled
+        if (CONFIG.features.timerQuery !== false && webglCapabilities.features?.timerQuery) {
+          const { createGPUTimer } = await import('../rendering/gpu-timer.js');
+          const gpuTimer = createGPUTimer(gl, webglCapabilities);
+          if (gpuTimer && gpuTimer.isGPUTimingAvailable()) {
+            appState.setGPUTimer(gpuTimer);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('[Context Restore] Failed to reinitialize WebGL resources:', error);
+    }
+  }
 }
 
 /**
