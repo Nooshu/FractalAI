@@ -29,6 +29,7 @@ export class AppStateManager {
     this.gpuTimer = null; // GPU timer for accurate GPU timing
     this.contextLossHandler = null; // Context loss handler
     this.webglComputeRenderer = null; // WebGL compute shader renderer
+    this.offscreenRenderer = null; // OffscreenCanvas renderer for non-blocking rendering
 
     // Fractal state
     this.currentFractalType = CONFIG.fractal.defaultType;
@@ -105,6 +106,9 @@ export class AppStateManager {
   }
   getWebGLComputeRenderer() {
     return this.webglComputeRenderer;
+  }
+  getOffscreenRenderer() {
+    return this.offscreenRenderer;
   }
   getCurrentFractalType() {
     return this.currentFractalType;
@@ -232,6 +236,9 @@ export class AppStateManager {
   setWebGLComputeRenderer(value) {
     this.webglComputeRenderer = value;
   }
+  setOffscreenRenderer(value) {
+    this.offscreenRenderer = value;
+  }
   setCurrentFractalType(value) {
     this.currentFractalType = value;
   }
@@ -279,6 +286,7 @@ export class AppStateManager {
       getMultiResolutionManager: () => this.getMultiResolutionManager(),
       getGPUTimer: () => this.getGPUTimer(),
       getWebGLComputeRenderer: () => this.getWebGLComputeRenderer(),
+      getOffscreenRenderer: () => this.getOffscreenRenderer(),
       getCanvas: () => this.getCanvas(),
       getUpdateRendererSize: () => this.getUpdateRendererSize(),
       getCurrentFractalType: () => this.getCurrentFractalType(),
@@ -413,6 +421,9 @@ export class AppStateManager {
     }
     if (this.webglComputeRenderer) {
       this.webglComputeRenderer.dispose();
+    }
+    if (this.offscreenRenderer) {
+      this.offscreenRenderer.dispose();
     }
     if (this.workerPool) {
       this.workerPool.shutdown();

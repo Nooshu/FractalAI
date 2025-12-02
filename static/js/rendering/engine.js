@@ -35,6 +35,7 @@ export class RenderingEngine {
     this.getPredictiveRenderingManager = getters.getPredictiveRenderingManager;
     this.getMultiResolutionManager = getters.getMultiResolutionManager;
     this.getGPUTimer = getters.getGPUTimer;
+    this.getOffscreenRenderer = getters.getOffscreenRenderer;
 
     // Setters for updating state
     this.setDrawFractal = setters.setDrawFractal;
@@ -345,6 +346,83 @@ export class RenderingEngine {
    * @private
    */
   renderFractalStandard(regl, canvas, currentFractalModule, params) {
+    // Try to use offscreen rendering if available (non-blocking)
+    const offscreenRenderer = this.getOffscreenRenderer();
+    if (offscreenRenderer && offscreenRenderer.isOffscreenAvailable()) {
+      this.renderFractalOffscreen(offscreenRenderer, currentFractalModule, params);
+      return;
+    }
+
+    // Fallback to regular rendering on main thread
+    this.renderFractalMainThread(regl, canvas, currentFractalModule, params);
+  }
+
+  /**
+   * Render fractal using OffscreenCanvas (non-blocking)
+   * @private
+   */
+  async renderFractalOffscreen(offscreenRenderer, currentFractalModule, params) {
+    // Apply adaptive quality adjustments if enabled
+    const adaptiveQualityManager = this.getAdaptiveQualityManager();
+    let adjustedParams = params;
+    if (adaptiveQualityManager) {
+      const adjustedIterations = adaptiveQualityManager.getAdjustedIterations(params.iterations);
+      adjustedParams = {
+        ...params,
+        iterations: adjustedIterations,
+      };
+    }
+
+    // Record frame time before rendering
+    const frameStartTime = performance.now();
+
+    // Prepare options for offscreen rendering
+    const offscreenCapabilities = offscreenRenderer.getOffscreenCapabilities();
+    const offscreenUBO = offscreenRenderer.offscreenUBO;
+    const options = {
+      webglCapabilities: offscreenCapabilities,
+      ubo: offscreenUBO,
+    };
+
+    try {
+      // Render to offscreen canvas and transfer to main canvas
+      await offscreenRenderer.renderAndDisplay(currentFractalModule, adjustedParams, options);
+
+      // Record frame time and update adaptive quality
+      const frameEndTime = performance.now();
+      const frameTime = frameEndTime - frameStartTime;
+
+      if (adaptiveQualityManager) {
+        adaptiveQualityManager.recordFrameTime(frameTime);
+        adaptiveQualityManager.updateQuality();
+      }
+
+      performanceInstrumentation.recordFrameTime(frameTime, null);
+
+      // Update predictive rendering with current parameters
+      const predictiveRenderingManager = this.getPredictiveRenderingManager();
+      if (predictiveRenderingManager) {
+        predictiveRenderingManager.updateVelocity(params);
+        this.schedulePredictiveRendering();
+      }
+    } catch (error) {
+      if (error.message !== 'Render cancelled') {
+        console.error('[OffscreenCanvas] Render failed, falling back to main thread:', error);
+        // Fallback to main thread rendering
+        const regl = this.getRegl();
+        const canvas = this.getCanvas();
+        if (regl && canvas) {
+          this.renderFractalMainThread(regl, canvas, currentFractalModule, params);
+        }
+      }
+    }
+  }
+
+  /**
+   * Render fractal on main thread (fallback)
+   * @private
+   */
+  renderFractalMainThread(regl, canvas, currentFractalModule, params) {
     // Clear the canvas before rendering
     regl.clear({
       color: [0, 0, 0, 1],

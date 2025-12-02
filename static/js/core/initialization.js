@@ -224,6 +224,42 @@ async function initCanvasAndRenderer(appState) {
     });
   }
 
+  // Initialize OffscreenCanvas renderer if feature is enabled
+  if (canvasElement && CONFIG.features.offscreenCanvas && typeof OffscreenCanvas !== 'undefined') {
+    import('../rendering/offscreen-renderer.js').then(({ createOffscreenRenderer }) => {
+      const offscreenRenderer = createOffscreenRenderer(canvasElement);
+      if (offscreenRenderer && offscreenRenderer.isOffscreenAvailable()) {
+        appState.setOffscreenRenderer(offscreenRenderer);
+
+        // Initialize UBO on offscreen context if WebGL2
+        const offscreenRegl = offscreenRenderer.getOffscreenRegl();
+        const offscreenCapabilities = offscreenRenderer.getOffscreenCapabilities();
+        if (offscreenCapabilities?.isWebGL2 && offscreenRegl) {
+          import('../rendering/uniform-buffer.js').then(({ createFractalParamsUBO }) => {
+            const offscreenUBO = createFractalParamsUBO(offscreenRegl, offscreenCapabilities);
+            if (offscreenUBO && import.meta.env?.DEV) {
+              console.log(
+                '%c[OffscreenCanvas UBO]%c Uniform Buffer Objects enabled for offscreen rendering',
+                'color: #4CAF50; font-weight: bold;',
+                'color: inherit;'
+              );
+            }
+            // Store offscreen UBO in renderer for later use
+            offscreenRenderer.offscreenUBO = offscreenUBO;
+          });
+        }
+
+        if (import.meta.env?.DEV) {
+          console.log(
+            '%c[OffscreenCanvas]%c Non-blocking rendering enabled',
+            'color: #4CAF50; font-weight: bold;',
+            'color: inherit;'
+          );
+        }
+      }
+    });
+  }
+
   // Initialize context loss handler if using WebGL
   if (canvasElement && reglContext && !webgpuRenderer) {
     import('../rendering/context-loss-handler.js').then(({ createContextLossHandler }) => {
@@ -350,6 +386,24 @@ async function reinitializeWebGLResources(appState, canvas) {
           const computeRenderer = createWebGLComputeRenderer(gl, webglCapabilities);
           if (computeRenderer && computeRenderer.isComputeShaderAvailable()) {
             appState.setWebGLComputeRenderer(computeRenderer);
+          }
+        }
+
+        // Reinitialize offscreen renderer if enabled
+        if (CONFIG.features.offscreenCanvas && typeof OffscreenCanvas !== 'undefined') {
+          const { createOffscreenRenderer } = await import('../rendering/offscreen-renderer.js');
+          const offscreenRenderer = createOffscreenRenderer(canvas);
+          if (offscreenRenderer && offscreenRenderer.isOffscreenAvailable()) {
+            appState.setOffscreenRenderer(offscreenRenderer);
+
+            // Initialize UBO on offscreen context if WebGL2
+            const offscreenRegl = offscreenRenderer.getOffscreenRegl();
+            const offscreenCapabilities = offscreenRenderer.getOffscreenCapabilities();
+            if (offscreenCapabilities?.isWebGL2 && offscreenRegl) {
+              const { createFractalParamsUBO } = await import('../rendering/uniform-buffer.js');
+              const offscreenUBO = createFractalParamsUBO(offscreenRegl, offscreenCapabilities);
+              offscreenRenderer.offscreenUBO = offscreenUBO;
+            }
           }
         }
       }
