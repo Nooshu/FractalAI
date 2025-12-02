@@ -418,35 +418,40 @@ export class RenderingEngine {
     const lowResFramebuffer = createOptimizedFramebuffer(regl, lowWidth, lowHeight, webglCapabilities);
     multiResolutionManager.lowResFramebuffer = lowResFramebuffer;
 
-    // Create temporary canvas for low-res rendering
-    const tempCanvas = document.createElement('canvas');
-    tempCanvas.width = lowWidth;
-    tempCanvas.height = lowHeight;
-
     // Render to low-res framebuffer
+    // IMPORTANT: Pass the actual canvas (not a temp canvas) so uResolution uniform uses correct dimensions
+    // We'll override the viewport when rendering to the low-res framebuffer
     const ubo = this.getFractalParamsUBO();
     let drawFractal;
     if (
       currentFractalModule.render.length >= 4 ||
       (webglCapabilities?.isWebGL2 && ubo)
     ) {
-      drawFractal = currentFractalModule.render(regl, adjustedParams, tempCanvas, {
+      drawFractal = currentFractalModule.render(regl, adjustedParams, canvas, {
         webglCapabilities,
         ubo,
       });
     } else {
-      drawFractal = currentFractalModule.render(regl, adjustedParams, tempCanvas);
+      drawFractal = currentFractalModule.render(regl, adjustedParams, canvas);
     }
 
     // Render to low-res framebuffer
+    // Pass actual canvas so uResolution uniform is correct (full resolution for coordinate calculations)
+    // The viewport needs to match the framebuffer size (low-res) for correct rendering
     lowResFramebuffer.use(() => {
       regl.clear({
         color: [0, 0, 0, 1],
         depth: 1,
       });
+      // Override viewport to match framebuffer size (the draw command's viewport is for full-res)
+      const gl = regl._gl;
+      const previousViewport = gl.getParameter(gl.VIEWPORT);
+      gl.viewport(0, 0, lowWidth, lowHeight);
       if (drawFractal) {
         drawFractal();
       }
+      // Restore previous viewport (though framebuffer.use() will handle cleanup)
+      gl.viewport(...previousViewport);
     });
 
     // Display low-res frame immediately using displayCachedFrame approach
