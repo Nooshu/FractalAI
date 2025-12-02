@@ -34,6 +34,7 @@ export class RenderingEngine {
     this.getAdaptiveQualityManager = getters.getAdaptiveQualityManager;
     this.getPredictiveRenderingManager = getters.getPredictiveRenderingManager;
     this.getMultiResolutionManager = getters.getMultiResolutionManager;
+    this.getGPUTimer = getters.getGPUTimer;
 
     // Setters for updating state
     this.setDrawFractal = setters.setDrawFractal;
@@ -195,14 +196,34 @@ export class RenderingEngine {
         
         // Record frame time before rendering
         const frameStartTime = performance.now();
+        const gpuTimer = this.getGPUTimer();
+        const gpuQueryId = gpuTimer ? gpuTimer.beginQuery('progressiveRender') : -1;
         
         if (updatedDrawFractal) {
           updatedDrawFractal();
         }
         
+        // End GPU query if started
+        if (gpuTimer && gpuQueryId !== -1) {
+          gpuTimer.endQuery(gpuQueryId);
+        }
+        
         // Record frame time and update adaptive quality
         const frameEndTime = performance.now();
-        const frameTime = frameEndTime - frameStartTime;
+        const cpuFrameTime = frameEndTime - frameStartTime;
+        
+        // Try to get GPU timing (may not be available immediately)
+        let gpuFrameTime = null;
+        if (gpuTimer && gpuQueryId !== -1) {
+          const results = gpuTimer.pollQueries();
+          const result = results.find(r => r.queryId === gpuQueryId);
+          if (result && result.gpuTime !== null) {
+            gpuFrameTime = result.gpuTime;
+          }
+        }
+        
+        // Use GPU time if available, otherwise fall back to CPU time
+        const frameTime = gpuFrameTime !== null ? gpuFrameTime : cpuFrameTime;
         
         if (adaptiveQualityManager) {
           adaptiveQualityManager.recordFrameTime(frameTime);
@@ -215,7 +236,7 @@ export class RenderingEngine {
           }
         }
         
-        performanceInstrumentation.recordFrameTime(frameTime);
+        performanceInstrumentation.recordFrameTime(frameTime, gpuFrameTime);
         this.setNeedsRender(false); // Progressive rendering handles its own renders
 
         // Schedule next step using requestAnimationFrame for smooth rendering aligned with display refresh
@@ -362,22 +383,42 @@ export class RenderingEngine {
 
     // Record frame time before rendering
     const frameStartTime = performance.now();
+    const gpuTimer = this.getGPUTimer();
+    const gpuQueryId = gpuTimer ? gpuTimer.beginQuery('renderFractal') : -1;
 
     // Execute the draw command
     if (drawFractal) {
       drawFractal();
     }
 
+    // End GPU query if started
+    if (gpuTimer && gpuQueryId !== -1) {
+      gpuTimer.endQuery(gpuQueryId);
+    }
+
     // Record frame time and update adaptive quality
     const frameEndTime = performance.now();
-    const frameTime = frameEndTime - frameStartTime;
+    const cpuFrameTime = frameEndTime - frameStartTime;
+    
+    // Try to get GPU timing (may not be available immediately)
+    let gpuFrameTime = null;
+    if (gpuTimer && gpuQueryId !== -1) {
+      const results = gpuTimer.pollQueries();
+      const result = results.find(r => r.queryId === gpuQueryId);
+      if (result && result.gpuTime !== null) {
+        gpuFrameTime = result.gpuTime;
+      }
+    }
+    
+    // Use GPU time if available, otherwise fall back to CPU time
+    const frameTime = gpuFrameTime !== null ? gpuFrameTime : cpuFrameTime;
     
     if (adaptiveQualityManager) {
       adaptiveQualityManager.recordFrameTime(frameTime);
       adaptiveQualityManager.updateQuality();
     }
     
-    performanceInstrumentation.recordFrameTime(frameTime);
+    performanceInstrumentation.recordFrameTime(frameTime, gpuFrameTime);
 
     // Update predictive rendering with current parameters
     const predictiveRenderingManager = this.getPredictiveRenderingManager();
@@ -522,6 +563,8 @@ export class RenderingEngine {
 
         // Record frame time before rendering
         const frameStartTime = performance.now();
+        const gpuTimer = this.getGPUTimer();
+        const gpuQueryId = gpuTimer ? gpuTimer.beginQuery('multiResolutionHighRes') : -1;
 
         // Render to high-res framebuffer
         highResFramebuffer.use(() => {
@@ -534,16 +577,34 @@ export class RenderingEngine {
           }
         });
 
+        // End GPU query if started
+        if (gpuTimer && gpuQueryId !== -1) {
+          gpuTimer.endQuery(gpuQueryId);
+        }
+
         // Record frame time and update adaptive quality
         const frameEndTime = performance.now();
-        const frameTime = frameEndTime - frameStartTime;
+        const cpuFrameTime = frameEndTime - frameStartTime;
+        
+        // Try to get GPU timing (may not be available immediately)
+        let gpuFrameTime = null;
+        if (gpuTimer && gpuQueryId !== -1) {
+          const results = gpuTimer.pollQueries();
+          const result = results.find(r => r.queryId === gpuQueryId);
+          if (result && result.gpuTime !== null) {
+            gpuFrameTime = result.gpuTime;
+          }
+        }
+        
+        // Use GPU time if available, otherwise fall back to CPU time
+        const frameTime = gpuFrameTime !== null ? gpuFrameTime : cpuFrameTime;
         
         if (adaptiveQualityManager) {
           adaptiveQualityManager.recordFrameTime(frameTime);
           adaptiveQualityManager.updateQuality();
         }
         
-        performanceInstrumentation.recordFrameTime(frameTime);
+        performanceInstrumentation.recordFrameTime(frameTime, gpuFrameTime);
 
         // Display high-res frame
         const highResTexture = highResFramebuffer.color[0] || highResFramebuffer.color;

@@ -61,13 +61,24 @@ export class PerformanceInstrumentation {
 
   /**
    * Record frame time
-   * @param {number} frameTime - Frame time in milliseconds
+   * @param {number} frameTime - Frame time in milliseconds (GPU time if available, otherwise CPU time)
+   * @param {number|null} gpuTime - GPU time in milliseconds (optional, for tracking)
    */
-  recordFrameTime(frameTime) {
+  recordFrameTime(frameTime, gpuTime = null) {
     if (!this.enabled) return;
     this.metrics.frameTime.push(frameTime);
     if (this.metrics.frameTime.length > this.maxFrameTimeSamples) {
       this.metrics.frameTime.shift();
+    }
+    // Track GPU timing separately if available
+    if (gpuTime !== null && gpuTime !== undefined) {
+      if (!this.metrics.gpuFrameTime) {
+        this.metrics.gpuFrameTime = [];
+      }
+      this.metrics.gpuFrameTime.push(gpuTime);
+      if (this.metrics.gpuFrameTime.length > this.maxFrameTimeSamples) {
+        this.metrics.gpuFrameTime.shift();
+      }
     }
   }
 
@@ -96,6 +107,10 @@ export class PerformanceInstrumentation {
         this.metrics.frameTime.length > 0
           ? this.metrics.frameTime.reduce((a, b) => a + b, 0) / this.metrics.frameTime.length
           : 0,
+      avgGPUFrameTime:
+        this.metrics.gpuFrameTime && this.metrics.gpuFrameTime.length > 0
+          ? this.metrics.gpuFrameTime.reduce((a, b) => a + b, 0) / this.metrics.gpuFrameTime.length
+          : null,
     };
   }
 
@@ -110,6 +125,7 @@ export class PerformanceInstrumentation {
       workerTasks: 0,
       workerTaskTime: 0,
       frameTime: [],
+      gpuFrameTime: [],
       invalidationCount: 0,
     };
   }

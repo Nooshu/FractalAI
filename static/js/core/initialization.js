@@ -178,6 +178,26 @@ async function initCanvasAndRenderer(appState) {
     });
   }
 
+  // Initialize GPU timer if WebGL and timer query extension is available
+  if (webglCapabilities && reglContext && CONFIG.features.timerQuery !== false) {
+    import('../rendering/gpu-timer.js').then(({ createGPUTimer }) => {
+      const gl = reglContext._gl;
+      if (gl && webglCapabilities.features?.timerQuery) {
+        const gpuTimer = createGPUTimer(gl, webglCapabilities);
+        if (gpuTimer && gpuTimer.isGPUTimingAvailable()) {
+          appState.setGPUTimer(gpuTimer);
+          if (import.meta.env?.DEV) {
+            console.log(
+              '%c[GPU Timer]%c Enabled for accurate GPU timing',
+              'color: #4CAF50; font-weight: bold;',
+              'color: inherit;'
+            );
+          }
+        }
+      }
+    });
+  }
+
   return { canvasElement, reglContext, updateSize };
 }
 

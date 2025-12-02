@@ -102,6 +102,8 @@ export const CONFIG = {
     predictiveRendering: false, // Disabled by default (experimental)
     // Multi-resolution rendering (render low-res first, then high-res)
     multiResolution: true, // Enabled by default
+    // GPU timer queries for accurate GPU timing (EXT_disjoint_timer_query)
+    timerQuery: true, // Enabled by default if extension is available
   },
   performance: {
     // Target FPS for adaptive quality

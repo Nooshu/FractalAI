@@ -26,6 +26,7 @@ export class AppStateManager {
     this.adaptiveQualityManager = null; // Adaptive quality manager
     this.predictiveRenderingManager = null; // Predictive rendering manager
     this.multiResolutionManager = null; // Multi-resolution rendering manager
+    this.gpuTimer = null; // GPU timer for accurate GPU timing
 
     // Fractal state
     this.currentFractalType = CONFIG.fractal.defaultType;
@@ -93,6 +94,9 @@ export class AppStateManager {
   }
   getMultiResolutionManager() {
     return this.multiResolutionManager;
+  }
+  getGPUTimer() {
+    return this.gpuTimer;
   }
   getCurrentFractalType() {
     return this.currentFractalType;
@@ -211,6 +215,9 @@ export class AppStateManager {
   setMultiResolutionManager(value) {
     this.multiResolutionManager = value;
   }
+  setGPUTimer(value) {
+    this.gpuTimer = value;
+  }
   setCurrentFractalType(value) {
     this.currentFractalType = value;
   }
@@ -256,6 +263,7 @@ export class AppStateManager {
       getAdaptiveQualityManager: () => this.getAdaptiveQualityManager(),
       getPredictiveRenderingManager: () => this.getPredictiveRenderingManager(),
       getMultiResolutionManager: () => this.getMultiResolutionManager(),
+      getGPUTimer: () => this.getGPUTimer(),
       getCanvas: () => this.getCanvas(),
       getUpdateRendererSize: () => this.getUpdateRendererSize(),
       getCurrentFractalType: () => this.getCurrentFractalType(),
@@ -287,6 +295,7 @@ export class AppStateManager {
       setAdaptiveQualityManager: (value) => this.setAdaptiveQualityManager(value),
       setPredictiveRenderingManager: (value) => this.setPredictiveRenderingManager(value),
       setMultiResolutionManager: (value) => this.setMultiResolutionManager(value),
+      setGPUTimer: (value) => this.setGPUTimer(value),
       setCurrentFractalType: (value) => this.setCurrentFractalType(value),
       setCurrentFractalModule: (value) => this.setCurrentFractalModule(value),
       setDrawFractal: (value) => this.setDrawFractal(value),
@@ -350,6 +359,9 @@ export class AppStateManager {
     }
     if (this.multiResolutionManager) {
       this.multiResolutionManager.cleanup();
+    }
+    if (this.gpuTimer) {
+      this.gpuTimer.dispose();
     }
     if (this.workerPool) {
       this.workerPool.shutdown();
