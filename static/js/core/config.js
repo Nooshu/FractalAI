@@ -68,9 +68,6 @@ export const CONFIG = {
   fractal: {
     defaultType: 'mandelbrot',
   },
-  performance: {
-    resizeThrottleMs: 100,
-  },
   workers: {
     // Feature flag: enable worker-based optimizations if browser supports them
     enabled: true, // Will be overridden by feature detection
@@ -106,6 +103,7 @@ export const CONFIG = {
     timerQuery: true, // Enabled by default if extension is available
   },
   performance: {
+    resizeThrottleMs: 100,
     // Target FPS for adaptive quality
     targetFPS: 60,
     // Maximum frame time in milliseconds (1000 / targetFPS)

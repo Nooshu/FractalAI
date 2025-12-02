@@ -55,7 +55,7 @@ describe('Fractal Family Modules', () => {
         );
 
         // Check that each fractal in the family has required exports
-        for (const [fractalName, fractalModule] of Object.entries(module.fractals)) {
+        for (const [_fractalName, fractalModule] of Object.entries(module.fractals)) {
           expect(fractalModule).toHaveProperty('render');
           expect(typeof fractalModule.render).toBe('function');
           expect(fractalModule).toHaveProperty('is2D');

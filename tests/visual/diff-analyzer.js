@@ -10,7 +10,7 @@ import { dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
-// eslint-disable-next-line no-unused-vars
+ 
 const __dirname = dirname(__filename);
 
 /**

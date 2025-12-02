@@ -220,7 +220,7 @@ export class WebGPURenderer {
    * @param {Object} params - Fractal parameters
    * @param {Object} paletteTexture - Palette texture
    */
-  async render(params, paletteTexture) {
+  async render(params, _paletteTexture) {
     const width = this.canvas.width;
     const height = this.canvas.height;
 

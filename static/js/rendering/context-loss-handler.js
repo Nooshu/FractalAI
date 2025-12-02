@@ -77,7 +77,7 @@ export class ContextLossHandler {
    * Handle context restored event
    * @param {Event} event - Context restored event
    */
-  handleContextRestored(event) {
+  handleContextRestored(_event) {
     this.isContextLost = false;
 
     if (import.meta.env?.DEV) {

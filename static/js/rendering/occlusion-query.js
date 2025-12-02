@@ -154,7 +154,7 @@ export class OcclusionQueryManager {
       try {
         this.gl.endQuery(this.gl.ANY_SAMPLES_PASSED);
         this.gl.deleteQuery(query);
-      } catch (error) {
+      } catch (_error) {
         // Ignore errors during cleanup
       }
     }
@@ -164,7 +164,7 @@ export class OcclusionQueryManager {
     for (const query of this.queries.values()) {
       try {
         this.gl.deleteQuery(query);
-      } catch (error) {
+      } catch (_error) {
         // Ignore errors during cleanup
       }
     }

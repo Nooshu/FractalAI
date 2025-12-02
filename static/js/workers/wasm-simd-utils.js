@@ -45,7 +45,7 @@ export function supportsWasmSimd() {
       // Actual validation would require compiling a WASM module
       return true;
     }
-  } catch (error) {
+  } catch (_error) {
     return false;
   }
 
@@ -70,7 +70,7 @@ export function canUseWasmSimd() {
  * @param {string} wasmPath - Path to WASM file (optional, for future use)
  * @returns {Promise<WebAssembly.Module|null>} WASM module or null if not available
  */
-export async function loadWasmModule(wasmPath = null) {
+export async function loadWasmModule(_wasmPath = null) {
   if (!canUseWasmSimd()) {
     return null;
   }
@@ -117,7 +117,7 @@ export async function instantiateWasmModule(module, imports = {}) {
  * @param {string} fractalType - Fractal type
  * @returns {boolean} True if computation succeeded
  */
-export function computeTileWasm(wasmInstance, buffer, width, height, xOffset, yOffset, params, fractalType = 'mandelbrot') {
+export function computeTileWasm(wasmInstance, buffer, width, height, xOffset, yOffset, params, _fractalType = 'mandelbrot') {
   // If WASM instance is available, use it
   if (wasmInstance && wasmInstance.exports && wasmInstance.exports.compute_tile) {
     try {
@@ -187,7 +187,6 @@ export function computeTileWasm(wasmInstance, buffer, width, height, xOffset, yO
 export function computeTileOptimized(buffer, width, height, xOffset, yOffset, params, fractalType, computePointFn) {
   const aspect = width / height;
   const scale = 4.0 / (params.zoom || 1.0);
-  const maxIter = params.iterations || 100;
   const offsetX = params.offset?.x || 0.0;
   const offsetY = params.offset?.y || 0.0;
   const xScale = params.xScale || 1.0;

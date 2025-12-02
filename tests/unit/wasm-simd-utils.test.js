@@ -277,7 +277,7 @@ describe('wasm-simd-utils', () => {
       // Mock Float32Array constructor to return our test buffer
       const originalFloat32Array = global.Float32Array;
       global.Float32Array = class Float32Array {
-        constructor(buffer, offset, length) {
+        constructor(buffer, offset, _length) {
           if (offset !== undefined) {
             // This is the WASM memory view
             return wasmBuffer;
@@ -286,7 +286,7 @@ describe('wasm-simd-utils', () => {
         }
       };
 
-      const result = computeTileWasm(
+      computeTileWasm(
         wasmInstance,
         buffer,
         10,
@@ -328,7 +328,7 @@ describe('wasm-simd-utils', () => {
   describe('computeTileOptimized', () => {
     it('should compute tile using optimized JavaScript', () => {
       const buffer = new Float32Array(100);
-      const computePointFn = vi.fn((cx, cy) => 0.5);
+      const computePointFn = vi.fn((_cx, _cy) => 0.5);
 
       computeTileOptimized(
         buffer,
@@ -353,7 +353,7 @@ describe('wasm-simd-utils', () => {
 
     it('should handle different parameters', () => {
       const buffer = new Float32Array(200);
-      const computePointFn = vi.fn((cx, cy) => 0.75);
+      const computePointFn = vi.fn((_cx, _cy) => 0.75);
 
       computeTileOptimized(
         buffer,

@@ -16,7 +16,7 @@ export class OffscreenRenderer {
    * @param {HTMLCanvasElement} mainCanvas - Main canvas element
    * @param {Object} options - Configuration options
    */
-  constructor(mainCanvas, options = {}) {
+  constructor(mainCanvas, _options = {}) {
     this.mainCanvas = mainCanvas;
     this.offscreenCanvas = null;
     this.offscreenRegl = null;

@@ -127,10 +127,6 @@ vi.mock('../../static/js/core/app-state.js', () => ({
     setWebGLComputeRenderer: vi.fn(),
     setOffscreenRenderer: vi.fn(),
     setWebGPURenderer: vi.fn(),
-    getFrameCache: vi.fn(() => ({
-      trim: vi.fn(),
-      removeOldEntries: vi.fn(),
-    })),
     cancelWorkerTasks: vi.fn(),
     cleanup: vi.fn(),
   },
@@ -295,9 +291,9 @@ describe('initialization module', () => {
     const { initFPSTracker } = await import('../../static/js/performance/fps-tracker.js');
     const { initCanvasRenderer } = await import('../../static/js/rendering/canvas-renderer.js');
     const { appState } = await import('../../static/js/core/app-state.js');
-    const { LongTaskDetector } = await import('../../static/js/performance/long-task-detector.js');
+    const { LongTaskDetector: _LongTaskDetector } = await import('../../static/js/performance/long-task-detector.js');
     const { idleCleanupManager } = await import('../../static/js/core/idle-cleanup.js');
-    const { RenderingEngine } = await import('../../static/js/rendering/engine.js');
+    const { RenderingEngine: _RenderingEngine } = await import('../../static/js/rendering/engine.js');
     const { setupUIControls } = await import('../../static/js/ui/controls.js');
     const { setupInputControls } = await import('../../static/js/input/controls.js');
     const { initUILayout } = await import('../../static/js/ui/panels.js');
@@ -439,7 +435,6 @@ describe('initialization module', () => {
   it('should handle loadFractalFromURL returning true', async () => {
     const { loadFractalFromURL } = await import('../../static/js/sharing/state-manager.js');
     const { startFPSTracking } = await import('../../static/js/performance/fps-tracker.js');
-    const { RenderingEngine } = await import('../../static/js/rendering/engine.js');
     const { loadFractal } = await import('../../static/js/fractals/loader.js');
 
     loadFractalFromURL.mockResolvedValue(true);
@@ -501,8 +496,6 @@ describe('initialization module', () => {
   });
 
   it('should handle deferred initialization', async () => {
-    const { setupShareFractal } = await import('../../static/js/sharing/state-manager.js');
-
     await init();
 
     // Wait for requestIdleCallback
@@ -533,7 +526,7 @@ describe('initialization module', () => {
     const { appState } = await import('../../static/js/core/app-state.js');
     // Reset the mock to clear previous calls
     appState.setCurrentFractalType.mockClear();
-    
+
     // Create a fresh DOM with the select element
     document.body.innerHTML = `
       <select id="fractal-type"><option value="julia">Julia</option></select>

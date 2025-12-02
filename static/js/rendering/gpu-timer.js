@@ -176,7 +176,7 @@ export class GPUTimer {
     if (this.timerExt.getParameterEXT) {
       try {
         disjoint = gl.getParameter(this.timerExt.GPU_DISJOINT_EXT);
-      } catch (e) {
+      } catch (_e) {
         // Parameter not available
       }
     }
@@ -227,10 +227,10 @@ export class GPUTimer {
     // If disjoint event occurred, clear all pending queries
     if (disjoint) {
       console.warn('[GPU Timer] GPU disjoint event detected, clearing pending queries');
-      for (const [queryId, queryData] of this.activeQueries.entries()) {
+      for (const [_queryId, queryData] of this.activeQueries.entries()) {
         this.deleteQuery(queryData.query);
       }
-      for (const [queryId, queryData] of this.completedQueries.entries()) {
+      for (const [_queryId, queryData] of this.completedQueries.entries()) {
         this.deleteQuery(queryData.query);
       }
       this.activeQueries.clear();
@@ -262,13 +262,13 @@ export class GPUTimer {
    */
   dispose() {
     // Clean up active queries
-    for (const [queryId, queryData] of this.activeQueries.entries()) {
+    for (const [_queryId, queryData] of this.activeQueries.entries()) {
       this.deleteQuery(queryData.query);
     }
     this.activeQueries.clear();
 
     // Clean up completed queries
-    for (const [queryId, queryData] of this.completedQueries.entries()) {
+    for (const [_queryId, queryData] of this.completedQueries.entries()) {
       this.deleteQuery(queryData.query);
     }
     this.completedQueries.clear();

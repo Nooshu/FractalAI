@@ -742,7 +742,7 @@ export class RenderingEngine {
         if (lowResFramebuffer) {
           try {
             lowResFramebuffer.destroy();
-          } catch (error) {
+          } catch (_error) {
             // Ignore cleanup errors
           }
           multiResolutionManager.lowResFramebuffer = null;

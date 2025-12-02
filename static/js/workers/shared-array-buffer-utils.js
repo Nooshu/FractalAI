@@ -33,7 +33,7 @@ export function canUseSharedArrayBuffer() {
     if (testView[0] === 1) {
       return true;
     }
-  } catch (error) {
+  } catch (_error) {
     // SharedArrayBuffer exists but may not be functional (missing headers)
     if (import.meta.env?.DEV) {
       console.warn(
@@ -131,7 +131,7 @@ export function checkCOOPCOEPHeaders() {
     
     // If we can read it back, headers are likely present
     return testView[0] === 42;
-  } catch (error) {
+  } catch (_error) {
     return false;
   }
 }

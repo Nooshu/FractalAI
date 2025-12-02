@@ -1,7 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-
-// Mock the version constant
-const mockVersion = '3.5.0';
+import { describe, it, expect, beforeEach } from 'vitest';
 
 describe('version', () => {
   let versionModule;

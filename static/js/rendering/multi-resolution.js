@@ -86,7 +86,7 @@ export class MultiResolutionManager {
     if (this.lowResFramebuffer) {
       try {
         this.lowResFramebuffer.destroy();
-      } catch (error) {
+      } catch (_error) {
         // Ignore cleanup errors
       }
       this.lowResFramebuffer = null;
@@ -95,7 +95,7 @@ export class MultiResolutionManager {
     if (this.highResFramebuffer) {
       try {
         this.highResFramebuffer.destroy();
-      } catch (error) {
+      } catch (_error) {
         // Ignore cleanup errors
       }
       this.highResFramebuffer = null;

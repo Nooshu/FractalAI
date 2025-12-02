@@ -29,7 +29,15 @@ export default [
         URLSearchParams: 'readonly',
         Blob: 'readonly',
         WebGL2RenderingContext: 'readonly',
+        WebGLRenderingContext: 'readonly',
         performance: 'readonly',
+        MediaRecorder: 'readonly',
+        VideoEncoder: 'readonly',
+        OffscreenCanvas: 'readonly',
+        WebAssembly: 'readonly',
+        GPUTextureUsage: 'readonly',
+        GPUShaderStage: 'readonly',
+        GPUBufferUsage: 'readonly',
         btoa: 'readonly',
         atob: 'readonly',
         requestIdleCallback: 'readonly',
@@ -52,7 +60,11 @@ export default [
       },
     },
     rules: {
-      'no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+      'no-unused-vars': ['warn', { 
+        argsIgnorePattern: '^_',
+        varsIgnorePattern: '^_',
+        caughtErrorsIgnorePattern: '^_'
+      }],
       'no-console': 'off',
       'no-debugger': 'warn',
     },
@@ -94,6 +106,7 @@ export default [
         ImageData: 'readonly', // DOM API for tests
         Worker: 'readonly', // Web Workers for tests
         self: 'readonly', // Web Worker global
+        WebGLRenderingContext: 'readonly', // WebGL API for tests
       },
     },
   },

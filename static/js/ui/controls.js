@@ -1019,13 +1019,12 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
 
       try {
         const { recordFractalVideo, downloadVideo } = await import('../export/video-encoder.js');
-        const params = getParams();
 
         // Record video
         const blob = await recordFractalVideo(canvas, {
           duration: duration,
           fps: 60,
-          onFrame: async (canvas, frameNumber) => {
+          onFrame: async (_canvas, _frameNumber) => {
             // Re-render fractal for each frame
             // In a real animation, you might want to change parameters over time
             renderingEngine.renderFractal();

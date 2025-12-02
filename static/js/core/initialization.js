@@ -266,7 +266,7 @@ async function initCanvasAndRenderer(appState) {
       const contextLossHandler = createContextLossHandler(canvasElement, {
         saveState: () => appState.saveState(),
         restoreState: (savedState) => appState.restoreState(savedState),
-        onContextLost: async (savedState) => {
+        onContextLost: async (_savedState) => {
           // Clear WebGL-dependent resources
           appState.setRegl(null);
           appState.setWebGLCapabilities(null);
@@ -285,7 +285,7 @@ async function initCanvasAndRenderer(appState) {
             frameCache.clear();
           }
         },
-        onContextRestored: async (savedState) => {
+        onContextRestored: async (_savedState) => {
           // Reinitialize WebGL resources
           await reinitializeWebGLResources(appState, canvasElement);
           

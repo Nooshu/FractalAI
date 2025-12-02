@@ -3,7 +3,6 @@ import {
   isWebCodecsAvailable,
   isMediaRecorderAvailable,
   WebCodecsVideoEncoder,
-  recordFractalVideo,
   downloadVideo,
 } from '../../static/js/export/video-encoder.js';
 
