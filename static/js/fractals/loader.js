@@ -21,10 +21,6 @@ const FRACTAL_FAMILIES = {
   tricorn: 'mandelbrot-family',
   nebulabrot: 'mandelbrot-family',
   buddhabrot: 'mandelbrot-family',
-  buffalo: 'mandelbrot-family',
-  popcorn: 'mandelbrot-family',
-  'spider-set': 'mandelbrot-family',
-  magnet: 'mandelbrot-family',
 
   // Julia Sets
   julia: 'julia-family',
@@ -53,6 +49,7 @@ const FRACTAL_FAMILIES = {
   'dragon-lsystem': 'dragon-family',
   'folded-paper-dragon': 'dragon-family',
   'heighway-dragon': 'dragon-family',
+  'levy-dragon': 'dragon-family',
   terdragon: 'dragon-family',
   twindragon: 'dragon-family',
 
@@ -122,6 +119,18 @@ const FRACTAL_FAMILIES = {
   'recursive-circle-removal': 'geometric-family',
   rose: 'geometric-family',
   'menger-sponge': 'geometric-family',
+
+  // Self-Similar Curves
+  'de-rham-curve': 'self-similar-curves-family',
+
+  // Other Escape-Time Fractals
+  buffalo: 'escape-time-family',
+  popcorn: 'escape-time-family',
+  'spider-set': 'escape-time-family',
+  magnet: 'escape-time-family',
+
+  // Fractal Dimension Plots
+  'fractal-dimension-plot': 'dimension-plot-family',
 
   // Other Fractals
   'h-tree': 'other-family',

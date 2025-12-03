@@ -8,6 +8,7 @@ import * as binaryDragon from '../binary-dragon.js';
 import * as dragonLsystem from '../dragon-lsystem.js';
 import * as foldedPaperDragon from '../folded-paper-dragon.js';
 import * as heighwayDragon from '../heighway-dragon.js';
+import * as levyDragon from '../levy-dragon.js';
 import * as terdragon from '../terdragon.js';
 import * as twindragon from '../twindragon.js';
 
@@ -17,6 +18,7 @@ export const fractals = {
   'dragon-lsystem': dragonLsystem,
   'folded-paper-dragon': foldedPaperDragon,
   'heighway-dragon': heighwayDragon,
+  'levy-dragon': levyDragon,
   terdragon: terdragon,
   twindragon: twindragon,
 };
