@@ -74,7 +74,14 @@ const FRACTAL_FAMILIES = {
   plant: 'plant-family',
   'barnsley-fern': 'plant-family',
   'fractal-tree': 'plant-family',
-  'pythagoras-tree': 'plant-family',
+
+  // Tree Family
+  'pythagoras-tree': 'tree-family',
+  'binary-fractal-tree': 'tree-family',
+  'ternary-fractal-tree': 'tree-family',
+  'lsystem-tree-oak': 'tree-family',
+  'lsystem-tree-pine': 'tree-family',
+  'fractal-canopy': 'tree-family',
 
   // Koch Family
   'fractal-islands': 'koch-family',

@@ -629,6 +629,8 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
     }
     // Update palette preview when color scheme changes from main UI
     updateColorPalettePreview();
+    // Update coordinate and debug displays to reflect new color scheme
+    updateCoordinateDisplay();
     triggerAutoRender();
   });
 

@@ -74,6 +74,14 @@ export const FRACTAL_TYPES = [
   'barnsley-fern',
   'fractal-tree',
 
+  // Tree Family
+  'pythagoras-tree',
+  'binary-fractal-tree',
+  'ternary-fractal-tree',
+  'lsystem-tree-oak',
+  'lsystem-tree-pine',
+  'fractal-canopy',
+
   // Tilings
   'domino-substitution',
   'pinwheel-tiling',
@@ -108,7 +116,6 @@ export const FRACTAL_TYPES = [
   'magnet',
   'cesaro',
   'lyapunov',
-  'pythagoras-tree',
   'lorenz-attractor',
   'rossler-attractor',
   'menger-sponge',

@@ -7,12 +7,10 @@
 import * as plant from '../plant.js';
 import * as barnsleyFern from '../barnsley-fern.js';
 import * as fractalTree from '../fractal-tree.js';
-import * as pythagorasTree from '../pythagoras-tree.js';
 
 // Export as a mapping object for easy lookup
 export const fractals = {
   plant: plant,
   'barnsley-fern': barnsleyFern,
   'fractal-tree': fractalTree,
-  'pythagoras-tree': pythagorasTree,
 };

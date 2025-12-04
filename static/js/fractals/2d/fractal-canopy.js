@@ -2,12 +2,13 @@ import {
   generatePaletteTexture,
 } from '../utils.js';
 
-// Generate vertices for fractal tree (binary or ternary)
-function generateFractalTree(iterations, branchAngle, lengthRatio, numBranches) {
+// Generate vertices for fractal canopy pattern
+// Creates a tree-like canopy structure with branching patterns
+function generateFractalCanopy(iterations, branchAngle, spreadAngle, lengthRatio) {
   const segments = [];
 
-  // Recursive function to generate branches
-  function generateBranch(x, y, angle, length, depth) {
+  // Recursive function to generate canopy branches
+  function generateCanopyBranch(x, y, angle, length, depth) {
     if (depth >= iterations || length < 0.001) return;
 
     // Calculate end point of current branch
@@ -25,23 +26,23 @@ function generateFractalTree(iterations, branchAngle, lengthRatio, numBranches) 
     // Calculate new length for child branches
     const newLength = length * lengthRatio;
 
-    // Generate child branches
-    if (numBranches === 2) {
-      // Binary tree: two branches at symmetric angles
-      generateBranch(endX, endY, angle - branchAngle, newLength, depth + 1);
-      generateBranch(endX, endY, angle + branchAngle, newLength, depth + 1);
-    } else if (numBranches === 3) {
-      // Ternary tree: three branches (one continues, two branch off)
-      generateBranch(endX, endY, angle, newLength, depth + 1); // Continue straight
-      generateBranch(endX, endY, angle - branchAngle, newLength, depth + 1); // Left branch
-      generateBranch(endX, endY, angle + branchAngle, newLength, depth + 1); // Right branch
-    }
+    // Create multiple branches for canopy effect
+    // Main branch continues upward
+    generateCanopyBranch(endX, endY, angle, newLength, depth + 1);
+    
+    // Left branches
+    generateCanopyBranch(endX, endY, angle - branchAngle, newLength, depth + 1);
+    generateCanopyBranch(endX, endY, angle - spreadAngle, newLength * 0.8, depth + 1);
+    
+    // Right branches
+    generateCanopyBranch(endX, endY, angle + branchAngle, newLength, depth + 1);
+    generateCanopyBranch(endX, endY, angle + spreadAngle, newLength * 0.8, depth + 1);
   }
 
   // Start from the base, pointing up
-  const initialLength = 0.6;
+  const initialLength = 0.5;
   const initialAngle = Math.PI / 2; // Pointing up (90 degrees)
-  generateBranch(0, -0.7, initialAngle, initialLength, 0);
+  generateCanopyBranch(0, -0.7, initialAngle, initialLength, 0);
 
   // Convert segments to vertex array for line rendering
   const vertices = new Float32Array(segments.length * 4);
@@ -163,29 +164,26 @@ export function render(regl, params, canvas, options = {}) {
   const paletteTexture = generatePaletteTexture(regl, params.colorScheme);
 
   // Calculate iteration level based on params.iterations
-  // Map 0-200 iterations to 0-10 levels
-  const iterationLevel = Math.max(0, Math.min(10, Math.floor(params.iterations / 20)));
+  // Map 0-200 iterations to 0-8 levels (canopy can be dense)
+  const iterationLevel = Math.max(0, Math.min(8, Math.floor(params.iterations / 25)));
 
-  // Use uXScale to control branch angle (0-60 degrees)
-  const branchAngle = (params.xScale * 60.0) * (Math.PI / 180.0);
+  // Use uXScale to control branch angle (20-50 degrees)
+  const branchAngle = (20 + params.xScale * 30) * (Math.PI / 180.0);
 
-  // Use uYScale to control length ratio (0.5-0.9)
-  const lengthRatio = 0.5 + params.yScale * 0.4;
+  // Use uYScale to control spread angle (30-60 degrees)
+  const spreadAngle = (30 + params.yScale * 30) * (Math.PI / 180.0);
 
-  // Determine number of branches: binary (2) or ternary (3)
-  // Use a threshold: xScale < 0.5 = binary, >= 0.5 = ternary
-  // Actually, let's use a different approach - use a separate parameter
-  // For now, use xScale: < 0.5 = binary, >= 0.5 = ternary
-  const numBranches = params.xScale < 0.5 ? 2 : 3;
+  // Length ratio for canopy (0.6-0.85)
+  const lengthRatio = 0.6 + params.yScale * 0.25;
 
   // Generate vertices for current iteration level
-  const vertices = generateFractalTree(iterationLevel, branchAngle, lengthRatio, numBranches);
+  const vertices = generateFractalCanopy(iterationLevel, branchAngle, spreadAngle, lengthRatio);
 
   // Create UBO-aware shaders
   const vertexShaderSource = createLineFractalVertexShader(useUBO);
   const fragmentShaderSource = createLineFractalFragmentShader(useUBO);
 
-  const drawFractalTree = regl({
+  const drawCanopy = regl({
     vert: vertexShaderSource,
     frag: fragmentShaderSource,
     attributes: {
@@ -220,36 +218,33 @@ export function render(regl, params, canvas, options = {}) {
     lineWidth: 1,
   });
 
-  return drawFractalTree;
+  return drawCanopy;
 }
 
 export const is2D = true;
 
 /**
- * Configuration for Fractal Tree fractal
- * Note: This is a hybrid tree that switches between binary and ternary based on xScale
- * xScale < 0.5 = binary, xScale >= 0.5 = ternary
+ * Configuration for Fractal Canopy
  */
 export const config = {
   initialSettings: {
     colorScheme: 'forest',
-    iterations: 215,
-    xScale: 0.3, // Default to binary mode (< 0.5)
   },
   initialPosition: {
-    zoom: 0.678,
-    offset: { x: 1.1737, y: 1.9343 },
+    zoom: 2,
+    offset: { x: 0, y: 0 },
   },
   interestingPoints: [
-    { x: 1.1737, y: 1.9343, zoom: 1.364 }, // Forest canopy view
-    { x: 1.1737, y: 1.9343, zoom: 0.8 }, // Wide forest view
-    { x: 1.1737, y: 1.9343, zoom: 2.0 }, // Medium zoom forest detail
-    { x: 1.1737, y: 1.9343, zoom: 3.5 }, // Close-up forest branches
-    { x: 1.1737, y: 1.9343, zoom: 5.0 }, // Detailed branch structure
+    { x: 0, y: 0, zoom: 1 }, // Full overview
+    { x: 0, y: 0, zoom: 2 }, // Center
+    { x: 0, y: 0.2, zoom: 3 }, // Upper canopy
+    { x: 0.15, y: 0.1, zoom: 4 }, // Right canopy detail
+    { x: -0.15, y: 0.1, zoom: 4 }, // Left canopy detail
+    { x: 0, y: 0.3, zoom: 5 }, // Top canopy detail
   ],
   fallbackPosition: {
-    offset: { x: 1.1737, y: 1.9343 },
-    zoom: 0.678,
+    offset: { x: 0, y: 0 },
+    zoom: 2,
   },
 };
 
