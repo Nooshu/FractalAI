@@ -45,6 +45,8 @@ const FRACTAL_FAMILIES = {
   'sierpinski-hexagon': 'sierpinski-family',
   'sierpinski-lsystem': 'sierpinski-family',
   'sierpinski-pentagon': 'sierpinski-family',
+  'sierpinski-tetrahedron': 'sierpinski-family',
+  'menger-carpet': 'sierpinski-family',
   'quadrilateral-subdivision': 'sierpinski-family',
   'recursive-polygon-splitting': 'sierpinski-family',
   'triangular-subdivision': 'sierpinski-family',
@@ -77,8 +79,11 @@ const FRACTAL_FAMILIES = {
 
   // Tree Family
   'pythagoras-tree': 'tree-family',
+  'pythagoras-tree-wide': 'tree-family',
+  'pythagoras-tree-narrow': 'tree-family',
   'binary-fractal-tree': 'tree-family',
   'ternary-fractal-tree': 'tree-family',
+  'quaternary-fractal-tree': 'tree-family',
   'lsystem-tree-oak': 'tree-family',
   'lsystem-tree-pine': 'tree-family',
   'fractal-canopy': 'tree-family',

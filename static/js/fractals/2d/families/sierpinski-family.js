@@ -11,6 +11,8 @@ import * as sierpinskiGasket from '../sierpinski-gasket.js';
 import * as sierpinskiHexagon from '../sierpinski-hexagon.js';
 import * as sierpinskiLsystem from '../sierpinski-lsystem.js';
 import * as sierpinskiPentagon from '../sierpinski-pentagon.js';
+import * as sierpinskiTetrahedron from '../sierpinski-tetrahedron.js';
+import * as mengerCarpet from '../menger-carpet.js';
 import * as quadrilateralSubdivision from '../quadrilateral-subdivision.js';
 import * as recursivePolygonSplitting from '../recursive-polygon-splitting.js';
 import * as triangularSubdivision from '../triangular-subdivision.js';
@@ -24,6 +26,8 @@ export const fractals = {
   'sierpinski-hexagon': sierpinskiHexagon,
   'sierpinski-lsystem': sierpinskiLsystem,
   'sierpinski-pentagon': sierpinskiPentagon,
+  'sierpinski-tetrahedron': sierpinskiTetrahedron,
+  'menger-carpet': mengerCarpet,
   'quadrilateral-subdivision': quadrilateralSubdivision,
   'recursive-polygon-splitting': recursivePolygonSplitting,
   'triangular-subdivision': triangularSubdivision,
