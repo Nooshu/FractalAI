@@ -114,6 +114,10 @@ const FRACTAL_FAMILIES = {
   'lorenz-attractor': 'attractor-family',
   'rossler-attractor': 'attractor-family',
   lyapunov: 'attractor-family',
+  'chua-attractor': 'attractor-family',
+  'ifs-spiral': 'attractor-family',
+  'ifs-maple': 'attractor-family',
+  'ifs-tree': 'attractor-family',
 
   // Noise Family
   'perlin-noise': 'noise-family',
