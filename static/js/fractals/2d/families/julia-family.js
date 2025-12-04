@@ -12,6 +12,8 @@ import * as tricornJulia from '../tricorn-julia.js';
 import * as phoenixJulia from '../phoenix-julia.js';
 import * as lambdaJulia from '../lambda-julia.js';
 import * as hybridJulia from '../hybrid-julia.js';
+import * as pickoverStalks from '../pickover-stalks.js';
+import * as biomorphs from '../biomorphs.js';
 
 // Export as a mapping object for easy lookup
 export const fractals = {
@@ -23,4 +25,6 @@ export const fractals = {
   'phoenix-julia': phoenixJulia,
   'lambda-julia': lambdaJulia,
   'hybrid-julia': hybridJulia,
+  'pickover-stalks': pickoverStalks,
+  biomorphs: biomorphs,
 };

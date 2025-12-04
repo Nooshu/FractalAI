@@ -21,6 +21,9 @@ const FRACTAL_FAMILIES = {
   tricorn: 'mandelbrot-family',
   nebulabrot: 'mandelbrot-family',
   buddhabrot: 'mandelbrot-family',
+  'multibrot-cubic': 'mandelbrot-family',
+  'multibrot-quartic': 'mandelbrot-family',
+  'multibrot-quintic': 'mandelbrot-family',
 
   // Julia Sets
   julia: 'julia-family',
@@ -31,6 +34,8 @@ const FRACTAL_FAMILIES = {
   'phoenix-julia': 'julia-family',
   'lambda-julia': 'julia-family',
   'hybrid-julia': 'julia-family',
+  'pickover-stalks': 'julia-family',
+  biomorphs: 'julia-family',
 
   // Sierpinski Family
   sierpinski: 'sierpinski-family',

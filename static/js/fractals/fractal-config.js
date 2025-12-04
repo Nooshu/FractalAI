@@ -11,6 +11,9 @@ const FRACTAL_WIKIPEDIA_URLS = {
   mandelbrot: 'https://en.wikipedia.org/wiki/Mandelbrot_set',
   'celtic-mandelbrot': 'https://en.wikipedia.org/wiki/Mandelbrot_set',
   multibrot: 'https://en.wikipedia.org/wiki/Multibrot_set',
+  'multibrot-cubic': 'https://en.wikipedia.org/wiki/Multibrot_set',
+  'multibrot-quartic': 'https://en.wikipedia.org/wiki/Multibrot_set',
+  'multibrot-quintic': 'https://en.wikipedia.org/wiki/Multibrot_set',
   'mutant-mandelbrot': 'https://en.wikipedia.org/wiki/Mandelbrot_set',
   'phoenix-mandelbrot': 'https://en.wikipedia.org/wiki/Phoenix_fractal',
   'burning-ship': 'https://en.wikipedia.org/wiki/Burning_Ship_fractal',
@@ -24,6 +27,8 @@ const FRACTAL_WIKIPEDIA_URLS = {
   'phoenix-julia': 'https://en.wikipedia.org/wiki/Julia_set',
   'lambda-julia': 'https://en.wikipedia.org/wiki/Julia_set',
   'hybrid-julia': 'https://en.wikipedia.org/wiki/Julia_set',
+  'pickover-stalks': 'https://en.wikipedia.org/wiki/Julia_set',
+  biomorphs: 'https://en.wikipedia.org/wiki/Julia_set',
   sierpinski: 'https://en.wikipedia.org/wiki/Sierpinski_triangle',
   'sierpinski-arrowhead': 'https://en.wikipedia.org/wiki/Sierpinski_curve',
   'sierpinski-carpet': 'https://en.wikipedia.org/wiki/Sierpinski_carpet',
@@ -177,7 +182,17 @@ export function getInitialRenderPosition(fractalType) {
       return { zoom: 1.403, offset: { x: 1.673, y: 1.9506 } };
     case 'multibrot':
       return { zoom: 1, offset: { x: 0, y: 0 } };
+    case 'multibrot-cubic':
+      return { zoom: 1, offset: { x: 0, y: 0 } };
+    case 'multibrot-quartic':
+      return { zoom: 1, offset: { x: 0, y: 0 } };
+    case 'multibrot-quintic':
+      return { zoom: 1, offset: { x: 0, y: 0 } };
     case 'multibrot-julia':
+      return { zoom: 1, offset: { x: 0, y: 0 } };
+    case 'pickover-stalks':
+      return { zoom: 1, offset: { x: 0, y: 0 } };
+    case 'biomorphs':
       return { zoom: 1, offset: { x: 0, y: 0 } };
     case 'burning-ship-julia':
       return { zoom: 1, offset: { x: 0, y: 0 } };

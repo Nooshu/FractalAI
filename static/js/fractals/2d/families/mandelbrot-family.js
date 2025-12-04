@@ -13,6 +13,9 @@ import * as burningShip from '../burning-ship.js';
 import * as tricorn from '../tricorn.js';
 import * as nebulabrot from '../nebulabrot.js';
 import * as buddhabrot from '../buddhabrot.js';
+import * as multibrotCubic from '../multibrot-cubic.js';
+import * as multibrotQuartic from '../multibrot-quartic.js';
+import * as multibrotQuintic from '../multibrot-quintic.js';
 
 // Export as a mapping object for easy lookup
 export const fractals = {
@@ -25,4 +28,7 @@ export const fractals = {
   tricorn: tricorn,
   nebulabrot: nebulabrot,
   buddhabrot: buddhabrot,
+  'multibrot-cubic': multibrotCubic,
+  'multibrot-quartic': multibrotQuartic,
+  'multibrot-quintic': multibrotQuintic,
 };
