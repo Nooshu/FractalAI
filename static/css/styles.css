@@ -1034,13 +1034,17 @@ body {
 }
 
 /* EXIF Editor Styling */
-.exif-hidden {
-  display: none !important;
+.exif-hidden,
+.panel-content .exif-hidden,
+.section-content .exif-hidden {
+  display: none;
 }
 
 /* Debug Panel Styling */
-.debug-hidden {
-  display: none !important;
+.debug-hidden,
+.panel-content .debug-hidden,
+.section-content .debug-hidden {
+  display: none;
 }
 
 .current-fractal-info {
@@ -1209,7 +1213,7 @@ body {
 
 #write-exif-btn,
 #clear-image-btn {
-  display: flex !important;
+  display: flex;
   width: 100%;
   margin-bottom: var(--spacing-md);
   margin-top: var(--spacing-md);
@@ -1218,13 +1222,19 @@ body {
   justify-content: center;
 }
 
+.copy-coords-btn#write-exif-btn,
+.copy-coords-btn#clear-image-btn {
+  display: flex;
+}
+
 #write-exif-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-#clear-image-btn {
-  background: var(--bg-hover) !important;
+#clear-image-btn,
+.copy-coords-btn#clear-image-btn {
+  background: var(--bg-hover);
 }
 
 /* Presets Section */
@@ -1402,9 +1412,13 @@ body {
   text-align: center;
 }
 
-.footer-license {
-  margin-top: 8px !important;
-  font-size: 0.75rem !important;
+.app-footer p:nth-child(2) {
+  margin-top: 2px;
+}
+
+.app-footer .footer-license {
+  margin-top: 8px;
+  font-size: 0.75rem;
   opacity: 0.8;
 }
 

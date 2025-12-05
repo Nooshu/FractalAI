@@ -45,6 +45,46 @@ function initDOMCache() {
 }
 
 /**
+ * Initialize footer social links from config
+ */
+function initFooterLinks() {
+  const socialLinks = CONFIG.site.social;
+  
+  // GitHub link
+  const githubLink = document.querySelector('[data-social="github"]');
+  if (githubLink) {
+    githubLink.href = socialLinks.github.url;
+    githubLink.rel = socialLinks.github.rel;
+    const labelEl = githubLink.querySelector('[data-social-label]');
+    if (labelEl) {
+      labelEl.textContent = socialLinks.github.label;
+    }
+  }
+  
+  // Mastodon link
+  const mastodonLink = document.querySelector('[data-social="mastodon"]');
+  if (mastodonLink) {
+    mastodonLink.href = socialLinks.mastodon.url;
+    mastodonLink.rel = socialLinks.mastodon.rel;
+    const labelEl = mastodonLink.querySelector('[data-social-label]');
+    if (labelEl) {
+      labelEl.textContent = socialLinks.mastodon.label;
+    }
+  }
+  
+  // Bluesky link
+  const blueskyLink = document.querySelector('[data-social="bluesky"]');
+  if (blueskyLink) {
+    blueskyLink.href = socialLinks.bluesky.url;
+    blueskyLink.rel = socialLinks.bluesky.rel;
+    const labelEl = blueskyLink.querySelector('[data-social-label]');
+    if (labelEl) {
+      labelEl.textContent = socialLinks.bluesky.label;
+    }
+  }
+}
+
+/**
  * Initialize canvas and WebGL renderer
  * @param {Object} appState - Application state instance
  * @returns {Object} Canvas, regl context, and updateRendererSize function
@@ -843,6 +883,9 @@ export async function init() {
 
   // Initialize DOM cache first
   initDOMCache();
+  
+  // Initialize footer social links from config
+  initFooterLinks();
 
   // Initialize long-task detection
   const longTaskDetector = new LongTaskDetector({

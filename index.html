@@ -3,7 +3,30 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="fediverse:creator" content="@TheRealNooshu@hachyderm.io" />
     <title>FractalAI - 2D Fractal Generator</title>
+
+    <!-- Open Graph / Facebook -->
+    <!-- Site URL is also stored in static/js/core/config.js for JavaScript use -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://fractals.world/" />
+    <meta property="og:title" content="FractalAI - 2D Fractal Generator" />
+    <meta property="og:description" content="Generate beautiful 2D fractals with AI assistance. Explore Mandelbrot sets, Julia sets, and many more fractal types with interactive controls." />
+    <meta property="og:image" content="https://fractals.world/static/images/fractals-world-preview.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="FractalAI - 2D Fractal Generator preview" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://fractals.world/" />
+    <meta name="twitter:title" content="FractalAI - 2D Fractal Generator" />
+    <meta name="twitter:description" content="Generate beautiful 2D fractals with AI assistance. Explore Mandelbrot sets, Julia sets, and many more fractal types with interactive controls." />
+    <meta name="twitter:image" content="https://fractals.world/static/images/fractals-world-preview.jpg" />
+
+    <!-- Bluesky -->
+    <!-- Bluesky uses Open Graph tags (og:*) for link previews, which are already defined above -->
+    <!-- Additional Bluesky-specific metadata can be added here if needed -->
 
     <link rel="icon" type="image/x-icon" href="/static/images/favicon.ico" />
     <link rel="icon" type="image/png" sizes="32x32" href="/static/images/favicon-32x32.png" />
@@ -1100,22 +1123,50 @@
 
       <footer class="app-footer">
         <p>
-          Made by
+          Created by
           <a href="https://nooshu.com" target="_blank" rel="noopener noreferrer">Matt Hobbs</a> with
           🤖 (AI) + ❤️, {{BUILD_YEAR}}.
         </p>
         <p>
           <a
+            data-social="github"
             href="https://github.com/Nooshu/FractalAI"
             target="_blank"
             rel="noopener noreferrer"
             class="github-link"
           >
-            Contribute on GitHub
+            <span data-social-label>Contribute</span>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
               <path
                 d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"
               />
+            </svg>
+          </a>
+          <span class="footer-separator">•</span>
+          <a
+            data-social="mastodon"
+            href="https://hachyderm.io/@TheRealNooshu"
+            target="_blank"
+            rel="me noopener noreferrer"
+            class="github-link"
+          >
+            <span data-social-label>Mastodon</span>
+            <svg width="16" height="16" viewBox="0 0 216.4144 232.00976" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path fill="#2b90d9" d="M211.80734 139.0875c-3.18125 16.36625-28.4925 34.2775-57.5625 37.74875-15.15875 1.80875-30.08375 3.47125-45.99875 2.74125-26.0275-1.1925-46.565-6.2125-46.565-6.2125 0 2.53375.15625 4.94625.46875 7.2025 3.38375 25.68625 25.47 27.225 46.39125 27.9425 21.11625.7225 39.91875-5.20625 39.91875-5.20625l.8675 19.09s-14.77 7.93125-41.08125 9.39c-14.50875.7975-32.52375-.365-53.50625-5.91875C9.23234 213.82 1.40609 165.31125.20859 116.09125c-.365-14.61375-.14-28.39375-.14-39.91875 0-50.33 32.97625-65.0825 32.97625-65.0825C49.67234 3.45375 78.20359.2425 107.86484 0h.72875c29.66125.2425 58.21125 3.45375 74.8375 11.09 0 0 32.975 14.7525 32.975 65.0825 0 0 .41375 37.13375-4.59875 62.915"/>
+              <path fill="#fff" d="M177.50984 80.077v60.94125h-24.14375v-59.15c0-12.46875-5.24625-18.7975-15.74-18.7975-11.6025 0-17.4175 7.5075-17.4175 22.3525v32.37625H96.20734V85.42325c0-14.845-5.81625-22.3525-17.41875-22.3525-10.49375 0-15.74 6.32875-15.74 18.7975v59.15H38.90484V80.077c0-12.455 3.17125-22.3525 9.54125-29.675 6.56875-7.3225 15.17125-11.07625 25.85-11.07625 12.355 0 21.71125 4.74875 27.8975 14.2475l6.01375 10.08125 6.015-10.08125c6.185-9.49875 15.54125-14.2475 27.8975-14.2475 10.6775 0 19.28 3.75375 25.85 11.07625 6.36875 7.3225 9.54 17.22 9.54 29.675"/>
+            </svg>
+          </a>
+          <span class="footer-separator">•</span>
+          <a
+            data-social="bluesky"
+            href="https://bsky.app/profile/therealnooshu.bsky.social"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="github-link"
+          >
+            <span data-social-label>Bluesky</span>
+            <svg width="16" height="16" viewBox="0 0 600 530" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="m135.72 44.03c66.496 49.921 138.02 151.14 164.28 205.46 26.262-54.316 97.782-155.54 164.28-205.46 47.98-36.021 125.72-63.892 125.72 24.795 0 17.712-10.155 148.79-16.111 170.07-20.703 73.984-96.144 92.854-163.25 81.433 117.3 19.964 147.14 86.092 82.697 152.22-122.39 125.59-175.91-31.511-189.63-71.766-2.514-7.3797-3.6904-10.832-3.7077-7.8964-0.0174-2.9357-1.1937 0.51669-3.7077 7.8964-13.714 40.255-67.233 197.36-189.63 71.766-64.444-66.128-34.605-132.26 82.697-152.22-67.108 11.421-142.55-7.4491-163.25-81.433-5.9562-21.282-16.111-152.36-16.111-170.07 0-88.687 77.742-60.816 125.72-24.795z" fill="#1185fe"/>
             </svg>
           </a>
         </p>

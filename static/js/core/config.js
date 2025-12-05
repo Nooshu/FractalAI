@@ -4,6 +4,28 @@
  */
 
 export const CONFIG = {
+  site: {
+    // Base URL for the live site
+    url: 'https://fractals.world',
+    // Social media links
+    social: {
+      github: {
+        url: 'https://github.com/Nooshu/FractalAI',
+        label: 'Contribute',
+        rel: 'noopener noreferrer',
+      },
+      mastodon: {
+        url: 'https://hachyderm.io/@TheRealNooshu',
+        label: 'Mastodon',
+        rel: 'me noopener noreferrer',
+      },
+      bluesky: {
+        url: 'https://bsky.app/profile/therealnooshu.bsky.social',
+        label: 'Bluesky',
+        rel: 'noopener noreferrer',
+      },
+    },
+  },
   rendering: {
     defaultIterations: 125,
     minIterations: 10,
