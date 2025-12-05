@@ -101,6 +101,7 @@ export default defineConfig({
             'levy-c-curve',
             'moore-curve',
             'peano-curve',
+            'sierpinski-curve',
           ]);
           if (spaceFillingFamily) return spaceFillingFamily;
 

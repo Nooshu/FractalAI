@@ -36,6 +36,7 @@ export function isValidInterestingView(offset, zoom, fractalType, getParams, get
     fractalType === 'h-tree-generalized' ||
     fractalType === 'heighway-dragon' ||
     fractalType === 'hilbert-curve' ||
+    fractalType === 'sierpinski-curve' ||
     fractalType === 'twindragon' ||
     fractalType === 'terdragon' ||
     fractalType === 'binary-dragon' ||

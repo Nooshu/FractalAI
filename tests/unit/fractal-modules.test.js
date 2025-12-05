@@ -15,6 +15,7 @@ const fractalModules = [
   'koch',
   'heighway-dragon',
   'hilbert-curve',
+  'sierpinski-curve',
 ];
 
 describe('Fractal Modules Structure', () => {

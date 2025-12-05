@@ -9,6 +9,7 @@ import * as hilbertCurve from '../hilbert-curve.js';
 import * as levyCCurve from '../levy-c-curve.js';
 import * as mooreCurve from '../moore-curve.js';
 import * as peanoCurve from '../peano-curve.js';
+import * as sierpinskiCurve from '../sierpinski-curve.js';
 
 // Export as a mapping object for easy lookup
 export const fractals = {
@@ -17,4 +18,5 @@ export const fractals = {
   'levy-c-curve': levyCCurve,
   'moore-curve': mooreCurve,
   'peano-curve': peanoCurve,
+  'sierpinski-curve': sierpinskiCurve,
 };

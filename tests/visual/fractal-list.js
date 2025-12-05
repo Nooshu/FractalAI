@@ -63,6 +63,7 @@ export const FRACTAL_TYPES = [
   'levy-c-curve',
   'moore-curve',
   'peano-curve',
+  'sierpinski-curve',
 
   // Nowhere Differentiable Functions
   'weierstrass',

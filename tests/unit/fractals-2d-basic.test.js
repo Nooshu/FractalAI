@@ -43,6 +43,7 @@ const FRACTAL_MODULES_2D = [
   'halley',
   'heighway-dragon',
   'hilbert-curve',
+  'sierpinski-curve',
   'hybrid-julia',
   'julia-snakes',
   'julia',

@@ -460,6 +460,8 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
       // Gosper Curve - additional settings (position set by getInitialRenderPosition)
     } else if (fractalType === 'hilbert-curve') {
       // Hilbert Curve - additional settings (position set by getInitialRenderPosition)
+    } else if (fractalType === 'sierpinski-curve') {
+      // Sierpiński Curve - additional settings (position set by getInitialRenderPosition)
     } else if (fractalType === 'levy-c-curve') {
       // Levy C-Curve - additional settings (position set by getInitialRenderPosition)
     } else if (fractalType === 'moore-curve') {
@@ -1132,6 +1134,7 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
       fractalType === 'h-tree-generalized' ||
       fractalType === 'heighway-dragon' ||
       fractalType === 'hilbert-curve' ||
+      fractalType === 'sierpinski-curve' ||
       fractalType === 'twindragon' ||
       fractalType === 'terdragon' ||
       fractalType === 'binary-dragon' ||

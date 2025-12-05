@@ -66,6 +66,7 @@ const FRACTAL_FAMILIES = {
   'levy-c-curve': 'space-filling-family',
   'moore-curve': 'space-filling-family',
   'peano-curve': 'space-filling-family',
+  'sierpinski-curve': 'space-filling-family',
 
   // Root-Finding Fractals
   newton: 'root-finding-family',

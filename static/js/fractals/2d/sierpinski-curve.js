@@ -1,0 +1,283 @@
+import {
+  generatePaletteTexture,
+} from '../utils.js';
+
+// Generate vertices for the Sierpiński space-filling curve
+// The Sierpiński curve fills a square by recursively dividing it into 4 sub-squares (2x2 grid)
+// and connecting them in a specific pattern with rotations
+// The curve visits quadrants in the order: top-left -> top-right -> bottom-right -> bottom-left
+function generateSierpinskiCurve(iterations) {
+  const vertices = [];
+
+  // Helper function to generate a Sierpiński curve segment
+  // The curve fills a square from (x1, y1) to (x2, y2)
+  // rot: rotation type (0, 1, 2, 3) determines how the pattern is oriented
+  function sierpinski(x1, y1, x2, y2, depth, rot) {
+    if (depth >= iterations) {
+      // At maximum depth, add the endpoint
+      vertices.push(x2, y2);
+      return;
+    }
+
+    // Calculate the size of the square
+    const width = x2 - x1;
+    const height = y2 - y1;
+
+    // Divide into 4 sub-squares (2x2 grid)
+    const halfWidth = width / 2;
+    const halfHeight = height / 2;
+
+    // Define the 4 sub-squares in a 2x2 grid
+    // Each square is defined by its top-left and bottom-right corners
+    const squares = [
+      [x1, y1, x1 + halfWidth, y1 + halfHeight], // Top-left (0)
+      [x1, y1 + halfHeight, x1 + halfWidth, y1 + halfHeight * 2], // Bottom-left (1)
+      [x1 + halfWidth, y1 + halfHeight, x1 + halfWidth * 2, y1 + halfHeight * 2], // Bottom-right (2)
+      [x1 + halfWidth, y1, x1 + halfWidth * 2, y1 + halfHeight], // Top-right (3)
+    ];
+
+    // Sierpiński curve pattern based on rotation
+    // The pattern determines the order of visiting the 4 quadrants
+    // and how each sub-curve is rotated
+    // Standard pattern: top-left -> top-right -> bottom-right -> bottom-left
+    let pattern, rotations;
+
+    if (rot === 0) {
+      // Standard orientation: top-left -> top-right -> bottom-right -> bottom-left
+      pattern = [0, 3, 2, 1];
+      rotations = [0, 1, 2, 3]; // Rotation for each sub-square
+    } else if (rot === 1) {
+      // Rotated 90° clockwise: top-right -> bottom-right -> bottom-left -> top-left
+      pattern = [3, 2, 1, 0];
+      rotations = [1, 2, 3, 0];
+    } else if (rot === 2) {
+      // Rotated 180°: bottom-right -> bottom-left -> top-left -> top-right
+      pattern = [2, 1, 0, 3];
+      rotations = [2, 3, 0, 1];
+    } else {
+      // rot === 3
+      // Rotated 90° counter-clockwise: bottom-left -> top-left -> top-right -> bottom-right
+      pattern = [1, 0, 3, 2];
+      rotations = [3, 0, 1, 2];
+    }
+
+    for (let i = 0; i < pattern.length; i++) {
+      const idx = pattern[i];
+      const [sqX1, sqY1, sqX2, sqY2] = squares[idx];
+      const nextRot = rotations[i];
+
+      // Recursively generate the curve for this sub-square
+      sierpinski(sqX1, sqY1, sqX2, sqY2, depth + 1, nextRot);
+    }
+  }
+
+  // Start from top-left corner, fill the square from (-0.5, -0.5) to (0.5, 0.5)
+  vertices.push(-0.5, -0.5);
+  sierpinski(-0.5, -0.5, 0.5, 0.5, 0, 0);
+
+  return new Float32Array(vertices);
+}
+
+// Helper function to create UBO-aware vertex shader for line-based fractals
+function createLineFractalVertexShader(useUBO) {
+  if (useUBO) {
+    return `#version 300 es
+    precision mediump float;
+    in vec2 position;
+    uniform float uZoom;
+    uniform vec2 uOffset;
+    uniform vec2 uResolution;
+    uniform vec2 uScale; // xScale, yScale
+    out vec2 vPosition;
+
+    void main() {
+      float aspect = uResolution.x / uResolution.y;
+      float scale = 4.0 / uZoom;
+      
+      // Transform vertex position to match the standard fractal coordinate system
+      // For line-based fractals, maintain aspect ratio correctly
+      vec2 fractalCoord = position;
+      vec2 relative = fractalCoord - uOffset;
+      
+      // Scale uniformly (same factor for x and y) to preserve shape
+      vec2 scaled = vec2(
+        relative.x / (scale * uScale.x),
+        relative.y / (scale * uScale.y)
+      );
+      
+      // Apply aspect ratio correction to maintain shape across different window sizes
+      // Divide x by aspect to compensate for wider screens, preserving the curve's proportions
+      scaled.x /= aspect;
+      
+      // Convert to clip space (-1 to 1) by multiplying by 2.0
+      gl_Position = vec4(scaled * 2.0, 0.0, 1.0);
+      vPosition = position;
+    }`;
+  }
+  
+  return `
+    precision mediump float;
+    attribute vec2 position;
+    uniform float uZoom;
+    uniform vec2 uOffset;
+    uniform vec2 uResolution;
+    uniform float uXScale;
+    uniform float uYScale;
+    varying vec2 vPosition;
+
+    void main() {
+      float aspect = uResolution.x / uResolution.y;
+      float scale = 4.0 / uZoom;
+      
+      // Transform vertex position to match the standard fractal coordinate system
+      // For line-based fractals, maintain aspect ratio correctly
+      vec2 fractalCoord = position;
+      vec2 relative = fractalCoord - uOffset;
+      
+      // Scale uniformly (same factor for x and y) to preserve shape
+      vec2 scaled = vec2(
+        relative.x / (scale * uXScale),
+        relative.y / (scale * uYScale)
+      );
+      
+      // Apply aspect ratio correction to maintain shape across different window sizes
+      // Divide x by aspect to compensate for wider screens, preserving the curve's proportions
+      scaled.x /= aspect;
+      
+      // Convert to clip space (-1 to 1) by multiplying by 2.0
+      gl_Position = vec4(scaled * 2.0, 0.0, 1.0);
+      vPosition = position;
+    }
+  `;
+}
+
+// Helper function to create UBO-aware fragment shader for line-based fractals
+function createLineFractalFragmentShader(useUBO) {
+  if (useUBO) {
+    return `#version 300 es
+    precision mediump float;
+    uniform sampler2D uPalette;
+    uniform float uIterations;
+    in vec2 vPosition;
+    out vec4 fragColor;
+
+    void main() {
+      // Color based on position along the curve
+      // Create interesting patterns with both distance and angle
+      float dist = length(vPosition);
+      float angle = atan(vPosition.y, vPosition.x);
+      float t = fract(dist * 1.9 + angle * 0.28);
+      
+      vec3 color = texture(uPalette, vec2(t, 0.5)).rgb;
+      fragColor = vec4(color, 1.0);
+    }`;
+  }
+  
+  return `
+    precision mediump float;
+    uniform sampler2D uPalette;
+    uniform float uIterations;
+    varying vec2 vPosition;
+
+    void main() {
+      // Color based on position along the curve
+      // Create interesting patterns with both distance and angle
+      float dist = length(vPosition);
+      float angle = atan(vPosition.y, vPosition.x);
+      float t = fract(dist * 1.9 + angle * 0.28);
+      
+      vec3 color = texture2D(uPalette, vec2(t, 0.5)).rgb;
+      gl_FragColor = vec4(color, 1.0);
+    }
+  `;
+}
+
+export function render(regl, params, canvas, options = {}) {
+  // Check if UBOs should be used (WebGL2 optimization)
+  const webglCapabilities = options.webglCapabilities;
+  const ubo = options.ubo;
+  const useUBO = webglCapabilities?.isWebGL2 && ubo;
+  // Generate palette texture for the current color scheme
+  const paletteTexture = generatePaletteTexture(regl, params.colorScheme);
+
+  // Calculate iteration level based on params.iterations
+  // Map 0-200 iterations to 0-6 levels
+  // Sierpiński curve grows as 4^n, so keep it reasonable
+  const iterationLevel = Math.max(0, Math.min(6, Math.floor(params.iterations / 33)));
+
+  // Generate vertices for current iteration level
+  const vertices = generateSierpinskiCurve(iterationLevel);
+
+  // Create UBO-aware shaders
+  const vertexShaderSource = createLineFractalVertexShader(useUBO);
+  const fragmentShaderSource = createLineFractalFragmentShader(useUBO);
+
+  const drawSierpinskiCurve = regl({
+    vert: vertexShaderSource,
+    frag: fragmentShaderSource,
+    attributes: {
+      position: vertices,
+    },
+    uniforms: useUBO
+      ? {
+          uZoom: params.zoom,
+          uOffset: [params.offset.x, params.offset.y],
+          uResolution: [canvas.width, canvas.height],
+          uPalette: paletteTexture,
+          uIterations: params.iterations,
+          uScale: [params.xScale, params.yScale],
+        }
+      : {
+          uZoom: params.zoom,
+          uOffset: [params.offset.x, params.offset.y],
+          uResolution: [canvas.width, canvas.height],
+          uPalette: paletteTexture,
+          uIterations: params.iterations,
+          uXScale: params.xScale,
+          uYScale: params.yScale,
+        },
+    viewport: {
+      x: 0,
+      y: 0,
+      width: canvas.width,
+      height: canvas.height,
+    },
+    count: vertices.length / 2,
+    primitive: 'line strip',
+    lineWidth: 1,
+  });
+
+  return drawSierpinskiCurve;
+}
+
+export const is2D = true;
+
+/**
+ * Configuration for Sierpiński Curve fractal
+ */
+export const config = {
+  initialSettings: {
+    colorScheme: 'neon',
+  },
+  initialPosition: {
+    zoom: 3.49,
+    offset: { x: -0.0107, y: 0.0065 },
+  },
+  interestingPoints: [
+    { x: 0, y: 0, zoom: 1 }, // Full Sierpiński curve view
+    { x: 0, y: 0, zoom: 2 }, // Center detail
+    { x: 0.2, y: 0.2, zoom: 3 }, // Upper right quadrant
+    { x: -0.2, y: 0.2, zoom: 3 }, // Upper left quadrant
+    { x: 0.2, y: -0.2, zoom: 3 }, // Lower right quadrant
+    { x: -0.2, y: -0.2, zoom: 3 }, // Lower left quadrant
+    { x: 0.15, y: 0.15, zoom: 4 }, // Deep zoom upper right
+    { x: -0.15, y: 0.15, zoom: 4 }, // Deep zoom upper left
+    { x: 0.15, y: -0.15, zoom: 4 }, // Deep zoom lower right
+    { x: 0, y: 0, zoom: 1.5 }, // Medium zoom center
+  ],
+  fallbackPosition: {
+    offset: { x: 0, y: 0 },
+    zoom: 1,
+  },
+};
+
