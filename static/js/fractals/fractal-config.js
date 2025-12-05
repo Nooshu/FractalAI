@@ -105,6 +105,9 @@ const FRACTAL_WIKIPEDIA_URLS = {
   magnet: 'https://en.wikipedia.org/wiki/Magnet_fractal',
   cesaro: 'https://en.wikipedia.org/wiki/Ces%C3%A0ro_fractal',
   'fractal-dimension-plot': 'https://en.wikipedia.org/wiki/Fractal_dimension',
+  weierstrass: 'https://en.wikipedia.org/wiki/Weierstrass_function',
+  takagi: 'https://en.wikipedia.org/wiki/Blancmange_curve',
+  blancmange: 'https://en.wikipedia.org/wiki/Blancmange_curve',
 };
 
 /**
@@ -296,6 +299,12 @@ export function getInitialRenderPosition(fractalType) {
     case 'mandelbrot':
       return { zoom: 1, offset: { x: 0, y: 0 } };
     case 'nebulabrot':
+      return { zoom: 1, offset: { x: 0, y: 0 } };
+    case 'weierstrass':
+      return { zoom: 1, offset: { x: 0, y: 0 } };
+    case 'takagi':
+      return { zoom: 1, offset: { x: 0, y: 0 } };
+    case 'blancmange':
       return { zoom: 1, offset: { x: 0, y: 0 } };
     default:
       return { zoom: 1, offset: { x: 0, y: 0 } };

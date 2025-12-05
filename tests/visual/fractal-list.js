@@ -64,6 +64,11 @@ export const FRACTAL_TYPES = [
   'moore-curve',
   'peano-curve',
 
+  // Nowhere Differentiable Functions
+  'weierstrass',
+  'takagi',
+  'blancmange',
+
   // Root-Finding Fractals
   'newton',
   'halley',
