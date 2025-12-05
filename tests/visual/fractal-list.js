@@ -91,6 +91,9 @@ export const FRACTAL_TYPES = [
   'domino-substitution',
   'pinwheel-tiling',
   'snowflake-tiling',
+  'rhombic-tiling',
+  'aperiodic-tilings',
+  'substitution-tilings',
 
   // Other Fractals
   'amman-tiling',

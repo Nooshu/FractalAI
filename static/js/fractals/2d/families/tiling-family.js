@@ -11,6 +11,9 @@ import * as ammanTiling from '../amman-tiling.js';
 import * as penroseSubstitution from '../penrose-substitution.js';
 import * as rauzy from '../rauzy.js';
 import * as chairTiling from '../chair-tiling.js';
+import * as rhombicTiling from '../rhombic-tiling.js';
+import * as aperiodicTilings from '../aperiodic-tilings.js';
+import * as substitutionTilings from '../substitution-tilings.js';
 
 // Export as a mapping object for easy lookup
 export const fractals = {
@@ -21,4 +24,7 @@ export const fractals = {
   'penrose-substitution': penroseSubstitution,
   rauzy: rauzy,
   'chair-tiling': chairTiling,
+  'rhombic-tiling': rhombicTiling,
+  'aperiodic-tilings': aperiodicTilings,
+  'substitution-tilings': substitutionTilings,
 };

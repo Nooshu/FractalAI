@@ -11,6 +11,7 @@ import { describe, it, expect } from 'vitest';
 
 const FRACTAL_MODULES_2D = [
   'amman-tiling',
+  'aperiodic-tilings',
   'apollonian-gasket',
   'barnsley-fern',
   'binary-dragon',
@@ -77,6 +78,7 @@ const FRACTAL_MODULES_2D = [
   'random-cantor',
   'random-midpoint-displacement',
   'rauzy',
+  'rhombic-tiling',
   'recursive-circle-removal',
   'recursive-polygon-splitting',
   'rose',
@@ -92,6 +94,7 @@ const FRACTAL_MODULES_2D = [
   'smith-volterra-cantor',
   'snowflake-tiling',
   'spider-set',
+  'substitution-tilings',
   'terdragon',
   'triangular-subdivision',
   'tricorn-julia',

@@ -109,6 +109,9 @@ const FRACTAL_FAMILIES = {
   'penrose-substitution': 'tiling-family',
   rauzy: 'tiling-family',
   'chair-tiling': 'tiling-family',
+  'rhombic-tiling': 'tiling-family',
+  'aperiodic-tilings': 'tiling-family',
+  'substitution-tilings': 'tiling-family',
 
   // Attractor Family
   'lorenz-attractor': 'attractor-family',
