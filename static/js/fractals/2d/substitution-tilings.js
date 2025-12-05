@@ -254,12 +254,12 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'ocean',
+    colorScheme: 'neon',
     iterations: 25,
   },
   initialPosition: {
     zoom: 3.2,
-    offset: { x: 0.4, y: 0.3 },
+    offset: { x: 0.11, y: 0.0114 },
   },
   interestingPoints: [],
   fallbackPosition: {

@@ -98,7 +98,7 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'ocean',
+    colorScheme: 'rainbow-pastel',
   },
   initialPosition: {
     zoom: 2.0,

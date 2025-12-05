@@ -97,11 +97,11 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'cosmic',
+    colorScheme: 'rainbow-pastel',
   },
   initialPosition: {
-    zoom: 1,
-    offset: { x: 0, y: 0 },
+    zoom: 5.851,
+    offset: { x: -0.0113, y: 0.6921 },
   },
   interestingPoints: [
     { x: 0, y: 0, zoom: 1 }, // Full overview

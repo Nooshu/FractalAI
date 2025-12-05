@@ -172,12 +172,12 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'galaxy',
+    colorScheme: 'coral',
     iterations: 90,
   },
   initialPosition: {
-    zoom: 2,
-    offset: { x: 1.4429, y: 1.1241 },
+    zoom: 1.548,
+    offset: { x: -0.0118, y: 0.036 },
   },
   interestingPoints: [
     { x: 0, y: 0, zoom: 1 }, // Full overview showing cross

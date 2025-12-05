@@ -97,11 +97,11 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'emerald',
+    colorScheme: 'vintage',
   },
   initialPosition: {
-    zoom: 2.5,
-    offset: { x: 0, y: 0.3 },
+    zoom: 1.92,
+    offset: { x: 0.0013, y: 0.4625 },
   },
   interestingPoints: [
     { x: 0, y: 0.3, zoom: 2 }, // Full tree

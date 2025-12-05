@@ -102,11 +102,11 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'emerald',
+    colorScheme: 'rainbow',
   },
   initialPosition: {
-    zoom: 3.0,
-    offset: { x: 0, y: -0.5 },
+    zoom: 2.321,
+    offset: { x: 0.0742, y: 0.2625 },
   },
   interestingPoints: [
     { x: 0, y: -0.5, zoom: 2 }, // Full leaf

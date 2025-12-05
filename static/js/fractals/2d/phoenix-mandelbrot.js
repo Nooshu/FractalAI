@@ -114,11 +114,11 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'classic',
+    colorScheme: 'rainbow',
   },
   initialPosition: {
-    zoom: 1,
-    offset: { x: -0.514, y: 0.01 },
+    zoom: 2,
+    offset: { x: -0.6903, y: 0.0526 },
   },
   interestingPoints: [],
   fallbackPosition: {

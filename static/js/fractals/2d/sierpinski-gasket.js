@@ -314,8 +314,8 @@ export const config = {
     xScale: 0.5,
   },
   initialPosition: {
-    zoom: 1,
-    offset: { x: 0.019, y: 0.144 },
+    zoom: 2,
+    offset: { x: 0.0169, y: 0.0961 },
   },
   interestingPoints: [
     { x: 0, y: 0, zoom: 1 }, // Full overview

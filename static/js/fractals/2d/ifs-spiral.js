@@ -99,10 +99,10 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'neon',
+    colorScheme: 'galaxy',
   },
   initialPosition: {
-    zoom: 2.0,
+    zoom: 2,
     offset: { x: 0, y: 0 },
   },
   interestingPoints: [

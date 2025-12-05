@@ -256,11 +256,11 @@ export const is2D = true;
 export const config = {
   initialSettings: {
     iterations: 50,
-    colorScheme: 'galaxy',
+    colorScheme: 'ocean',
   },
   initialPosition: {
-    zoom: 2.161,
-    offset: { x: 1.4592, y: 1.0659 },
+    zoom: 1.509,
+    offset: { x: 0.1359, y: 0.1005 },
   },
   interestingPoints: [
     { x: 0, y: 0, zoom: 1 }, // Full overview

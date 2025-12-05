@@ -118,11 +118,11 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'aurora',
+    colorScheme: 'neon',
   },
   initialPosition: {
-    zoom: 1.456,
-    offset: { x: 0.1169, y: 0.1266 },
+    zoom: 5.824,
+    offset: { x: 0.6464, y: 0.6658 },
   },
   interestingPoints: [
     { x: 0, y: 0, zoom: 1 }, // Full overview

@@ -257,11 +257,11 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'forest',
+    colorScheme: 'coral',
   },
   initialPosition: {
     zoom: 2,
-    offset: { x: 0, y: 0 },
+    offset: { x: 0.0026, y: 0.1865 },
   },
   interestingPoints: [
     { x: 0, y: 0, zoom: 1 }, // Full overview

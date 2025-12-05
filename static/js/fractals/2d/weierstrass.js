@@ -99,7 +99,7 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'cosmic',
+    colorScheme: 'coral',
     iterations: 100, // Ensure enough iterations for visible detail
   },
   initialPosition: {

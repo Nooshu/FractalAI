@@ -39,37 +39,45 @@ float blancmange(float x) {
 }
 
 float computeFractal(vec2 c) {
-    // Map x coordinate to domain [0, 1] for Blancmange function
-    // Blancmange is typically defined on [0, 1]
-    float x = (c.x + 2.0) / 4.0; // Map from [-2, 2] to [0, 1]
-    
-    // Clamp x to [0, 1] range
-    if (x < 0.0 || x > 1.0) {
-        return 0.0;
-    }
+    // Use x coordinate directly - blancmange can be extended beyond [0,1]
+    // by using the periodic nature of the distance function
+    float x = c.x;
     
     // Compute Blancmange function value
-    float b = blancmange(x);
+    // The function is periodic with period 1, so we can use mod to extend it
+    float xNormalized = mod(x, 1.0);
+    if (xNormalized < 0.0) xNormalized += 1.0;
     
-    // Scale and center vertically
-    // Blancmange function ranges from 0 to approximately 0.5
-    float scale = 0.8 + uYScale * 0.4; // 0.8 to 1.2
-    float centerY = 0.0;
+    float b = blancmange(xNormalized);
+    
+    // Blancmange function ranges from 0 to approximately 0.5 on [0, 1]
+    // Scale it vertically for better visibility
+    float verticalScale = 1.5 + uYScale * 1.5; // 1.5 to 3.0
+    float functionY = b * verticalScale;
     
     // Check if y coordinate is near the function value
     float y = c.y;
-    float dist = abs(y - (b * scale + centerY));
+    float dist = abs(y - functionY);
     
-    // Create a curve by checking proximity to the function
-    // Use a narrow band for the curve
-    float curveWidth = 0.02 / uZoom; // Adaptive width based on zoom
+    // Adaptive curve width - wider at low zoom, narrower at high zoom
+    // This allows seeing the curve at all zoom levels
+    float baseWidth = 0.15;
+    float minWidth = 0.02;
+    float curveWidth = max(baseWidth / max(uZoom * 0.5, 0.5), minWidth);
+    
+    // Create smooth falloff for the curve
     float intensity = 1.0 - smoothstep(0.0, curveWidth, dist);
     
-    // Add some detail based on the function's fractal nature
-    // The Blancmange curve has detail at all scales
-    float detail = fract(sin(x * 200.0) * 43758.5453) * 0.1;
+    // Enhance the fractal detail by using the function's self-similarity
+    // The blancmange curve has detail at all scales, so we add subtle texture
+    // based on the function's structure
+    float detailScale = uZoom * 0.1;
+    float detail = fract(sin(xNormalized * 100.0 * detailScale) * 43758.5453) * 0.08;
     
-    return intensity * (uIterations / 20.0) + detail;
+    // Scale by iterations for coloring
+    float result = intensity * (uIterations / 15.0) + detail;
+    
+    return result;
 }
 `;
 
@@ -97,11 +105,11 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'cosmic',
+    colorScheme: 'rainbow-pastel',
   },
   initialPosition: {
     zoom: 1,
-    offset: { x: 0, y: 0 },
+    offset: { x: -0.0015, y: 0.7649 },
   },
   interestingPoints: [
     { x: 0, y: 0, zoom: 1 }, // Full overview

@@ -190,12 +190,12 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'ice',
+    colorScheme: 'monochrome',
     iterations: 330,
   },
   initialPosition: {
-    zoom: 1,
-    offset: { x: 2.978, y: 2.04 },
+    zoom: 2,
+    offset: { x: -0.05, y: -0.081 },
   },
   interestingPoints: [],
   fallbackPosition: {

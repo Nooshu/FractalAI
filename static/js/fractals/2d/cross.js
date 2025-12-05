@@ -174,11 +174,11 @@ export const config = {
     iterations: 240,
     xScale: 1.0,
     yScale: 1.0,
-    colorScheme: 'midnight',
+    colorScheme: 'coral',
   },
   initialPosition: {
-    zoom: 2.928,
-    offset: { x: 0.7305, y: 0.759 },
+    zoom: 1.357,
+    offset: { x: -0.1595, y: 0.0074 },
   },
   interestingPoints: [
     { x: 0, y: 0, zoom: 1 }, // Full overview

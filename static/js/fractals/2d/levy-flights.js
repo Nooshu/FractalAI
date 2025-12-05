@@ -187,11 +187,11 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'autumn',
+    colorScheme: 'ocean',
   },
   initialPosition: {
     zoom: 1,
-    offset: { x: 0, y: 0 },
+    offset: { x: 0.9645, y: 0.2072 },
   },
   interestingPoints: [],
   fallbackPosition: {

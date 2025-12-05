@@ -170,8 +170,8 @@ export const config = {
     colorScheme: 'cosmic',
   },
   initialPosition: {
-    zoom: 2.597,
-    offset: { x: 1.1991, y: 0.9663 },
+    zoom: 1.814,
+    offset: { x: 0.1035, y: 0.057 },
   },
   interestingPoints: [],
   fallbackPosition: {

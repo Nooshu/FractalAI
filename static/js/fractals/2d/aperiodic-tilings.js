@@ -231,12 +231,12 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'cosmic',
+    colorScheme: 'rosegold',
     iterations: 25,
   },
   initialPosition: {
-    zoom: 3.0,
-    offset: { x: 0.3, y: 0.4 },
+    zoom: 3,
+    offset: { x: 0.1285, y: -0.0001 },
   },
   interestingPoints: [],
   fallbackPosition: {
