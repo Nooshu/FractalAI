@@ -4,7 +4,6 @@ import {
 } from '../utils.js';
 
 // Helper function to create UBO-aware fragment shader for multibrot
-// Multibrot needs custom handling: xScale is used for order, not coordinate transformation
 function createMultibrotFragmentShader(useUBO) {
   const uniformDeclarations = useUBO
     ? `#version 300 es
@@ -51,38 +50,24 @@ function createMultibrotFragmentShader(useUBO) {
 
   return `${uniformDeclarations}
     
-    // Helper function to compute z^n for complex number z and real power n
-    // Uses De Moivre's theorem: z^n = |z|^n * (cos(n*arg(z)) + i*sin(n*arg(z)))
-    vec2 complexPower(vec2 z, float n) {
-        if (n == 2.0) {
-            // Optimized case for n=2 (Mandelbrot)
-            return vec2(z.x * z.x - z.y * z.y, 2.0 * z.x * z.y);
-        }
-        
-        float r = length(z);
-        if (r < 0.0001) {
-            return vec2(0.0, 0.0); // Avoid division by zero
-        }
-        
-        float theta = atan(z.y, z.x);
-        float rn = pow(r, n);
-        float nTheta = n * theta;
-        
-        return vec2(rn * cos(nTheta), rn * sin(nTheta));
+    // Optimized function to compute z^3 for complex number z
+    // z^3 = (x+iy)^3 = x^3 - 3xy^2 + i(3x^2y - y^3)
+    vec2 complexCube(vec2 z) {
+        float zx2 = z.x * z.x;
+        float zy2 = z.y * z.y;
+        float zx3 = zx2 * z.x;
+        float zy3 = zy2 * z.y;
+        return vec2(zx3 - 3.0 * z.x * zy2, 3.0 * zx2 * z.y - zy3);
     }
     
     float computeFractal(vec2 c) {
-        // Multibrot set: z = z^n + c
-        // Order n is controlled by uXScale (mapped from 2.0 to 10.0)
-        float n = 2.0 + uXScale * 8.0; // Map xScale (0-1) to order (2-10)
-        n = max(2.0, min(10.0, n)); // Clamp to reasonable range
-        
+        // Multibrot set with power 3: z = z^3 + c (cubic multibrot)
         vec2 z = vec2(0.0);
         float zx2 = 0.0;
         float zy2 = 0.0;
         
         // Unroll first few iterations for better performance
-        z = complexPower(z, n) + c;
+        z = complexCube(z) + c;
         zx2 = z.x * z.x;
         zy2 = z.y * z.y;
         if (zx2 + zy2 > 4.0) {
@@ -91,7 +76,7 @@ function createMultibrotFragmentShader(useUBO) {
             return 0.0 + 1.0 - nu;
         }
         
-        z = complexPower(z, n) + c;
+        z = complexCube(z) + c;
         zx2 = z.x * z.x;
         zy2 = z.y * z.y;
         if (zx2 + zy2 > 4.0) {
@@ -100,7 +85,7 @@ function createMultibrotFragmentShader(useUBO) {
             return 1.0 + 1.0 - nu;
         }
         
-        z = complexPower(z, n) + c;
+        z = complexCube(z) + c;
         zx2 = z.x * z.x;
         zy2 = z.y * z.y;
         if (zx2 + zy2 > 4.0) {
@@ -123,8 +108,8 @@ function createMultibrotFragmentShader(useUBO) {
                 return float(i) + 1.0 - nu;
             }
             
-            // Compute z^n using De Moivre's theorem
-            z = complexPower(z, n) + c;
+            // Compute z^3
+            z = complexCube(z) + c;
         }
         return uIterations;
     }
@@ -133,9 +118,6 @@ function createMultibrotFragmentShader(useUBO) {
         vec2 uv = vUv;
         float aspect = uResolution.x / uResolution.y;
         float scale = 4.0 / uZoom;
-        // Use xScale only for order calculation, not for coordinate transformation
-        // Always use 1.0 for coordinate scaling to avoid stretching
-        // Fixed: xScale no longer affects coordinate transformation
         vec2 c = vec2(
             (uv.x - 0.5) * scale * aspect + uOffset.x,
             (uv.y - 0.5) * scale * uYScale + uOffset.y
@@ -206,21 +188,8 @@ export function render(regl, params, canvas, options = {}) {
     // Bind UBO if available
     ...(useUBO && ubo?.glBuffer && ubo?.bind
       ? {
-          context: { ubo: ubo },
-          before: function bindUBO(context) {
-            const gl = regl._gl;
-            const program = gl.getParameter(gl.CURRENT_PROGRAM);
-            if (program && context.ubo) {
-              context.ubo.update({
-                iterations: params.iterations,
-                zoom: params.zoom,
-                offset: params.offset,
-                juliaC: { x: 0, y: 0 },
-                xScale: params.xScale,
-                yScale: params.yScale,
-              });
-              context.ubo.bind(program);
-            }
+          ubo: {
+            FractalParams: ubo.glBuffer,
           },
         }
       : {}),
@@ -230,12 +199,12 @@ export function render(regl, params, canvas, options = {}) {
 export const is2D = true;
 
 /**
- * Configuration for Multibrot fractal
+ * Configuration for Multibrot fractal (z^3 + c - Cubic)
  */
 export const config = {
   initialSettings: {
     colorScheme: 'midnight',
-    xScale: 0.25,
+    xScale: 1.0,
     yScale: 1.0,
   },
   initialPosition: {
@@ -243,21 +212,9 @@ export const config = {
     offset: { x: 0, y: 0 },
   },
   interestingPoints: [
-    { x: 0.0, y: 0.0, zoom: 1 }, // Center - full view
-    { x: -0.5, y: 0.0, zoom: 2 }, // Left of center
-    { x: 0.5, y: 0.0, zoom: 2 }, // Right of center
-    { x: 0.0, y: 0.5, zoom: 2 }, // Top of center
-    { x: 0.0, y: -0.5, zoom: 2 }, // Bottom of center
-    { x: -0.75, y: 0.0, zoom: 3 }, // Left side
-    { x: 0.75, y: 0.0, zoom: 3 }, // Right side
-    { x: 0.0, y: 0.75, zoom: 3 }, // Top
-    { x: -0.4, y: 0.4, zoom: 4 }, // Upper left quadrant
-    { x: 0.4, y: 0.4, zoom: 4 }, // Upper right quadrant
-    { x: -0.4, y: -0.4, zoom: 4 }, // Lower left quadrant
-    { x: 0.4, y: -0.4, zoom: 4 }, // Lower right quadrant
-    { x: -0.6, y: 0.2, zoom: 5 }, // Left side detail
-    { x: 0.6, y: 0.2, zoom: 5 }, // Right side detail
-    { x: -0.2, y: 0.6, zoom: 5 }, // Top detail
+    { x: 0.0, y: 0.0, zoom: 1 },
+    { x: -0.5, y: 0.0, zoom: 2 },
+    { x: 0.5, y: 0.0, zoom: 2 },
   ],
   fallbackPosition: {
     offset: { x: 0.0, y: 0.0 },

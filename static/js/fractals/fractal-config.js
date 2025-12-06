@@ -11,14 +11,6 @@ const FRACTAL_WIKIPEDIA_URLS = {
   mandelbrot: 'https://en.wikipedia.org/wiki/Mandelbrot_set',
   'celtic-mandelbrot': 'https://en.wikipedia.org/wiki/Mandelbrot_set',
   multibrot: 'https://en.wikipedia.org/wiki/Multibrot_set',
-  'multibrot-cubic': 'https://en.wikipedia.org/wiki/Multibrot_set',
-  'multibrot-quartic': 'https://en.wikipedia.org/wiki/Multibrot_set',
-  'multibrot-quintic': 'https://en.wikipedia.org/wiki/Multibrot_set',
-  'multibrot-sextic': 'https://en.wikipedia.org/wiki/Multibrot_set',
-  'multibrot-septic': 'https://en.wikipedia.org/wiki/Multibrot_set',
-  'multibrot-octic': 'https://en.wikipedia.org/wiki/Multibrot_set',
-  'multibrot-nonic': 'https://en.wikipedia.org/wiki/Multibrot_set',
-  'multibrot-decic': 'https://en.wikipedia.org/wiki/Multibrot_set',
   'mutant-mandelbrot': 'https://en.wikipedia.org/wiki/Mandelbrot_set',
   'phoenix-mandelbrot': 'https://en.wikipedia.org/wiki/Phoenix_fractal',
   'burning-ship': 'https://en.wikipedia.org/wiki/Burning_Ship_fractal',
@@ -216,22 +208,6 @@ export function getInitialRenderPosition(fractalType) {
     case 'barnsley-fern':
       return { zoom: 1.403, offset: { x: 1.673, y: 1.9506 } };
     case 'multibrot':
-      return { zoom: 1, offset: { x: 0, y: 0 } };
-    case 'multibrot-cubic':
-      return { zoom: 1, offset: { x: 0, y: 0 } };
-    case 'multibrot-quartic':
-      return { zoom: 1, offset: { x: 0, y: 0 } };
-    case 'multibrot-quintic':
-      return { zoom: 1, offset: { x: 0, y: 0 } };
-    case 'multibrot-sextic':
-      return { zoom: 1, offset: { x: 0, y: 0 } };
-    case 'multibrot-septic':
-      return { zoom: 1, offset: { x: 0, y: 0 } };
-    case 'multibrot-octic':
-      return { zoom: 1, offset: { x: 0, y: 0 } };
-    case 'multibrot-nonic':
-      return { zoom: 1, offset: { x: 0, y: 0 } };
-    case 'multibrot-decic':
       return { zoom: 1, offset: { x: 0, y: 0 } };
     case 'multibrot-julia':
       return { zoom: 1, offset: { x: 0, y: 0 } };

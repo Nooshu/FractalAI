@@ -21,14 +21,6 @@ const FRACTAL_FAMILIES = {
   tricorn: 'mandelbrot-family',
   nebulabrot: 'mandelbrot-family',
   buddhabrot: 'mandelbrot-family',
-  'multibrot-cubic': 'mandelbrot-family',
-  'multibrot-quartic': 'mandelbrot-family',
-  'multibrot-quintic': 'mandelbrot-family',
-  'multibrot-sextic': 'mandelbrot-family',
-  'multibrot-septic': 'mandelbrot-family',
-  'multibrot-octic': 'mandelbrot-family',
-  'multibrot-nonic': 'mandelbrot-family',
-  'multibrot-decic': 'mandelbrot-family',
 
   // Julia Sets
   julia: 'julia-family',
