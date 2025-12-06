@@ -204,6 +204,16 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
         vintage: 'Vintage',
         tropical: 'Tropical',
         galaxy: 'Galaxy',
+        lava: 'Lava',
+        arctic: 'Arctic',
+        sakura: 'Sakura',
+        volcanic: 'Volcanic',
+        mint: 'Mint',
+        sunrise: 'Sunrise',
+        steel: 'Steel',
+        prism: 'Prism',
+        mystic: 'Mystic',
+        amber: 'Amber',
       };
       return nameMap[scheme] || scheme.charAt(0).toUpperCase() + scheme.slice(1);
     };

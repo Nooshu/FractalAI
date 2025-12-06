@@ -326,6 +326,130 @@ export function computeColorForScheme(t, schemeIndex, out = null) {
       out[2] = Math.min(1.0, b * sparkle);
       return out;
     }
+    case 28: {
+      // lava - Molten lava (deep red to bright orange/yellow)
+      // Lava: dark red to bright orange to yellow-white
+      const phase1 = Math.min(t * 2.0, 1.0);
+      const phase2 = Math.max(0.0, (t - 0.5) * 2.0);
+
+      out[0] = 0.2 + phase1 * 0.6 + phase2 * 0.2;
+      out[1] = 0.0 + phase1 * 0.4 + phase2 * 0.6;
+      out[2] = 0.0 + phase1 * 0.1 + phase2 * 0.9;
+      return out;
+    }
+    case 29: {
+      // arctic - Cool arctic blues and whites
+      // Arctic: deep blue to cyan to white
+      const phase1 = Math.min(t * 2.0, 1.0);
+      const phase2 = Math.max(0.0, (t - 0.5) * 2.0);
+
+      out[0] = 0.1 + phase1 * 0.3 + phase2 * 0.6;
+      out[1] = 0.2 + phase1 * 0.5 + phase2 * 0.3;
+      out[2] = 0.4 + phase1 * 0.4 + phase2 * 0.6;
+      return out;
+    }
+    case 30: {
+      // sakura - Cherry blossom pinks
+      // Sakura: soft pink to rose to white
+      const phase1 = Math.min(t * 2.5, 1.0);
+      const phase2 = Math.max(0.0, (t - 0.4) * 1.67);
+
+      out[0] = 0.3 + phase1 * 0.5 + phase2 * 0.2;
+      out[1] = 0.2 + phase1 * 0.4 + phase2 * 0.4;
+      out[2] = 0.25 + phase1 * 0.35 + phase2 * 0.4;
+      return out;
+    }
+    case 31: {
+      // volcanic - Dark volcanic colors (black, dark red, orange)
+      // Volcanic: black to dark red to orange
+      const darkBase = 0.05;
+      const phase1 = Math.min(t * 3.0, 1.0);
+      const phase2 = Math.max(0.0, (t - 0.33) * 1.5);
+
+      out[0] = darkBase + phase1 * 0.4 + phase2 * 0.55;
+      out[1] = darkBase + phase1 * 0.1 + phase2 * 0.4;
+      out[2] = darkBase + phase1 * 0.0 + phase2 * 0.2;
+      return out;
+    }
+    case 32: {
+      // mint - Fresh mint greens and teals
+      // Mint: dark green to bright mint to cyan
+      const phase1 = Math.min(t * 2.0, 1.0);
+      const phase2 = Math.max(0.0, (t - 0.5) * 2.0);
+
+      out[0] = 0.1 + phase1 * 0.2 + phase2 * 0.3;
+      out[1] = 0.3 + phase1 * 0.5 + phase2 * 0.2;
+      out[2] = 0.2 + phase1 * 0.4 + phase2 * 0.4;
+      return out;
+    }
+    case 33: {
+      // sunrise - Soft sunrise colors (pink, orange, yellow)
+      // Sunrise: soft pink to orange to bright yellow
+      const phase1 = Math.min(t * 2.0, 1.0);
+      const phase2 = Math.max(0.0, (t - 0.5) * 2.0);
+
+      out[0] = 0.4 + phase1 * 0.4 + phase2 * 0.2;
+      out[1] = 0.3 + phase1 * 0.3 + phase2 * 0.4;
+      out[2] = 0.35 + phase1 * 0.15 + phase2 * 0.5;
+      return out;
+    }
+    case 34: {
+      // steel - Metallic steel grays and blues
+      // Steel: dark gray to blue-gray to silver
+      const phase1 = Math.min(t * 2.0, 1.0);
+      const phase2 = Math.max(0.0, (t - 0.5) * 2.0);
+
+      out[0] = 0.2 + phase1 * 0.3 + phase2 * 0.3;
+      out[1] = 0.25 + phase1 * 0.35 + phase2 * 0.25;
+      out[2] = 0.3 + phase1 * 0.4 + phase2 * 0.3;
+      return out;
+    }
+    case 35: {
+      // prism - Inverted prism (dark base with bright complementary colors)
+      // Prism: inverted rainbow - uses complementary colors with inverted brightness
+      const hue = ((t * 360 * 1.5 + 180) % 360) / 360; // Shift 180 degrees for complementary colors
+      
+      // Calculate complementary colors
+      const r = 0.5 + 0.5 * Math.cos(hue * 6.28 + 0.0);
+      const g = 0.5 + 0.5 * Math.cos(hue * 6.28 + 2.09);
+      const b = 0.5 + 0.5 * Math.cos(hue * 6.28 + 4.18);
+
+      // Invert: dark base with bright complementary colors
+      // Where rainbow is bright, prism is dark; where rainbow is dark, prism is bright
+      out[0] = Math.max(0, Math.min(1, 0.15 + (1.0 - r) * 0.85));
+      out[1] = Math.max(0, Math.min(1, 0.15 + (1.0 - g) * 0.85));
+      out[2] = Math.max(0, Math.min(1, 0.15 + (1.0 - b) * 0.85));
+      return out;
+    }
+    case 36: {
+      // mystic - Deep purples and magentas with sparkles
+      // Mystic: deep purple to magenta to bright pink with sparkle
+      const phase1 = Math.min(t * 2.0, 1.0);
+      const phase2 = Math.max(0.0, (t - 0.5) * 2.0);
+
+      const r = 0.1 + phase1 * 0.5 + phase2 * 0.4;
+      const g = 0.05 + phase1 * 0.2 + phase2 * 0.5;
+      const b = 0.2 + phase1 * 0.6 + phase2 * 0.2;
+
+      // Add sparkle effect
+      const sparkle = Math.sin(t * Math.PI * 10.0) * 0.2 + 0.8;
+
+      out[0] = Math.min(1.0, r * sparkle);
+      out[1] = Math.min(1.0, g * sparkle);
+      out[2] = Math.min(1.0, b * sparkle);
+      return out;
+    }
+    case 37: {
+      // amber - Warm amber, honey, brown tones
+      // Amber: dark brown to amber to golden yellow
+      const phase1 = Math.min(t * 2.0, 1.0);
+      const phase2 = Math.max(0.0, (t - 0.5) * 2.0);
+
+      out[0] = 0.2 + phase1 * 0.5 + phase2 * 0.3;
+      out[1] = 0.15 + phase1 * 0.4 + phase2 * 0.45;
+      out[2] = 0.1 + phase1 * 0.2 + phase2 * 0.7;
+      return out;
+    }
     default: // classic (scheme == 0)
       out[0] = t * 0.5;
       out[1] = t;
@@ -641,6 +765,16 @@ export function getColorSchemeIndex(scheme) {
     'vintage',
     'tropical',
     'galaxy',
+    'lava',
+    'arctic',
+    'sakura',
+    'volcanic',
+    'mint',
+    'sunrise',
+    'steel',
+    'prism',
+    'mystic',
+    'amber',
   ];
   return schemes.indexOf(scheme);
 }
