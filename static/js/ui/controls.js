@@ -1402,8 +1402,8 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
   fullscreenIterationsUpBtn.addEventListener('click', () => updateIterations(5));
   fullscreenIterationsDownBtn.addEventListener('click', () => updateIterations(-5));
 
-  // Color scheme cycling for fullscreen controls
-  fullscreenColorCycleBtn.addEventListener('click', async () => {
+  // Shared function to cycle to next color scheme
+  const cycleToNextColorScheme = async () => {
     const params = getParams();
     // Cycle to next color scheme
     currentColorSchemeIndex = (currentColorSchemeIndex + 1) % colorSchemes.length;
@@ -1426,7 +1426,61 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
 
     // Render with new color scheme
     renderFractalProgressive();
-  });
+  };
+
+  // Color scheme cycling for fullscreen controls
+  fullscreenColorCycleBtn.addEventListener('click', cycleToNextColorScheme);
+
+  // Auto-cycle color schemes functionality
+  const fullscreenAutoCycleBtn = document.getElementById('fullscreen-auto-cycle');
+  const autoCyclePlayIcon = document.getElementById('fullscreen-auto-cycle-play');
+  const autoCyclePauseIcon = document.getElementById('fullscreen-auto-cycle-pause');
+  let autoCycleInterval = null;
+  const AUTO_CYCLE_INTERVAL = 2000; // 2 seconds between cycles
+
+  const startAutoCycle = () => {
+    if (autoCycleInterval) return; // Already running
+    
+    autoCycleInterval = setInterval(() => {
+      if (isFullscreen()) {
+        cycleToNextColorScheme();
+      } else {
+        stopAutoCycle();
+      }
+    }, AUTO_CYCLE_INTERVAL);
+
+    // Update button appearance
+    if (autoCyclePlayIcon) autoCyclePlayIcon.style.display = 'none';
+    if (autoCyclePauseIcon) autoCyclePauseIcon.style.display = 'block';
+    if (fullscreenAutoCycleBtn) {
+      fullscreenAutoCycleBtn.title = 'Pause Auto Cycle';
+    }
+  };
+
+  const stopAutoCycle = () => {
+    if (autoCycleInterval) {
+      clearInterval(autoCycleInterval);
+      autoCycleInterval = null;
+    }
+
+    // Update button appearance
+    if (autoCyclePlayIcon) autoCyclePlayIcon.style.display = 'block';
+    if (autoCyclePauseIcon) autoCyclePauseIcon.style.display = 'none';
+    if (fullscreenAutoCycleBtn) {
+      fullscreenAutoCycleBtn.title = 'Auto Cycle Color Schemes';
+    }
+  };
+
+  // Toggle auto-cycle on button click
+  if (fullscreenAutoCycleBtn) {
+    fullscreenAutoCycleBtn.addEventListener('click', () => {
+      if (autoCycleInterval) {
+        stopAutoCycle();
+      } else {
+        startAutoCycle();
+      }
+    });
+  }
 
   fullscreenScreenshotBtn.addEventListener('click', captureScreenshot);
 
@@ -1455,6 +1509,8 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
     } else {
       // Clear timer when exiting fullscreen
       clearFadeTimer();
+      // Stop auto-cycle when exiting fullscreen
+      stopAutoCycle();
       // Make sure UI is visible when not in fullscreen
       if (fullscreenControls) {
         fullscreenControls.classList.remove('faded');
@@ -1576,6 +1632,8 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
       }
       // Clear fade timer
       clearFadeTimer();
+      // Stop auto-cycle
+      stopAutoCycle();
     },
   };
 }
