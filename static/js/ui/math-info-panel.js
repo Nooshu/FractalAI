@@ -326,7 +326,7 @@ export function setupMathInfoPanel(callbacks) {
     relatedList.className = 'math-info-related';
     
     relatedFractals.forEach(related => {
-      const chip = document.createElement('button');
+      const chip = document.createElement('span');
       chip.className = 'related-fractal-chip';
       chip.textContent = related.name;
       chip.title = related.relationship || '';

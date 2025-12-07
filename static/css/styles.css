@@ -407,25 +407,8 @@ body {
 }
 
 .related-fractal-chip {
-  padding: 6px 12px;
-  background: var(--bg-dark);
-  border: 1px solid var(--border-color);
-  border-radius: 16px;
   color: var(--text-primary);
   font-size: 0.85rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.related-fractal-chip:hover {
-  background: var(--button-blue-bg);
-  border-color: var(--accent-blue);
-  color: white;
-  transform: translateY(-1px);
-}
-
-.related-fractal-chip:active {
-  transform: translateY(0);
 }
 
 .math-info-wikipedia-link {
