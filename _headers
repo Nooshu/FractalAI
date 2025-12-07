@@ -6,10 +6,22 @@
   Link: <https://en.wikipedia.org>; rel=dns-prefetch
 
 # Service Worker - never cache (critical for updates)
+# Must be before /*.js rule to take precedence
 /sw.js
-  Cache-Control: no-cache, no-store, must-revalidate, max-age=0
+  Cache-Control: no-cache, no-store, must-revalidate, max-age=0, private
   Pragma: no-cache
   Expires: 0
+  X-Content-Type-Options: nosniff
+  Vary: *
+
+# Service Worker Brotli-compressed - never cache
+/sw.js.br
+  Cache-Control: no-cache, no-store, must-revalidate, max-age=0, private
+  Pragma: no-cache
+  Expires: 0
+  Content-Encoding: br
+  X-Content-Type-Options: nosniff
+  Vary: *
 
 # HTML files - short cache with stale-while-revalidate for better performance
 /*.html
