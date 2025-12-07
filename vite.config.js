@@ -284,6 +284,9 @@ export default defineConfig({
         } catch (err) {
           console.warn('Static directory not found or copy failed:', err.message);
         }
+
+        // Note: Brotli compression is handled by the build script after this plugin runs
+        console.log('[Build] Assets ready for Brotli compression');
       },
     },
   ],

@@ -10,7 +10,7 @@
   },
   "scripts": {
     "dev": "node scripts/generate-presets-manifest.js && vite",
-    "build": "node scripts/generate-presets-manifest.js && vite build",
+    "build": "node scripts/generate-presets-manifest.js && vite build && node scripts/compress-brotli.js",
     "preview": "vite preview",
     "generate-manifest": "node scripts/generate-presets-manifest.js",
     "lint": "eslint .",

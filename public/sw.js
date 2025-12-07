@@ -50,6 +50,73 @@ self.addEventListener('activate', (event) => {
   return self.clients.claim();
 });
 
+/**
+ * Check if browser supports Brotli compression
+ */
+function supportsBrotli() {
+  // Check if browser supports Brotli via Accept-Encoding header
+  // Most modern browsers support it, but we'll check the request
+  return true; // Assume support for modern browsers
+}
+
+/**
+ * Get Brotli-compressed URL for a request
+ */
+function getBrotliUrl(url) {
+  // Don't compress service worker itself
+  if (url.pathname === '/sw.js' || url.pathname.endsWith('/sw.js')) {
+    return null;
+  }
+  
+  // Check if file is compressible
+  const compressibleExtensions = ['.js', '.css', '.html', '.json', '.svg', '.xml', '.txt', '.woff2', '.woff', '.ttf'];
+  const hasCompressibleExt = compressibleExtensions.some(ext => url.pathname.endsWith(ext));
+  
+  if (!hasCompressibleExt) {
+    return null;
+  }
+  
+  // Return .br version URL
+  return url.href + '.br';
+}
+
+/**
+ * Get Content-Type from file extension
+ */
+function getContentType(url) {
+  const pathname = url.pathname;
+  if (pathname.endsWith('.js')) return 'application/javascript; charset=utf-8';
+  if (pathname.endsWith('.css')) return 'text/css; charset=utf-8';
+  if (pathname.endsWith('.html')) return 'text/html; charset=utf-8';
+  if (pathname.endsWith('.json')) return 'application/json; charset=utf-8';
+  if (pathname.endsWith('.svg')) return 'image/svg+xml; charset=utf-8';
+  if (pathname.endsWith('.woff2')) return 'font/woff2';
+  if (pathname.endsWith('.woff')) return 'font/woff';
+  if (pathname.endsWith('.ttf')) return 'font/ttf';
+  return 'application/octet-stream';
+}
+
+/**
+ * Create a response with Brotli encoding headers
+ */
+function createBrotliResponse(body, originalRequest) {
+  const url = new URL(originalRequest.url);
+  // Remove .br from pathname to get original file extension
+  const originalPath = url.pathname.replace(/\.br$/, '');
+  url.pathname = originalPath;
+  
+  return new Response(body, {
+    status: 200,
+    statusText: 'OK',
+    headers: {
+      'Content-Type': getContentType(url),
+      'Content-Encoding': 'br',
+      'Cache-Control': 'public, max-age=31536000',
+      'Vary': 'Accept-Encoding',
+    },
+  });
+}
+
 // Fetch event - implement caching strategies
 self.addEventListener('fetch', (event) => {
   const { request } = event;
@@ -65,15 +132,65 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Strategy 1: HTML files - Network first, fallback to cache
-  // This ensures users always get the latest HTML
-  if (
-    request.destination === 'document' ||
-    url.pathname === '/' ||
-    url.pathname.endsWith('.html')
-  ) {
-    event.respondWith(
-      fetch(request)
+  // Helper function to try Brotli-compressed requests
+  function tryBrotli() {
+    const acceptEncoding = request.headers.get('Accept-Encoding') || '';
+    const acceptsBrotli = acceptEncoding.includes('br');
+    
+    if (!acceptsBrotli) {
+      return Promise.resolve(null);
+    }
+    
+    const brotliUrl = getBrotliUrl(url);
+    if (!brotliUrl) {
+      return Promise.resolve(null);
+    }
+    
+    const brotliRequest = new Request(brotliUrl, {
+      method: 'GET',
+      headers: request.headers,
+    });
+    
+    // Try cache first, then network
+    return caches.match(brotliRequest).then((cachedBrotli) => {
+      if (cachedBrotli) {
+        // Return cached Brotli version with proper headers
+        return createBrotliResponse(cachedBrotli.body, request);
+      }
+      
+      // Not in cache, try network
+      return fetch(brotliRequest)
+        .then((networkResponse) => {
+          if (networkResponse.ok) {
+            // Cache the Brotli version
+            const responseClone = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(brotliRequest, responseClone);
+            });
+            // Return with proper headers
+            return createBrotliResponse(networkResponse.body, request);
+          }
+          // Brotli version not available
+          return null;
+        })
+        .catch(() => {
+          // Network failed
+          return null;
+        });
+    });
+  }
+  
+  // Normal request handling (fallback or non-compressible files)
+  function handleNormalRequest() {
+
+    // Strategy 1: HTML files - Network first, fallback to cache
+    // This ensures users always get the latest HTML
+    if (
+      request.destination === 'document' ||
+      url.pathname === '/' ||
+      url.pathname.endsWith('.html')
+    ) {
+      return fetch(request)
         .then((response) => {
           // Cache successful responses
           if (response.ok) {
@@ -95,23 +212,20 @@ self.addEventListener('fetch', (event) => {
               return caches.match('/index.html');
             }
           });
-        })
-    );
-    return;
-  }
+        });
+    }
 
-  // Strategy 2: CSS and JavaScript - Cache first (Vite hashes filenames)
-  // Since Vite already version-hashes these files (e.g., index-abc123.js),
-  // we can cache aggressively. If the hash changes, it's a new file.
-  if (
-    request.destination === 'script' ||
-    request.destination === 'style' ||
-    url.pathname.endsWith('.js') ||
-    url.pathname.endsWith('.css') ||
-    url.pathname.startsWith('/assets/')
-  ) {
-    event.respondWith(
-      caches.match(request).then((cachedResponse) => {
+    // Strategy 2: CSS and JavaScript - Cache first (Vite hashes filenames)
+    // Since Vite already version-hashes these files (e.g., index-abc123.js),
+    // we can cache aggressively. If the hash changes, it's a new file.
+    if (
+      request.destination === 'script' ||
+      request.destination === 'style' ||
+      url.pathname.endsWith('.js') ||
+      url.pathname.endsWith('.css') ||
+      url.pathname.startsWith('/assets/')
+    ) {
+      return caches.match(request).then((cachedResponse) => {
         if (cachedResponse) {
           // Return cached version immediately
           // Also fetch in background to update cache if needed (for same URL)
@@ -139,22 +253,19 @@ self.addEventListener('fetch', (event) => {
           }
           return response;
         });
-      })
-    );
-    return;
-  }
+      });
+    }
 
-  // Strategy 3: Images, fonts, and static assets - Cache first
-  // These rarely change and are versioned by Vite
-  if (
-    request.destination === 'image' ||
-    request.destination === 'font' ||
-    url.pathname.startsWith('/static/images/') ||
-    url.pathname.startsWith('/static/katex/') ||
-    url.pathname.startsWith('/static/')
-  ) {
-    event.respondWith(
-      caches.match(request).then((cachedResponse) => {
+    // Strategy 3: Images, fonts, and static assets - Cache first
+    // These rarely change and are versioned by Vite
+    if (
+      request.destination === 'image' ||
+      request.destination === 'font' ||
+      url.pathname.startsWith('/static/images/') ||
+      url.pathname.startsWith('/static/katex/') ||
+      url.pathname.startsWith('/static/')
+    ) {
+      return caches.match(request).then((cachedResponse) => {
         if (cachedResponse) {
           return cachedResponse;
         }
@@ -168,15 +279,12 @@ self.addEventListener('fetch', (event) => {
           }
           return response;
         });
-      })
-    );
-    return;
-  }
+      });
+    }
 
-  // Strategy 4: Manifest and other JSON - Network first with short cache
-  if (url.pathname.endsWith('.json') || url.pathname.endsWith('.webmanifest')) {
-    event.respondWith(
-      fetch(request)
+    // Strategy 4: Manifest and other JSON - Network first with short cache
+    if (url.pathname.endsWith('.json') || url.pathname.endsWith('.webmanifest')) {
+      return fetch(request)
         .then((response) => {
           if (response.ok) {
             const responseClone = response.clone();
@@ -188,14 +296,11 @@ self.addEventListener('fetch', (event) => {
         })
         .catch(() => {
           return caches.match(request);
-        })
-    );
-    return;
-  }
+        });
+    }
 
-  // Default: Network first, fallback to cache
-  event.respondWith(
-    fetch(request)
+    // Default: Network first, fallback to cache
+    return fetch(request)
       .then((response) => {
         if (response.ok) {
           const responseClone = response.clone();
@@ -207,7 +312,18 @@ self.addEventListener('fetch', (event) => {
       })
       .catch(() => {
         return caches.match(request);
-      })
+      });
+  }
+  
+  // Try Brotli first, fallback to normal handling
+  event.respondWith(
+    tryBrotli().then((brotliResponse) => {
+      if (brotliResponse) {
+        return brotliResponse;
+      }
+      // Fall through to normal request handling
+      return handleNormalRequest();
+    })
   );
 });
 
