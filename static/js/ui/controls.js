@@ -1439,28 +1439,104 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
     fullscreenChangeHandlers.push({ event, handler });
   };
 
+  // Fullscreen UI auto-hide functionality
+  const fullscreenControls = document.getElementById('fullscreen-controls');
+  let fadeTimeout = null;
+  const FADE_DELAY = 3000; // 3 seconds
+
+  const handleFullscreenUI = (isFullscreenMode) => {
+    if (isFullscreenMode) {
+      // Reset UI to visible when entering fullscreen
+      if (fullscreenControls) {
+        fullscreenControls.classList.remove('faded');
+      }
+      // Start fade timer
+      startFadeTimer();
+    } else {
+      // Clear timer when exiting fullscreen
+      clearFadeTimer();
+      // Make sure UI is visible when not in fullscreen
+      if (fullscreenControls) {
+        fullscreenControls.classList.remove('faded');
+      }
+    }
+  };
+
+  const startFadeTimer = () => {
+    clearFadeTimer();
+    if (!isFullscreen() || !fullscreenControls) return;
+    
+    fadeTimeout = setTimeout(() => {
+      if (isFullscreen() && fullscreenControls) {
+        fullscreenControls.classList.add('faded');
+      }
+    }, FADE_DELAY);
+  };
+
+  const clearFadeTimer = () => {
+    if (fadeTimeout) {
+      clearTimeout(fadeTimeout);
+      fadeTimeout = null;
+    }
+  };
+
+  const handleMouseMove = () => {
+    if (!isFullscreen() || !fullscreenControls) return;
+    
+    // Fade in UI on mouse movement
+    fullscreenControls.classList.remove('faded');
+    
+    // Restart fade timer
+    startFadeTimer();
+  };
+
+  // Prevent fading when mouse is over controls
+  const handleMouseEnterControls = () => {
+    if (!isFullscreen() || !fullscreenControls) return;
+    fullscreenControls.classList.remove('faded');
+    clearFadeTimer();
+  };
+
+  const handleMouseLeaveControls = () => {
+    if (!isFullscreen() || !fullscreenControls) return;
+    startFadeTimer();
+  };
+
+  // Add mouse movement listener
+  document.addEventListener('mousemove', handleMouseMove);
+
+  // Add hover listeners to controls
+  if (fullscreenControls) {
+    fullscreenControls.addEventListener('mouseenter', handleMouseEnterControls);
+    fullscreenControls.addEventListener('mouseleave', handleMouseLeaveControls);
+  }
+
   // Listen for fullscreen changes
   addFullscreenChangeListener('fullscreenchange', () => {
     const isFullscreenMode = isFullscreen();
     document.body.classList.toggle('is-fullscreen', isFullscreenMode);
+    handleFullscreenUI(isFullscreenMode);
     callbacks.onFullscreenChange?.(isFullscreenMode);
   });
 
   addFullscreenChangeListener('webkitfullscreenchange', () => {
     const isFullscreenMode = isFullscreen();
     document.body.classList.toggle('is-fullscreen', isFullscreenMode);
+    handleFullscreenUI(isFullscreenMode);
     callbacks.onFullscreenChange?.(isFullscreenMode);
   });
 
   addFullscreenChangeListener('mozfullscreenchange', () => {
     const isFullscreenMode = isFullscreen();
     document.body.classList.toggle('is-fullscreen', isFullscreenMode);
+    handleFullscreenUI(isFullscreenMode);
     callbacks.onFullscreenChange?.(isFullscreenMode);
   });
 
   addFullscreenChangeListener('MSFullscreenChange', () => {
     const isFullscreenMode = isFullscreen();
     document.body.classList.toggle('is-fullscreen', isFullscreenMode);
+    handleFullscreenUI(isFullscreenMode);
     callbacks.onFullscreenChange?.(isFullscreenMode);
   });
 
@@ -1491,8 +1567,15 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
   // Return cleanup function (though most event listeners don't need cleanup in this case)
   return {
     cleanup: () => {
-      // Most event listeners are on DOM elements that will be cleaned up when page unloads
-      // But we can add cleanup logic here if needed
+      // Cleanup mouse movement listener
+      document.removeEventListener('mousemove', handleMouseMove);
+      // Cleanup control hover listeners
+      if (fullscreenControls) {
+        fullscreenControls.removeEventListener('mouseenter', handleMouseEnterControls);
+        fullscreenControls.removeEventListener('mouseleave', handleMouseLeaveControls);
+      }
+      // Clear fade timer
+      clearFadeTimer();
     },
   };
 }
