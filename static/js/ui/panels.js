@@ -88,6 +88,7 @@ const lazyLoadedModules = {
   debug: false,
   exif: false,
   presets: false,
+  katex: false,
 };
 
 /**
@@ -141,6 +142,56 @@ async function lazyLoadExifModule(getCurrentFractalType, getParams) {
 }
 
 /**
+ * Lazy load KaTeX for LaTeX rendering
+ * Loads CSS and JS files only when needed
+ * @returns {Promise<void>}
+ */
+async function lazyLoadKaTeX() {
+  if (lazyLoadedModules.katex) return;
+
+  try {
+    // Load CSS first
+    const cssLink = document.createElement('link');
+    cssLink.rel = 'stylesheet';
+    cssLink.href = '/static/katex/katex.min.css';
+    document.head.appendChild(cssLink);
+
+    // Load JS files sequentially
+    await new Promise((resolve, reject) => {
+      // Load main KaTeX library
+      const script1 = document.createElement('script');
+      script1.src = '/static/katex/katex.min.js';
+      script1.async = false; // Load synchronously to ensure order
+      script1.onload = () => {
+        // Load auto-render after main KaTeX is loaded
+        const script2 = document.createElement('script');
+        script2.src = '/static/katex/auto-render.min.js';
+        script2.async = false; // Load synchronously
+        script2.onload = () => {
+          lazyLoadedModules.katex = true;
+          // Dispatch event to notify that KaTeX is loaded
+          window.dispatchEvent(new CustomEvent('katex-loaded'));
+          resolve();
+        };
+        script2.onerror = () => {
+          console.warn('Failed to load KaTeX auto-render, but main library loaded');
+          lazyLoadedModules.katex = true; // Main library is enough
+          window.dispatchEvent(new CustomEvent('katex-loaded'));
+          resolve(); // Resolve anyway - main library is sufficient
+        };
+        document.head.appendChild(script2);
+      };
+      script1.onerror = reject;
+      document.head.appendChild(script1);
+    });
+  } catch (error) {
+    console.error('Failed to lazy load KaTeX:', error);
+    lazyLoadedModules.katex = false; // Allow retry
+    throw error;
+  }
+}
+
+/**
  * Setup collapsible sections with lazy loading support
  * Allows sections to be expanded/collapsed by clicking their headers
  * Lazy loads rarely used modules (debug, exif) when first opened
@@ -168,6 +219,9 @@ export function setupCollapsibleSections(lazyLoadCallbacks = null) {
         } else if (sectionType === 'exif-editor') {
           lazyLoadExifModule(lazyLoadCallbacks.getCurrentFractalType, lazyLoadCallbacks.getParams);
         }
+      }
+      if (sectionType === 'math-info') {
+        lazyLoadKaTeX();
       }
     }
 
@@ -201,6 +255,11 @@ export function setupCollapsibleSections(lazyLoadCallbacks = null) {
               lazyLoadCallbacks.getParams
             );
           }
+        }
+        
+        // Lazy load KaTeX for math-info section
+        if (sectionType === 'math-info') {
+          await lazyLoadKaTeX();
         }
       }
     });

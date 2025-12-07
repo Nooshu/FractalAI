@@ -1402,7 +1402,7 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
   fullscreenIterationsUpBtn.addEventListener('click', () => updateIterations(5));
   fullscreenIterationsDownBtn.addEventListener('click', () => updateIterations(-5));
 
-  // Shared function to cycle to next color scheme
+  // Shared function to cycle to next color scheme (sequential)
   const cycleToNextColorScheme = async () => {
     const params = getParams();
     // Cycle to next color scheme
@@ -1428,7 +1428,42 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
     renderFractalProgressive();
   };
 
-  // Color scheme cycling for fullscreen controls
+  // Function to randomly select a color scheme (ensuring no consecutive duplicates)
+  const selectRandomColorScheme = async () => {
+    const params = getParams();
+    const currentScheme = params.colorScheme;
+    
+    // Get available schemes (exclude current one to avoid duplicates)
+    const availableSchemes = colorSchemes.filter(scheme => scheme !== currentScheme);
+    
+    // Randomly select from available schemes
+    const randomIndex = Math.floor(Math.random() * availableSchemes.length);
+    const newScheme = availableSchemes[randomIndex];
+    
+    // Update the scheme
+    params.colorScheme = newScheme;
+    currentColorSchemeIndex = colorSchemes.indexOf(newScheme);
+
+    // Update dropdown to match
+    if (colorSchemeSelect) {
+      colorSchemeSelect.value = params.colorScheme;
+    }
+
+    // Update palette preview
+    updateColorPalettePreview();
+
+    // Update coordinate and debug display
+    updateCoordinateDisplay();
+
+    // Clear draw command to force regeneration with new palette
+    setDrawFractal(null);
+    setCachedDrawCommand(null);
+
+    // Render with new color scheme
+    renderFractalProgressive();
+  };
+
+  // Color scheme cycling for fullscreen controls (sequential)
   fullscreenColorCycleBtn.addEventListener('click', cycleToNextColorScheme);
 
   // Auto-cycle color schemes functionality
@@ -1443,7 +1478,7 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
     
     autoCycleInterval = setInterval(() => {
       if (isFullscreen()) {
-        cycleToNextColorScheme();
+        selectRandomColorScheme();
       } else {
         stopAutoCycle();
       }

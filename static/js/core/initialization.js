@@ -13,6 +13,7 @@ import { loadFractalFromURL } from '../sharing/state-manager.js';
 // Presets module is now lazy loaded when right panel is first opened (see panels.js)
 import { updateWikipediaLink } from '../fractals/fractal-config.js';
 import { initUILayout } from '../ui/panels.js';
+import { setupMathInfoPanel } from '../ui/math-info-panel.js';
 import { fractalLoader, loadFractal } from '../fractals/loader.js';
 import { RenderingEngine } from '../rendering/engine.js';
 import { setupInputControls, zoomToSelection } from '../input/controls.js';
@@ -605,7 +606,7 @@ function setupInputControlsModule(appState, renderingEngine, updateCoordinateDis
  * @param {Function} updateCoordinateDisplay - Update coordinate display function
  * @param {Function} loadFractalFromPreset - Load fractal from preset function
  */
-function setupUILayoutAndDisplays(appState, updateCoordinateDisplay, loadFractalFromPreset) {
+function setupUILayoutAndDisplays(appState, updateCoordinateDisplay, loadFractalFromPreset, loadFractalFn) {
   const getters = appState.getGetters();
 
   // Setup UI layout (collapsible sections and panel toggle) with lazy loading callbacks
@@ -614,6 +615,12 @@ function setupUILayoutAndDisplays(appState, updateCoordinateDisplay, loadFractal
     getCurrentFractalType: getters.getCurrentFractalType,
     getParams: getters.getParams,
     loadFractalFromPreset: loadFractalFromPreset,
+  });
+
+  // Setup mathematical information panel
+  setupMathInfoPanel({
+    getCurrentFractalType: getters.getCurrentFractalType,
+    loadFractal: loadFractalFn,
   });
 
   // Setup coordinate display with getter functions
@@ -1032,7 +1039,7 @@ export async function init() {
   }
 
   // Setup UI layout and displays
-  setupUILayoutAndDisplays(appState, updateCoordinateDisplayFn, loadFractalFromPreset);
+  setupUILayoutAndDisplays(appState, updateCoordinateDisplayFn, loadFractalFromPreset, loadFractal);
 
   // Initialize benchmark UI
   initBenchmarkUI(appState, renderingEngine, loadFractal);

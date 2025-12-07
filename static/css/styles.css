@@ -271,6 +271,200 @@ body {
   margin-bottom: 0;
 }
 
+/* Mathematical Information Panel */
+.math-info-header {
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.fractal-name {
+  margin: 0 0 4px 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.fractal-family {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  text-transform: capitalize;
+}
+
+.math-info-section {
+  margin-bottom: 20px;
+}
+
+.math-info-section:last-child {
+  margin-bottom: 0;
+}
+
+.math-info-title {
+  margin: 0 0 12px 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.math-info-formula {
+  margin-bottom: 16px;
+  padding: 12px;
+  background: var(--bg-dark);
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+}
+
+.math-info-formula:last-child {
+  margin-bottom: 0;
+}
+
+.formula-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+
+.formula-text {
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+  padding: 8px;
+  background: var(--bg-darker);
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+  overflow-x: auto;
+  text-align: center;
+}
+
+/* KaTeX styling overrides for better integration */
+.formula-text .katex {
+  font-size: 1.1em;
+}
+
+.formula-text .katex-display {
+  margin: 0;
+}
+
+.formula-description {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-top: 8px;
+}
+
+.math-info-properties {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.math-info-properties li {
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  line-height: 1.5;
+}
+
+.math-info-properties li:last-child {
+  margin-bottom: 0;
+}
+
+.math-info-properties strong {
+  color: var(--text-secondary);
+  margin-right: 6px;
+}
+
+.discoverer-link,
+.complexity-link,
+.property-label-link {
+  color: var(--accent-blue);
+  text-decoration: none;
+  transition: all 0.2s ease;
+  border-bottom: 1px solid transparent;
+}
+
+.discoverer-link:hover,
+.complexity-link:hover,
+.property-label-link:hover {
+  color: var(--accent-blue);
+  border-bottom-color: var(--accent-blue);
+  text-decoration: none;
+}
+
+.math-info-text {
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.math-info-related {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.related-fractal-chip {
+  padding: 6px 12px;
+  background: var(--bg-dark);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.related-fractal-chip:hover {
+  background: var(--button-blue-bg);
+  border-color: var(--accent-blue);
+  color: white;
+  transform: translateY(-1px);
+}
+
+.related-fractal-chip:active {
+  transform: translateY(0);
+}
+
+.math-info-wikipedia-link {
+  display: inline-block;
+  margin-top: 16px;
+  padding: 8px 16px;
+  background: var(--bg-dark);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-primary);
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.math-info-wikipedia-link:hover {
+  background: var(--button-blue-bg);
+  border-color: var(--accent-blue);
+  color: white;
+}
+
+.math-info-fallback {
+  padding: 16px;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.math-info-fallback p {
+  margin: 0 0 12px 0;
+  font-size: 0.9rem;
+}
+
+.math-info-loading {
+  padding: 16px;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
 /* Modern browsers with :has() support - hides entire control div */
 .side-panel .panel-content .section-content .control:has(.coordinate-display) {
   display: none;

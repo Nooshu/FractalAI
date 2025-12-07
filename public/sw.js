@@ -144,11 +144,13 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Strategy 3: Images and static assets - Cache first
+  // Strategy 3: Images, fonts, and static assets - Cache first
   // These rarely change and are versioned by Vite
   if (
     request.destination === 'image' ||
+    request.destination === 'font' ||
     url.pathname.startsWith('/static/images/') ||
+    url.pathname.startsWith('/static/katex/') ||
     url.pathname.startsWith('/static/')
   ) {
     event.respondWith(
