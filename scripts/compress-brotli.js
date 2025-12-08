@@ -136,6 +136,15 @@ async function processDirectory(dir, baseDir, stats = { files: 0, totalOriginal:
  * Main function
  */
 async function main() {
+  // Only run Brotli compression in production
+  const isProduction = process.env.NODE_ENV === 'production';
+  
+  if (!isProduction) {
+    console.log('⏭️  Skipping Brotli compression (development mode)');
+    console.log('   Set NODE_ENV=production to enable compression\n');
+    return;
+  }
+
   const distDir = resolve(process.cwd(), 'dist');
   
   if (!existsSync(distDir)) {

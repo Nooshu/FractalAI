@@ -269,6 +269,9 @@ export class AppStateManager {
   setRenderingEngine(value) {
     this.renderingEngine = value;
   }
+  updateParams(updates) {
+    Object.assign(this.params, updates);
+  }
 
   /**
    * Get getters object for passing to modules
@@ -329,6 +332,7 @@ export class AppStateManager {
       setCurrentProgressiveIterations: (value) => this.setCurrentProgressiveIterations(value),
       setTargetIterations: (value) => this.setTargetIterations(value),
       setRenderingEngine: (value) => this.setRenderingEngine(value),
+      updateParams: (updates) => this.updateParams(updates),
     };
   }
 

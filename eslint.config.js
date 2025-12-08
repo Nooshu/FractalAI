@@ -49,6 +49,7 @@ export default [
         FileReader: 'readonly',
         Event: 'readonly',
         HTMLElement: 'readonly',
+        localStorage: 'readonly',
         // ES2021 globals
         Promise: 'readonly',
         Symbol: 'readonly',

@@ -603,17 +603,21 @@ function setupInputControlsModule(appState, renderingEngine, updateCoordinateDis
 /**
  * Setup UI layout and display modules
  * @param {Object} appState - Application state instance
+ * @param {RenderingEngine} renderingEngine - Rendering engine instance
  * @param {Function} updateCoordinateDisplay - Update coordinate display function
  * @param {Function} loadFractalFromPreset - Load fractal from preset function
  */
-function setupUILayoutAndDisplays(appState, updateCoordinateDisplay, loadFractalFromPreset, loadFractalFn) {
+function setupUILayoutAndDisplays(appState, renderingEngine, updateCoordinateDisplay, loadFractalFromPreset, loadFractalFn) {
   const getters = appState.getGetters();
 
   // Setup UI layout (collapsible sections and panel toggle) with lazy loading callbacks
   // Presets module is now lazy loaded when right panel is first opened (handled in panels.js)
+  const setters = appState.getSetters();
   initUILayout(getters.getUpdateRendererSize, {
     getCurrentFractalType: getters.getCurrentFractalType,
     getParams: getters.getParams,
+    updateParams: setters.updateParams,
+    renderFractal: () => renderingEngine.renderFractal(),
     loadFractalFromPreset: loadFractalFromPreset,
   });
 
@@ -1039,7 +1043,7 @@ export async function init() {
   }
 
   // Setup UI layout and displays
-  setupUILayoutAndDisplays(appState, updateCoordinateDisplayFn, loadFractalFromPreset, loadFractal);
+  setupUILayoutAndDisplays(appState, renderingEngine, updateCoordinateDisplayFn, loadFractalFromPreset, loadFractal);
 
   // Initialize benchmark UI
   initBenchmarkUI(appState, renderingEngine, loadFractal);

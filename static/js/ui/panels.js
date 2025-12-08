@@ -89,6 +89,7 @@ const lazyLoadedModules = {
   exif: false,
   presets: false,
   katex: false,
+  colorSchemeEditor: false,
 };
 
 /**
@@ -138,6 +139,29 @@ async function lazyLoadExifModule(getCurrentFractalType, getParams) {
     }, 0);
   } catch (error) {
     console.error('Failed to lazy load EXIF editor module:', error);
+  }
+}
+
+/**
+ * Lazy load color scheme editor module
+ * @param {Function} getParams - Function to get current parameters
+ * @param {Function} updateParams - Function to update parameters
+ * @param {Function} renderFractal - Function to trigger fractal render
+ * @returns {Promise<void>}
+ */
+async function lazyLoadColorSchemeEditor(getParams, updateParams, renderFractal) {
+  if (lazyLoadedModules.colorSchemeEditor) return;
+
+  try {
+    const { setupColorSchemeEditor } = await import('./color-scheme-editor.js');
+    if (getParams && updateParams && renderFractal) {
+      setupColorSchemeEditor(getParams, updateParams, renderFractal);
+      lazyLoadedModules.colorSchemeEditor = true;
+    } else {
+      console.warn('Color scheme editor: Missing required callbacks', { getParams: !!getParams, updateParams: !!updateParams, renderFractal: !!renderFractal });
+    }
+  } catch (error) {
+    console.error('Failed to lazy load color scheme editor module:', error);
   }
 }
 
@@ -194,10 +218,12 @@ async function lazyLoadKaTeX() {
 /**
  * Setup collapsible sections with lazy loading support
  * Allows sections to be expanded/collapsed by clicking their headers
- * Lazy loads rarely used modules (debug, exif) when first opened
+ * Lazy loads rarely used modules (debug, exif, colorSchemeEditor) when first opened
  * @param {Object} lazyLoadCallbacks - Callbacks for lazy loading modules
  * @param {Function} lazyLoadCallbacks.getCurrentFractalType - Function to get current fractal type
  * @param {Function} lazyLoadCallbacks.getParams - Function to get current parameters
+ * @param {Function} lazyLoadCallbacks.updateParams - Function to update parameters
+ * @param {Function} lazyLoadCallbacks.renderFractal - Function to trigger fractal render
  */
 export function setupCollapsibleSections(lazyLoadCallbacks = null) {
   const sectionHeaders = document.querySelectorAll('.section-header');
@@ -222,6 +248,14 @@ export function setupCollapsibleSections(lazyLoadCallbacks = null) {
       }
       if (sectionType === 'math-info') {
         lazyLoadKaTeX();
+      }
+      // Lazy load color scheme editor if section is already open
+      if (sectionType === 'color-scheme-editor') {
+        lazyLoadColorSchemeEditor(
+          lazyLoadCallbacks?.getParams,
+          lazyLoadCallbacks?.updateParams,
+          lazyLoadCallbacks?.renderFractal
+        );
       }
     }
 
@@ -260,6 +294,15 @@ export function setupCollapsibleSections(lazyLoadCallbacks = null) {
         // Lazy load KaTeX for math-info section
         if (sectionType === 'math-info') {
           await lazyLoadKaTeX();
+        }
+        
+        // Lazy load color scheme editor (doesn't require getCurrentFractalType)
+        if (sectionType === 'color-scheme-editor') {
+          await lazyLoadColorSchemeEditor(
+            lazyLoadCallbacks?.getParams,
+            lazyLoadCallbacks?.updateParams,
+            lazyLoadCallbacks?.renderFractal
+          );
         }
       }
     });

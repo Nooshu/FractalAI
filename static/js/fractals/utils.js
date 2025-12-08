@@ -33,15 +33,46 @@ export function getFullScreenQuadBuffer(regl) {
   return quadBuffer;
 }
 
+// Lazy-loaded custom scheme handler (to avoid circular dependency)
+let customSchemeHandler = null;
+
+/**
+ * Set custom scheme handler function
+ * Called by color-scheme-editor module to register itself
+ * @param {Function} handler - Function that takes (t, schemeName) and returns color
+ */
+export function setCustomSchemeHandler(handler) {
+  customSchemeHandler = handler;
+}
+
 /**
  * Generates a color value for a given t value (0-1) and scheme
  * Optimized version that writes to out array to avoid allocations
+ * Supports custom schemes via registered handler
  * @param {number} t - Value from 0 to 1
- * @param {number} schemeIndex - Index of the color scheme
+ * @param {number|string} schemeIndexOrName - Index of the color scheme, or scheme name (for custom schemes)
  * @param {Float32Array|Array} out - Output array [r, g, b] (optional, creates new array if not provided)
  * @returns {Float32Array|Array} RGB color [r, g, b] in range [0, 1]
  */
-export function computeColorForScheme(t, schemeIndex, out = null) {
+export function computeColorForScheme(t, schemeIndexOrName, out = null) {
+  // Handle custom schemes (string names starting with "custom:")
+  if (typeof schemeIndexOrName === 'string' && schemeIndexOrName.startsWith('custom:')) {
+    if (customSchemeHandler) {
+      return customSchemeHandler(t, schemeIndexOrName, out);
+    }
+    // Fallback to classic if handler not registered
+    const schemeIndex = 0;
+    if (!out) {
+      out = new Float32Array(3);
+    }
+    out[0] = t * 0.5;
+    out[1] = t;
+    out[2] = Math.min(t * 1.5, 1);
+    return out;
+  }
+
+  // Handle numeric scheme index (existing behavior)
+  const schemeIndex = typeof schemeIndexOrName === 'number' ? schemeIndexOrName : 0;
   // Clamp t to [0, 1]
   t = Math.max(0, Math.min(1, t));
 
@@ -466,7 +497,9 @@ export function computeColorForScheme(t, schemeIndex, out = null) {
  * @returns {Object} regl texture object
  */
 export function generatePaletteTexture(regl, colorScheme) {
-  const schemeIndex = getColorSchemeIndex(colorScheme);
+  // Handle custom schemes
+  const isCustom = typeof colorScheme === 'string' && colorScheme.startsWith('custom:');
+  const schemeIndex = isCustom ? colorScheme : getColorSchemeIndex(colorScheme);
   const cacheKey = `${colorScheme}_${PALETTE_SIZE}`;
 
   // Return cached texture if available
@@ -481,7 +514,7 @@ export function generatePaletteTexture(regl, colorScheme) {
 
   for (let i = 0; i < PALETTE_SIZE; i++) {
     const t = i / (PALETTE_SIZE - 1);
-    const color = computeColorForScheme(t, schemeIndex, colorOut);
+    const color = computeColorForScheme(t, isCustom ? colorScheme : schemeIndex, colorOut);
 
     const offset = i * 4;
     paletteData[offset + 0] = Math.floor(color[0] * 255); // R

@@ -286,7 +286,12 @@ export default defineConfig({
         }
 
         // Note: Brotli compression is handled by the build script after this plugin runs
-        console.log('[Build] Assets ready for Brotli compression');
+        // Compression only runs in production (NODE_ENV=production)
+        if (process.env.NODE_ENV === 'production') {
+          console.log('[Build] Assets ready for Brotli compression');
+        } else {
+          console.log('[Build] Assets ready (Brotli compression skipped in development)');
+        }
       },
     },
   ],
