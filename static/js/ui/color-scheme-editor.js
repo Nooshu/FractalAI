@@ -6,6 +6,68 @@
 
 import { computeColorForScheme, setCustomSchemeHandler } from '../fractals/utils.js';
 
+/**
+ * Show a custom notification
+ * @param {string} message - The message to display
+ * @param {string} type - The notification type: 'success', 'error', 'info', 'warning'
+ * @param {number} duration - Duration in milliseconds (0 = don't auto-dismiss)
+ */
+function showNotification(message, type = 'info', duration = 3000) {
+  // Create notification container if it doesn't exist
+  let container = document.querySelector('.notification-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.className = 'notification-container';
+    document.body.appendChild(container);
+  }
+
+  // Create notification element
+  const notification = document.createElement('div');
+  notification.className = `notification notification-${type}`;
+
+  // Icons for different types
+  const icons = {
+    success: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>',
+    error: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>',
+    info: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>',
+    warning: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+  };
+
+  // Close button icon
+  const closeIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+
+  notification.innerHTML = `
+    <div class="notification-icon">${icons[type] || icons.info}</div>
+    <div class="notification-content">${message}</div>
+    <button class="notification-close" aria-label="Close">${closeIcon}</button>
+  `;
+
+  // Add close functionality
+  const closeBtn = notification.querySelector('.notification-close');
+  const closeNotification = () => {
+    notification.classList.add('fade-out');
+    setTimeout(() => {
+      notification.remove();
+      // Remove container if empty
+      if (container.children.length === 0) {
+        container.remove();
+      }
+    }, 300);
+  };
+
+  closeBtn.addEventListener('click', closeNotification);
+
+  // Add to container
+  container.appendChild(notification);
+
+  // Auto-dismiss after duration
+  if (duration > 0) {
+    setTimeout(closeNotification, duration);
+  }
+
+  return notification;
+}
+
 // Storage key for custom color schemes
 const CUSTOM_SCHEMES_STORAGE_KEY = 'fractalai_custom_color_schemes';
 
@@ -144,7 +206,7 @@ function createGradientEditor(container, initialStops = null, onStopsChange = nu
   // Add stop button
   const addStopBtn = document.createElement('button');
   addStopBtn.className = 'btn btn-secondary add-stop-btn';
-  addStopBtn.textContent = 'Add Color Stop';
+  addStopBtn.textContent = 'Add Colour Stop';
   addStopBtn.type = 'button';
 
   stopsWrapper.appendChild(previewCanvas);
@@ -713,7 +775,7 @@ export function setupColorSchemeEditor(getParams, updateParams, renderFractal) {
   saveBtn.addEventListener('click', () => {
     const name = nameInput.value.trim();
     if (!name) {
-      alert('Please enter a scheme name');
+      showNotification('Please enter a scheme name', 'warning', 3000);
       return;
     }
 
@@ -724,12 +786,12 @@ export function setupColorSchemeEditor(getParams, updateParams, renderFractal) {
     renderSavedSchemes();
 
     if (isUpdate) {
-      alert(`Scheme "${name}" updated!`);
+      showNotification(`Scheme "${name}" updated!`, 'success', 3000);
       // Update original stops to match the newly saved version (sorted)
       const stopsCopy = JSON.parse(JSON.stringify(stops));
       originalStops = sortStopsByPosition(stopsCopy);
     } else {
-      alert(`Scheme "${name}" saved!`);
+      showNotification(`Scheme "${name}" saved!`, 'success', 3000);
       nameInput.value = '';
       originalStops = null;
     }
@@ -763,7 +825,7 @@ export function setupColorSchemeEditor(getParams, updateParams, renderFractal) {
     });
 
     if (palettes.length === 0) {
-      alert('No custom palettes to export. Save at least one palette first.');
+      showNotification('No custom palettes to export. Save at least one palette first.', 'warning', 4000);
       return;
     }
 
@@ -817,11 +879,11 @@ export function setupColorSchemeEditor(getParams, updateParams, renderFractal) {
           if (importedCount > 0) {
             saveCustomSchemes();
             renderSavedSchemes();
-            alert(`Imported ${importedCount} palette${importedCount > 1 ? 's' : ''}${skippedCount > 0 ? ` (${skippedCount} skipped - already exist)` : ''}!`);
+            showNotification(`Imported ${importedCount} palette${importedCount > 1 ? 's' : ''}${skippedCount > 0 ? ` (${skippedCount} skipped - already exist)` : ''}!`, 'success', 4000);
           } else if (skippedCount > 0) {
-            alert(`All palettes already exist. No new palettes imported.`);
+            showNotification('All palettes already exist. No new palettes imported.', 'info', 4000);
           } else {
-            alert('No valid palettes found in file.');
+            showNotification('No valid palettes found in file.', 'warning', 4000);
           }
         }
         // Handle old single palette format for backward compatibility
@@ -830,12 +892,12 @@ export function setupColorSchemeEditor(getParams, updateParams, renderFractal) {
           if (data.name) {
             nameInput.value = data.name;
           }
-          alert('Palette imported successfully!');
+          showNotification('Palette imported successfully!', 'success', 3000);
         } else {
-          alert('Invalid palette file format');
+          showNotification('Invalid palette file format', 'error', 4000);
         }
       } catch (error) {
-        alert('Failed to import palette: ' + error.message);
+        showNotification('Failed to import palette: ' + error.message, 'error', 5000);
       }
     };
     reader.readAsText(file);
