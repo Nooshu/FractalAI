@@ -563,8 +563,9 @@ export function setupColorSchemeEditor(getParams, updateParams, renderFractal) {
     if (!originalStops) {
       const savedScheme = customColorSchemes.get(name);
       if (savedScheme) {
-        const stopsCopy = JSON.parse(JSON.stringify(savedScheme.stops));
-        originalStops = sortStopsByPosition(stopsCopy);
+        // Create a separate deep copy for originalStops to avoid sharing references
+        const originalStopsCopy = JSON.parse(JSON.stringify(savedScheme.stops));
+        originalStops = sortStopsByPosition(originalStopsCopy);
       }
     }
 
@@ -715,8 +716,10 @@ export function setupColorSchemeEditor(getParams, updateParams, renderFractal) {
         isApplyingScheme = true;
 
         // Store original stops for comparison (sorted by position)
+        // Need separate deep copies to avoid sharing references
         const stopsCopy = JSON.parse(JSON.stringify(scheme.stops));
-        originalStops = sortStopsByPosition(stopsCopy);
+        const originalStopsCopy = JSON.parse(JSON.stringify(scheme.stops));
+        originalStops = sortStopsByPosition(originalStopsCopy);
 
         // Update scheme name input
         nameInput.value = name;
@@ -761,8 +764,9 @@ export function setupColorSchemeEditor(getParams, updateParams, renderFractal) {
     // If name matches an existing scheme and originalStops isn't set, set it
     if (customColorSchemes.has(name) && !originalStops) {
       const scheme = customColorSchemes.get(name);
-      const stopsCopy = JSON.parse(JSON.stringify(scheme.stops));
-      originalStops = sortStopsByPosition(stopsCopy);
+      // Create a separate deep copy for originalStops to avoid sharing references
+      const originalStopsCopy = JSON.parse(JSON.stringify(scheme.stops));
+      originalStops = sortStopsByPosition(originalStopsCopy);
     } else if (!customColorSchemes.has(name)) {
       // Clear original stops when name changes to a new scheme
       originalStops = null;
@@ -788,8 +792,9 @@ export function setupColorSchemeEditor(getParams, updateParams, renderFractal) {
     if (isUpdate) {
       showNotification(`Scheme "${name}" updated!`, 'success', 3000);
       // Update original stops to match the newly saved version (sorted)
-      const stopsCopy = JSON.parse(JSON.stringify(stops));
-      originalStops = sortStopsByPosition(stopsCopy);
+      // Create a separate deep copy for originalStops to avoid sharing references
+      const originalStopsCopy = JSON.parse(JSON.stringify(stops));
+      originalStops = sortStopsByPosition(originalStopsCopy);
     } else {
       showNotification(`Scheme "${name}" saved!`, 'success', 3000);
       nameInput.value = '';
