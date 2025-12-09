@@ -953,53 +953,45 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
       let needsCleanup = false;
 
       // If high-resolution export is selected, temporarily resize main canvas
-      if (exportResolution === '4k' || exportResolution === '8k') {
+      if (exportResolution === '4k') {
         // Calculate aspect ratio from current canvas to maintain fractal proportions
         const currentAspectRatio = originalWidth / originalHeight;
         
-        // Determine target dimensions based on resolution while maintaining aspect ratio
-        let targetWidth, targetHeight;
-        
-        if (exportResolution === '4k') {
-          // 4K: aim for ~8 megapixels (3840×2160 = 8.3MP)
-          // Use 3840 as base width and calculate height to maintain aspect ratio
-          targetWidth = 3840;
-          targetHeight = Math.round(targetWidth / currentAspectRatio);
-        } else { // 8k
-          // 8K: aim for ~33 megapixels (7680×4320 = 33.2MP)
-          // Use 7680 as base width and calculate height to maintain aspect ratio
-          targetWidth = 7680;
-          targetHeight = Math.round(targetWidth / currentAspectRatio);
-        }
+        // 4K: aim for ~8 megapixels (3840×2160 = 8.3MP)
+        // Use 3840 as base width and calculate height to maintain aspect ratio
+        const targetWidth = 3840;
+        const targetHeight = Math.round(targetWidth / currentAspectRatio);
 
         // Check WebGL max viewport dimensions
         const maxViewportDims = regl._gl.getParameter(regl._gl.MAX_VIEWPORT_DIMS);
         console.log('[High-Res Export] WebGL max viewport:', maxViewportDims[0], 'x', maxViewportDims[1]);
         
         // Clamp dimensions to WebGL limits
-        if (targetWidth > maxViewportDims[0] || targetHeight > maxViewportDims[1]) {
-          const scale = Math.min(maxViewportDims[0] / targetWidth, maxViewportDims[1] / targetHeight);
-          targetWidth = Math.floor(targetWidth * scale);
-          targetHeight = Math.floor(targetHeight * scale);
-          console.warn(`[High-Res Export] Dimensions clamped to WebGL limits: ${targetWidth}x${targetHeight}`);
+        let finalTargetWidth = targetWidth;
+        let finalTargetHeight = targetHeight;
+        if (finalTargetWidth > maxViewportDims[0] || finalTargetHeight > maxViewportDims[1]) {
+          const scale = Math.min(maxViewportDims[0] / finalTargetWidth, maxViewportDims[1] / finalTargetHeight);
+          finalTargetWidth = Math.floor(finalTargetWidth * scale);
+          finalTargetHeight = Math.floor(finalTargetHeight * scale);
+          console.warn(`[High-Res Export] Dimensions clamped to WebGL limits: ${finalTargetWidth}x${finalTargetHeight}`);
         }
         
-        console.log(`[High-Res Export] Rendering ${exportResolution.toUpperCase()} at ${targetWidth}x${targetHeight} (aspect ratio: ${currentAspectRatio.toFixed(3)})`);
+        console.log(`[High-Res Export] Rendering ${exportResolution.toUpperCase()} at ${finalTargetWidth}x${finalTargetHeight} (aspect ratio: ${currentAspectRatio.toFixed(3)})`);
         
         try {
           console.log('[High-Res Export] Forcing fractal reload at high resolution');
           
           // Temporarily resize the canvas internal dimensions
           // Don't change CSS style to avoid triggering device pixel ratio calculations
-          canvas.width = targetWidth;
-          canvas.height = targetHeight;
+          canvas.width = finalTargetWidth;
+          canvas.height = finalTargetHeight;
           
           console.log('[High-Res Export] Canvas resized to:', canvas.width, 'x', canvas.height);
           console.log('[High-Res Export] Canvas style (unchanged):', canvas.style.width, 'x', canvas.style.height);
           
           // Manually set the WebGL viewport to match canvas internal dimensions
           // (Don't use regl.poll() as it applies device pixel ratio to CSS dimensions)
-          regl._gl.viewport(0, 0, targetWidth, targetHeight);
+          regl._gl.viewport(0, 0, finalTargetWidth, finalTargetHeight);
           
           const viewportCheck = regl._gl.getParameter(regl._gl.VIEWPORT);
           console.log('[High-Res Export] WebGL viewport manually set to:', viewportCheck[0], viewportCheck[1], viewportCheck[2], viewportCheck[3]);
@@ -1037,11 +1029,11 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
             
             // Force viewport one more time and wrap draw in explicit viewport context
             const gl = regl._gl;
-            gl.viewport(0, 0, targetWidth, targetHeight);
+            gl.viewport(0, 0, finalTargetWidth, finalTargetHeight);
             
             // Execute draw with explicit viewport override
             regl({
-              viewport: { x: 0, y: 0, width: targetWidth, height: targetHeight }
+              viewport: { x: 0, y: 0, width: finalTargetWidth, height: finalTargetHeight }
             })(() => {
               highResDrawFractal();
             });
@@ -1054,8 +1046,8 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
             const bottomRightPixel = new Uint8Array(4);
             const centerPixel = new Uint8Array(4);
             const topLeftPixel = new Uint8Array(4);
-            gl.readPixels(targetWidth - 10, targetHeight - 10, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, bottomRightPixel);
-            gl.readPixels(Math.floor(targetWidth / 2), Math.floor(targetHeight / 2), 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, centerPixel);
+            gl.readPixels(finalTargetWidth - 10, finalTargetHeight - 10, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, bottomRightPixel);
+            gl.readPixels(Math.floor(finalTargetWidth / 2), Math.floor(finalTargetHeight / 2), 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, centerPixel);
             gl.readPixels(10, 10, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, topLeftPixel);
             
             const viewportAfter = gl.getParameter(gl.VIEWPORT);
@@ -1186,7 +1178,7 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
           setTimeout(() => URL.revokeObjectURL(url), 1000);
 
           // AFTER export is complete, restore canvas size for high-res exports
-          if (exportResolution === '4k' || exportResolution === '8k') {
+          if (exportResolution === '4k') {
             // Restore canvas dimensions
             canvas.width = originalWidth;
             canvas.height = originalHeight;
@@ -1352,7 +1344,7 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
   const fullscreenRandomBtn = document.getElementById('fullscreen-random');
 
   // Resolution export state
-  let exportResolution = 'default'; // 'default', '4k', or '8k'
+  let exportResolution = 'default'; // 'default' or '4k'
 
   // Function to update the badge on fullscreen screenshot button
   function updateResolutionBadge() {
@@ -1362,8 +1354,8 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
       existingBadge.remove();
     }
 
-    // Add badge if 4K or 8K is selected
-    if (exportResolution === '4k' || exportResolution === '8k') {
+    // Add badge if 4K is selected
+    if (exportResolution === '4k') {
       const badge = document.createElement('span');
       badge.className = 'fullscreen-resolution-badge';
       badge.textContent = exportResolution.toUpperCase();
