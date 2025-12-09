@@ -86,6 +86,7 @@ export async function initCanvasRenderer(canvasId, options = {}) {
         stencil: false,
         depth: false,
         alpha: false, // Disable transparency to prevent background bleed-through
+        preserveDrawingBuffer: true, // Keep drawing buffer for canvas export
         webglVersion: 2, // Explicitly request WebGL2 (regl supports this)
       },
     });

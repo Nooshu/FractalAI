@@ -523,6 +523,8 @@ function setupUIControlsModule(
       getIsDisplayingCached: getters.getIsDisplayingCached,
       getRegl: getters.getRegl,
       getCanvas: getters.getCanvas,
+      getWebGLCapabilities: getters.getWebGLCapabilities,
+      getFractalParamsUBO: getters.getFractalParamsUBO,
     },
     {
       setCurrentFractalType: setters.setCurrentFractalType,
