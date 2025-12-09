@@ -68,6 +68,80 @@ function showNotification(message, type = 'info', duration = 3000) {
   return notification;
 }
 
+/**
+ * Show a custom confirmation dialog
+ * @param {string} message - The message to display
+ * @param {string} confirmText - Text for confirm button (default: "Confirm")
+ * @param {string} cancelText - Text for cancel button (default: "Cancel")
+ * @returns {Promise<boolean>} Promise that resolves to true if confirmed, false if cancelled
+ */
+function showConfirmation(message, confirmText = 'Confirm', cancelText = 'Cancel') {
+  return new Promise((resolve) => {
+    // Create notification container if it doesn't exist
+    let container = document.querySelector('.notification-container');
+    if (!container) {
+      container = document.createElement('div');
+      container.className = 'notification-container';
+      document.body.appendChild(container);
+    }
+
+    // Create confirmation dialog element
+    const confirmation = document.createElement('div');
+    confirmation.className = 'notification notification-error notification-confirmation';
+
+    // Warning triangle icon (red)
+    const warningIcon = '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="17" r="1" fill="currentColor"/><path d="M12 10L12 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M3.44722 18.1056L10.2111 4.57771C10.9482 3.10361 13.0518 3.10362 13.7889 4.57771L20.5528 18.1056C21.2177 19.4354 20.2507 21 18.7639 21H5.23607C3.7493 21 2.78231 19.4354 3.44722 18.1056Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+    // Close button icon
+    const closeIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+
+    confirmation.innerHTML = `
+      <div class="notification-header">
+        <div class="notification-icon notification-warning-icon">${warningIcon}</div>
+        <div class="notification-content">${message}</div>
+        <button class="notification-close" aria-label="Close">${closeIcon}</button>
+      </div>
+      <div class="notification-actions">
+        <button class="btn btn-secondary notification-cancel" type="button">${cancelText}</button>
+        <button class="btn btn-primary notification-confirm" type="button">${confirmText}</button>
+      </div>
+    `;
+
+    const closeConfirmation = () => {
+      confirmation.classList.add('fade-out');
+      setTimeout(() => {
+        confirmation.remove();
+        // Remove container if empty
+        if (container.children.length === 0) {
+          container.remove();
+        }
+      }, 300);
+    };
+
+    const confirmBtn = confirmation.querySelector('.notification-confirm');
+    const cancelBtn = confirmation.querySelector('.notification-cancel');
+    const closeBtn = confirmation.querySelector('.notification-close');
+
+    confirmBtn.addEventListener('click', () => {
+      closeConfirmation();
+      resolve(true);
+    });
+
+    cancelBtn.addEventListener('click', () => {
+      closeConfirmation();
+      resolve(false);
+    });
+
+    closeBtn.addEventListener('click', () => {
+      closeConfirmation();
+      resolve(false);
+    });
+
+    // Add to container
+    container.appendChild(confirmation);
+  });
+}
+
 // Storage key for custom color schemes
 const CUSTOM_SCHEMES_STORAGE_KEY = 'fractalai_custom_color_schemes';
 
@@ -741,11 +815,17 @@ export function setupColorSchemeEditor(getParams, updateParams, renderFractal) {
       });
 
       // Delete saved scheme
-      deleteSchemeBtn.addEventListener('click', () => {
-        if (confirm(`Delete scheme "${name}"?`)) {
+      deleteSchemeBtn.addEventListener('click', async () => {
+        const confirmed = await showConfirmation(
+          `Delete scheme "${name}"?`,
+          'Delete',
+          'Cancel'
+        );
+        if (confirmed) {
           customColorSchemes.delete(name);
           saveCustomSchemes();
           renderSavedSchemes();
+          showNotification(`Scheme "${name}" deleted!`, 'success', 3000);
         }
       });
 
@@ -839,11 +919,27 @@ export function setupColorSchemeEditor(getParams, updateParams, renderFractal) {
       palettes: palettes,
     };
 
+    // Generate filename: scheme names joined with "-" + export date (Day-Month-Year)
+    const schemeNames = palettes.map(p => p.name)
+      .map(name => name.replace(/[^a-zA-Z0-9\s-]/g, '').trim().replace(/\s+/g, '-'))
+      .filter(name => name.length > 0)
+      .join('-');
+    
+    const now = new Date();
+    const day = String(now.getDate()).padStart(2, '0');
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const year = now.getFullYear();
+    const dateStr = `${day}-${month}-${year}`;
+    
+    const filename = schemeNames 
+      ? `${schemeNames}-${dateStr}.json`
+      : `color-palettes-${dateStr}.json`;
+
     const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'fractalai_color_palettes.json';
+    a.download = filename;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
