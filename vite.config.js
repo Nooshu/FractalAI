@@ -17,6 +17,9 @@ export default defineConfig({
     port: 5173,
     open: true,
   },
+  optimizeDeps: {
+    include: ['@tensorflow/tfjs'],
+  },
   build: {
     outDir: 'dist',
     sourcemap: false, // Disable source maps in production for faster builds and smaller output
@@ -26,6 +29,10 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id) {
+          // Put TensorFlow.js in its own chunk for lazy loading
+          if (id.includes('@tensorflow/tfjs')) {
+            return 'tensorflow';
+          }
           // Helper function to check if a fractal belongs to a family
           const isFamilyFractal = (familyName, fractalNames) => {
             if (id.includes(`/fractals/2d/families/${familyName}.js`)) {

@@ -1069,6 +1069,7 @@ export async function init() {
   // This allows the browser to prioritize rendering the first fractal
   const deferredInit = () => {
     const getters = appState.getGetters();
+    const setters = appState.getSetters();
 
     // Setup share button (non-critical for first render)
     import('../sharing/state-manager.js')
@@ -1077,6 +1078,66 @@ export async function init() {
       })
       .catch((error) => {
         console.error('Failed to load sharing module:', error);
+      });
+
+    // Setup discovery and favorites UI (non-critical for first render)
+    import('../ui/discovery-ui.js')
+      .then(({ initializeDiscoveryUI }) => {
+        // Create callback to apply fractal state changes
+        const onFractalStateChange = async (state) => {
+          // Update fractal type if needed
+          if (state.fractalType && state.fractalType !== getters.getCurrentFractalType()) {
+            setters.setCurrentFractalType(state.fractalType);
+            const fractalTypeSelect = document.getElementById('fractal-type');
+            if (fractalTypeSelect) {
+              fractalTypeSelect.value = state.fractalType;
+            }
+            await loadFractal(state.fractalType);
+          }
+
+          // Update parameters
+          const params = getters.getParams();
+          if (state.zoom !== undefined) params.zoom = state.zoom;
+          if (state.offsetX !== undefined) params.offset.x = state.offsetX;
+          if (state.offsetY !== undefined) params.offset.y = state.offsetY;
+          if (state.iterations !== undefined) params.iterations = state.iterations;
+          if (state.colorScheme !== undefined) params.colorScheme = state.colorScheme;
+          if (state.xScale !== undefined) params.xScale = state.xScale;
+          if (state.yScale !== undefined) params.yScale = state.yScale;
+          if (state.juliaCX !== undefined && params.juliaC) params.juliaC.x = state.juliaCX;
+          if (state.juliaCY !== undefined && params.juliaC) params.juliaC.y = state.juliaCY;
+
+          // Update UI controls
+          const iterationsSlider = document.getElementById('iterations');
+          const iterationsValue = document.getElementById('iterations-value');
+          if (iterationsSlider && state.iterations !== undefined) {
+            iterationsSlider.value = state.iterations;
+          }
+          if (iterationsValue && state.iterations !== undefined) {
+            iterationsValue.textContent = state.iterations;
+          }
+
+          const colorSchemeSelect = document.getElementById('color-scheme');
+          if (colorSchemeSelect && state.colorScheme !== undefined) {
+            colorSchemeSelect.value = state.colorScheme;
+          }
+
+          // Update fullscreen color palette preview if color scheme changed
+          if (state.colorScheme !== undefined) {
+            updatePalettePreviewDirectly(state.colorScheme, 3);
+          }
+
+          // Update coordinate display
+          updateCoordinateDisplayFn();
+
+          // Render the fractal
+          renderingEngine.renderFractal();
+        };
+
+        initializeDiscoveryUI(getters, onFractalStateChange);
+      })
+      .catch((error) => {
+        console.error('Failed to load discovery UI module:', error);
       });
   };
 

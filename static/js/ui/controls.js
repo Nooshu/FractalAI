@@ -1604,42 +1604,52 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
     };
   }
 
-  // Random view button
-  fullscreenRandomBtn.addEventListener('click', () => {
-    // Get random interesting view
-    const randomView = getRandomInterestingView
-      ? getRandomInterestingView()
-      : getRandomInterestingViewLocal();
-    const params = getParams();
+  // Random view button - TEMPORARILY DISABLED (using Surprise Me instead)
+  // Keeping code for potential future use
+  if (fullscreenRandomBtn) {
+    // Disable the button to prevent it from impacting performance
+    fullscreenRandomBtn.disabled = true;
+    fullscreenRandomBtn.style.pointerEvents = 'none';
+    
+    // Commented out event listener - keeping code for reference
+    /*
+    fullscreenRandomBtn.addEventListener('click', () => {
+      // Get random interesting view
+      const randomView = getRandomInterestingView
+        ? getRandomInterestingView()
+        : getRandomInterestingViewLocal();
+      const params = getParams();
 
-    // Update parameters
-    params.offset.x = randomView.offset.x;
-    params.offset.y = randomView.offset.y;
-    params.zoom = randomView.zoom;
+      // Update parameters
+      params.offset.x = randomView.offset.x;
+      params.offset.y = randomView.offset.y;
+      params.zoom = randomView.zoom;
 
-    // Increment and update the interesting point number
-    currentInterestingPointIndex++;
-    if (fullscreenRandomNumberEl) {
-      fullscreenRandomNumberEl.textContent = currentInterestingPointIndex;
-    }
+      // Increment and update the interesting point number
+      currentInterestingPointIndex++;
+      if (fullscreenRandomNumberEl) {
+        fullscreenRandomNumberEl.textContent = currentInterestingPointIndex;
+      }
 
-    // Clear frame cache since we're changing to a new view
-    frameCache.clear();
+      // Clear frame cache since we're changing to a new view
+      frameCache.clear();
 
-    // Clear cached display if we're showing one
-    if (getIsDisplayingCached()) {
-      setIsDisplayingCached(false);
-      setCachedDrawCommand(null);
-    }
+      // Clear cached display if we're showing one
+      if (getIsDisplayingCached()) {
+        setIsDisplayingCached(false);
+        setCachedDrawCommand(null);
+      }
 
-    // Cancel any ongoing progressive rendering
-    if (cancelProgressiveRender) {
-      cancelProgressiveRender();
-    }
+      // Cancel any ongoing progressive rendering
+      if (cancelProgressiveRender) {
+        cancelProgressiveRender();
+      }
 
-    // Render the new random view with progressive rendering for better UX
-    renderFractalProgressive();
-  });
+      // Render the new random view with progressive rendering for better UX
+      renderFractalProgressive();
+    });
+    */
+  }
 
   // Iterations controls - cache DOM references
   const fullscreenIterationsUpBtn = document.getElementById('fullscreen-iterations-up');
