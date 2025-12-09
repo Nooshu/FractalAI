@@ -66,12 +66,28 @@
   --z-panel-btn: 200;
   --z-loading: 1000;
   --z-fullscreen: 2000;
+  --z-notification: 10000;
 
   /* Panel Image Sizing */
   --panel-image-width-full: 320px;
   --panel-image-width-comfortable: 280px;
   --panel-image-width-compact: 260px;
   --panel-image-margin: 20px;
+
+  /* Notification Colors */
+  --color-success: #4ade80;
+  --color-error: #f87171;
+  --color-error-dark: #dc3545;
+  --color-warning: #fbbf24;
+  --color-danger: #dc3545;
+  --color-danger-hover: #ff6b6b;
+
+  /* Notification Sizing */
+  --notification-icon-size: 20px;
+  --notification-close-size: 14px;
+  --notification-min-width: 300px;
+  --notification-max-width: 400px;
+  --notification-gap: 12px;
 }
 
 body {
@@ -2203,7 +2219,7 @@ body.is-fullscreen .app-container .app-footer {
 
 .scheme-name-input:focus {
   border-color: var(--accent-blue);
-  box-shadow: 0 0 0 3px rgb(74 158 255 / 20%);
+  box-shadow: var(--button-blue-focus-shadow);
 }
 
 .gradient-editor {
@@ -2219,16 +2235,13 @@ body.is-fullscreen .app-container .app-footer {
   border: 1px solid var(--border-color);
   cursor: crosshair;
   background: var(--bg-dark);
+  position: relative;
+  z-index: 1;
 }
 
 .gradient-stops-wrapper {
   position: relative;
   margin-bottom: var(--spacing-md);
-}
-
-.gradient-preview {
-  position: relative;
-  z-index: 1;
 }
 
 .gradient-stops {
@@ -2326,9 +2339,9 @@ body.is-fullscreen .app-container .app-footer {
 }
 
 .gradient-stop-delete:hover {
-  background: #dc3545;
-  border-color: #dc3545;
-  color: white;
+  background: var(--color-danger);
+  border-color: var(--color-danger);
+  color: var(--text-primary);
 }
 
 .add-stop-btn {
@@ -2480,7 +2493,7 @@ body.is-fullscreen .app-container .app-footer {
 .saved-scheme-item .btn-danger {
   background: transparent;
   border: none;
-  color: #dc3545;
+  color: var(--color-danger);
   padding: 0;
   cursor: pointer;
   display: flex;
@@ -2493,7 +2506,7 @@ body.is-fullscreen .app-container .app-footer {
 }
 
 .saved-scheme-item .btn-danger svg {
-  color: #dc3545;
+  color: var(--color-danger);
   width: 22px;
   height: 22px;
   flex-shrink: 0;
@@ -2510,7 +2523,7 @@ body.is-fullscreen .app-container .app-footer {
 }
 
 .saved-scheme-item .btn-danger:hover svg {
-  color: #ff6b6b;
+  color: var(--color-danger-hover);
 }
 
 .btn-small {
@@ -2527,12 +2540,12 @@ body.is-fullscreen .app-container .app-footer {
 /* Notification System */
 .notification-container {
   position: fixed;
-  top: 20px;
-  right: 20px;
-  z-index: 10000;
+  top: var(--spacing-xl);
+  right: var(--spacing-xl);
+  z-index: var(--z-notification);
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--notification-gap);
   pointer-events: none;
 }
 
@@ -2540,28 +2553,28 @@ body.is-fullscreen .app-container .app-footer {
   background: var(--bg-panel);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
-  padding: 16px 20px;
-  min-width: 300px;
-  max-width: 400px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  padding: var(--spacing-lg) var(--spacing-xl);
+  min-width: var(--notification-min-width);
+  max-width: var(--notification-max-width);
+  box-shadow: 0 8px 24px var(--overlay-medium);
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--notification-gap);
   pointer-events: auto;
   animation: slideInRight 0.3s ease-out;
   transition: opacity var(--transition-fast), transform var(--transition-fast);
 }
 
 .notification.notification-success {
-  border-left: 4px solid #4ade80;
+  border-left: 4px solid var(--color-success);
 }
 
 .notification.notification-error {
-  border-left: 4px solid #f87171;
+  border-left: 4px solid var(--color-error);
 }
 
 .notification.notification-error.notification-confirmation {
-  border-left: 4px solid #dc3545;
+  border-left: 4px solid var(--color-error-dark);
 }
 
 .notification.notification-info {
@@ -2569,13 +2582,13 @@ body.is-fullscreen .app-container .app-footer {
 }
 
 .notification.notification-warning {
-  border-left: 4px solid #fbbf24;
+  border-left: 4px solid var(--color-warning);
 }
 
 .notification-icon {
   flex-shrink: 0;
-  width: 20px;
-  height: 20px;
+  width: var(--notification-icon-size);
+  height: var(--notification-icon-size);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2587,7 +2600,7 @@ body.is-fullscreen .app-container .app-footer {
 }
 
 .notification-warning-icon {
-  color: #dc3545;
+  color: var(--color-danger);
 }
 
 .notification-content {
@@ -2603,14 +2616,14 @@ body.is-fullscreen .app-container .app-footer {
   border: none;
   color: var(--text-secondary);
   cursor: pointer;
-  padding: 4px;
+  padding: var(--spacing-xs);
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-sm);
   transition: color var(--transition-fast), background var(--transition-fast);
-  width: 20px;
-  height: 20px;
+  width: var(--notification-icon-size);
+  height: var(--notification-icon-size);
 }
 
 .notification-close:hover {
@@ -2619,8 +2632,8 @@ body.is-fullscreen .app-container .app-footer {
 }
 
 .notification-close svg {
-  width: 14px;
-  height: 14px;
+  width: var(--notification-close-size);
+  height: var(--notification-close-size);
 }
 
 .notification-confirmation {
@@ -2631,18 +2644,18 @@ body.is-fullscreen .app-container .app-footer {
 .notification-header {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--notification-gap);
   width: 100%;
 }
 
-.notification-confirmation .notification-header .notification-close {
+.notification-confirmation .notification-close {
   margin-left: auto;
 }
 
 .notification-actions {
   display: flex;
-  gap: 8px;
-  margin-top: 12px;
+  gap: var(--spacing-sm);
+  margin-top: var(--notification-gap);
   flex-shrink: 0;
   width: 100%;
 }
