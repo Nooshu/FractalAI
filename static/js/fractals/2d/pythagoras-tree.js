@@ -1,5 +1,5 @@
 import {
-  generatePaletteTexture,
+  generatePaletteTexture
 } from '../utils.js';
 
 // Generate vertices for the Pythagoras tree fractal
@@ -37,8 +37,8 @@ function generatePythagorasTree(iterations, angle) {
         x1: worldCorners[i][0],
         y1: worldCorners[i][1],
         x2: worldCorners[next][0],
-        y2: worldCorners[next][1],
-      });
+        y2: worldCorners[next][1]
+});
     }
 
     // Calculate child squares (Pythagoras tree)
@@ -235,8 +235,8 @@ export function render(regl, params, canvas, options = {}) {
     vert: vertexShaderSource,
     frag: fragmentShaderSource,
     attributes: {
-      position: vertices,
-    },
+      position: vertices
+},
     uniforms: useUBO
       ? {
           uZoom: params.zoom,
@@ -244,8 +244,8 @@ export function render(regl, params, canvas, options = {}) {
           uResolution: [canvas.width, canvas.height],
           uPalette: paletteTexture,
           uIterations: params.iterations,
-          uScale: [params.xScale, params.yScale],
-        }
+          uScale: [params.xScale, params.yScale]
+}
       : {
           uZoom: params.zoom,
           uOffset: [params.offset.x, params.offset.y],
@@ -253,18 +253,18 @@ export function render(regl, params, canvas, options = {}) {
           uPalette: paletteTexture,
           uIterations: params.iterations,
           uXScale: params.xScale,
-          uYScale: params.yScale,
-        },
+          uYScale: params.yScale
+},
     viewport: {
       x: 0,
       y: 0,
       width: canvas.width,
-      height: canvas.height,
-    },
+      height: canvas.height
+},
     count: vertices.length / 2,
     primitive: 'lines',
-    lineWidth: 1,
-  });
+    lineWidth: 1
+});
 
   return drawPythagorasTree;
 }
@@ -276,26 +276,15 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'neon',
-  },
+    colorScheme: 'neon'
+},
   initialPosition: {
     zoom: 6.516,
-    offset: { x: 0.0568, y: -0.5476 },
+    offset: { x: 0.0568, y: -0.5476 }
   },
-  interestingPoints: [
-    { x: 0, y: 0, zoom: 1 }, // Full overview
-    { x: 0, y: 0, zoom: 2 }, // Center
-    { x: 0, y: 0.2, zoom: 3 }, // Upper branches
-    { x: 0.1, y: 0.1, zoom: 4 }, // Right branch detail
-    { x: -0.1, y: 0.1, zoom: 4 }, // Left branch detail
-    { x: 0, y: 0.3, zoom: 5 }, // Top detail
-    { x: 0.15, y: 0.15, zoom: 6 }, // Deep right branch
-    { x: -0.15, y: 0.15, zoom: 6 }, // Deep left branch
-    { x: 0, y: 0, zoom: 1.5 }, // Medium zoom
-  ],
   fallbackPosition: {
     offset: { x: 0, y: 0 },
-    zoom: 2,
-  },
+    zoom: 2
+}
 };
 

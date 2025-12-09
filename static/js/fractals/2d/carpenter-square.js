@@ -1,7 +1,7 @@
 import {
   generatePaletteTexture,
   createFragmentShader,
-  getVertexShader,
+  getVertexShader
 } from '../utils.js';
 
 const fractalFunction = `
@@ -145,14 +145,14 @@ export function render(regl, params, canvas, options = {}) {
     frag: fragmentShader,
     vert: vertexShaderSource,
     attributes: {
-      position: [-1, -1, 1, -1, -1, 1, 1, 1],
-    },
+      position: [-1, -1, 1, -1, -1, 1, 1, 1]
+},
     uniforms: useUBO
       ? {
           uTime: 0,
           uResolution: [canvas.width, canvas.height],
-          uPalette: paletteTexture,
-        }
+          uPalette: paletteTexture
+}
       : {
           uTime: 0,
           uIterations: params.iterations,
@@ -162,8 +162,8 @@ export function render(regl, params, canvas, options = {}) {
           uJuliaC: [0, 0],
           uPalette: paletteTexture,
           uXScale: params.xScale,
-          uYScale: params.yScale,
-        },
+          uYScale: params.yScale
+},
     // Bind UBO if available
     ...(useUBO && ubo?.glBuffer && ubo?.bind
       ? {
@@ -178,12 +178,12 @@ export function render(regl, params, canvas, options = {}) {
                 offset: params.offset,
                 juliaC: { x: 0, y: 0 },
                 xScale: params.xScale,
-                yScale: params.yScale,
-              });
+                yScale: params.yScale
+});
               context.ubo.bind(program);
             }
-          },
-        }
+          }
+}
       : {}),
     primitive: 'triangle strip',
     count: 4,
@@ -191,9 +191,9 @@ export function render(regl, params, canvas, options = {}) {
       x: 0,
       y: 0,
       width: canvas.width,
-      height: canvas.height,
-    },
-  });
+      height: canvas.height
+}
+});
 
   return drawFractal;
 }
@@ -206,13 +206,12 @@ export const is2D = true;
 export const config = {
   initialSettings: {
     colorScheme: 'neon',
-    iterations: 25,
-  },
+    iterations: 25
+},
   initialPosition: {
     zoom: 0.569,
-    offset: { x: 0.5841, y: 0.7217 },
-  },
-  interestingPoints: [],
+    offset: { x: 0.5841, y: 0.7217 }
+},
   fallbackPosition: {
     offset: { x: 0, y: 0 },
     zoom: 1,

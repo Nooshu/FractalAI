@@ -1,6 +1,6 @@
 import {
   createFragmentShader,
-  createStandardDrawCommand,
+  createStandardDrawCommand
 } from '../utils.js';
 
 const fractalFunction = `
@@ -90,8 +90,8 @@ export function render(regl, params, canvas, options = {}) {
   return createStandardDrawCommand(regl, params, canvas, fragmentShader, {
     webglCapabilities,
     ubo,
-    juliaC: { x: 0, y: 0 },
-  });
+    juliaC: { x: 0, y: 0 }
+});
 }
 
 export const is2D = true;
@@ -105,22 +105,10 @@ export const config = {
   },
   initialPosition: {
     zoom: 1,
-    offset: { x: 0, y: 0 },
+    offset: { x: 0, y: 0 }
   },
-  interestingPoints: [
-    { x: 0, y: 0, zoom: 1 }, // Center view
-    { x: 0.5, y: 0.5, zoom: 2 }, // Upper right quadrant
-    { x: -0.5, y: -0.5, zoom: 2 }, // Lower left quadrant
-    { x: 0.3, y: -0.3, zoom: 3 }, // Mixed region
-    { x: -0.4, y: 0.4, zoom: 3 }, // Another mixed region
-    { x: 0.7, y: 0.2, zoom: 4 }, // Edge patterns
-    { x: -0.2, y: 0.7, zoom: 4 }, // More edge patterns
-    { x: 0.1, y: 0.1, zoom: 5 }, // Detailed center
-    { x: -0.6, y: 0.1, zoom: 4 }, // Left region detail
-    { x: 0.4, y: -0.6, zoom: 4 }, // Bottom right detail
-  ],
   fallbackPosition: {
     offset: { x: 0, y: 0 },
-    zoom: 1,
-  },
+    zoom: 1
+}
 };

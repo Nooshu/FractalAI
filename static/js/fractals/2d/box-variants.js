@@ -1,7 +1,7 @@
 import {
   generatePaletteTexture,
   createFragmentShader,
-  getVertexShader,
+  getVertexShader
 } from '../utils.js';
 
 const fractalFunction = `
@@ -195,14 +195,14 @@ export function render(regl, params, canvas, options = {}) {
     frag: fragmentShader,
     vert: vertexShaderSource,
     attributes: {
-      position: [-1, -1, 1, -1, -1, 1, 1, 1],
-    },
+      position: [-1, -1, 1, -1, -1, 1, 1, 1]
+},
     uniforms: useUBO
       ? {
           uTime: 0,
           uResolution: [canvas.width, canvas.height],
-          uPalette: paletteTexture,
-        }
+          uPalette: paletteTexture
+}
       : {
           uTime: 0,
           uIterations: params.iterations,
@@ -212,8 +212,8 @@ export function render(regl, params, canvas, options = {}) {
           uJuliaC: [0, 0],
           uPalette: paletteTexture,
           uXScale: params.xScale,
-          uYScale: params.yScale,
-        },
+          uYScale: params.yScale
+},
     // Bind UBO if available
     ...(useUBO && ubo?.glBuffer && ubo?.bind
       ? {
@@ -228,12 +228,12 @@ export function render(regl, params, canvas, options = {}) {
                 offset: params.offset,
                 juliaC: { x: 0, y: 0 },
                 xScale: params.xScale,
-                yScale: params.yScale,
-              });
+                yScale: params.yScale
+});
               context.ubo.bind(program);
             }
-          },
-        }
+          }
+}
       : {}),
     primitive: 'triangle strip',
     count: 4,
@@ -241,9 +241,9 @@ export function render(regl, params, canvas, options = {}) {
       x: 0,
       y: 0,
       width: canvas.width,
-      height: canvas.height,
-    },
-  });
+      height: canvas.height
+}
+});
 
   return drawFractal;
 }
@@ -256,26 +256,14 @@ export const is2D = true;
 export const config = {
   initialSettings: {
     iterations: 50,
-    colorScheme: 'ocean',
-  },
+    colorScheme: 'ocean'
+},
   initialPosition: {
     zoom: 1.509,
-    offset: { x: 0.1359, y: 0.1005 },
+    offset: { x: 0.1359, y: 0.1005 }
   },
-  interestingPoints: [
-    { x: 0, y: 0, zoom: 1 }, // Full overview
-    { x: 0, y: 0, zoom: 3 }, // Center detail
-    { x: 0.33, y: 0, zoom: 4 }, // Right side
-    { x: -0.33, y: 0, zoom: 4 }, // Left side
-    { x: 0, y: 0.33, zoom: 4 }, // Top side
-    { x: 0, y: -0.33, zoom: 4 }, // Bottom side
-    { x: 0.25, y: 0.25, zoom: 6 }, // Corner region
-    { x: -0.25, y: 0.25, zoom: 6 }, // Another corner
-    { x: 0.15, y: 0.15, zoom: 9 }, // Deep zoom
-    { x: 0, y: 0, zoom: 2 }, // Medium zoom
-  ],
   fallbackPosition: {
     offset: { x: 0, y: 0 },
-    zoom: 1,
-  },
+    zoom: 1
+}
 };

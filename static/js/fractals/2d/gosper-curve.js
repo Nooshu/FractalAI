@@ -1,5 +1,5 @@
 import {
-  generatePaletteTexture,
+  generatePaletteTexture
 } from '../utils.js';
 
 // Generate vertices for the Gosper curve (flowsnake)
@@ -208,8 +208,8 @@ export function render(regl, params, canvas, options = {}) {
     vert: vertexShaderSource,
     frag: fragmentShaderSource,
     attributes: {
-      position: vertices,
-    },
+      position: vertices
+},
     uniforms: useUBO
       ? {
           uZoom: params.zoom,
@@ -217,8 +217,8 @@ export function render(regl, params, canvas, options = {}) {
           uResolution: () => [canvas.width, canvas.height],
           uPalette: paletteTexture,
           uIterations: params.iterations,
-          uScale: () => [params.xScale, params.yScale],
-        }
+          uScale: () => [params.xScale, params.yScale]
+}
       : {
           uZoom: params.zoom,
           uOffset: [params.offset.x, params.offset.y],
@@ -226,18 +226,18 @@ export function render(regl, params, canvas, options = {}) {
           uPalette: paletteTexture,
           uIterations: params.iterations,
           uXScale: () => params.xScale,
-          uYScale: () => params.yScale,
-        },
+          uYScale: () => params.yScale
+},
     viewport: {
       x: 0,
       y: 0,
       width: () => canvas.width,
-      height: () => canvas.height,
-    },
+      height: () => canvas.height
+},
     count: vertices.length / 2,
     primitive: 'line strip',
-    lineWidth: 1,
-  });
+    lineWidth: 1
+});
 
   return drawGosperCurve;
 }
@@ -249,26 +249,14 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'rainbow-dark',
-  },
+    colorScheme: 'rainbow-dark'
+},
   initialPosition: {
     zoom: 2,
-    offset: { x: 0.0723, y: 0.0598 },
+    offset: { x: 0.0723, y: 0.0598 }
   },
-  interestingPoints: [
-    { x: 0, y: 0, zoom: 1 }, // Full Gosper curve view
-    { x: 0, y: 0, zoom: 2 }, // Center detail
-    { x: 0.2, y: 0.2, zoom: 3 }, // Upper right quadrant
-    { x: -0.2, y: 0.2, zoom: 3 }, // Upper left quadrant
-    { x: 0.2, y: -0.2, zoom: 3 }, // Lower right quadrant
-    { x: -0.2, y: -0.2, zoom: 3 }, // Lower left quadrant
-    { x: 0.15, y: 0.15, zoom: 4 }, // Deep zoom upper right
-    { x: -0.15, y: 0.15, zoom: 4 }, // Deep zoom upper left
-    { x: 0.15, y: -0.15, zoom: 4 }, // Deep zoom lower right
-    { x: 0, y: 0, zoom: 1.5 }, // Medium zoom center
-  ],
   fallbackPosition: {
     offset: { x: 0, y: 0 },
-    zoom: 1,
-  },
+    zoom: 1
+}
 };

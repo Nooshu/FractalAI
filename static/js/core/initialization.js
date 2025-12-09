@@ -18,7 +18,7 @@ import { fractalLoader, loadFractal } from '../fractals/loader.js';
 import { RenderingEngine } from '../rendering/engine.js';
 import { setupInputControls, zoomToSelection } from '../input/controls.js';
 import { setupUIControls } from '../ui/controls.js';
-import { getRandomInterestingView } from '../fractals/random-view.js';
+// Random view functionality removed - using ML discovery instead
 import { appState } from './app-state.js';
 // Footer height tracking is deferred using requestIdleCallback (non-critical for first render)
 import { getColorSchemeIndex, computeColorForScheme } from '../fractals/utils.js';
@@ -550,13 +550,8 @@ function setupUIControlsModule(
           predictiveRenderingManager.clear();
         }
       },
-      getRandomInterestingView: () =>
-        getRandomInterestingView({
-          getCurrentFractalType: getters.getCurrentFractalType,
-          getCurrentFractalModule: getters.getCurrentFractalModule,
-          getParams: getters.getParams,
-          getCanvas: getters.getCanvas,
-        }),
+      // Random view functionality removed - using ML discovery instead
+      getRandomInterestingView: () => null,
       cancelProgressiveRender: () => renderingEngine.cancelProgressiveRender(),
       onFullscreenChange: (_isFullscreen) => {
         const updateRendererSize = appState.getUpdateRendererSize();

@@ -173,17 +173,17 @@ export function render(regl, params, canvas) {
       uJuliaC: [params.juliaC.x, params.juliaC.y],
       uPalette: paletteTexture,
       uXScale: params.xScale,
-      uYScale: params.yScale,
-    },
+      uYScale: params.yScale
+},
     viewport: {
       x: 0,
       y: 0,
       width: canvas.width,
-      height: canvas.height,
-    },
+      height: canvas.height
+},
     count: 4,
-    primitive: 'triangle strip',
-  });
+    primitive: 'triangle strip'
+});
 
   return drawFractal;
 }
@@ -197,13 +197,12 @@ export const config = {
   initialSettings: {
     colorScheme: 'rainbow-double',
     iterations: 100,
-    juliaC: { x: 1.2, y: 0.8 },
-  },
+    juliaC: { x: 1.2, y: 0.8 }
+},
   initialPosition: {
     zoom: 2,
-    offset: { x: -0.3374, y: -1.698 },
-  },
-  interestingPoints: [{ x: -0.6138, y: 0.1099, zoom: 70.166 }],
+    offset: { x: -0.3374, y: -1.698 }
+},
   fallbackPosition: {
     offset: { x: 0, y: 0 },
     zoom: 1,

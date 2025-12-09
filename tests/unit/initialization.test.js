@@ -69,8 +69,9 @@ vi.mock('../../static/js/ui/controls.js', () => ({
   setupUIControls: vi.fn(),
 }));
 
+// Random view functionality removed - isValidInterestingView is still used by discovery
 vi.mock('../../static/js/fractals/random-view.js', () => ({
-  getRandomInterestingView: vi.fn(() => ({})),
+  isValidInterestingView: vi.fn(() => true),
 }));
 
 vi.mock('../../static/js/core/app-state.js', () => ({

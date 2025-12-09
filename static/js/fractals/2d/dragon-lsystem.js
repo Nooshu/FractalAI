@@ -1,5 +1,5 @@
 import {
-  getColorSchemeIndex,
+  getColorSchemeIndex
 } from '../utils.js';
 
 // Buffer cache for reuse
@@ -402,8 +402,8 @@ export function render(regl, params, canvas, options = {}) {
     frag: fragmentShaderSource,
 
     attributes: {
-      position: cachedBuffer,
-    },
+      position: cachedBuffer
+},
 
     uniforms: useUBO
       ? {
@@ -411,16 +411,16 @@ export function render(regl, params, canvas, options = {}) {
           uOffset: [params.offset.x, params.offset.y],
           uResolution: [canvas.width, canvas.height],
           uScale: [params.xScale, params.yScale],
-          uColorScheme: colorSchemeIndex,
-        }
+          uColorScheme: colorSchemeIndex
+}
       : {
           uZoom: params.zoom,
           uOffset: [params.offset.x, params.offset.y],
           uResolution: [canvas.width, canvas.height],
           uXScale: params.xScale,
           uYScale: params.yScale,
-          uColorScheme: colorSchemeIndex,
-        },
+          uColorScheme: colorSchemeIndex
+},
 
     primitive: 'line strip',
     count: vertexCount,
@@ -428,20 +428,20 @@ export function render(regl, params, canvas, options = {}) {
     lineWidth: 1, // WebGL only supports 1 on most systems
 
     depth: {
-      enable: false,
-    },
+      enable: false
+},
 
     blend: {
-      enable: false,
-    },
+      enable: false
+},
 
     viewport: {
       x: 0,
       y: 0,
       width: canvas.width,
-      height: canvas.height,
-    },
-  });
+      height: canvas.height
+}
+});
 
   return drawFractal;
 }
@@ -453,13 +453,12 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'rainbow-shifted',
-  },
+    colorScheme: 'rainbow-shifted'
+},
   initialPosition: {
     zoom: 0.666,
-    offset: { x: 0.2164, y: 0.3085 },
-  },
-  interestingPoints: [],
+    offset: { x: 0.2164, y: 0.3085 }
+},
   fallbackPosition: {
     offset: { x: 0, y: 0 },
     zoom: 1,

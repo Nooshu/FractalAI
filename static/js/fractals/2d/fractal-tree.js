@@ -1,5 +1,5 @@
 import {
-  generatePaletteTexture,
+  generatePaletteTexture
 } from '../utils.js';
 
 // Generate vertices for fractal tree (binary or ternary)
@@ -19,8 +19,8 @@ function generateFractalTree(iterations, branchAngle, lengthRatio, numBranches) 
       x1: x,
       y1: y,
       x2: endX,
-      y2: endY,
-    });
+      y2: endY
+});
 
     // Calculate new length for child branches
     const newLength = length * lengthRatio;
@@ -189,8 +189,8 @@ export function render(regl, params, canvas, options = {}) {
     vert: vertexShaderSource,
     frag: fragmentShaderSource,
     attributes: {
-      position: vertices,
-    },
+      position: vertices
+},
     uniforms: useUBO
       ? {
           uZoom: params.zoom,
@@ -198,8 +198,8 @@ export function render(regl, params, canvas, options = {}) {
           uResolution: [canvas.width, canvas.height],
           uPalette: paletteTexture,
           uIterations: params.iterations,
-          uScale: [params.xScale, params.yScale],
-        }
+          uScale: [params.xScale, params.yScale]
+}
       : {
           uZoom: params.zoom,
           uOffset: [params.offset.x, params.offset.y],
@@ -207,18 +207,18 @@ export function render(regl, params, canvas, options = {}) {
           uPalette: paletteTexture,
           uIterations: params.iterations,
           uXScale: params.xScale,
-          uYScale: params.yScale,
-        },
+          uYScale: params.yScale
+},
     viewport: {
       x: 0,
       y: 0,
       width: canvas.width,
-      height: canvas.height,
-    },
+      height: canvas.height
+},
     count: vertices.length / 2,
     primitive: 'lines',
-    lineWidth: 1,
-  });
+    lineWidth: 1
+});
 
   return drawFractalTree;
 }
@@ -238,18 +238,11 @@ export const config = {
   },
   initialPosition: {
     zoom: 0.678,
-    offset: { x: 1.1737, y: 1.9343 },
+    offset: { x: 1.1737, y: 1.9343 }
   },
-  interestingPoints: [
-    { x: 1.1737, y: 1.9343, zoom: 1.364 }, // Forest canopy view
-    { x: 1.1737, y: 1.9343, zoom: 0.8 }, // Wide forest view
-    { x: 1.1737, y: 1.9343, zoom: 2.0 }, // Medium zoom forest detail
-    { x: 1.1737, y: 1.9343, zoom: 3.5 }, // Close-up forest branches
-    { x: 1.1737, y: 1.9343, zoom: 5.0 }, // Detailed branch structure
-  ],
   fallbackPosition: {
     offset: { x: 1.1737, y: 1.9343 },
-    zoom: 0.678,
-  },
+    zoom: 0.678
+}
 };
 

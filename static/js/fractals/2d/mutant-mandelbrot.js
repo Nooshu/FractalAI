@@ -1,6 +1,6 @@
 import {
   createFragmentShader,
-  createStandardDrawCommand,
+  createStandardDrawCommand
 } from '../utils.js';
 
 const fractalFunction = `
@@ -108,26 +108,14 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'classic',
-  },
+    colorScheme: 'classic'
+},
   initialPosition: {
     zoom: 1,
-    offset: { x: -0.536, y: 0.006 },
+    offset: { x: -0.536, y: 0.006 }
   },
-  interestingPoints: [
-    { x: 0, y: 0, zoom: 1 }, // Center - see overall mutant structure
-    { x: 0.5, y: 0.5, zoom: 2 }, // Upper right quadrant
-    { x: -0.5, y: -0.5, zoom: 2 }, // Lower left quadrant
-    { x: 0.3, y: 0, zoom: 3 }, // Right side detail
-    { x: 0, y: 0.3, zoom: 3 }, // Top detail
-    { x: -0.3, y: 0, zoom: 3 }, // Left side detail
-    { x: 0.2, y: 0.2, zoom: 5 }, // Diagonal detail
-    { x: -0.2, y: 0.2, zoom: 5 }, // Upper left detail
-    { x: 0.1, y: -0.1, zoom: 4 }, // Lower right detail
-    { x: 0, y: 0, zoom: 2 }, // Closer center view
-  ],
   fallbackPosition: {
     offset: { x: 0, y: 0 },
-    zoom: 1,
-  },
+    zoom: 1
+}
 };

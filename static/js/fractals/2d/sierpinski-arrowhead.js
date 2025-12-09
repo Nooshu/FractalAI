@@ -1,5 +1,5 @@
 import {
-  generatePaletteTexture,
+  generatePaletteTexture
 } from '../utils.js';
 
 // Generate vertices for the Sierpinski Arrowhead Curve
@@ -230,8 +230,8 @@ export function render(regl, params, canvas, options = {}) {
     vert: vertexShaderSource,
     frag: fragmentShaderSource,
     attributes: {
-      position: vertices,
-    },
+      position: vertices
+},
     uniforms: useUBO
       ? {
           uZoom: params.zoom,
@@ -239,8 +239,8 @@ export function render(regl, params, canvas, options = {}) {
           uResolution: [canvas.width, canvas.height],
           uPalette: paletteTexture,
           uIterations: params.iterations,
-          uScale: [params.xScale, params.yScale],
-        }
+          uScale: [params.xScale, params.yScale]
+}
       : {
           uZoom: params.zoom,
           uOffset: [params.offset.x, params.offset.y],
@@ -248,18 +248,18 @@ export function render(regl, params, canvas, options = {}) {
           uPalette: paletteTexture,
           uIterations: params.iterations,
           uXScale: params.xScale,
-          uYScale: params.yScale,
-        },
+          uYScale: params.yScale
+},
     viewport: {
       x: 0,
       y: 0,
       width: canvas.width,
-      height: canvas.height,
-    },
+      height: canvas.height
+},
     count: vertices.length / 2,
     primitive: 'line strip',
-    lineWidth: 1,
-  });
+    lineWidth: 1
+});
 
   return drawArrowhead;
 }
@@ -271,26 +271,14 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'rainbow-double',
-  },
+    colorScheme: 'rainbow-double'
+},
   initialPosition: {
     zoom: 2,
-    offset: { x: -0.002, y: -0.0211 },
+    offset: { x: -0.002, y: -0.0211 }
   },
-  interestingPoints: [
-    { x: 0, y: 0, zoom: 1 }, // Full overview
-    { x: 0, y: -0.2, zoom: 2 }, // Bottom detail
-    { x: -0.2, y: 0.1, zoom: 3 }, // Left side curve
-    { x: 0.2, y: 0.1, zoom: 3 }, // Right side curve
-    { x: 0, y: 0.2, zoom: 4 }, // Top detail
-    { x: -0.3, y: -0.1, zoom: 5 }, // Lower left spiral
-    { x: 0.3, y: -0.1, zoom: 5 }, // Lower right spiral
-    { x: 0, y: 0, zoom: 2.5 }, // Closer center view
-    { x: -0.15, y: 0, zoom: 6 }, // Left detail zoom
-    { x: 0.15, y: 0, zoom: 6 }, // Right detail zoom
-  ],
   fallbackPosition: {
     offset: { x: 0, y: 0 },
-    zoom: 1,
-  },
+    zoom: 1
+}
 };

@@ -1,5 +1,5 @@
 import {
-  generatePaletteTexture,
+  generatePaletteTexture
 } from '../utils.js';
 
 // Generate vertices for pine tree using L-system
@@ -50,8 +50,8 @@ function generatePineTreeLSystem(iterations, angle = 20) {
           x1: x,
           y1: y,
           x2: newX,
-          y2: newY,
-        });
+          y2: newY
+});
         x = newX;
         y = newY;
         break;
@@ -217,8 +217,8 @@ export function render(regl, params, canvas, options = {}) {
     vert: vertexShaderSource,
     frag: fragmentShaderSource,
     attributes: {
-      position: vertices,
-    },
+      position: vertices
+},
     uniforms: useUBO
       ? {
           uZoom: params.zoom,
@@ -226,8 +226,8 @@ export function render(regl, params, canvas, options = {}) {
           uResolution: [canvas.width, canvas.height],
           uPalette: paletteTexture,
           uIterations: params.iterations,
-          uScale: [params.xScale, params.yScale],
-        }
+          uScale: [params.xScale, params.yScale]
+}
       : {
           uZoom: params.zoom,
           uOffset: [params.offset.x, params.offset.y],
@@ -235,18 +235,18 @@ export function render(regl, params, canvas, options = {}) {
           uPalette: paletteTexture,
           uIterations: params.iterations,
           uXScale: params.xScale,
-          uYScale: params.yScale,
-        },
+          uYScale: params.yScale
+},
     viewport: {
       x: 0,
       y: 0,
       width: canvas.width,
-      height: canvas.height,
-    },
+      height: canvas.height
+},
     count: vertices.length / 2,
     primitive: 'lines',
-    lineWidth: 1,
-  });
+    lineWidth: 1
+});
 
   return drawPineTree;
 }
@@ -258,22 +258,15 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'coral',
-  },
+    colorScheme: 'coral'
+},
   initialPosition: {
     zoom: 2,
-    offset: { x: 0.0026, y: 0.1865 },
+    offset: { x: 0.0026, y: 0.1865 }
   },
-  interestingPoints: [
-    { x: 0, y: 0, zoom: 1 }, // Full overview
-    { x: 0, y: 0, zoom: 2 }, // Center
-    { x: 0, y: 0.2, zoom: 3 }, // Upper branches
-    { x: 0.05, y: 0.1, zoom: 4 }, // Right branch detail
-    { x: -0.05, y: 0.1, zoom: 4 }, // Left branch detail
-  ],
   fallbackPosition: {
     offset: { x: 0, y: 0 },
-    zoom: 2,
-  },
+    zoom: 2
+}
 };
 

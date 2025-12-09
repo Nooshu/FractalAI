@@ -1,7 +1,7 @@
 import {
   generatePaletteTexture,
   createFragmentShader,
-  getVertexShader,
+  getVertexShader
 } from '../utils.js';
 
 const fractalFunction = `
@@ -112,14 +112,14 @@ export function render(regl, params, canvas, options = {}) {
     frag: fragmentShader,
     vert: vertexShaderSource,
     attributes: {
-      position: [-1, -1, 1, -1, -1, 1, 1, 1],
-    },
+      position: [-1, -1, 1, -1, -1, 1, 1, 1]
+},
     uniforms: useUBO
       ? {
           uTime: 0,
           uResolution: [canvas.width, canvas.height],
-          uPalette: paletteTexture,
-        }
+          uPalette: paletteTexture
+}
       : {
           uTime: 0,
           uIterations: params.iterations,
@@ -129,8 +129,8 @@ export function render(regl, params, canvas, options = {}) {
           uJuliaC: [0, 0],
           uPalette: paletteTexture,
           uXScale: params.xScale,
-          uYScale: params.yScale,
-        },
+          uYScale: params.yScale
+},
     // Bind UBO if available
     ...(useUBO && ubo?.glBuffer && ubo?.bind
       ? {
@@ -145,12 +145,12 @@ export function render(regl, params, canvas, options = {}) {
                 offset: params.offset,
                 juliaC: { x: 0, y: 0 },
                 xScale: params.xScale,
-                yScale: params.yScale,
-              });
+                yScale: params.yScale
+});
               context.ubo.bind(program);
             }
-          },
-        }
+          }
+}
       : {}),
     primitive: 'triangle strip',
     count: 4,
@@ -158,9 +158,9 @@ export function render(regl, params, canvas, options = {}) {
       x: 0,
       y: 0,
       width: canvas.width,
-      height: canvas.height,
-    },
-  });
+      height: canvas.height
+}
+});
 
   return drawFractal;
 }
@@ -173,26 +173,14 @@ export const is2D = true;
 export const config = {
   initialSettings: {
     colorScheme: 'coral',
-    iterations: 90,
-  },
+    iterations: 90
+},
   initialPosition: {
     zoom: 1.548,
-    offset: { x: -0.0118, y: 0.036 },
+    offset: { x: -0.0118, y: 0.036 }
   },
-  interestingPoints: [
-    { x: 0, y: 0, zoom: 1 }, // Full overview showing cross
-    { x: 0, y: 0, zoom: 3 }, // Center cross detail
-    { x: 0.33, y: 0, zoom: 4 }, // Right arm
-    { x: -0.33, y: 0, zoom: 4 }, // Left arm
-    { x: 0, y: 0.33, zoom: 4 }, // Top arm
-    { x: 0, y: -0.33, zoom: 4 }, // Bottom arm
-    { x: 0.22, y: 0.22, zoom: 6 }, // Edge of center where cross meets
-    { x: -0.22, y: 0.22, zoom: 6 }, // Edge of center
-    { x: 0.11, y: 0.11, zoom: 9 }, // Deep zoom into self-similarity
-    { x: 0, y: 0, zoom: 2 }, // Medium zoom center
-  ],
   fallbackPosition: {
     offset: { x: 0, y: 0 },
-    zoom: 1,
-  },
+    zoom: 1
+}
 };

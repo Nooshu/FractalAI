@@ -215,30 +215,30 @@ export function render(regl, params, canvas) {
     attributes: {
       position: {
         buffer: cachedBuffer,
-        stride: 8,
-      },
+        stride: 8
+},
       colorValue: {
         buffer: colorBuffer,
-        stride: 4,
-      },
-    },
+        stride: 4
+}
+},
     uniforms: {
       uZoom: params.zoom,
       uOffset: [params.offset.x, params.offset.y],
       uXScale: params.xScale,
       uYScale: params.yScale,
       uResolution: [canvas.width, canvas.height],
-      uPalette: paletteTexture,
-    },
+      uPalette: paletteTexture
+},
     primitive: 'triangles',
     count: vertexCount,
     viewport: {
       x: 0,
       y: 0,
       width: canvas.width,
-      height: canvas.height,
-    },
-  });
+      height: canvas.height
+}
+});
 
   return drawPercolationCluster;
 }
@@ -250,13 +250,12 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'autumn',
-  },
+    colorScheme: 'autumn'
+},
   initialPosition: {
     zoom: 1,
-    offset: { x: 0, y: 0 },
-  },
-  interestingPoints: [],
+    offset: { x: 0, y: 0 }
+},
   fallbackPosition: {
     offset: { x: 0, y: 0 },
     zoom: 1,

@@ -141,8 +141,8 @@ export function render(regl, params, canvas) {
     vert: vertexShader,
     frag: fragmentShader,
     attributes: {
-      position: vertices,
-    },
+      position: vertices
+},
     uniforms: {
       uZoom: params.zoom,
       uOffset: [params.offset.x, params.offset.y],
@@ -150,18 +150,18 @@ export function render(regl, params, canvas) {
       uPalette: paletteTexture,
       uIterations: params.iterations,
       uXScale: params.xScale,
-      uYScale: params.yScale,
-    },
+      uYScale: params.yScale
+},
     viewport: {
       x: 0,
       y: 0,
       width: canvas.width,
-      height: canvas.height,
-    },
+      height: canvas.height
+},
     count: vertices.length / 2,
     primitive: 'line strip',
-    lineWidth: 1,
-  });
+    lineWidth: 1
+});
 
   return drawMinkowski;
 }
@@ -174,26 +174,14 @@ export const is2D = true;
 export const config = {
   initialSettings: {
     colorScheme: 'vintage',
-    iterations: 285,
-  },
+    iterations: 285
+},
   initialPosition: {
     zoom: 3.02,
-    offset: { x: 0.0044, y: 0.0381 },
+    offset: { x: 0.0044, y: 0.0381 }
   },
-  interestingPoints: [
-    { x: 0, y: 0, zoom: 1 }, // Full overview
-    { x: 0, y: 0.5, zoom: 3 }, // Top edge bulge
-    { x: 0.5, y: 0, zoom: 3 }, // Right edge bulge
-    { x: 0, y: -0.5, zoom: 3 }, // Bottom edge bulge
-    { x: -0.5, y: 0, zoom: 3 }, // Left edge bulge
-    { x: 0.4, y: 0.4, zoom: 5 }, // Top-right corner detail
-    { x: -0.4, y: 0.4, zoom: 5 }, // Top-left corner detail
-    { x: 0.4, y: -0.4, zoom: 5 }, // Bottom-right corner detail
-    { x: -0.4, y: -0.4, zoom: 5 }, // Bottom-left corner detail
-    { x: 0, y: 0, zoom: 2.5 }, // Medium zoom center
-  ],
   fallbackPosition: {
     offset: { x: 0, y: 0 },
-    zoom: 1,
-  },
+    zoom: 1
+}
 };

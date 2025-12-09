@@ -34,8 +34,7 @@ describe('ui controls module', () => {
       <input id="julia-c-imag" />
       <span id="julia-c-imag-value"></span>
       <button id="random-view-btn"></button>
-      <button id="fullscreen-random-btn"></button>
-      <span id="fullscreen-random-number">0</span>
+      <!-- Random view button removed -->
       <button id="reset-view"></button>
       <button id="screenshot"></button>
       <button id="fullscreen"></button>

@@ -1,6 +1,6 @@
 import {
   createFragmentShader,
-  createStandardDrawCommand,
+  createStandardDrawCommand
 } from '../utils.js';
 
 const fractalFunction = `
@@ -140,8 +140,8 @@ export function render(regl, params, canvas, options = {}) {
   const fragmentShader = createFragmentShader(fractalFunction);
   return createStandardDrawCommand(regl, params, canvas, fragmentShader, {
     webglCapabilities,
-    ubo,
-  });
+    ubo
+});
 }
 
 export const is2D = true;
@@ -151,27 +151,15 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'rainbow-double',
-  },
+    colorScheme: 'rainbow-double'
+},
   initialPosition: {
     zoom: 0.994,
-    offset: { x: 0, y: 0 },
+    offset: { x: 0, y: 0 }
   },
-  interestingPoints: [
-    { x: 0, y: 0, zoom: 1 }, // Full dimension plot view
-    { x: 0, y: 0, zoom: 2 }, // Center detail
-    { x: 0.3, y: 0.3, zoom: 3 }, // Upper right quadrant
-    { x: -0.3, y: 0.3, zoom: 3 }, // Upper left quadrant
-    { x: 0.3, y: -0.3, zoom: 3 }, // Lower right quadrant
-    { x: -0.3, y: -0.3, zoom: 3 }, // Lower left quadrant
-    { x: 0.2, y: 0.2, zoom: 4 }, // Deep zoom upper right
-    { x: -0.2, y: 0.2, zoom: 4 }, // Deep zoom upper left
-    { x: 0.2, y: -0.2, zoom: 4 }, // Deep zoom lower right
-    { x: 0, y: 0, zoom: 1.5 }, // Medium zoom center
-  ],
   fallbackPosition: {
     offset: { x: 0, y: 0 },
-    zoom: 1,
-  },
+    zoom: 1
+}
 };
 

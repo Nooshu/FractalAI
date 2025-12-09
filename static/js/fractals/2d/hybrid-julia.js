@@ -1,6 +1,6 @@
 import {
   getVertexShader,
-  generatePaletteTexture,
+  generatePaletteTexture
 } from '../utils.js';
 
 // Helper function to create UBO-aware fragment shader for hybrid-julia
@@ -189,8 +189,8 @@ export function render(regl, params, canvas, options = {}) {
       ? {
           uTime: 0,
           uResolution: [canvas.width, canvas.height],
-          uPalette: paletteTexture,
-        }
+          uPalette: paletteTexture
+}
       : {
           uTime: 0,
           uIterations: params.iterations,
@@ -200,14 +200,14 @@ export function render(regl, params, canvas, options = {}) {
           uJuliaC: [params.juliaC.x, params.juliaC.y],
           uPalette: paletteTexture,
           uXScale: params.xScale,
-          uYScale: params.yScale,
-        },
+          uYScale: params.yScale
+},
     viewport: {
       x: 0,
       y: 0,
       width: canvas.width,
-      height: canvas.height,
-    },
+      height: canvas.height
+},
     count: 4,
     primitive: 'triangle strip',
     // Bind UBO if available
@@ -224,14 +224,14 @@ export function render(regl, params, canvas, options = {}) {
                 offset: params.offset,
                 juliaC: params.juliaC,
                 xScale: params.xScale,
-                yScale: params.yScale,
-              });
+                yScale: params.yScale
+});
               context.ubo.bind(program);
             }
-          },
-        }
-      : {}),
-  });
+          }
+}
+      : {})
+});
 }
 
 export const is2D = true;
@@ -243,13 +243,12 @@ export const config = {
   initialSettings: {
     colorScheme: 'ocean',
     iterations: 100,
-    juliaC: { x: -0.4, y: 0.6 },
-  },
+    juliaC: { x: -0.4, y: 0.6 }
+},
   initialPosition: {
     zoom: 1,
-    offset: { x: 0.194, y: 0.242 },
-  },
-  interestingPoints: [],
+    offset: { x: 0.194, y: 0.242 }
+},
   fallbackPosition: {
     offset: { x: 0, y: 0 },
     zoom: 1,

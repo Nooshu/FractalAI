@@ -1,6 +1,6 @@
 import {
   createFragmentShader,
-  createStandardDrawCommand,
+  createStandardDrawCommand
 } from '../utils.js';
 
 const fractalFunction = `
@@ -107,25 +107,15 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'electric',
-  },
+    colorScheme: 'electric'
+},
   initialPosition: {
     zoom: 1,
-    offset: { x: 0, y: 0 },
+    offset: { x: 0, y: 0 }
   },
-  interestingPoints: [
-    { x: 0, y: 0, zoom: 1 }, // Center
-    { x: 0.5, y: 0.5, zoom: 2 }, // Upper right
-    { x: -0.5, y: 0.5, zoom: 2 }, // Upper left
-    { x: 0.5, y: -0.5, zoom: 2 }, // Lower right
-    { x: -0.5, y: -0.5, zoom: 2 }, // Lower left
-    { x: 0.25, y: 0.25, zoom: 3 }, // Detail area
-    { x: -0.25, y: 0.25, zoom: 3 }, // Detail area
-    { x: 0, y: 0.3, zoom: 4 }, // Vertical detail
-  ],
   fallbackPosition: {
     offset: { x: 0, y: 0 },
-    zoom: 1,
-  },
+    zoom: 1
+}
 };
 

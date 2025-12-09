@@ -1,6 +1,6 @@
 import {
   getVertexShader,
-  generatePaletteTexture,
+  generatePaletteTexture
 } from '../utils.js';
 
 // Helper function to create UBO-aware fragment shader for multibrot
@@ -182,8 +182,8 @@ export function render(regl, params, canvas, options = {}) {
       ? {
           uTime: 0,
           uResolution: [canvas.width, canvas.height],
-          uPalette: paletteTexture,
-        }
+          uPalette: paletteTexture
+}
       : {
           uTime: 0,
           uIterations: params.iterations,
@@ -193,14 +193,14 @@ export function render(regl, params, canvas, options = {}) {
           uJuliaC: [0, 0], // Not used for Multibrot
           uPalette: paletteTexture,
           uXScale: params.xScale,
-          uYScale: params.yScale,
-        },
+          uYScale: params.yScale
+},
     viewport: {
       x: 0,
       y: 0,
       width: canvas.width,
-      height: canvas.height,
-    },
+      height: canvas.height
+},
     count: 4,
     primitive: 'triangle strip',
     // Bind UBO if available
@@ -217,14 +217,14 @@ export function render(regl, params, canvas, options = {}) {
                 offset: params.offset,
                 juliaC: { x: 0, y: 0 },
                 xScale: params.xScale,
-                yScale: params.yScale,
-              });
+                yScale: params.yScale
+});
               context.ubo.bind(program);
             }
-          },
-        }
-      : {}),
-  });
+          }
+}
+      : {})
+});
 }
 
 export const is2D = true;
@@ -237,19 +237,14 @@ export const config = {
   initialSettings: {
     colorScheme: 'midnight',
     xScale: 0.25, // Maps to order 4.0 (2.0 + 0.25 * 8.0 = 4.0)
-    yScale: 1.0,
-  },
+    yScale: 1.0
+},
   initialPosition: {
     zoom: 1,
-    offset: { x: 0, y: 0 },
+    offset: { x: 0, y: 0 }
   },
-  interestingPoints: [
-    { x: 0.0, y: 0.0, zoom: 1 },
-    { x: -0.5, y: 0.0, zoom: 2 },
-    { x: 0.5, y: 0.0, zoom: 2 },
-  ],
   fallbackPosition: {
     offset: { x: 0.0, y: 0.0 },
-    zoom: 1,
-  },
+    zoom: 1
+}
 };

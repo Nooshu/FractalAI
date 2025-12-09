@@ -1,5 +1,5 @@
 import {
-  generatePaletteTexture,
+  generatePaletteTexture
 } from '../utils.js';
 
 // Generate vertices for the generalized H-tree fractal with rotation and scaling
@@ -41,8 +41,8 @@ function generateGeneralizedHTree(iterations, rotationFactor, scaleFactor) {
     function transform(x, y) {
       return {
         x: cx + x * cos - y * sin,
-        y: cy + x * sin + y * cos,
-      };
+        y: cy + x * sin + y * cos
+};
     }
 
     const leftTop = transform(leftX, topY);
@@ -58,24 +58,24 @@ function generateGeneralizedHTree(iterations, rotationFactor, scaleFactor) {
       x1: leftBottom.x,
       y1: leftBottom.y,
       x2: leftTop.x,
-      y2: leftTop.y,
-    });
+      y2: leftTop.y
+});
 
     // Horizontal middle line
     segments.push({
       x1: leftMid.x,
       y1: leftMid.y,
       x2: rightMid.x,
-      y2: rightMid.y,
-    });
+      y2: rightMid.y
+});
 
     // Right vertical line
     segments.push({
       x1: rightBottom.x,
       y1: rightBottom.y,
       x2: rightTop.x,
-      y2: rightTop.y,
-    });
+      y2: rightTop.y
+});
 
     // Recursively add smaller H's at the four corners with additional rotation
     const newSize = size * scaleFactor;
@@ -260,8 +260,8 @@ export function render(regl, params, canvas, options = {}) {
     vert: vertexShaderSource,
     frag: fragmentShaderSource,
     attributes: {
-      position: vertices,
-    },
+      position: vertices
+},
     uniforms: useUBO
       ? {
           uZoom: params.zoom,
@@ -279,18 +279,18 @@ export function render(regl, params, canvas, options = {}) {
           uPalette: paletteTexture,
           uIterations: params.iterations,
           uXScale: params.xScale,
-          uYScale: params.yScale,
-        },
+          uYScale: params.yScale
+},
     viewport: {
       x: 0,
       y: 0,
       width: canvas.width,
-      height: canvas.height,
-    },
+      height: canvas.height
+},
     count: vertices.length / 2,
     primitive: 'lines',
-    lineWidth: 1,
-  });
+    lineWidth: 1
+});
 
   return drawHTree;
 }
@@ -302,26 +302,14 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'electric',
-  },
+    colorScheme: 'electric'
+},
   initialPosition: {
     zoom: 2,
-    offset: { x: 0.0928, y: 0.0537 },
+    offset: { x: 0.0928, y: 0.0537 }
   },
-  interestingPoints: [
-    { x: 0, y: 0, zoom: 1 }, // Full overview
-    { x: 0, y: 0, zoom: 2 }, // Center detail
-    { x: -0.2, y: 0.2, zoom: 3 }, // Top-left branch
-    { x: 0.2, y: 0.2, zoom: 3 }, // Top-right branch
-    { x: -0.2, y: -0.2, zoom: 3 }, // Bottom-left branch
-    { x: 0.2, y: -0.2, zoom: 3 }, // Bottom-right branch
-    { x: -0.3, y: 0.3, zoom: 5 }, // Deep into top-left
-    { x: 0.3, y: 0.3, zoom: 5 }, // Deep into top-right
-    { x: -0.15, y: 0.15, zoom: 7 }, // Very deep zoom
-    { x: 0, y: 0, zoom: 1.5 }, // Medium zoom center
-  ],
   fallbackPosition: {
     offset: { x: 0, y: 0 },
-    zoom: 1,
-  },
+    zoom: 1
+}
 };

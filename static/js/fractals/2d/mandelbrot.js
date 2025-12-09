@@ -1,6 +1,6 @@
 import {
   createFragmentShader,
-  createStandardDrawCommand,
+  createStandardDrawCommand
 } from '../utils.js';
 
 const fractalFunction = `
@@ -132,27 +132,14 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'classic',
-  },
+    colorScheme: 'classic'
+},
   initialPosition: {
     zoom: 1,
-    offset: { x: 0, y: 0 },
+    offset: { x: 0, y: 0 }
   },
-  interestingPoints: [
-    { x: -0.75, y: 0.1, zoom: 50 }, // Seahorse valley
-    { x: -0.5, y: 0.5, zoom: 100 }, // Top bulb
-    { x: 0.0, y: 0.0, zoom: 1 }, // Center
-    { x: -1.25, y: 0.0, zoom: 200 }, // Left side
-    { x: -0.1592, y: 1.0317, zoom: 500 }, // Mini mandelbrot
-    { x: -0.77568377, y: 0.13646737, zoom: 1000 }, // Deep zoom area
-    { x: 0.285, y: 0.01, zoom: 300 }, // Right side detail
-    { x: -0.8, y: 0.156, zoom: 800 }, // Elephant valley
-    { x: -0.235125, y: 0.827215, zoom: 400 }, // Another interesting area
-    { x: 0.286932, y: 0.008287, zoom: 250 }, // Right side detail
-    { x: -0.7751, y: 0.136, zoom: 4699.082 }, // Deep zoom near Seahorse valley
-  ],
   fallbackPosition: {
     offset: { x: -0.75, y: 0.1 },
-    zoom: 50,
-  },
+    zoom: 50
+}
 };

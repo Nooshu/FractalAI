@@ -35,7 +35,7 @@ import { lifecycleManager } from '../core/lifecycle-manager.js';
  * @param {Function} callbacks.updateCoordinateDisplay - Update coordinate display
  * @param {Function} callbacks.renderFractalProgressive - Render fractal progressively
  * @param {Function} callbacks.renderFractal - Render fractal
- * @param {Function} callbacks.getRandomInterestingView - Get random interesting view
+ * @param {Function} callbacks.getRandomInterestingView - Deprecated (always returns null)
  * @param {Function} callbacks.cancelWorkerTasks - Cancel pending worker tasks
  * @returns {Object} Object with cleanup function
  */
@@ -63,7 +63,7 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
     updateCoordinateDisplay,
     renderFractalProgressive,
     renderFractal,
-    getRandomInterestingView,
+    getRandomInterestingView = () => null, // Deprecated - using ML discovery instead
     cancelProgressiveRender,
     cancelWorkerTasks = () => {}, // Optional callback to cancel worker tasks
     resetPredictiveRendering = () => {}, // Optional callback to reset predictive rendering
@@ -97,15 +97,7 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
     autoRenderCheckbox.checked = true;
   }
 
-  // Random view counter (reset when fractal type changes)
-  let currentInterestingPointIndex = 0;
-  const fullscreenRandomNumberEl = document.getElementById('fullscreen-random-number');
-  const resetRandomViewCounter = () => {
-    currentInterestingPointIndex = 0;
-    if (fullscreenRandomNumberEl) {
-      fullscreenRandomNumberEl.textContent = '0';
-    }
-  };
+  // Random view functionality removed - using ML discovery instead
 
   // Auto-render functionality
   // Initialize from checkbox state (which may have been set from URL parameter)
@@ -285,7 +277,7 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
     updateCoordinateDisplay();
 
     // Reset random view counter when fractal type changes
-    resetRandomViewCounter();
+    // Random view counter removed
 
     // Cancel any pending worker tasks when fractal type changes
     cancelWorkerTasks();
@@ -1341,7 +1333,7 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
   // Fullscreen controls
   const fullscreenScreenshotBtn = document.getElementById('fullscreen-screenshot');
   const fullscreenColorCycleBtn = document.getElementById('fullscreen-color-cycle');
-  const fullscreenRandomBtn = document.getElementById('fullscreen-random');
+  // Random view button removed - using Surprise Me instead
 
   // Resolution export state
   let exportResolution = 'default'; // 'default' or '4k'
@@ -1390,266 +1382,7 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
     });
   }
 
-  // Function to validate if coordinates will produce an interesting view
-  // Samples points and checks for variation in iteration counts
-  function isValidInterestingView(offset, zoom, fractalType) {
-    const params = getParams();
-    const canvas = getCanvas();
-    // For geometric fractals and chaotic maps, they're generally always interesting
-    if (
-      fractalType === 'sierpinski' ||
-      fractalType === 'sierpinski-arrowhead' ||
-      fractalType === 'sierpinski-carpet' ||
-      fractalType === 'sierpinski-pentagon' ||
-      fractalType === 'sierpinski-hexagon' ||
-      fractalType === 'sierpinski-gasket' ||
-      fractalType === 'koch' ||
-      fractalType === 'quadratic-koch' ||
-      fractalType === 'minkowski-sausage' ||
-      fractalType === 'cesaro' ||
-      fractalType === 'vicsek' ||
-      fractalType === 'cross' ||
-      fractalType === 'box-variants' ||
-      fractalType === 'h-tree' ||
-      fractalType === 'h-tree-generalized' ||
-      fractalType === 'heighway-dragon' ||
-      fractalType === 'hilbert-curve' ||
-      fractalType === 'sierpinski-curve' ||
-      fractalType === 'twindragon' ||
-      fractalType === 'terdragon' ||
-      fractalType === 'binary-dragon' ||
-      fractalType === 'folded-paper-dragon' ||
-      fractalType === 'peano-curve' ||
-      fractalType === 'popcorn' ||
-      fractalType === 'rose' ||
-      fractalType === 'mutant-mandelbrot' ||
-      fractalType === 'cantor' ||
-      fractalType === 'fat-cantor' ||
-      fractalType === 'smith-volterra-cantor' ||
-      fractalType === 'random-cantor'
-    ) {
-      return true;
-    }
-
-    // For Burning Ship, Buffalo, and Multibrot, use similar validation to Mandelbrot
-    // (they're escape-time fractals with similar characteristics)
-    if (
-      fractalType === 'burning-ship' ||
-      fractalType === 'buffalo' ||
-      fractalType === 'multibrot'
-    ) {
-      fractalType = 'mandelbrot'; // Use same validation logic
-    }
-
-    // For Mandelbrot/Julia/Burning Ship/Buffalo, sample points to check for variation
-    const iterations = params.iterations;
-    // Cache canvas dimensions
-    const canvasEl = canvas;
-    const aspect = canvasEl.width / canvasEl.height;
-    const scale = 4.0 / zoom;
-    const scaleXAspect = scale * aspect * params.xScale;
-    const scaleY = scale * params.yScale;
-
-    let escapeCount = 0;
-    let stayCount = 0;
-    let midRangeCount = 0;
-
-    // Pre-calculate constants
-    const isMandelbrot = fractalType === 'mandelbrot';
-    const maxCheckIter = Math.min(50, iterations);
-
-    // Sample points across the view
-    for (let i = 0; i < 3; i++) {
-      for (let j = 0; j < 3; j++) {
-        // Sample at different positions in the view
-        const u = (i + 0.5) / 3;
-        const v = (j + 0.5) / 3;
-
-        // Convert to fractal coordinates (optimized calculation)
-        const cX = (u - 0.5) * scaleXAspect + offset.x;
-        const cY = (v - 0.5) * scaleY + offset.y;
-
-        // Quick iteration check (simplified Mandelbrot/Julia calculation)
-        let zx = isMandelbrot ? 0 : cX;
-        let zy = isMandelbrot ? 0 : cY;
-        const cx = isMandelbrot ? cX : params.juliaC.x;
-        const cy = isMandelbrot ? cY : params.juliaC.y;
-
-        let iter = 0;
-        let escaped = false;
-
-        // Quick iteration (max 50 iterations for validation)
-        for (let k = 0; k < maxCheckIter; k++) {
-          const zx2 = zx * zx;
-          const zy2 = zy * zy;
-          if (zx2 + zy2 > 4.0) {
-            escaped = true;
-            iter = k;
-            break;
-          }
-          const newZx = zx2 - zy2 + cx;
-          zy = 2.0 * zx * zy + cy;
-          zx = newZx;
-        }
-
-        if (escaped) {
-          if (iter < 5) {
-            escapeCount++; // Escaped very quickly (likely blank area)
-          } else {
-            midRangeCount++; // Escaped after some iterations (interesting boundary)
-          }
-        } else {
-          stayCount++; // Never escaped (inside set)
-        }
-      }
-    }
-
-    // A view is interesting if it has a mix of escaped and non-escaped points
-    // or if it has points that escaped in the mid-range (boundary region)
-    return (escapeCount > 0 && stayCount > 0) || midRangeCount >= 2;
-  }
-
-  // Function to generate random interesting coordinates and zoom for each fractal type
-  function getRandomInterestingViewLocal() {
-    const currentFractalType = getCurrentFractalType();
-    const currentFractalModule = getCurrentFractalModule();
-    const params = getParams();
-    const fractalType = currentFractalType;
-    const fractalConfig = currentFractalModule?.config;
-
-    // Check if fractal has interesting points defined in config
-    if (fractalConfig?.interestingPoints && fractalConfig.interestingPoints.length > 0) {
-      let interestingLocations = fractalConfig.interestingPoints;
-
-      // Handle special cases that need additional logic
-      if (fractalType === 'sierpinski-gasket') {
-        // Generalised Sierpinski Gasket - randomly select polygon type
-        const polygonTypes = [
-          { sides: 3, name: 'Triangle' }, // xScale = 0.0
-          { sides: 4, name: 'Square' }, // xScale = 0.167
-          { sides: 5, name: 'Pentagon' }, // xScale = 0.333
-          { sides: 6, name: 'Hexagon' }, // xScale = 0.5
-          { sides: 7, name: 'Heptagon' }, // xScale = 0.667
-          { sides: 8, name: 'Octagon' }, // xScale = 0.833
-          { sides: 9, name: 'Nonagon' }, // xScale = 1.0
-          { sides: 10, name: 'Decagon' }, // xScale = 1.167
-          { sides: 12, name: 'Dodecagon' }, // xScale = 1.5
-        ];
-        const polygonType = polygonTypes[Math.floor(Math.random() * polygonTypes.length)];
-        const xScale = (polygonType.sides - 3) / 6.0;
-
-        const location =
-          interestingLocations[Math.floor(Math.random() * interestingLocations.length)];
-        const zoom = location.zoom * (0.8 + Math.random() * 0.4);
-
-        // Update xScale slider
-        const xScaleSlider = document.getElementById('x-scale');
-        const xScaleValue = document.getElementById('x-scale-value');
-        if (xScaleSlider) {
-          xScaleSlider.value = xScale;
-          updateSliderAccessibility(
-            xScaleSlider,
-            xScaleValue,
-            xScaleAnnounce,
-            xScale,
-            'X Axis',
-            false
-          );
-        }
-        params.xScale = xScale;
-
-        return {
-          offset: { x: location.x, y: location.y },
-          zoom: zoom,
-        };
-      }
-
-      // For other fractals with interesting points, randomly select one
-      const location =
-        interestingLocations[Math.floor(Math.random() * interestingLocations.length)];
-      const zoom = location.zoom * (0.8 + Math.random() * 0.4);
-
-      return {
-        offset: { x: location.x, y: location.y },
-        zoom: zoom,
-      };
-    }
-
-    // Fallback: generate random coordinates and validate
-    let attempts = 0;
-    const maxAttempts = 50;
-
-    while (attempts < maxAttempts) {
-      const randomOffset = {
-        x: -2 + Math.random() * 4,
-        y: -2 + Math.random() * 4,
-      };
-      const randomZoom = 0.5 + Math.random() * 20;
-
-      if (isValidInterestingView(randomOffset, randomZoom, fractalType)) {
-        return {
-          offset: randomOffset,
-          zoom: randomZoom,
-        };
-      }
-
-      attempts++;
-    }
-
-    // If validation fails after max attempts, return a safe default
-    return {
-      x: -0.5 + Math.random() * 1,
-      y: -0.5 + Math.random() * 1,
-      zoom: 1 + Math.random() * 10,
-    };
-  }
-
-  // Random view button - TEMPORARILY DISABLED (using Surprise Me instead)
-  // Keeping code for potential future use
-  if (fullscreenRandomBtn) {
-    // Disable the button to prevent it from impacting performance
-    fullscreenRandomBtn.disabled = true;
-    fullscreenRandomBtn.style.pointerEvents = 'none';
-    
-    // Commented out event listener - keeping code for reference
-    /*
-    fullscreenRandomBtn.addEventListener('click', () => {
-      // Get random interesting view
-      const randomView = getRandomInterestingView
-        ? getRandomInterestingView()
-        : getRandomInterestingViewLocal();
-      const params = getParams();
-
-      // Update parameters
-      params.offset.x = randomView.offset.x;
-      params.offset.y = randomView.offset.y;
-      params.zoom = randomView.zoom;
-
-      // Increment and update the interesting point number
-      currentInterestingPointIndex++;
-      if (fullscreenRandomNumberEl) {
-        fullscreenRandomNumberEl.textContent = currentInterestingPointIndex;
-      }
-
-      // Clear frame cache since we're changing to a new view
-      frameCache.clear();
-
-      // Clear cached display if we're showing one
-      if (getIsDisplayingCached()) {
-        setIsDisplayingCached(false);
-        setCachedDrawCommand(null);
-      }
-
-      // Cancel any ongoing progressive rendering
-      if (cancelProgressiveRender) {
-        cancelProgressiveRender();
-      }
-
-      // Render the new random view with progressive rendering for better UX
-      renderFractalProgressive();
-    });
-    */
-  }
+  // Random view functionality removed - using ML discovery instead
 
   // Iterations controls - cache DOM references
   const fullscreenIterationsUpBtn = document.getElementById('fullscreen-iterations-up');

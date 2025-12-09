@@ -1,6 +1,6 @@
 import {
   createFragmentShader,
-  createStandardDrawCommand,
+  createStandardDrawCommand
 } from '../utils.js';
 
 const fractalFunction = `
@@ -89,8 +89,8 @@ export function render(regl, params, canvas, options = {}) {
   return createStandardDrawCommand(regl, params, canvas, fragmentShader, {
     webglCapabilities,
     ubo,
-    juliaC: { x: 0, y: 0 },
-  });
+    juliaC: { x: 0, y: 0 }
+});
 }
 
 export const is2D = true;
@@ -100,26 +100,14 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'coral',
-  },
+    colorScheme: 'coral'
+},
   initialPosition: {
     zoom: 2,
-    offset: { x: -0.5473, y: 0.5336 },
+    offset: { x: -0.5473, y: 0.5336 }
   },
-  interestingPoints: [
-    { x: -0.5, y: 0.6, zoom: 1.2 }, // Main buffalo view (flipped ship)
-    { x: -1.75, y: 0.03, zoom: 100 }, // Bow detail (flipped)
-    { x: -1.62, y: 0.0, zoom: 250 }, // Right antenna
-    { x: -1.755, y: 0.028, zoom: 500 }, // Deep bow zoom (flipped)
-    { x: -1.7, y: 0.0, zoom: 80 }, // Side structures
-    { x: -0.4, y: 0.6, zoom: 150 }, // Hull detail (flipped)
-    { x: -1.8, y: 0.0085, zoom: 300 }, // Fine bow structures (flipped)
-    { x: -1.65, y: 0.0, zoom: 50 }, // Middle antenna
-    { x: -0.9, y: 0.3, zoom: 200 }, // Central structures (flipped)
-    { x: -1.72, y: 0.025, zoom: 400 }, // Intricate bow patterns (flipped)
-  ],
   fallbackPosition: {
     offset: { x: -0.5, y: 0.6 },
-    zoom: 1.2,
-  },
+    zoom: 1.2
+}
 };

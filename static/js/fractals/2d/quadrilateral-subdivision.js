@@ -1,7 +1,7 @@
 import {
   generatePaletteTexture,
   createFragmentShader,
-  getVertexShader,
+  getVertexShader
 } from '../utils.js';
 
 const fractalFunction = `
@@ -121,14 +121,14 @@ export function render(regl, params, canvas, options = {}) {
     frag: fragmentShader,
     vert: vertexShaderSource,
     attributes: {
-      position: [-1, -1, 1, -1, -1, 1, 1, 1],
-    },
+      position: [-1, -1, 1, -1, -1, 1, 1, 1]
+},
     uniforms: useUBO
       ? {
           uTime: 0,
           uResolution: [canvas.width, canvas.height],
-          uPalette: paletteTexture,
-        }
+          uPalette: paletteTexture
+}
       : {
           uTime: 0,
           uIterations: params.iterations,
@@ -138,16 +138,16 @@ export function render(regl, params, canvas, options = {}) {
           uJuliaC: [0, 0],
           uPalette: paletteTexture,
           uXScale: params.xScale,
-          uYScale: params.yScale,
-        },
+          uYScale: params.yScale
+},
     primitive: 'triangle strip',
     count: 4,
     viewport: {
       x: 0,
       y: 0,
       width: canvas.width,
-      height: canvas.height,
-    },
+      height: canvas.height
+},
     // Bind UBO if available
     ...(useUBO && ubo?.glBuffer && ubo?.bind
       ? {
@@ -162,14 +162,14 @@ export function render(regl, params, canvas, options = {}) {
                 offset: params.offset,
                 juliaC: { x: 0, y: 0 },
                 xScale: params.xScale,
-                yScale: params.yScale,
-              });
+                yScale: params.yScale
+});
               context.ubo.bind(program);
             }
-          },
-        }
-      : {}),
-  });
+          }
+}
+      : {})
+});
 
   return drawFractal;
 }
@@ -181,13 +181,12 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'galaxy',
-  },
+    colorScheme: 'galaxy'
+},
   initialPosition: {
     zoom: 1.515,
-    offset: { x: -0.0813, y: -0.0318 },
-  },
-  interestingPoints: [],
+    offset: { x: -0.0813, y: -0.0318 }
+},
   fallbackPosition: {
     offset: { x: 0, y: 0 },
     zoom: 1,

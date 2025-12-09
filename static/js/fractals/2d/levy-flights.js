@@ -150,13 +150,13 @@ export function render(regl, params, canvas) {
     attributes: {
       position: {
         buffer: cachedBuffer,
-        stride: 8,
-      },
+        stride: 8
+},
       colorValue: {
         buffer: colorBuffer,
-        stride: 4,
-      },
-    },
+        stride: 4
+}
+},
     uniforms: {
       uZoom: params.zoom,
       uOffset: [params.offset.x, params.offset.y],
@@ -165,17 +165,17 @@ export function render(regl, params, canvas) {
       uXScale: params.xScale,
       uYScale: params.yScale,
       uResolution: [canvas.width, canvas.height],
-      uPalette: paletteTexture,
-    },
+      uPalette: paletteTexture
+},
     primitive: 'lines',
     count: vertexCount,
     viewport: {
       x: 0,
       y: 0,
       width: canvas.width,
-      height: canvas.height,
-    },
-  });
+      height: canvas.height
+}
+});
 
   return drawLevyFlight;
 }
@@ -187,13 +187,12 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'ocean',
-  },
+    colorScheme: 'ocean'
+},
   initialPosition: {
     zoom: 1,
-    offset: { x: 0.9645, y: 0.2072 },
-  },
-  interestingPoints: [],
+    offset: { x: 0.9645, y: 0.2072 }
+},
   fallbackPosition: {
     offset: { x: 0, y: 0 },
     zoom: 1,

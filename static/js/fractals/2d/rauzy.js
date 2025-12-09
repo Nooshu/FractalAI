@@ -155,8 +155,8 @@ export function render(regl, params, canvas) {
         [1, -1],
         [-1, 1],
         [1, 1],
-      ],
-    },
+      ]
+},
     uniforms: {
       uResolution: [canvas.width, canvas.height],
       uZoom: params.zoom,
@@ -164,17 +164,17 @@ export function render(regl, params, canvas) {
       uIterations: params.iterations,
       uPalette: paletteTexture,
       uXScale: params.xScale,
-      uYScale: params.yScale,
-    },
+      uYScale: params.yScale
+},
     primitive: 'triangle strip',
     count: 4,
     viewport: {
       x: 0,
       y: 0,
       width: canvas.width,
-      height: canvas.height,
-    },
-  });
+      height: canvas.height
+}
+});
 
   return drawFractal;
 }
@@ -187,13 +187,12 @@ export const is2D = true;
 export const config = {
   initialSettings: {
     colorScheme: 'rainbow-double',
-    iterations: 25,
-  },
+    iterations: 25
+},
   initialPosition: {
     zoom: 4,
-    offset: { x: 0.7877, y: 0.6103 },
-  },
-  interestingPoints: [],
+    offset: { x: 0.7877, y: 0.6103 }
+},
   fallbackPosition: {
     offset: { x: 0, y: 0 },
     zoom: 1,

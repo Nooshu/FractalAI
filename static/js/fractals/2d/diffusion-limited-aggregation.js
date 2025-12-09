@@ -214,13 +214,13 @@ export function render(regl, params, canvas) {
     attributes: {
       position: {
         buffer: cachedBuffer,
-        stride: 8,
-      },
+        stride: 8
+},
       colorValue: {
         buffer: colorBuffer,
-        stride: 4,
-      },
-    },
+        stride: 4
+}
+},
     uniforms: {
       uZoom: params.zoom,
       uOffset: [params.offset.x, params.offset.y],
@@ -229,17 +229,17 @@ export function render(regl, params, canvas) {
       uXScale: params.xScale,
       uYScale: params.yScale,
       uResolution: [canvas.width, canvas.height],
-      uPalette: paletteTexture,
-    },
+      uPalette: paletteTexture
+},
     primitive: 'lines',
     count: vertexCount,
     viewport: {
       x: 0,
       y: 0,
       width: canvas.width,
-      height: canvas.height,
-    },
-  });
+      height: canvas.height
+}
+});
 
   return drawDLA;
 }
@@ -252,13 +252,12 @@ export const is2D = true;
 export const config = {
   initialSettings: {
     colorScheme: 'electric',
-    iterations: 315,
-  },
+    iterations: 315
+},
   initialPosition: {
     zoom: 0.394,
-    offset: { x: 0.4281, y: 0.8264 },
-  },
-  interestingPoints: [],
+    offset: { x: 0.4281, y: 0.8264 }
+},
   fallbackPosition: {
     offset: { x: 0, y: 0 },
     zoom: 1,

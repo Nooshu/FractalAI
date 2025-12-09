@@ -1,5 +1,5 @@
 import {
-  generatePaletteTexture,
+  generatePaletteTexture
 } from '../utils.js';
 
 // Generate vertices for the Heighway dragon curve
@@ -189,8 +189,8 @@ export function render(regl, params, canvas, options = {}) {
     vert: vertexShaderSource,
     frag: fragmentShaderSource,
     attributes: {
-      position: vertices,
-    },
+      position: vertices
+},
     uniforms: useUBO
       ? {
           uZoom: params.zoom,
@@ -198,8 +198,8 @@ export function render(regl, params, canvas, options = {}) {
           uResolution: [canvas.width, canvas.height],
           uPalette: paletteTexture,
           uIterations: params.iterations,
-          uScale: [params.xScale, params.yScale],
-        }
+          uScale: [params.xScale, params.yScale]
+}
       : {
           uZoom: params.zoom,
           uOffset: [params.offset.x, params.offset.y],
@@ -207,18 +207,18 @@ export function render(regl, params, canvas, options = {}) {
           uPalette: paletteTexture,
           uIterations: params.iterations,
           uXScale: params.xScale,
-          uYScale: params.yScale,
-        },
+          uYScale: params.yScale
+},
     viewport: {
       x: 0,
       y: 0,
       width: canvas.width,
-      height: canvas.height,
-    },
+      height: canvas.height
+},
     count: vertices.length / 2,
     primitive: 'line strip',
-    lineWidth: 1,
-  });
+    lineWidth: 1
+});
 
   return drawDragon;
 }
@@ -230,26 +230,14 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'rainbow-shifted',
-  },
+    colorScheme: 'rainbow-shifted'
+},
   initialPosition: {
     zoom: 2,
-    offset: { x: 0.2257, y: -0.1287 },
+    offset: { x: 0.2257, y: -0.1287 }
   },
-  interestingPoints: [
-    { x: 0, y: 0, zoom: 1 }, // Full dragon view
-    { x: 0, y: 0, zoom: 2 }, // Center detail
-    { x: 0.2, y: 0, zoom: 3 }, // Right side of dragon
-    { x: -0.2, y: 0, zoom: 3 }, // Left side of dragon
-    { x: 0.1, y: 0.1, zoom: 4 }, // Upper right quadrant
-    { x: -0.1, y: 0.1, zoom: 4 }, // Upper left quadrant
-    { x: 0.1, y: -0.1, zoom: 4 }, // Lower right quadrant
-    { x: -0.1, y: -0.1, zoom: 4 }, // Lower left quadrant
-    { x: 0.15, y: 0.05, zoom: 6 }, // Deep zoom right
-    { x: 0, y: 0, zoom: 1.5 }, // Medium zoom center
-  ],
   fallbackPosition: {
     offset: { x: 0, y: 0 },
-    zoom: 1,
-  },
+    zoom: 1
+}
 };

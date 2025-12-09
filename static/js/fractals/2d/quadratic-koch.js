@@ -1,5 +1,5 @@
 import {
-  generatePaletteTexture,
+  generatePaletteTexture
 } from '../utils.js';
 
 // Generate vertices for the Quadratic Koch Island
@@ -219,8 +219,8 @@ export function render(regl, params, canvas, options = {}) {
     vert: vertexShaderSource,
     frag: fragmentShaderSource,
     attributes: {
-      position: vertices,
-    },
+      position: vertices
+},
     uniforms: useUBO
       ? {
           uZoom: params.zoom,
@@ -228,8 +228,8 @@ export function render(regl, params, canvas, options = {}) {
           uResolution: [canvas.width, canvas.height],
           uPalette: paletteTexture,
           uIterations: params.iterations,
-          uScale: [params.xScale, params.yScale],
-        }
+          uScale: [params.xScale, params.yScale]
+}
       : {
           uZoom: params.zoom,
           uOffset: [params.offset.x, params.offset.y],
@@ -237,18 +237,18 @@ export function render(regl, params, canvas, options = {}) {
           uPalette: paletteTexture,
           uIterations: params.iterations,
           uXScale: params.xScale,
-          uYScale: params.yScale,
-        },
+          uYScale: params.yScale
+},
     viewport: {
       x: 0,
       y: 0,
       width: canvas.width,
-      height: canvas.height,
-    },
+      height: canvas.height
+},
     count: vertices.length / 2,
     primitive: 'line strip',
-    lineWidth: 1,
-  });
+    lineWidth: 1
+});
 
   return drawKoch;
 }
@@ -260,26 +260,14 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'rainbow-double',
-  },
+    colorScheme: 'rainbow-double'
+},
   initialPosition: {
     zoom: 2.571,
-    offset: { x: -0.0117, y: 0.088 },
+    offset: { x: -0.0117, y: 0.088 }
   },
-  interestingPoints: [
-    { x: 0, y: 0, zoom: 1 }, // Full overview
-    { x: 0, y: 0.5, zoom: 3 }, // Top edge
-    { x: 0.5, y: 0, zoom: 3 }, // Right edge
-    { x: 0, y: -0.5, zoom: 3 }, // Bottom edge
-    { x: -0.5, y: 0, zoom: 3 }, // Left edge
-    { x: 0.35, y: 0.35, zoom: 5 }, // Top-right corner
-    { x: -0.35, y: 0.35, zoom: 5 }, // Top-left corner
-    { x: 0.35, y: -0.35, zoom: 5 }, // Bottom-right corner
-    { x: -0.35, y: -0.35, zoom: 5 }, // Bottom-left corner
-    { x: 0, y: 0, zoom: 2 }, // Medium zoom center
-  ],
   fallbackPosition: {
     offset: { x: 0, y: 0 },
-    zoom: 1,
-  },
+    zoom: 1
+}
 };

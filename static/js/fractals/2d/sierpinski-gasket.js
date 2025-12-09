@@ -1,6 +1,6 @@
 import {
   getVertexShader,
-  generatePaletteTexture,
+  generatePaletteTexture
 } from '../utils.js';
 
 const fractalFunction = `
@@ -258,8 +258,8 @@ export function render(regl, params, canvas, options = {}) {
       ? {
           uTime: 0,
           uResolution: [canvas.width, canvas.height],
-          uPalette: paletteTexture,
-        }
+          uPalette: paletteTexture
+}
       : {
           uTime: 0,
           uIterations: params.iterations,
@@ -269,14 +269,14 @@ export function render(regl, params, canvas, options = {}) {
           uJuliaC: [0, 0], // Not used
           uPalette: paletteTexture,
           uXScale: params.xScale, // Used for number of sides
-          uYScale: params.yScale,
-        },
+          uYScale: params.yScale
+},
     viewport: {
       x: 0,
       y: 0,
       width: canvas.width,
-      height: canvas.height,
-    },
+      height: canvas.height
+},
     count: 4,
     primitive: 'triangle strip',
     // Bind UBO if available
@@ -293,14 +293,14 @@ export function render(regl, params, canvas, options = {}) {
                 offset: params.offset,
                 juliaC: { x: 0, y: 0 },
                 xScale: params.xScale,
-                yScale: params.yScale,
-              });
+                yScale: params.yScale
+});
               context.ubo.bind(program);
             }
-          },
-        }
-      : {}),
-  });
+          }
+}
+      : {})
+});
 }
 
 export const is2D = true;
@@ -311,26 +311,14 @@ export const is2D = true;
 export const config = {
   initialSettings: {
     colorScheme: 'autumn',
-    xScale: 0.5,
-  },
+    xScale: 0.5
+},
   initialPosition: {
     zoom: 2,
-    offset: { x: 0.0169, y: 0.0961 },
+    offset: { x: 0.0169, y: 0.0961 }
   },
-  interestingPoints: [
-    { x: 0, y: 0, zoom: 1 }, // Full overview
-    { x: 0, y: 0.4, zoom: 2.5 }, // Top region
-    { x: 0.35, y: 0.2, zoom: 3 }, // Upper right
-    { x: 0.35, y: -0.2, zoom: 3 }, // Lower right
-    { x: 0, y: -0.4, zoom: 3 }, // Bottom
-    { x: -0.35, y: -0.2, zoom: 3 }, // Lower left
-    { x: -0.35, y: 0.2, zoom: 3 }, // Upper left
-    { x: 0, y: 0, zoom: 3.5 }, // Center detail
-    { x: 0.25, y: 0.15, zoom: 6 }, // Deep zoom
-    { x: -0.25, y: 0.15, zoom: 6 }, // Deep zoom left
-  ],
   fallbackPosition: {
     offset: { x: 0, y: 0 },
-    zoom: 1,
-  },
+    zoom: 1
+}
 };

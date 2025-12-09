@@ -1,6 +1,6 @@
 import {
   createFragmentShader,
-  createStandardDrawCommand,
+  createStandardDrawCommand
 } from '../utils.js';
 
 // Sierpinski triangle using barycentric coordinate method
@@ -97,13 +97,12 @@ export const is2D = true;
 export const config = {
   initialSettings: {
     colorScheme: 'galaxy',
-    iterations: 25,
-  },
+    iterations: 25
+},
   initialPosition: {
     zoom: 1.772,
-    offset: { x: 0.0089, y: 0.039 },
-  },
-  interestingPoints: [],
+    offset: { x: 0.0089, y: 0.039 }
+},
   fallbackPosition: {
     offset: { x: 0, y: 0 },
     zoom: 1,

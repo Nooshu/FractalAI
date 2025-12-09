@@ -1,5 +1,5 @@
 import {
-  generatePaletteTexture,
+  generatePaletteTexture
 } from '../utils.js';
 
 // Generate vertices for fractal canopy pattern
@@ -20,8 +20,8 @@ function generateFractalCanopy(iterations, branchAngle, spreadAngle, lengthRatio
       x1: x,
       y1: y,
       x2: endX,
-      y2: endY,
-    });
+      y2: endY
+});
 
     // Calculate new length for child branches
     const newLength = length * lengthRatio;
@@ -187,8 +187,8 @@ export function render(regl, params, canvas, options = {}) {
     vert: vertexShaderSource,
     frag: fragmentShaderSource,
     attributes: {
-      position: vertices,
-    },
+      position: vertices
+},
     uniforms: useUBO
       ? {
           uZoom: params.zoom,
@@ -196,8 +196,8 @@ export function render(regl, params, canvas, options = {}) {
           uResolution: [canvas.width, canvas.height],
           uPalette: paletteTexture,
           uIterations: params.iterations,
-          uScale: [params.xScale, params.yScale],
-        }
+          uScale: [params.xScale, params.yScale]
+}
       : {
           uZoom: params.zoom,
           uOffset: [params.offset.x, params.offset.y],
@@ -205,18 +205,18 @@ export function render(regl, params, canvas, options = {}) {
           uPalette: paletteTexture,
           uIterations: params.iterations,
           uXScale: params.xScale,
-          uYScale: params.yScale,
-        },
+          uYScale: params.yScale
+},
     viewport: {
       x: 0,
       y: 0,
       width: canvas.width,
-      height: canvas.height,
-    },
+      height: canvas.height
+},
     count: vertices.length / 2,
     primitive: 'lines',
-    lineWidth: 1,
-  });
+    lineWidth: 1
+});
 
   return drawCanopy;
 }
@@ -228,23 +228,15 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'autumn',
-  },
+    colorScheme: 'autumn'
+},
   initialPosition: {
     zoom: 2,
-    offset: { x: 0, y: 0 },
+    offset: { x: 0, y: 0 }
   },
-  interestingPoints: [
-    { x: 0, y: 0, zoom: 1 }, // Full overview
-    { x: 0, y: 0, zoom: 2 }, // Center
-    { x: 0, y: 0.2, zoom: 3 }, // Upper canopy
-    { x: 0.15, y: 0.1, zoom: 4 }, // Right canopy detail
-    { x: -0.15, y: 0.1, zoom: 4 }, // Left canopy detail
-    { x: 0, y: 0.3, zoom: 5 }, // Top canopy detail
-  ],
   fallbackPosition: {
     offset: { x: 0, y: 0 },
-    zoom: 2,
-  },
+    zoom: 2
+}
 };
 

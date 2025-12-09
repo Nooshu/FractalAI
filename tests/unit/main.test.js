@@ -120,12 +120,12 @@ describe('main.js functional tests', () => {
         if (id === 'show-panel-btn') return { addEventListener: vi.fn() };
         if (id === 'fullscreen-screenshot') return { addEventListener: vi.fn() };
         if (id === 'fullscreen-color-cycle') return { addEventListener: vi.fn() };
-        if (id === 'fullscreen-random') return { addEventListener: vi.fn() };
+        // Random view button removed
         if (id === 'fullscreen-iterations-up') return { addEventListener: vi.fn() };
         if (id === 'fullscreen-iterations-down') return { addEventListener: vi.fn() };
         if (id === 'fullscreen-iterations-number') return { textContent: '' };
         if (id === 'fullscreen-color-palette') return { getContext: vi.fn() };
-        if (id === 'fullscreen-random-number') return { textContent: '' };
+        // Random view number removed
         if (id === 'fullscreen-controls') return { classList: { add: vi.fn(), remove: vi.fn() } };
         return null;
       }),
