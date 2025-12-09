@@ -3,7 +3,7 @@
  * Displays mathematical information about the current fractal
  */
 
-import { getFractalInfo, getRelatedFractals, getDiscovererWikipediaUrl } from '../fractals/fractal-info.js';
+import { getFractalInfo, getDiscovererWikipediaUrl } from '../fractals/fractal-info.js';
 import { getWikipediaUrl } from '../fractals/fractal-config.js';
 
 /**
@@ -14,25 +14,25 @@ import { getWikipediaUrl } from '../fractals/fractal-config.js';
  */
 export function setupMathInfoPanel(callbacks) {
   const { getCurrentFractalType, loadFractal } = callbacks;
-  
+
   const content = document.getElementById('math-info-content');
   if (!content) return;
-  
+
   // Initial render (will use plain text if KaTeX not loaded yet)
   updatePanel(getCurrentFractalType());
-  
+
   // Listen for fractal changes
   window.addEventListener('fractal-updated', (event) => {
     const fractalType = event.detail?.fractalType || getCurrentFractalType();
     updatePanel(fractalType);
   });
-  
+
   // Listen for KaTeX load event (triggered when lazy loaded)
   window.addEventListener('katex-loaded', () => {
     // Re-render when KaTeX becomes available
     updatePanel(getCurrentFractalType());
   });
-  
+
   /**
    * Update the panel with information for the current fractal
    * @param {string} fractalType - The fractal type
@@ -42,17 +42,17 @@ export function setupMathInfoPanel(callbacks) {
       renderFallback(content, 'No fractal selected');
       return;
     }
-    
+
     const info = getFractalInfo(fractalType);
-    
+
     if (!info) {
       renderFallback(content, fractalType);
       return;
     }
-    
+
     // Clear existing content
     content.innerHTML = '';
-    
+
     // Render each section
     renderHeader(content, info);
     renderFormulas(content, info.formulas);
@@ -61,7 +61,7 @@ export function setupMathInfoPanel(callbacks) {
     renderRelatedFractals(content, info.relatedFractals, loadFractal);
     renderWikipediaLink(content, fractalType);
   }
-  
+
   /**
    * Render the fractal name header
    */
@@ -74,40 +74,40 @@ export function setupMathInfoPanel(callbacks) {
     `;
     container.appendChild(header);
   }
-  
+
   /**
    * Render formulas section
    */
   function renderFormulas(container, formulas) {
     if (!formulas || formulas.length === 0) return;
-    
+
     const section = document.createElement('div');
     section.className = 'math-info-section';
-    
+
     const title = document.createElement('h4');
     title.className = 'math-info-title';
     title.textContent = 'Formulas';
     section.appendChild(title);
-    
+
     formulas.forEach(formula => {
       const formulaDiv = document.createElement('div');
       formulaDiv.className = 'math-info-formula';
-      
+
       if (formula.title) {
         const formulaTitle = document.createElement('div');
         formulaTitle.className = 'formula-title';
         formulaTitle.textContent = formula.title;
         formulaDiv.appendChild(formulaTitle);
       }
-      
+
       const formulaText = document.createElement('div');
       formulaText.className = 'formula-text';
-      
+
       // Render LaTeX if available, otherwise use plain text
       if (formula.latex && window.katex) {
         try {
           // Use KaTeX to render the LaTeX formula
-          katex.render(formula.latex, formulaText, {
+          window.katex.render(formula.latex, formulaText, {
             throwOnError: false,
             displayMode: false,
             fleqn: false,
@@ -120,45 +120,45 @@ export function setupMathInfoPanel(callbacks) {
       } else {
         // Fallback to plain text if KaTeX is not loaded or no LaTeX available
         formulaText.textContent = formula.plainText || formula.latex || '';
-        
+
         // If we have LaTeX but KaTeX isn't loaded yet, show a note
         if (formula.latex && !window.katex) {
           formulaText.title = 'LaTeX rendering will appear when panel is opened';
         }
       }
-      
+
       formulaDiv.appendChild(formulaText);
-      
+
       if (formula.description) {
         const formulaDesc = document.createElement('div');
         formulaDesc.className = 'formula-description';
         formulaDesc.textContent = formula.description;
         formulaDiv.appendChild(formulaDesc);
       }
-      
+
       section.appendChild(formulaDiv);
     });
-    
+
     container.appendChild(section);
   }
-  
+
   /**
    * Render properties section
    */
   function renderProperties(container, properties) {
     if (!properties) return;
-    
+
     const section = document.createElement('div');
     section.className = 'math-info-section';
-    
+
     const title = document.createElement('h4');
     title.className = 'math-info-title';
     title.textContent = 'Properties';
     section.appendChild(title);
-    
+
     const propsList = document.createElement('ul');
     propsList.className = 'math-info-properties';
-    
+
     if (properties.fractalDimension) {
       addProperty(propsList, 'Fractal Dimension', properties.fractalDimension);
     }
@@ -174,11 +174,11 @@ export function setupMathInfoPanel(callbacks) {
     if (properties.complexity) {
       addProperty(propsList, 'Complexity', properties.complexity);
     }
-    
+
     section.appendChild(propsList);
     container.appendChild(section);
   }
-  
+
   /**
    * Get Wikipedia URL for Big O notation explanation
    * @returns {string} Wikipedia URL for Big O notation
@@ -200,12 +200,12 @@ export function setupMathInfoPanel(callbacks) {
    */
   function addProperty(list, label, value) {
     const item = document.createElement('li');
-    
+
     // Special handling for Fractal Dimension - make the label clickable
     if (label === 'Fractal Dimension') {
       const dimensionUrl = getFractalDimensionExplanationUrl();
       const strong = document.createElement('strong');
-      
+
       const labelLink = document.createElement('a');
       labelLink.href = dimensionUrl;
       labelLink.target = '_blank';
@@ -213,10 +213,10 @@ export function setupMathInfoPanel(callbacks) {
       labelLink.textContent = label;
       labelLink.className = 'property-label-link';
       labelLink.title = 'Learn about fractal dimension on Wikipedia';
-      
+
       strong.appendChild(labelLink);
       strong.appendChild(document.createTextNode(': '));
-      
+
       item.appendChild(strong);
       item.appendChild(document.createTextNode(value));
     }
@@ -231,10 +231,10 @@ export function setupMathInfoPanel(callbacks) {
         link.textContent = value;
         link.className = 'discoverer-link';
         link.title = `Learn more about ${value} on Wikipedia`;
-        
+
         const strong = document.createElement('strong');
         strong.textContent = `${label}: `;
-        
+
         item.appendChild(strong);
         item.appendChild(link);
       } else {
@@ -246,22 +246,22 @@ export function setupMathInfoPanel(callbacks) {
       const complexityUrl = getComplexityExplanationUrl();
       const strong = document.createElement('strong');
       strong.textContent = `${label}: `;
-      
+
       // Check if value contains Big O notation (O(...))
       const bigOMatch = value.match(/(O\([^)]+\))/);
-      
+
       if (bigOMatch) {
         const bigONotation = bigOMatch[1];
         const beforeBigO = value.substring(0, bigOMatch.index);
         const afterBigO = value.substring(bigOMatch.index + bigONotation.length);
-        
+
         item.appendChild(strong);
-        
+
         if (beforeBigO) {
           const beforeText = document.createTextNode(beforeBigO);
           item.appendChild(beforeText);
         }
-        
+
         const link = document.createElement('a');
         link.href = complexityUrl;
         link.target = '_blank';
@@ -270,7 +270,7 @@ export function setupMathInfoPanel(callbacks) {
         link.className = 'complexity-link';
         link.title = 'Learn about Big O notation on Wikipedia';
         item.appendChild(link);
-        
+
         if (afterBigO) {
           const afterText = document.createTextNode(afterBigO);
           item.appendChild(afterText);
@@ -282,49 +282,49 @@ export function setupMathInfoPanel(callbacks) {
     } else {
       item.innerHTML = `<strong>${label}:</strong> ${value}`;
     }
-    
+
     list.appendChild(item);
   }
-  
+
   /**
    * Render history section
    */
   function renderHistory(container, history) {
     if (!history) return;
-    
+
     const section = document.createElement('div');
     section.className = 'math-info-section';
-    
+
     const title = document.createElement('h4');
     title.className = 'math-info-title';
     title.textContent = 'History';
     section.appendChild(title);
-    
+
     const historyText = document.createElement('p');
     historyText.className = 'math-info-text';
     historyText.textContent = history;
     section.appendChild(historyText);
-    
+
     container.appendChild(section);
   }
-  
+
   /**
    * Render related fractals section
    */
   function renderRelatedFractals(container, relatedFractals, loadFractal) {
     if (!relatedFractals || relatedFractals.length === 0) return;
-    
+
     const section = document.createElement('div');
     section.className = 'math-info-section';
-    
+
     const title = document.createElement('h4');
     title.className = 'math-info-title';
     title.textContent = 'Related Fractals';
     section.appendChild(title);
-    
+
     const relatedList = document.createElement('div');
     relatedList.className = 'math-info-related';
-    
+
     relatedFractals.forEach(related => {
       const chip = document.createElement('span');
       chip.className = 'related-fractal-chip';
@@ -337,27 +337,27 @@ export function setupMathInfoPanel(callbacks) {
       });
       relatedList.appendChild(chip);
     });
-    
+
     section.appendChild(relatedList);
     container.appendChild(section);
   }
-  
+
   /**
    * Render Wikipedia link
    */
   function renderWikipediaLink(container, fractalType) {
     const url = getWikipediaUrl(fractalType);
-    
+
     const link = document.createElement('a');
     link.href = url;
     link.target = '_blank';
     link.rel = 'noopener noreferrer';
     link.className = 'math-info-wikipedia-link';
     link.textContent = 'Learn More on Wikipedia →';
-    
+
     container.appendChild(link);
   }
-  
+
   /**
    * Render fallback when no specific info is available
    */

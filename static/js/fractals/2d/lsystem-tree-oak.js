@@ -42,7 +42,7 @@ function generateOakTreeLSystem(iterations, angle = 30) {
     const char = lsystemString[i];
 
     switch (char) {
-      case 'F':
+      case 'F': {
         // Move forward and draw line
         const newX = x + Math.cos(currentAngle) * stepLength;
         const newY = y + Math.sin(currentAngle) * stepLength;
@@ -55,6 +55,7 @@ function generateOakTreeLSystem(iterations, angle = 30) {
         x = newX;
         y = newY;
         break;
+      }
       case '+':
         // Turn right (clockwise)
         currentAngle += angleRad;

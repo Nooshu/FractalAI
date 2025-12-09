@@ -61,7 +61,6 @@ export function computeColorForScheme(t, schemeIndexOrName, out = null) {
       return customSchemeHandler(t, schemeIndexOrName, out);
     }
     // Fallback to classic if handler not registered
-    const schemeIndex = 0;
     if (!out) {
       out = new Float32Array(3);
     }

@@ -118,6 +118,8 @@ export default [
       'playwright-report/',
       'test-results/',
       '*.min.js',
+      '**/*.min.js',
+      'static/katex/**/*.js', // Third-party minified library
       'vite.config.js',
       'public/sw.js', // Service worker has its own globals
       'scripts/generate-presets-manifest.js', // Node.js script

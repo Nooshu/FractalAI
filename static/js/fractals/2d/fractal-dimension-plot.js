@@ -136,7 +136,6 @@ export function render(regl, params, canvas, options = {}) {
   // Check if UBOs should be used (WebGL2 optimization)
   const webglCapabilities = options.webglCapabilities;
   const ubo = options.ubo;
-  const useUBO = webglCapabilities?.isWebGL2 && ubo;
 
   const fragmentShader = createFragmentShader(fractalFunction);
   return createStandardDrawCommand(regl, params, canvas, fragmentShader, {

@@ -1,7 +1,5 @@
 import {
-  generatePaletteTexture,
   createFragmentShader,
-  getVertexShader,
   createStandardDrawCommand,
 } from '../utils.js';
 
