@@ -33,7 +33,7 @@ export function extractFeatures(config) {
     offsetX,
     offsetY,
     iterations,
-    colorScheme,
+    colorScheme: _colorScheme,
     xScale = 1.0,
     yScale = 1.0,
     juliaCX = 0,
@@ -175,7 +175,7 @@ async function getAvailableColorSchemes() {
     // Dynamically import CONFIG to avoid circular dependencies
     const { CONFIG } = await import('../core/config.js');
     return CONFIG.colors.schemes || ['classic'];
-  } catch (error) {
+  } catch (_error) {
     // Fallback list if import fails
     return [
       'classic',

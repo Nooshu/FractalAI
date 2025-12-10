@@ -45,7 +45,7 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
     getCurrentFractalType,
     getCurrentFractalModule,
     getDrawFractal,
-    getIsDisplayingCached,
+    getIsDisplayingCached: _getIsDisplayingCached,
     getRegl,
     getCanvas,
     getWebGLCapabilities,
@@ -63,8 +63,8 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
     updateCoordinateDisplay,
     renderFractalProgressive,
     renderFractal,
-    getRandomInterestingView = () => null, // Deprecated - using ML discovery instead
-    cancelProgressiveRender,
+    getRandomInterestingView: _getRandomInterestingView = () => null, // Deprecated - using ML discovery instead
+    cancelProgressiveRender: _cancelProgressiveRender,
     cancelWorkerTasks = () => {}, // Optional callback to cancel worker tasks
     resetPredictiveRendering = () => {}, // Optional callback to reset predictive rendering
   } = callbacks;
@@ -927,7 +927,7 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
     const drawFractal = getDrawFractal();
     const currentFractalType = getCurrentFractalType();
     const regl = getRegl();
-    const currentFractalModule = getCurrentFractalModule();
+    const _currentFractalModule = getCurrentFractalModule();
     const params = getParams();
 
     // Determine which button was clicked (regular or fullscreen)
@@ -940,7 +940,7 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
 
     try {
       let exportCanvas = canvas;
-      let needsCleanup = false;
+      const _needsCleanup = false;
 
       // If high-resolution export is selected, temporarily resize main canvas
       if (exportResolution === '4k') {
@@ -1009,7 +1009,7 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
             });
             
             // Verify viewport is still correct after draw
-            const viewportAfterDraw = gl.getParameter(gl.VIEWPORT);
+            const _viewportAfterDraw = gl.getParameter(gl.VIEWPORT);
             
             // Sample edge pixels to verify rendering at full resolution
             const bottomRightPixel = new Uint8Array(4);
@@ -1019,7 +1019,7 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
             gl.readPixels(Math.floor(finalTargetWidth / 2), Math.floor(finalTargetHeight / 2), 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, centerPixel);
             gl.readPixels(10, 10, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, topLeftPixel);
             
-            const viewportAfter = gl.getParameter(gl.VIEWPORT);
+            const _viewportAfter = gl.getParameter(gl.VIEWPORT);
           }
           
 
@@ -1076,8 +1076,6 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
           }
           return;
         }
-
-        needsCleanup = false; // No temp canvas to clean up
         
         // DON'T restore canvas size yet - we need to export first!
       } else {

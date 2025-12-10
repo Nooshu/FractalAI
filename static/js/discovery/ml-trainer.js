@@ -238,7 +238,7 @@ export function shouldRetrainModel() {
     const isOld = Date.now() - metadata.timestamp > 7 * 24 * 60 * 60 * 1000;
 
     return favoriteIncrease || isOld;
-  } catch (error) {
+  } catch (_error) {
     return true;
   }
 }

@@ -314,7 +314,7 @@ body {
 }
 
 .fractal-name {
-  margin: 0 0 4px 0;
+  margin: 0 0 4px;
   font-size: 1.1rem;
   font-weight: 600;
   color: var(--text-primary);
@@ -336,7 +336,7 @@ body {
 }
 
 .math-info-title {
-  margin: 0 0 12px 0;
+  margin: 0 0 12px;
   font-size: 0.95rem;
   font-weight: 600;
   color: var(--text-primary);
@@ -472,7 +472,7 @@ body {
 }
 
 .math-info-fallback p {
-  margin: 0 0 12px 0;
+  margin: 0 0 12px;
   font-size: 0.9rem;
 }
 
@@ -2614,7 +2614,7 @@ body.is-fullscreen .app-container .app-footer {
   align-items: center;
   gap: var(--notification-gap);
   pointer-events: auto;
-  animation: slideInRight 0.3s ease-out;
+  animation: slide-in-right 0.3s ease-out;
   transition: opacity var(--transition-fast), transform var(--transition-fast);
 }
 
@@ -2726,11 +2726,12 @@ body.is-fullscreen .app-container .app-footer {
   transform: translateX(100%);
 }
 
-@keyframes slideInRight {
+@keyframes slide-in-right {
   from {
     opacity: 0;
     transform: translateX(100%);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);

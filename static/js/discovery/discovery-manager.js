@@ -5,7 +5,6 @@
 
 import {
   discoverInterestingFractals,
-  hybridScore,
 } from './discovery-algorithm.js';
 import { initializeModel, shouldRetrainModel, trainModel, saveModel } from './ml-trainer.js';
 import { getFavorites } from './favorites-manager.js';
@@ -16,10 +15,10 @@ let isModelInitializing = false;
 
 /**
  * Initialize the discovery system
- * @param {Function} isValidInterestingView - Validation function
+ * @param {Function} _isValidInterestingView - Validation function
  * @returns {Promise<void>}
  */
-export async function initializeDiscovery(isValidInterestingView) {
+export async function initializeDiscovery(_isValidInterestingView) {
   if (isModelInitializing) {
     return;
   }
