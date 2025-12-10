@@ -11,8 +11,19 @@ describe('rendering/context-loss-handler', () => {
   let mockRestoreState;
   let mockOnContextLost;
   let mockOnContextRestored;
+  let consoleWarnSpy;
+  let consoleErrorSpy;
+  let devLogSpy;
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    // Suppress expected console logs during tests
+    consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    // Mock devLog
+    const { devLog } = await import('../../static/js/core/logger.js');
+    devLogSpy = vi.spyOn(devLog, 'log').mockImplementation(() => {});
+
     canvas = document.createElement('canvas');
     mockSaveState = vi.fn(() => ({ test: 'state' }));
     mockRestoreState = vi.fn();
@@ -32,6 +43,9 @@ describe('rendering/context-loss-handler', () => {
       handler.dispose();
     }
     handler = null;
+    consoleWarnSpy.mockRestore();
+    consoleErrorSpy.mockRestore();
+    devLogSpy.mockRestore();
   });
 
   describe('ContextLossHandler', () => {
@@ -94,6 +108,8 @@ describe('rendering/context-loss-handler', () => {
 
       expect(handler.savedState).toBeNull();
       expect(mockOnContextLost).toHaveBeenCalled();
+      // Verify error was logged
+      expect(consoleErrorSpy).toHaveBeenCalled();
     });
   });
 

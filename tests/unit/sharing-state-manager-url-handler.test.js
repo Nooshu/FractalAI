@@ -39,6 +39,7 @@ describe('url-handler module', () => {
     Object.defineProperty(window, 'location', {
       value: new URL('https://example.com/path'),
       writable: true,
+      configurable: true,
     });
   });
 
@@ -56,14 +57,23 @@ describe('url-handler module', () => {
 
   it('loads state from URL search params', () => {
     // Set search params with a dummy seed (decodeFractalState is mocked)
-    window.location = new URL('https://example.com/path?seed=dummy');
+    // Use Object.defineProperty to avoid jsdom navigation warning
+    Object.defineProperty(window, 'location', {
+      value: new URL('https://example.com/path?seed=dummy'),
+      writable: true,
+      configurable: true,
+    });
     const state = loadFractalFromURLHandler();
     expect(state).not.toBeNull();
     expect(state.fractalType).toBe('mandelbrot');
   });
 
   afterAll(() => {
-    window.location = originalLocation;
+    Object.defineProperty(window, 'location', {
+      value: originalLocation,
+      writable: true,
+      configurable: true,
+    });
   });
 });
 
@@ -72,6 +82,7 @@ describe('state-manager module', () => {
     Object.defineProperty(window, 'location', {
       value: new URL('https://example.com/path'),
       writable: true,
+      configurable: true,
     });
   });
 
@@ -154,8 +165,12 @@ describe('state-manager module', () => {
   });
 
   it('loadFractalFromURL returns false when no state', async () => {
-    // Ensure no seed in URL
-    window.location = new URL('https://example.com/path');
+    // Ensure no seed in URL - use Object.defineProperty to avoid jsdom navigation warning
+    Object.defineProperty(window, 'location', {
+      value: new URL('https://example.com/path'),
+      writable: true,
+      configurable: true,
+    });
     const getters = {
       getCurrentFractalType: () => 'mandelbrot',
       getCurrentFractalModule: () => ({}),

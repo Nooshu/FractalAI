@@ -254,15 +254,18 @@ describe('initialization module', () => {
   let originalConsoleError;
   let originalRequestIdleCallback;
   let originalSetTimeout;
+  let consoleLogSpy;
+  let consoleWarnSpy;
+  let consoleErrorSpy;
 
   beforeEach(() => {
-    // Mock console methods
+    // Mock console methods using spies to ensure they persist
     originalConsoleLog = console.log;
     originalConsoleWarn = console.warn;
     originalConsoleError = console.error;
-    console.log = vi.fn();
-    console.warn = vi.fn();
-    console.error = vi.fn();
+    consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
     // Mock requestIdleCallback
     originalRequestIdleCallback = global.requestIdleCallback;
@@ -293,9 +296,10 @@ describe('initialization module', () => {
   });
 
   afterEach(() => {
-    console.log = originalConsoleLog;
-    console.warn = originalConsoleWarn;
-    console.error = originalConsoleError;
+    // Restore console methods
+    if (consoleLogSpy) consoleLogSpy.mockRestore();
+    if (consoleWarnSpy) consoleWarnSpy.mockRestore();
+    if (consoleErrorSpy) consoleErrorSpy.mockRestore();
     global.requestIdleCallback = originalRequestIdleCallback;
     global.setTimeout = originalSetTimeout;
     vi.clearAllMocks();
@@ -526,6 +530,9 @@ describe('initialization module', () => {
   });
 
   it('should handle deferred initialization error', async () => {
+    // Clear previous console.error calls
+    consoleErrorSpy.mockClear();
+
     // Mock setupShareFractal to throw an error
     const { setupShareFractal } = await import('../../static/js/sharing/state-manager.js');
     setupShareFractal.mockImplementation(() => {
@@ -534,13 +541,16 @@ describe('initialization module', () => {
 
     await init();
 
-    // Wait for requestIdleCallback
-    await new Promise((resolve) => setTimeout(resolve, 10));
+    // Wait for both deferred init calls (requestIdleCallback and setTimeout fallback)
+    await new Promise((resolve) => setTimeout(resolve, 20));
 
-    expect(console.error).toHaveBeenCalledWith(
+    // Verify error was logged (may be called twice due to requestIdleCallback + setTimeout fallback)
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
       'Failed to setup sharing module:',
       expect.any(Error)
     );
+    // The error may be logged multiple times due to deferred init being called twice
+    expect(consoleErrorSpy.mock.calls.length).toBeGreaterThanOrEqual(1);
   });
 
   it('should initialize initial fractal type from dropdown', async () => {

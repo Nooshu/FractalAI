@@ -36,7 +36,7 @@ async function createModel() {
   if (!Synaptic) {
     throw new Error('Synaptic.js not available');
   }
-  
+
   // Create a Perceptron: 11 inputs -> 32 hidden -> 16 hidden -> 1 output
   const inputLayer = new Synaptic.Layer(11);
   const hiddenLayer1 = new Synaptic.Layer(32);
@@ -67,7 +67,7 @@ async function prepareTrainingData() {
   if (!Synaptic) {
     return null;
   }
-  
+
   const favorites = getFavorites();
 
   if (favorites.length < 5) {
@@ -116,9 +116,11 @@ async function prepareTrainingData() {
 /**
  * Train the model on user favorites
  * @param {Object} model - Synaptic.js neural network to train
+ * @param {Object} options - Training options
+ * @param {number} options.iterations - Number of training iterations (default: 200)
  * @returns {Promise<Object>} Training result with model
  */
-export async function trainModel(model = null) {
+export async function trainModel(model = null, options = {}) {
   const trainingData = await prepareTrainingData();
 
   if (!trainingData) {
@@ -138,14 +140,17 @@ export async function trainModel(model = null) {
 
     // Create trainer
     const trainer = new Synaptic.Trainer(model);
-    
+
     // Shuffle training data for better learning
     const shuffled = trainingData.sort(() => Math.random() - 0.5);
-    
+
+    // Use fewer iterations in test environment for faster tests
+    const iterations = options.iterations ?? (import.meta.env?.TEST ? 10 : 200);
+
     // Train the network
     const trainingResult = trainer.train(shuffled, {
       rate: 0.001, // Learning rate
-      iterations: 200, // Number of training iterations
+      iterations, // Number of training iterations
       error: 0.005, // Error threshold to stop training
       shuffle: true,
       log: 0, // Set to 1 for training progress
@@ -177,7 +182,7 @@ export async function saveModel(model) {
         favoriteCount: getFavorites().length,
       })
     );
-    
+
     // Also save metadata separately for compatibility
     localStorage.setItem(
       `${MODEL_STORAGE_KEY}_metadata`,
@@ -208,19 +213,19 @@ export async function loadModel() {
     if (!stored) {
       return null;
     }
-    
+
     const modelData = JSON.parse(stored);
-    
+
     // Verify version
     if (modelData.version !== MODEL_VERSION) {
       devLog.log('Model version mismatch, will retrain');
       return null;
     }
-    
+
     // Create network from JSON (remove version/metadata fields first)
     const { version, timestamp, favoriteCount, ...networkData } = modelData;
     const network = Synaptic.Network.fromJSON(networkData);
-    
+
     return network;
   } catch (error) {
     devLog.log('No saved model found or error loading:', error);

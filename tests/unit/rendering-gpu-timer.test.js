@@ -1,12 +1,16 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { GPUTimer, createGPUTimer } from '../../static/js/rendering/gpu-timer.js';
 
 describe('rendering/gpu-timer', () => {
   let mockGl;
   let mockCapabilities;
   let timer;
+  let devLogSpy;
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    // Mock devLog to suppress log messages during tests
+    const { devLog } = await import('../../static/js/core/logger.js');
+    devLogSpy = vi.spyOn(devLog, 'log').mockImplementation(() => {});
     mockGl = {
       getParameter: vi.fn(),
       createQuery: vi.fn(() => ({})),
@@ -27,6 +31,12 @@ describe('rendering/gpu-timer', () => {
     };
 
     timer = new GPUTimer(mockGl, mockCapabilities);
+  });
+
+  afterEach(() => {
+    if (devLogSpy) {
+      devLogSpy.mockRestore();
+    }
   });
 
   describe('GPUTimer', () => {

@@ -21,6 +21,7 @@
     "stylelint": "stylelint \"**/*.css\"",
     "stylelint:fix": "stylelint \"**/*.css\" --fix",
     "check": "npm run lint && npm run format:check && npm run stylelint",
+    "check:all": "npm run test && npm run lint && npm run stylelint",
     "verify": "npm ci && npm audit --audit-level=moderate",
     "audit": "npm audit",
     "test": "vitest",

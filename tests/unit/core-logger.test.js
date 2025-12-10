@@ -37,7 +37,12 @@ describe('core/logger', () => {
     console.info = originalConsoleInfo;
     console.warn = originalConsoleWarn;
     console.error = originalConsoleError;
-    window.location = originalLocation;
+    // Use Object.defineProperty to avoid jsdom navigation warning
+    Object.defineProperty(window, 'location', {
+      value: originalLocation,
+      writable: true,
+      configurable: true,
+    });
     // Note: import.meta.env is read-only and cannot be restored
   });
 

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import {
   AdaptiveQualityManager,
   createAdaptiveQualityManager,
@@ -6,8 +6,13 @@ import {
 
 describe('rendering/adaptive-quality', () => {
   let manager;
+  let devLogSpy;
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    // Mock devLog to suppress log messages during tests
+    const { devLog } = await import('../../static/js/core/logger.js');
+    devLogSpy = vi.spyOn(devLog, 'log').mockImplementation(() => {});
+
     manager = new AdaptiveQualityManager({
       targetFrameTime: 16.67,
       minQuality: 0.5,
@@ -44,6 +49,8 @@ describe('rendering/adaptive-quality', () => {
       }
       const quality = manager.updateQuality();
       expect(quality).toBeLessThan(1.0);
+      // Verify log was called
+      expect(devLogSpy).toHaveBeenCalled();
     });
 
     it('should increase quality when frame time is low', () => {
@@ -54,6 +61,8 @@ describe('rendering/adaptive-quality', () => {
       }
       const quality = manager.updateQuality();
       expect(quality).toBeGreaterThan(0.6);
+      // Verify log was called
+      expect(devLogSpy).toHaveBeenCalled();
     });
 
     it('should not update quality with insufficient samples', () => {

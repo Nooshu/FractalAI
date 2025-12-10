@@ -1,7 +1,18 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { decodeFractalState } from '../../static/js/sharing/decoder.js';
 
 describe('sharing/decoder', () => {
+  let consoleErrorSpy;
+
+  beforeEach(() => {
+    // Suppress expected error logs during tests
+    consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    consoleErrorSpy.mockRestore();
+  });
+
   describe('decodeFractalState', () => {
     it('should decode valid state string', () => {
       // Create a simple test state
@@ -56,6 +67,8 @@ describe('sharing/decoder', () => {
     it('should return null for invalid encoded string', () => {
       const decoded = decodeFractalState('invalid-base64!!!');
       expect(decoded).toBeNull();
+      // Verify error was logged
+      expect(consoleErrorSpy).toHaveBeenCalled();
     });
 
     it('should return null for invalid JSON', () => {
@@ -65,6 +78,8 @@ describe('sharing/decoder', () => {
         .replace(/=/g, '');
       const decoded = decodeFractalState(invalidJson);
       expect(decoded).toBeNull();
+      // Verify error was logged
+      expect(consoleErrorSpy).toHaveBeenCalled();
     });
 
     it('should decode julia parameters', () => {
