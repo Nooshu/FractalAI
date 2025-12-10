@@ -3,6 +3,8 @@
  * Lightweight counters for hot paths, guarded by feature flags
  */
 
+import { devLog } from '../core/logger.js';
+
 /**
  * Performance instrumentation manager
  */
@@ -136,7 +138,7 @@ export class PerformanceInstrumentation {
   logMetrics() {
     if (!this.enabled) return;
     const metrics = this.getMetrics();
-    console.log('%c[Performance Metrics]', 'color: #9C27B0; font-weight: bold;', metrics);
+    devLog.log('%c[Performance Metrics]', 'color: #9C27B0; font-weight: bold;', metrics);
   }
 }
 

@@ -8,6 +8,7 @@ import createRegl from 'regl';
 import { updatePixelRatio } from './pixel-ratio.js';
 import { detectWebGLCapabilities, formatCapabilities } from './webgl-capabilities.js';
 import { initWebGPURenderer } from './webgpu-renderer.js';
+import { devLog } from '../core/logger.js';
 
 /**
  * Initialize canvas and renderer (WebGPU or WebGL)
@@ -54,8 +55,8 @@ export async function initCanvasRenderer(canvasId, options = {}) {
       webgpuRenderer = await initWebGPURenderer(canvas, {
         powerPreference: 'high-performance',
       });
-      if (webgpuRenderer && import.meta.env?.DEV) {
-        console.log(
+      if (webgpuRenderer) {
+        devLog.log(
           '%c[Renderer]%c Using WebGPU renderer',
           'color: #9C27B0; font-weight: bold;',
           'color: inherit;'
@@ -99,13 +100,11 @@ export async function initCanvasRenderer(canvasId, options = {}) {
           webglCapabilities = detectWebGLCapabilities(gl);
 
           // Log capabilities in development mode
-          if (import.meta.env?.DEV) {
-            console.log(
-              `%c[WebGL Capabilities]%c\n${formatCapabilities(webglCapabilities)}`,
-              'color: #4CAF50; font-weight: bold;',
-              'color: inherit; font-family: monospace; font-size: 11px;'
-            );
-          }
+          devLog.log(
+            `%c[WebGL Capabilities]%c\n${formatCapabilities(webglCapabilities)}`,
+            'color: #4CAF50; font-weight: bold;',
+            'color: inherit; font-family: monospace; font-size: 11px;'
+          );
         }
       } catch (error) {
         console.warn('Failed to detect WebGL capabilities:', error);

@@ -332,6 +332,7 @@ export class WebGPURenderer {
 export async function initWebGPURenderer(canvas, options = {}) {
   const { initWebGPU, formatWebGPUCapabilities } = await import('./webgpu-capabilities.js');
   const { CONFIG } = await import('../core/config.js');
+  const { devLog } = await import('../core/logger.js');
 
   // Check if WebGPU is enabled
   if (!CONFIG.features.webgpu) {
@@ -355,13 +356,11 @@ export async function initWebGPURenderer(canvas, options = {}) {
   }
 
   // Log capabilities in development
-  if (import.meta.env?.DEV) {
-    console.log(
-      `%c[WebGPU Capabilities]%c\n${formatWebGPUCapabilities(capabilities)}`,
-      'color: #9C27B0; font-weight: bold;',
-      'color: inherit; font-family: monospace; font-size: 11px;'
-    );
-  }
+  devLog.log(
+    `%c[WebGPU Capabilities]%c\n${formatWebGPUCapabilities(capabilities)}`,
+    'color: #9C27B0; font-weight: bold;',
+    'color: inherit; font-family: monospace; font-size: 11px;'
+  );
 
   try {
     const renderer = new WebGPURenderer(canvas, {

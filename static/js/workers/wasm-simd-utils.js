@@ -5,6 +5,7 @@
  */
 
 import { CONFIG } from '../core/config.js';
+import { devLog } from '../core/logger.js';
 
 /**
  * Check if WebAssembly SIMD is supported
@@ -228,20 +229,18 @@ export function logWasmSimdStatus() {
   const supported = supportsWasmSimd();
   const canUse = canUseWasmSimd();
 
-  if (import.meta.env?.DEV) {
-    if (canUse && supported) {
-      console.log(
-        '%c[WASM SIMD]%c Enabled - SIMD-accelerated CPU rendering available',
-        'color: #4CAF50; font-weight: bold;',
-        'color: inherit;'
-      );
-    } else if (!supported) {
-      console.warn(
-        '%c[WASM SIMD]%c Not supported in this browser',
-        'color: #FF9800; font-weight: bold;',
-        'color: inherit;'
-      );
-    }
+  if (canUse && supported) {
+    devLog.log(
+      '%c[WASM SIMD]%c Enabled - SIMD-accelerated CPU rendering available',
+      'color: #4CAF50; font-weight: bold;',
+      'color: inherit;'
+    );
+  } else if (!supported) {
+    console.warn(
+      '%c[WASM SIMD]%c Not supported in this browser',
+      'color: #FF9800; font-weight: bold;',
+      'color: inherit;'
+    );
   }
 }
 

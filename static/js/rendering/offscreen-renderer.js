@@ -6,6 +6,7 @@
 
 import createRegl from 'regl';
 import { detectWebGLCapabilities } from './webgl-capabilities.js';
+import { devLog } from '../core/logger.js';
 
 /**
  * OffscreenCanvas Renderer
@@ -61,26 +62,22 @@ export class OffscreenRenderer {
 
           this.isAvailable = true;
 
-          if (import.meta.env?.DEV) {
-            console.log(
-              '%c[OffscreenCanvas]%c Non-blocking rendering enabled',
-              'color: #4CAF50; font-weight: bold;',
-              'color: inherit;'
-            );
-          }
+          devLog.log(
+            '%c[OffscreenCanvas]%c Non-blocking rendering enabled',
+            'color: #4CAF50; font-weight: bold;',
+            'color: inherit;'
+          );
         }
       } catch (error) {
         console.warn('[OffscreenCanvas] Failed to initialize:', error);
         this.isAvailable = false;
       }
     } else {
-      if (import.meta.env?.DEV) {
-        console.log(
-          '%c[OffscreenCanvas]%c Not available, using main thread rendering',
-          'color: #FF9800; font-weight: bold;',
-          'color: inherit;'
-        );
-      }
+      devLog.log(
+        '%c[OffscreenCanvas]%c Not available, using main thread rendering',
+        'color: #FF9800; font-weight: bold;',
+        'color: inherit;'
+      );
     }
   }
 

@@ -5,6 +5,7 @@
  */
 
 import { computeColorForScheme, setCustomSchemeHandler } from '../fractals/utils.js';
+import { devLog } from '../core/logger.js';
 
 /**
  * Show a custom notification
@@ -538,7 +539,7 @@ export function setupColorSchemeEditor(getParams, updateParams, renderFractal) {
 
   // Check if content is already initialized
   if (content.querySelector('.color-scheme-editor-container')) {
-    console.log('Color scheme editor: Already initialized');
+    devLog.log('Color scheme editor: Already initialized');
     return;
   }
 
@@ -704,7 +705,7 @@ export function setupColorSchemeEditor(getParams, updateParams, renderFractal) {
 
   content.appendChild(editorContainer);
 
-  console.log('Color scheme editor: Content initialized and added to DOM');
+  devLog.log('Color scheme editor: Content initialized and added to DOM');
 
   // Clean up temporary schemes (created when applying without saving)
   function cleanupTempSchemes() {

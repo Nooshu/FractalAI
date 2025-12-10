@@ -9,6 +9,7 @@ import {
 } from './discovery-algorithm.js';
 import { initializeModel, shouldRetrainModel, trainModel, saveModel } from './ml-trainer.js';
 import { getFavorites } from './favorites-manager.js';
+import { devLog } from '../core/logger.js';
 
 let mlModel = null;
 let isModelInitializing = false;
@@ -31,7 +32,7 @@ export async function initializeDiscovery(isValidInterestingView) {
     if (shouldRetrainModel() && getFavorites().length >= 5) {
       // Retrain asynchronously without blocking
       setTimeout(async () => {
-        console.log('Retraining ML model in background...');
+        devLog.log('Retraining ML model in background...');
         const result = await trainModel(mlModel);
         if (result && result.model) {
           mlModel = result.model;
@@ -113,7 +114,7 @@ export async function triggerRetraining() {
   }
 
   try {
-    console.log('Retraining ML model...');
+    devLog.log('Retraining ML model...');
     const result = await trainModel(mlModel);
     if (result && result.model) {
       mlModel = result.model;

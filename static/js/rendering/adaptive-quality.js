@@ -4,6 +4,7 @@
  */
 
 import { CONFIG } from '../core/config.js';
+import { devLog } from '../core/logger.js';
 
 /**
  * Adaptive Quality Manager
@@ -81,13 +82,11 @@ export class AdaptiveQualityManager {
         this.currentQuality - this.qualityStep
       );
       
-      if (import.meta.env?.DEV) {
-        console.log(
-          `%c[Adaptive Quality]%c Reducing quality to ${this.currentQuality.toFixed(2)} (avg frame time: ${avgFrameTime.toFixed(2)}ms)`,
-          'color: #FF9800; font-weight: bold;',
-          'color: inherit;'
-        );
-      }
+      devLog.log(
+        `%c[Adaptive Quality]%c Reducing quality to ${this.currentQuality.toFixed(2)} (avg frame time: ${avgFrameTime.toFixed(2)}ms)`,
+        'color: #FF9800; font-weight: bold;',
+        'color: inherit;'
+      );
     } else if (avgFrameTime < thresholdLow) {
       // Frame time low enough - increase quality
       this.currentQuality = Math.min(
@@ -95,8 +94,8 @@ export class AdaptiveQualityManager {
         this.currentQuality + this.qualityStep
       );
       
-      if (import.meta.env?.DEV && this.currentQuality < this.maxQuality) {
-        console.log(
+      if (this.currentQuality < this.maxQuality) {
+        devLog.log(
           `%c[Adaptive Quality]%c Increasing quality to ${this.currentQuality.toFixed(2)} (avg frame time: ${avgFrameTime.toFixed(2)}ms)`,
           'color: #4CAF50; font-weight: bold;',
           'color: inherit;'

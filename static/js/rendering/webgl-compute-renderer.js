@@ -4,6 +4,8 @@
  * Uses compute shaders for parallel pixel computation instead of fragment shaders
  */
 
+import { devLog } from '../core/logger.js';
+
 /**
  * Create a compute shader from a fractal function
  * @param {string} fractalFunction - The fractal computation function
@@ -135,8 +137,8 @@ export class WebGLComputeRenderer {
       }
     }
 
-    if (this.isAvailable && import.meta.env?.DEV) {
-      console.log(
+    if (this.isAvailable) {
+      devLog.log(
         '%c[WebGL Compute]%c Compute shader rendering enabled',
         'color: #4CAF50; font-weight: bold;',
         'color: inherit;'

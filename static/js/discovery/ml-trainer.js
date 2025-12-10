@@ -5,6 +5,7 @@
 
 import { getFavorites } from './favorites-manager.js';
 import { extractFeatures } from './discovery-algorithm.js';
+import { devLog } from '../core/logger.js';
 
 // Lazy load TensorFlow.js to avoid blocking initial load
 let tf = null;
@@ -131,7 +132,7 @@ export async function trainModel(model = null) {
   const trainingData = await prepareTrainingData();
 
   if (!trainingData) {
-    console.log('Not enough favorites to train model');
+    devLog.log('Not enough favorites to train model');
     return null;
   }
 
@@ -204,13 +205,13 @@ export async function loadModel() {
       const metadata = JSON.parse(metadataStr);
       if (metadata.version !== MODEL_VERSION) {
         // Model version mismatch, retrain
-        console.log('Model version mismatch, will retrain');
+        devLog.log('Model version mismatch, will retrain');
         return null;
       }
     }
     return model;
   } catch (error) {
-    console.log('No saved model found or error loading:', error);
+    devLog.log('No saved model found or error loading:', error);
     return null;
   }
 }
@@ -258,7 +259,7 @@ export async function initializeModel() {
 
   if (!model || needsRetrain) {
     // Train new model
-    console.log('Training new ML model...');
+    devLog.log('Training new ML model...');
     const result = await trainModel(model);
     if (result && result.model) {
       await saveModel(result.model);

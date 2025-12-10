@@ -4,6 +4,8 @@
  * Saves application state and reinitializes resources when context is restored
  */
 
+import { devLog } from '../core/logger.js';
+
 /**
  * Context Loss Handler
  * Manages WebGL context loss and restoration
@@ -80,13 +82,11 @@ export class ContextLossHandler {
   handleContextRestored(_event) {
     this.isContextLost = false;
 
-    if (import.meta.env?.DEV) {
-      console.log(
-        '%c[Context Restore]%c WebGL context restored. Reinitializing resources...',
-        'color: #4CAF50; font-weight: bold;',
-        'color: inherit;'
-      );
-    }
+    devLog.log(
+      '%c[Context Restore]%c WebGL context restored. Reinitializing resources...',
+      'color: #4CAF50; font-weight: bold;',
+      'color: inherit;'
+    );
 
     // Notify callback to reinitialize resources
     if (this.onContextRestored) {

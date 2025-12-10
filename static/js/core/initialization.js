@@ -29,6 +29,7 @@ import { CONFIG } from './config.js';
 import { LongTaskDetector } from '../performance/long-task-detector.js';
 import { lifecycleManager } from './lifecycle-manager.js';
 import { idleCleanupManager } from './idle-cleanup.js';
+import { devLog } from './logger.js';
 
 /**
  * Initialize DOM cache and basic UI modules
@@ -119,8 +120,8 @@ async function initCanvasAndRenderer(appState) {
   }
   
   // Log renderer type in development
-  if (import.meta.env?.DEV && rendererType) {
-    console.log(
+  if (rendererType) {
+    devLog.log(
       `%c[Renderer]%c Using ${rendererType.toUpperCase()} renderer`,
       'color: #2196F3; font-weight: bold;',
       'color: inherit;'
@@ -133,8 +134,8 @@ async function initCanvasAndRenderer(appState) {
       const ubo = createFractalParamsUBO(reglContext, webglCapabilities);
       appState.setFractalParamsUBO(ubo);
       
-      if (ubo && import.meta.env?.DEV) {
-        console.log(
+      if (ubo) {
+        devLog.log(
           '%c[WebGL2 UBO]%c Uniform Buffer Objects enabled for fractal parameters',
           'color: #4CAF50; font-weight: bold;',
           'color: inherit;'
@@ -151,13 +152,11 @@ async function initCanvasAndRenderer(appState) {
         const occlusionQueryManager = createOcclusionQueryManager(gl);
         if (occlusionQueryManager) {
           appState.setOcclusionQueryManager(occlusionQueryManager);
-          if (import.meta.env?.DEV) {
-            console.log(
-              '%c[Occlusion Queries]%c Enabled for tile-based rendering optimization',
-              'color: #4CAF50; font-weight: bold;',
-              'color: inherit;'
-            );
-          }
+          devLog.log(
+            '%c[Occlusion Queries]%c Enabled for tile-based rendering optimization',
+            'color: #4CAF50; font-weight: bold;',
+            'color: inherit;'
+          );
         }
       }
     });
@@ -170,13 +169,11 @@ async function initCanvasAndRenderer(appState) {
         targetFrameTime: CONFIG.performance?.maxFrameTime || 16.67,
       });
       appState.setAdaptiveQualityManager(adaptiveQualityManager);
-      if (import.meta.env?.DEV) {
-        console.log(
-          '%c[Adaptive Quality]%c Enabled for dynamic quality adjustment',
-          'color: #4CAF50; font-weight: bold;',
-          'color: inherit;'
-        );
-      }
+      devLog.log(
+        '%c[Adaptive Quality]%c Enabled for dynamic quality adjustment',
+        'color: #4CAF50; font-weight: bold;',
+        'color: inherit;'
+      );
     });
   }
 
@@ -190,13 +187,11 @@ async function initCanvasAndRenderer(appState) {
         predictionDistance: 1.5,
       });
       appState.setPredictiveRenderingManager(predictiveRenderingManager);
-      if (import.meta.env?.DEV) {
-        console.log(
-          '%c[Predictive Rendering]%c Enabled for pre-rendering likely next frames',
-          'color: #4CAF50; font-weight: bold;',
-          'color: inherit;'
-        );
-      }
+      devLog.log(
+        '%c[Predictive Rendering]%c Enabled for pre-rendering likely next frames',
+        'color: #4CAF50; font-weight: bold;',
+        'color: inherit;'
+      );
     });
   }
 
@@ -209,13 +204,11 @@ async function initCanvasAndRenderer(appState) {
         highResDelay: 100,
       });
       appState.setMultiResolutionManager(multiResolutionManager);
-      if (import.meta.env?.DEV) {
-        console.log(
-          '%c[Multi-Resolution Rendering]%c Enabled for fast initial display and progressive quality',
-          'color: #4CAF50; font-weight: bold;',
-          'color: inherit;'
-        );
-      }
+      devLog.log(
+        '%c[Multi-Resolution Rendering]%c Enabled for fast initial display and progressive quality',
+        'color: #4CAF50; font-weight: bold;',
+        'color: inherit;'
+      );
     });
   }
 
@@ -227,13 +220,11 @@ async function initCanvasAndRenderer(appState) {
         const gpuTimer = createGPUTimer(gl, webglCapabilities);
         if (gpuTimer && gpuTimer.isGPUTimingAvailable()) {
           appState.setGPUTimer(gpuTimer);
-          if (import.meta.env?.DEV) {
-            console.log(
-              '%c[GPU Timer]%c Enabled for accurate GPU timing',
-              'color: #4CAF50; font-weight: bold;',
-              'color: inherit;'
-            );
-          }
+          devLog.log(
+            '%c[GPU Timer]%c Enabled for accurate GPU timing',
+            'color: #4CAF50; font-weight: bold;',
+            'color: inherit;'
+          );
         }
       }
     });
@@ -253,13 +244,11 @@ async function initCanvasAndRenderer(appState) {
         const computeRenderer = createWebGLComputeRenderer(gl, webglCapabilities);
         if (computeRenderer && computeRenderer.isComputeShaderAvailable()) {
           appState.setWebGLComputeRenderer(computeRenderer);
-          if (import.meta.env?.DEV) {
-            console.log(
-              '%c[WebGL Compute]%c Compute shader rendering enabled',
-              'color: #4CAF50; font-weight: bold;',
-              'color: inherit;'
-            );
-          }
+          devLog.log(
+            '%c[WebGL Compute]%c Compute shader rendering enabled',
+            'color: #4CAF50; font-weight: bold;',
+            'color: inherit;'
+          );
         }
       }
     });
@@ -278,8 +267,8 @@ async function initCanvasAndRenderer(appState) {
         if (offscreenCapabilities?.isWebGL2 && offscreenRegl) {
           import('../rendering/uniform-buffer.js').then(({ createFractalParamsUBO }) => {
             const offscreenUBO = createFractalParamsUBO(offscreenRegl, offscreenCapabilities);
-            if (offscreenUBO && import.meta.env?.DEV) {
-              console.log(
+            if (offscreenUBO) {
+              devLog.log(
                 '%c[OffscreenCanvas UBO]%c Uniform Buffer Objects enabled for offscreen rendering',
                 'color: #4CAF50; font-weight: bold;',
                 'color: inherit;'
@@ -290,13 +279,11 @@ async function initCanvasAndRenderer(appState) {
           });
         }
 
-        if (import.meta.env?.DEV) {
-          console.log(
-            '%c[OffscreenCanvas]%c Non-blocking rendering enabled',
-            'color: #4CAF50; font-weight: bold;',
-            'color: inherit;'
-          );
-        }
+        devLog.log(
+          '%c[OffscreenCanvas]%c Non-blocking rendering enabled',
+          'color: #4CAF50; font-weight: bold;',
+          'color: inherit;'
+        );
       }
     });
   }
@@ -348,13 +335,11 @@ async function initCanvasAndRenderer(appState) {
         },
       });
       appState.setContextLossHandler(contextLossHandler);
-      if (import.meta.env?.DEV) {
-        console.log(
-          '%c[Context Loss Handler]%c Enabled for graceful context loss recovery',
-          'color: #4CAF50; font-weight: bold;',
-          'color: inherit;'
-        );
-      }
+      devLog.log(
+        '%c[Context Loss Handler]%c Enabled for graceful context loss recovery',
+        'color: #4CAF50; font-weight: bold;',
+        'color: inherit;'
+      );
     });
   }
 
@@ -859,7 +844,7 @@ export async function init() {
     // Enable workers in config if browser supports them
     CONFIG.workers.enabled = true;
     // Log that worker optimizations are available (will be used when worker pool is created)
-    console.log(
+    devLog.log(
       `%c[Worker Optimizations]%c Available - Will be enabled when needed (${workerCapabilities.hardwareConcurrency} CPU cores, ${workerCapabilities.sharedArrayBuffer ? 'SharedArrayBuffer' : 'no SharedArrayBuffer'}, ${workerCapabilities.offscreenCanvas ? 'OffscreenCanvas' : 'no OffscreenCanvas'})`,
       'color: #2196F3; font-weight: bold;',
       'color: inherit;'
@@ -872,7 +857,7 @@ export async function init() {
       : workerCapabilities.hardwareConcurrency < CONFIG.workers.minCores
         ? `Insufficient CPU cores (${workerCapabilities.hardwareConcurrency} < ${CONFIG.workers.minCores})`
         : 'Unknown';
-    console.log(
+    devLog.log(
       `%c[Worker Optimizations]%c Disabled - ${reason}`,
       'color: #FF9800; font-weight: bold;',
       'color: inherit;'

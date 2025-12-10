@@ -6,6 +6,7 @@
 
 import { CONFIG } from '../core/config.js';
 import { supportsSharedArrayBuffer } from './feature-detection.js';
+import { devLog } from '../core/logger.js';
 
 /**
  * Check if SharedArrayBuffer is available and enabled
@@ -148,26 +149,24 @@ export function logSharedArrayBufferStatus() {
   const canUse = canUseSharedArrayBuffer();
   const headersPresent = checkCOOPCOEPHeaders();
 
-  if (import.meta.env?.DEV) {
-    if (available && canUse && headersPresent) {
-      console.log(
-        '%c[SharedArrayBuffer]%c Enabled - Zero-copy worker communication active',
-        'color: #4CAF50; font-weight: bold;',
-        'color: inherit;'
-      );
-    } else if (available && !canUse) {
-      console.warn(
-        '%c[SharedArrayBuffer]%c Available but not functional. Ensure these headers are set:\n  Cross-Origin-Opener-Policy: same-origin\n  Cross-Origin-Embedder-Policy: require-corp',
-        'color: #FF9800; font-weight: bold;',
-        'color: inherit;'
-      );
-    } else if (!available) {
-      console.warn(
-        '%c[SharedArrayBuffer]%c Not available in this browser',
-        'color: #FF9800; font-weight: bold;',
-        'color: inherit;'
-      );
-    }
+  if (available && canUse && headersPresent) {
+    devLog.log(
+      '%c[SharedArrayBuffer]%c Enabled - Zero-copy worker communication active',
+      'color: #4CAF50; font-weight: bold;',
+      'color: inherit;'
+    );
+  } else if (available && !canUse) {
+    console.warn(
+      '%c[SharedArrayBuffer]%c Available but not functional. Ensure these headers are set:\n  Cross-Origin-Opener-Policy: same-origin\n  Cross-Origin-Embedder-Policy: require-corp',
+      'color: #FF9800; font-weight: bold;',
+      'color: inherit;'
+    );
+  } else if (!available) {
+    console.warn(
+      '%c[SharedArrayBuffer]%c Not available in this browser',
+      'color: #FF9800; font-weight: bold;',
+      'color: inherit;'
+    );
   }
 }
 

@@ -5,6 +5,8 @@
  * Falls back to CPU timing if extensions are not available
  */
 
+import { devLog } from '../core/logger.js';
+
 /**
  * GPU Timer Query Manager
  * Handles GPU timing queries with support for both WebGL1 and WebGL2 extensions
@@ -50,10 +52,10 @@ export class GPUTimer {
     }
 
     if (this.isAvailable) {
-      console.log('[GPU Timer] GPU timing enabled via', 
+      devLog.log('[GPU Timer] GPU timing enabled via', 
         capabilities.features.timerQuery.webgl2 ? 'EXT_disjoint_timer_query_webgl2' : 'EXT_disjoint_timer_query');
     } else {
-      console.log('[GPU Timer] GPU timing not available, falling back to CPU timing');
+      devLog.log('[GPU Timer] GPU timing not available, falling back to CPU timing');
     }
   }
 

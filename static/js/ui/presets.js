@@ -4,6 +4,7 @@
  */
 
 import piexif from 'piexifjs';
+import { devLog } from '../core/logger.js';
 
 let presetsData = [];
 
@@ -268,7 +269,7 @@ function setupPresetInteractions(loadFractalFromPreset) {
             theme: exifData.theme || preset.theme,
           };
         } else {
-          console.log('No EXIF data found, using JSON preset data');
+          devLog.log('No EXIF data found, using JSON preset data');
         }
 
         // Load the fractal with the final preset data
@@ -498,7 +499,7 @@ export function addPreset(presetData, imagePath) {
   renderPresets();
 
   // Note: In a real implementation, this would also update the presets.json file
-  console.log('Preset added:', newPreset);
+  devLog.log('Preset added:', newPreset);
 }
 
 /**

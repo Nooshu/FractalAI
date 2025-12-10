@@ -8,6 +8,7 @@ import { CONFIG } from './config.js';
 import { FrameCache } from './frameCache.js';
 import { WorkerPool } from '../workers/pool.js';
 import { shouldEnableWorkerOptimizations } from '../workers/feature-detection.js';
+import { devLog } from './logger.js';
 
 /**
  * Application State Manager
@@ -159,7 +160,7 @@ export class AppStateManager {
       });
 
       // Log that worker optimizations are being used
-      console.log(
+      devLog.log(
         `%c[Worker Optimizations]%c Enabled with ${maxWorkers} worker(s) (${navigator.hardwareConcurrency || 4} CPU cores detected)`,
         'color: #4CAF50; font-weight: bold;',
         'color: inherit;'
