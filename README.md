@@ -1,25 +1,103 @@
 # FractalAI
 
-A web-based fractal generator using regl and WebGL. This project demonstrates interactive fractal visualization with real-time rendering capabilities.
+A web-based fractal generator using regl and WebGL. This project demonstrates interactive fractal visualization with real-time rendering capabilities, machine learning-powered discovery, and extensive performance optimizations.
+
+**Version:** 5.5.0
 
 ## Features
 
-### Fractals
+### Extensive Fractal Collection (100+ Fractals)
 
-- **Mandelbrot Set** - The classic fractal with infinite detail
-- **Julia Set** - Interactive Julia sets with adjustable parameters
-- **Sierpinski Triangle** - Geometric fractal pattern
-- **Koch Snowflake** - Self-similar fractal curve
+FractalAI includes a comprehensive collection of fractals organized into families:
+
+#### Mandelbrot Family
+- Mandelbrot Set, Celtic Mandelbrot, Multibrot, Mutant Mandelbrot, Phoenix Mandelbrot, Burning Ship, Tricorn, Nebulabrot, Buddhabrot
+
+#### Julia Family
+- Julia Set, Julia Snakes, Multibrot Julia, Burning Ship Julia, Tricorn Julia, Phoenix Julia, Lambda Julia, Hybrid Julia
+
+#### Sierpinski Family
+- Sierpinski Triangle, Arrowhead, Carpet, Gasket, Hexagon, Pentagon, L-System variants
+
+#### Koch Family
+- Koch Snowflake, Quadratic Koch, Fractal Islands
+
+#### Dragon Curves
+- Heighway Dragon, Twindragon, Terdragon, Binary Dragon, Folded Paper Dragon, Dragon L-System
+
+#### Space-Filling Curves
+- Hilbert Curve, Peano Curve, Sierpinski Curve, Gosper Curve, Moore Curve, Levy C-Curve
+
+#### Cantor Family
+- Cantor Set, Fat Cantor, Smith-Volterra-Cantor, Random Cantor, Cantor Dust variants
+
+#### Tree & Plant Family
+- Fractal Tree, Binary/Ternary/Quaternary Trees, Pythagoras Tree, Barnsley Fern, Plant, L-System Trees (Oak, Pine), Fractal Canopy
+
+#### Attractors
+- Lorenz Attractor, Rössler Attractor, Chua Attractor, Magnet
+
+#### Root-Finding Fractals
+- Newton Fractal, Halley Fractal, Nova Fractal
+
+#### Tilings
+- Penrose Tiling, Pinwheel Tiling, Rhombic Tiling, Domino Substitution, Snowflake Tiling, Aperiodic Tilings
+
+#### Other Fractals
+- Apollonian Gasket, H-Tree, Vicsek, Cross, Diffusion-Limited Aggregation, Fractional Brownian Motion, Fractal Flame, Levy Flights, Menger Sponge/Carpet, Perlin Noise, Simplex Noise, Weierstrass Function, Takagi Function, Blancmange Curve, and many more!
 
 ### Interactive Controls
 
-- Adjustable iteration count
-- Multiple color schemes (Classic, Fire, Ocean, Rainbow, Monochrome, and many more)
-- Zoom and pan
-- Real-time parameter adjustment
-- Screenshot capture (PNG)
-- Video export (WebM format, hardware-accelerated when available)
-- FPS monitoring
+- **Fractal Selection** - Choose from 100+ fractal types via dropdown menu
+- **Adjustable Iterations** - Control detail level (10-400 iterations)
+- **35+ Color Schemes** - Classic, Fire, Ocean, Rainbow variants, Monochrome, Forest, Sunset, Purple, Cyan, Gold, Ice, Neon, Cosmic, Aurora, Coral, Autumn, Midnight, Emerald, Rose Gold, Electric, Vintage, Tropical, Galaxy, Lava, Arctic, Sakura, Volcanic, Mint, Sunrise, Steel, Prism, Mystic, Amber, and more
+- **Zoom and Pan** - Click and drag to pan, scroll or double-click to zoom
+- **Real-time Parameter Adjustment** - Adjust Julia set constants, scales, and other parameters in real-time
+- **Screenshot Capture** - Save current view as PNG with EXIF metadata
+- **Video Export** - Record animations (1-30 seconds) as WebM video files (hardware-accelerated when available)
+- **FPS Monitoring** - Real-time frame rate display
+- **Coordinate Display** - View and copy exact fractal coordinates
+- **Presets System** - Quick-load pre-configured fractal views
+- **Favorites System** - Save and manage favorite fractal configurations
+- **Share & URL State** - Share fractals via URL with encoded state
+
+### Machine Learning-Powered Discovery
+
+FractalAI includes an intelligent discovery system that uses machine learning to find interesting fractal views:
+
+- **ML-Based Scoring** - Uses Synaptic.js neural network to score fractal configurations
+- **Hybrid Algorithm** - Combines fast heuristic screening with ML refinement
+- **Personalized Learning** - Trains on your favorites to learn your preferences
+- **"Surprise Me" Feature** - Discover new interesting fractals automatically
+- **Background Training** - Model retrains automatically as you add favorites
+- **Local Storage** - ML model and favorites persist in browser storage
+
+### Performance Optimizations
+
+FractalAI includes extensive performance optimizations for smooth, responsive rendering:
+
+- **Adaptive Quality** - Dynamically adjusts rendering quality to maintain 60 FPS
+- **Multi-Resolution Rendering** - Low-res preview for instant feedback, then high-res upgrade
+- **Occlusion Queries** - Skips rendering invisible tiles (WebGL2)
+- **OffscreenCanvas** - Non-blocking rendering on background threads
+- **Worker-Based Rendering** - Multi-threaded tile rendering when available
+- **Progressive Rendering** - Tile-based progressive refinement
+- **Frame Caching** - Intelligent caching of rendered frames
+- **GPU Timer Queries** - Accurate GPU timing for performance monitoring
+- **Context Loss Recovery** - Graceful handling of WebGL context loss
+- **Idle Cleanup** - Automatic resource cleanup during idle periods
+- **Lifecycle Management** - Session-based resource management
+
+### Advanced Features
+
+- **Uniform Buffer Objects (UBO)** - Efficient parameter passing for WebGL2
+- **Tile-Based Rendering** - Efficient rendering of large canvases
+- **Predictive Rendering** - Pre-renders likely next frames (experimental)
+- **EXIF Metadata** - Embeds fractal parameters in exported images
+- **State Management** - Comprehensive application state management
+- **URL State Encoding** - Share fractals via encoded URLs
+- **Long Task Detection** - Monitors and reports long-running tasks
+- **Performance Instrumentation** - Detailed performance metrics
 
 ## Requirements
 
@@ -50,7 +128,10 @@ npm run dev
 npm run build
 ```
 
-The built files will be in the `dist/` directory.
+The built files will be in the `dist/` directory. The build process includes:
+- Preset manifest generation
+- Vite build with optimizations
+- Brotli compression for static assets
 
 ## Deployment
 
@@ -101,22 +182,91 @@ The `_routes.json` file ensures that all routes are handled by the client-side a
 
 ## Usage
 
-1. Select a fractal type from the dropdown menu
-2. Adjust iterations to control detail level (higher = more detail, slower)
-3. Choose a color scheme to change the visual appearance
-4. Interaction:
+### Basic Usage
+
+1. **Select a fractal** from the dropdown menu
+2. **Adjust iterations** to control detail level (higher = more detail, slower)
+3. **Choose a color scheme** to change the visual appearance
+4. **Interact with the fractal**:
    - Click and drag to pan
    - Scroll or double-click to zoom in/out
    - Adjust parameters (like Julia set constants) for different effects
-5. Export options:
+5. **Export options**:
    - Click "Screenshot" to save the current view as PNG
    - Click "Export Video" to record an animation (1-30 seconds) as WebM video file
 
+### Discovery System
+
+1. **Add Favorites**: Click the star icon to save interesting fractals
+2. **Train ML Model**: After adding 5+ favorites, the ML model automatically trains
+3. **Discover**: Use the "Surprise Me" button to find new interesting fractals based on your preferences
+4. **View Favorites**: Access your saved favorites from the favorites panel
+
+### Presets
+
+1. Open the **Presets** panel (right sidebar)
+2. Browse pre-configured fractal views
+3. Click any preset to load it instantly
+
+### Sharing
+
+1. Click the **Share** button to generate a shareable URL
+2. The URL contains encoded fractal state (type, zoom, position, parameters)
+3. Share the URL with others - they'll see the exact same fractal view
+
 ## Technology Stack
 
-- **regl** (v2.1.0) - Functional WebGL library for efficient rendering
-- **Vite** - Fast build tool and dev server
+- **regl** (v2.1.1) - Functional WebGL library for efficient rendering
+- **Vite** (v7.2.7) - Fast build tool and dev server
 - **WebGL Shaders** - GPU-accelerated fractal computation
+- **Synaptic.js** (v1.1.4) - Neural network library for ML-based discovery
+- **piexifjs** (v1.0.6) - EXIF metadata handling for exported images
+- **Vitest** (v4.0.15) - Unit testing framework
+- **Playwright** (v1.57.0) - Visual regression testing
+
+## Testing
+
+FractalAI includes comprehensive testing infrastructure:
+
+### Unit Tests
+
+- **Framework**: Vitest with jsdom environment
+- **Coverage**: 100% coverage thresholds (lines, functions, branches, statements)
+- **Test Count**: 941+ tests across 62 test files
+- **Module Import Tests**: Automatic testing of all module imports
+- **Run Tests**:
+  ```bash
+  npm test              # Run all tests
+  npm run test:unit     # Run unit tests only
+  npm run test:watch    # Watch mode
+  ```
+
+### Visual Regression Tests
+
+- **Framework**: Playwright
+- **Coverage**: Visual snapshots of all 100+ fractals
+- **Run Tests**:
+  ```bash
+  npm run test:visual           # Run visual tests
+  npm run test:visual:update    # Update snapshots
+  npm run test:visual:ui        # Interactive UI mode
+  npm run test:visual:report    # View test report
+  ```
+
+### Code Quality
+
+- **Linting**: ESLint (v9.39.1)
+- **Formatting**: Prettier (v3.7.4)
+- **Style**: Stylelint (v16.26.1)
+- **Run Checks**:
+  ```bash
+  npm run lint          # Check linting
+  npm run lint:fix      # Fix linting issues
+  npm run format        # Format code
+  npm run format:check # Check formatting
+  npm run stylelint     # Check CSS styles
+  npm run check         # Run all checks
+  ```
 
 ## Feature Flags
 
@@ -273,13 +423,88 @@ The application automatically detects browser capabilities and enables features 
 2. Looking for feature initialization messages (in development mode)
 3. Checking the console for capability detection logs
 
+## Project Structure
+
+```
+FractalAI/
+├── index.html                    # Main HTML file
+├── static/
+│   ├── css/
+│   │   └── styles.css            # All application styles
+│   ├── js/
+│   │   ├── main.js               # Main application entry point
+│   │   ├── core/                 # Core application logic
+│   │   │   ├── app-state.js      # Application state management
+│   │   │   ├── config.js         # Configuration and feature flags
+│   │   │   ├── initialization.js # App initialization
+│   │   │   ├── logger.js         # Development logging
+│   │   │   ├── lifecycle-manager.js # Session lifecycle management
+│   │   │   └── idle-cleanup.js   # Idle resource cleanup
+│   │   ├── fractals/             # Fractal implementations
+│   │   │   ├── 2d/               # 2D fractal implementations (100+ files)
+│   │   │   │   └── families/     # Fractal family groupings
+│   │   │   ├── loader.js         # Fractal loading system
+│   │   │   ├── utils.js          # Shared fractal utilities
+│   │   │   ├── fractal-config.js # Fractal configuration
+│   │   │   └── fractal-info.js   # Fractal metadata
+│   │   ├── rendering/            # Rendering engine and optimizations
+│   │   │   ├── engine.js         # Main rendering engine
+│   │   │   ├── canvas-renderer.js # Canvas setup
+│   │   │   ├── adaptive-quality.js # Adaptive quality management
+│   │   │   ├── multi-resolution.js # Multi-resolution rendering
+│   │   │   ├── occlusion-query.js # Occlusion query optimization
+│   │   │   ├── predictive-rendering.js # Predictive rendering
+│   │   │   ├── tile-renderer.js   # Tile-based rendering
+│   │   │   ├── gpu-timer.js       # GPU timing
+│   │   │   ├── context-loss-handler.js # Context loss recovery
+│   │   │   └── uniform-buffer.js # WebGL2 UBO support
+│   │   ├── discovery/            # ML-based discovery system
+│   │   │   ├── discovery-manager.js # Discovery system manager
+│   │   │   ├── discovery-algorithm.js # Discovery algorithms
+│   │   │   ├── ml-trainer.js     # ML model training
+│   │   │   └── favorites-manager.js # Favorites management
+│   │   ├── workers/              # Web Worker implementations
+│   │   │   ├── pool.js           # Worker pool management
+│   │   │   ├── feature-detection.js # Worker capability detection
+│   │   │   └── tile-protocol.js  # Tile rendering protocol
+│   │   ├── ui/                   # UI components
+│   │   │   ├── controls.js       # UI controls
+│   │   │   ├── panels.js         # Panel management
+│   │   │   ├── presets.js        # Presets UI
+│   │   │   ├── discovery-ui.js   # Discovery UI
+│   │   │   └── exif-editor.js    # EXIF metadata editor
+│   │   ├── sharing/               # Sharing and state management
+│   │   │   ├── state-manager.js  # URL state management
+│   │   │   ├── encoder.js        # State encoding
+│   │   │   └── decoder.js        # State decoding
+│   │   ├── export/                # Export functionality
+│   │   │   └── video-encoder.js  # Video export
+│   │   └── performance/          # Performance monitoring
+│   │       ├── fps-tracker.js    # FPS tracking
+│   │       ├── instrumentation.js # Performance instrumentation
+│   │       └── long-task-detector.js # Long task detection
+│   └── presets/                   # Fractal presets
+│       ├── presets.json          # Preset configurations
+│       └── images/                # Preset preview images
+├── tests/
+│   ├── unit/                      # Unit tests (62 test files, 941+ tests)
+│   └── visual/                    # Visual regression tests
+├── scripts/                        # Build scripts
+│   ├── generate-presets-manifest.js
+│   └── compress-brotli.js
+├── package.json                   # Dependencies and scripts
+├── vite.config.js                 # Vite configuration
+├── vitest.config.js               # Vitest configuration
+└── playwright.config.js           # Playwright configuration
+```
+
 ## Browser Compatibility
 
 Requires a modern browser with WebGL support:
 
-- Chrome/Edge (latest) - Full feature support
-- Firefox (latest) - Full feature support
-- Safari (latest) - Full feature support (some experimental features may be limited)
+- **Chrome/Edge** (latest) - Full feature support
+- **Firefox** (latest) - Full feature support
+- **Safari** (latest) - Full feature support (some experimental features may be limited)
 
 ### Minimum Requirements
 
@@ -287,8 +512,31 @@ Requires a modern browser with WebGL support:
 - ES6+ JavaScript support
 - Canvas API support
 
+### Recommended
+
+- WebGL2 for best performance and features
+- Multi-core CPU for worker-based optimizations
+- Modern GPU for hardware acceleration
+
+## Contributing
+
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on:
+
+- Code of conduct
+- Development setup
+- Coding standards
+- Adding new fractals
+- Testing requirements
+- Submitting changes
+
 ## License
 
 This work is licensed under a [Creative Commons Attribution 4.0 International License](https://creativecommons.org/licenses/by/4.0/).
 
 See LICENSE file for full legal text.
+
+## Acknowledgments
+
+- Built with [regl](https://github.com/regl-project/regl) for WebGL rendering
+- ML-powered discovery uses [Synaptic.js](https://github.com/cazala/synaptic)
+- Tested with [Vitest](https://vitest.dev/) and [Playwright](https://playwright.dev/)
