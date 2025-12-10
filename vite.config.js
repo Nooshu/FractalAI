@@ -18,7 +18,7 @@ export default defineConfig({
     open: true,
   },
   optimizeDeps: {
-    include: ['@tensorflow/tfjs'],
+    include: ['synaptic'],
   },
   build: {
     outDir: 'dist',
@@ -26,13 +26,13 @@ export default defineConfig({
     minify: 'esbuild', // Use esbuild for faster minification
     cssMinify: true, // Minify CSS
     reportCompressedSize: false, // Skip compressed size reporting for faster builds
-    chunkSizeWarningLimit: 1200, // Increase limit to 1.2MB (TensorFlow.js is ~1MB but lazy-loaded, so initial load is unaffected)
+    chunkSizeWarningLimit: 500, // Standard limit (Synaptic.js is ~48KB, much smaller than TensorFlow.js's 1MB)
     rollupOptions: {
       output: {
         manualChunks(id) {
-          // Put TensorFlow.js in its own chunk for lazy loading
-          if (id.includes('@tensorflow/tfjs')) {
-            return 'tensorflow';
+          // Put Synaptic.js in its own chunk for lazy loading
+          if (id.includes('synaptic')) {
+            return 'synaptic';
           }
           
           // Vendor dependencies - separate large libraries
@@ -84,12 +84,16 @@ export default defineConfig({
           
           // Core application state and initialization
           if (id.includes('/core/')) {
-            // App state is large
-            if (id.includes('/core/app-state.js')) {
-              return 'core-state';
+            // Core config must be with app-state to avoid initialization order issues
+            if (id.includes('/core/config.js')) {
+              return 'core-init';
             }
-            // Initialization is large
-            if (id.includes('/core/initialization.js')) {
+            // App state must be in same chunk as initialization to avoid circular deps
+            if (id.includes('/core/app-state.js') || id.includes('/core/initialization.js')) {
+              return 'core-init';
+            }
+            // Logger is used by app-state, keep it together
+            if (id.includes('/core/logger.js')) {
               return 'core-init';
             }
             // Other core modules

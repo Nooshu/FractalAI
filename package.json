@@ -32,19 +32,19 @@
     "test:visual:report": "playwright show-report"
   },
   "dependencies": {
-    "@tensorflow/tfjs": "^4.21.0",
     "piexifjs": "1.0.6",
-    "regl": "2.1.1"
+    "regl": "2.1.1",
+    "synaptic": "1.1.4"
   },
   "devDependencies": {
     "@playwright/test": "1.57.0",
-    "@vitest/coverage-v8": "^4.0.14",
+    "@vitest/coverage-v8": "4.0.15",
     "eslint": "9.39.1",
-    "jsdom": "27.2.0",
-    "prettier": "3.7.2",
+    "jsdom": "27.3.0",
+    "prettier": "3.7.4",
     "stylelint": "16.26.1",
     "stylelint-config-standard": "39.0.1",
-    "vite": "7.2.4",
-    "vitest": "4.0.14"
+    "vite": "7.2.7",
+    "vitest": "4.0.15"
   }
 }

@@ -1,25 +1,7 @@
 /**
  * Fractal Discovery Algorithm
- * Uses heuristics for fast initial screening and TensorFlow.js for ML-based scoring
+ * Uses heuristics for fast initial screening and Synaptic.js for ML-based scoring
  */
-
-// Lazy load TensorFlow.js
-let tf = null;
-async function getTensorFlow() {
-  if (!tf) {
-    try {
-      // Dynamic import - Vite will bundle it but load it on demand
-      const tfModule = await import('@tensorflow/tfjs');
-      // TensorFlow.js exports everything as named exports
-      tf = tfModule;
-      return tf;
-    } catch (error) {
-      console.error('Failed to load TensorFlow.js:', error);
-      return null;
-    }
-  }
-  return tf;
-}
 
 /**
  * Extract features from a fractal configuration for ML scoring
@@ -107,9 +89,9 @@ export function heuristicScore(config, isValidInterestingView) {
 }
 
 /**
- * ML-based scoring using TensorFlow.js
+ * ML-based scoring using Synaptic.js
  * @param {Object} config - Fractal configuration
- * @param {Object} model - Trained TensorFlow model
+ * @param {Object} model - Trained Synaptic.js neural network
  * @returns {Promise<number>} ML score (0-1)
  */
 export async function mlScore(config, model) {
@@ -119,17 +101,11 @@ export async function mlScore(config, model) {
   }
 
   try {
-    const tf = await getTensorFlow();
-    if (!tf) {
-      return heuristicScore(config, null);
-    }
     const features = extractFeatures(config);
-    const input = tf.tensor2d([features]);
-    const prediction = model.predict(input);
-    const score = await prediction.data();
-    const scoreValue = Math.min(1, Math.max(0, score[0]));
-    input.dispose();
-    prediction.dispose();
+    // Synaptic activate() is synchronous and returns output directly
+    const prediction = model.activate(features);
+    // Synaptic returns an array, get the first (and only) output value
+    const scoreValue = Math.min(1, Math.max(0, prediction[0] || 0));
     return scoreValue;
   } catch (error) {
     console.error('ML scoring error:', error);
@@ -141,7 +117,7 @@ export async function mlScore(config, model) {
  * Hybrid scoring: combines heuristics and ML
  * @param {Object} config - Fractal configuration
  * @param {Function} isValidInterestingView - Validation function
- * @param {Object} model - Trained TensorFlow model
+ * @param {Object} model - Trained Synaptic.js neural network
  * @returns {Promise<number>} Combined score (0-1)
  */
 export async function hybridScore(config, isValidInterestingView, model) {
@@ -274,7 +250,7 @@ export async function generateCandidates(fractalType, options = {}) {
  * Discover interesting fractal configurations
  * @param {string} fractalType - Type of fractal
  * @param {Function} isValidInterestingView - Validation function
- * @param {Object} model - Trained TensorFlow model
+ * @param {Object} model - Trained Synaptic.js neural network
  * @param {Object} options - Discovery options
  * @returns {Promise<Array<Object>>} Array of discovered configurations sorted by score
  */
