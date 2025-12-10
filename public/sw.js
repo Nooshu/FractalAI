@@ -14,15 +14,32 @@ const STATIC_ASSETS = [
   '/_redirects',
 ];
 
-// Install event - cache static assets
+// Asset manifest injected at build time - contains all built assets for offline support
+// This will be replaced with the actual manifest during build
+const ASSET_MANIFEST = {{ASSET_MANIFEST}} || [];
+
+// Install event - cache static assets and all built assets for offline support
 self.addEventListener('install', (event) => {
   console.log('[Service Worker] Installing...', CACHE_VERSION);
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       console.log('[Service Worker] Caching static assets');
-      return cache.addAll(STATIC_ASSETS).catch((err) => {
+      // Combine static assets with asset manifest (filter out duplicates)
+      const assetSet = new Set([...STATIC_ASSETS, ...(Array.isArray(ASSET_MANIFEST) ? ASSET_MANIFEST : [])]);
+      const allAssets = Array.from(assetSet);
+      console.log(`[Service Worker] Pre-caching ${allAssets.length} assets for offline support`);
+      return cache.addAll(allAssets).catch((err) => {
         console.warn('[Service Worker] Failed to cache some assets:', err);
-        // Continue even if some assets fail to cache
+        // Continue even if some assets fail to cache - cache what we can
+        // Try caching assets individually to maximize what gets cached
+        return Promise.allSettled(
+          allAssets.map((url) =>
+            cache.add(url).catch((assetErr) => {
+              console.warn(`[Service Worker] Failed to cache ${url}:`, assetErr.message);
+              return null;
+            })
+          )
+        );
       });
     })
   );
@@ -67,15 +84,15 @@ function getBrotliUrl(url) {
   if (url.pathname === '/sw.js' || url.pathname.endsWith('/sw.js')) {
     return null;
   }
-  
+
   // Check if file is compressible
   const compressibleExtensions = ['.js', '.css', '.html', '.json', '.svg', '.xml', '.txt', '.woff2', '.woff', '.ttf'];
   const hasCompressibleExt = compressibleExtensions.some(ext => url.pathname.endsWith(ext));
-  
+
   if (!hasCompressibleExt) {
     return null;
   }
-  
+
   // Return .br version URL
   return url.href + '.br';
 }
@@ -104,7 +121,7 @@ function createBrotliResponse(body, originalRequest) {
   // Remove .br from pathname to get original file extension
   const originalPath = url.pathname.replace(/\.br$/, '');
   url.pathname = originalPath;
-  
+
   return new Response(body, {
     status: 200,
     statusText: 'OK',
@@ -136,28 +153,28 @@ self.addEventListener('fetch', (event) => {
   function tryBrotli() {
     const acceptEncoding = request.headers.get('Accept-Encoding') || '';
     const acceptsBrotli = acceptEncoding.includes('br');
-    
+
     if (!acceptsBrotli) {
       return Promise.resolve(null);
     }
-    
+
     const brotliUrl = getBrotliUrl(url);
     if (!brotliUrl) {
       return Promise.resolve(null);
     }
-    
+
     const brotliRequest = new Request(brotliUrl, {
       method: 'GET',
       headers: request.headers,
     });
-    
+
     // Try cache first, then network
     return caches.match(brotliRequest).then((cachedBrotli) => {
       if (cachedBrotli) {
         // Return cached Brotli version with proper headers
         return createBrotliResponse(cachedBrotli.body, request);
       }
-      
+
       // Not in cache, try network
       return fetch(brotliRequest)
         .then((networkResponse) => {
@@ -179,7 +196,7 @@ self.addEventListener('fetch', (event) => {
         });
     });
   }
-  
+
   // Normal request handling (fallback or non-compressible files)
   function handleNormalRequest() {
 
@@ -314,7 +331,7 @@ self.addEventListener('fetch', (event) => {
         return caches.match(request);
       });
   }
-  
+
   // Try Brotli first, fallback to normal handling
   event.respondWith(
     tryBrotli().then((brotliResponse) => {

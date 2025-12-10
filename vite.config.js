@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite';
-import { copyFileSync, readFileSync, writeFileSync, cpSync, existsSync } from 'fs';
-import { resolve } from 'path';
+import { copyFileSync, readFileSync, writeFileSync, cpSync, existsSync, readdirSync, statSync } from 'fs';
+import { resolve, relative } from 'path';
 import { execSync } from 'child_process';
 
 // Read app version from package.json
@@ -34,7 +34,7 @@ export default defineConfig({
           if (id.includes('synaptic')) {
             return 'synaptic';
           }
-          
+
           // Vendor dependencies - separate large libraries
           if (id.includes('node_modules')) {
             // Regl is a large library, put it in its own chunk
@@ -48,7 +48,7 @@ export default defineConfig({
             // All other node_modules go into a vendor chunk
             return 'vendor';
           }
-          
+
           // Core rendering modules - separate heavy rendering code
           if (id.includes('/rendering/')) {
             // Engine is the core rendering orchestrator
@@ -66,12 +66,12 @@ export default defineConfig({
             // Other rendering utilities can stay together
             return 'rendering-utils';
           }
-          
+
           // Discovery/ML modules - separate ML code
           if (id.includes('/discovery/')) {
             return 'discovery';
           }
-          
+
           // UI modules - separate UI code
           if (id.includes('/ui/')) {
             // Controls is the largest UI module
@@ -81,7 +81,7 @@ export default defineConfig({
             // Other UI modules
             return 'ui';
           }
-          
+
           // Core application state and initialization
           if (id.includes('/core/')) {
             // Core config must be with app-state to avoid initialization order issues
@@ -333,7 +333,43 @@ export default defineConfig({
         copyFileSync(resolve(__dirname, '_headers'), resolve(__dirname, 'dist', '_headers'));
         // Copy _redirects to dist directory for Cloudflare Pages
         copyFileSync(resolve(__dirname, '_redirects'), resolve(__dirname, 'dist', '_redirects'));
-        // Process and copy service worker with cache version
+        // Collect all assets for service worker pre-caching
+        const distDir = resolve(__dirname, 'dist');
+        const assetManifest = [];
+
+        // Helper to recursively collect files
+        const collectAssets = (dir, baseDir = distDir) => {
+          try {
+            const entries = readdirSync(dir, { withFileTypes: true });
+            for (const entry of entries) {
+              const fullPath = resolve(dir, entry.name);
+              const relPath = '/' + relative(baseDir, fullPath).replace(/\\/g, '/');
+
+              if (entry.isDirectory()) {
+                // Skip certain directories
+                if (!['node_modules', '.git'].includes(entry.name)) {
+                  collectAssets(fullPath, baseDir);
+                }
+              } else if (entry.isFile()) {
+                // Skip service worker itself and source maps
+                if (!entry.name.endsWith('.map') && entry.name !== 'sw.js' && !entry.name.endsWith('.br')) {
+                  assetManifest.push(relPath);
+                }
+              }
+            }
+          } catch (err) {
+            // Ignore errors for missing directories
+          }
+        };
+
+        // Collect all assets from dist directory
+        if (existsSync(distDir)) {
+          collectAssets(distDir);
+          // Sort for consistent output
+          assetManifest.sort();
+        }
+
+        // Process and copy service worker with cache version and asset manifest
         const swPath = resolve(__dirname, 'public', 'sw.js');
         const swDest = resolve(__dirname, 'dist', 'sw.js');
         try {
@@ -341,8 +377,14 @@ export default defineConfig({
           const cacheVersion = `v${Date.now()}`;
           let swContent = readFileSync(swPath, 'utf-8');
           swContent = swContent.replace(/\{\{CACHE_VERSION\}\}/g, cacheVersion);
+
+          // Inject asset manifest as JSON array
+          const manifestJson = JSON.stringify(assetManifest, null, 2);
+          swContent = swContent.replace(/\{\{ASSET_MANIFEST\}\}/g, manifestJson);
+
           writeFileSync(swDest, swContent);
           console.log(`[Service Worker] Copied with cache version: ${cacheVersion}`);
+          console.log(`[Service Worker] Pre-caching ${assetManifest.length} assets for offline support`);
         } catch (err) {
           console.warn('Service worker not found, skipping copy');
         }

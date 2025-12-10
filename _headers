@@ -31,15 +31,18 @@
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=()
   Cross-Origin-Opener-Policy: same-origin
-  Content-Security-Policy: default-src 'self'; img-src 'self' data: blob:; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
+  Cross-Origin-Embedder-Policy: require-corp
+  Content-Security-Policy: default-src 'self'; img-src 'self' data: blob:; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; worker-src 'self' blob:
   Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
   Accept-Ranges: bytes
+  Timing-Allow-Origin: *
 
 # CSS files - cache with revalidation (no immutable)
 /*.css
   Cache-Control: public, max-age=31536000, must-revalidate, stale-while-revalidate=86400
   Content-Type: text/css; charset=utf-8
   X-Content-Type-Options: nosniff
+  Cross-Origin-Resource-Policy: cross-origin
   Accept-Ranges: bytes
   Vary: Accept-Encoding
 
@@ -48,9 +51,13 @@
   Cache-Control: public, max-age=31536000, must-revalidate, stale-while-revalidate=86400
   Content-Type: application/javascript; charset=utf-8
   X-Content-Type-Options: nosniff
+  Cross-Origin-Resource-Policy: cross-origin
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Embedder-Policy: require-corp
   Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
   Accept-Ranges: bytes
   Vary: Accept-Encoding
+  Timing-Allow-Origin: *
 
 # Brotli-compressed files
 /*.br
@@ -61,25 +68,32 @@
 # Images - long cache with immutable-like behavior
 /*.png
   Cache-Control: public, max-age=31536000, immutable
+  Cross-Origin-Resource-Policy: cross-origin
   Accept-Ranges: bytes
 /*.jpg
   Cache-Control: public, max-age=31536000, immutable
+  Cross-Origin-Resource-Policy: cross-origin
   Accept-Ranges: bytes
 /*.jpeg
   Cache-Control: public, max-age=31536000, immutable
+  Cross-Origin-Resource-Policy: cross-origin
   Accept-Ranges: bytes
 /*.gif
   Cache-Control: public, max-age=31536000, immutable
+  Cross-Origin-Resource-Policy: cross-origin
   Accept-Ranges: bytes
 /*.svg
   Cache-Control: public, max-age=31536000, immutable
   Content-Type: image/svg+xml; charset=utf-8
+  Cross-Origin-Resource-Policy: cross-origin
   Accept-Ranges: bytes
 /*.webp
   Cache-Control: public, max-age=31536000, immutable
+  Cross-Origin-Resource-Policy: cross-origin
   Accept-Ranges: bytes
 /*.ico
   Cache-Control: public, max-age=31536000, immutable
+  Cross-Origin-Resource-Policy: cross-origin
   Accept-Ranges: bytes
 
 # Web manifest and other JSON files
@@ -95,5 +109,35 @@
 # Assets directory - apply to all assets
 /assets/*
   Cache-Control: public, max-age=31536000, must-revalidate, stale-while-revalidate=86400
+  Cross-Origin-Resource-Policy: cross-origin
   Accept-Ranges: bytes
+
+# Font files - long cache with CORP for COEP compatibility
+/*.woff
+  Cache-Control: public, max-age=31536000, immutable
+  Cross-Origin-Resource-Policy: cross-origin
+  Access-Control-Allow-Origin: *
+  Accept-Ranges: bytes
+/*.woff2
+  Cache-Control: public, max-age=31536000, immutable
+  Cross-Origin-Resource-Policy: cross-origin
+  Access-Control-Allow-Origin: *
+  Accept-Ranges: bytes
+/*.ttf
+  Cache-Control: public, max-age=31536000, immutable
+  Cross-Origin-Resource-Policy: cross-origin
+  Access-Control-Allow-Origin: *
+  Accept-Ranges: bytes
+
+# Web Workers - allow blob: and same-origin workers
+/*worker*.js
+  Cross-Origin-Resource-Policy: cross-origin
+  Cross-Origin-Embedder-Policy: require-corp
+  Content-Type: application/javascript; charset=utf-8
+
+# JSON files - add CORP for COEP compatibility
+/*.json
+  Cache-Control: public, max-age=3600
+  Content-Type: application/json; charset=utf-8
+  Cross-Origin-Resource-Policy: cross-origin
 
