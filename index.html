@@ -2021,10 +2021,22 @@
 
         if (!isLocalhost) {
           window.addEventListener('load', () => {
+            // Validate service worker is available before registering
+            if (!navigator.serviceWorker) {
+              console.warn('[Service Worker] Service Worker API not available');
+              return;
+            }
+
             // Add error handling for service worker registration
             navigator.serviceWorker
-              .register('/sw.js', { scope: '/' })
+              .register('/sw.js', {
+                scope: '/',
+                updateViaCache: 'none' // Always fetch the service worker script fresh
+              })
               .then((registration) => {
+                if (!registration) {
+                  throw new Error('Registration returned null');
+                }
                 console.log('[Service Worker] Registered:', registration.scope);
 
                 // Check for updates periodically

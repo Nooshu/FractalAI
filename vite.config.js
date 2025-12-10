@@ -335,7 +335,7 @@ export default defineConfig({
         copyFileSync(resolve(__dirname, '_redirects'), resolve(__dirname, 'dist', '_redirects'));
         // Collect all assets for service worker pre-caching
         const distDir = resolve(__dirname, 'dist');
-        const assetManifest = [];
+        let assetManifest = [];
 
         // Helper to recursively collect files
         const collectAssets = (dir, baseDir = distDir) => {
@@ -367,6 +367,18 @@ export default defineConfig({
           collectAssets(distDir);
           // Sort for consistent output
           assetManifest.sort();
+
+          // Filter out any problematic paths that might cause issues
+          assetManifest = assetManifest.filter((path) => {
+            // Ensure paths are valid and don't contain problematic characters
+            return (
+              typeof path === 'string' &&
+              path.startsWith('/') &&
+              !path.includes('{{') &&
+              !path.includes('}}') &&
+              path.length < 500 // Reasonable path length limit
+            );
+          });
         }
 
         // Process and copy service worker with cache version and asset manifest
@@ -379,9 +391,19 @@ export default defineConfig({
           swContent = swContent.replace(/\{\{CACHE_VERSION\}\}/g, cacheVersion);
 
           // Inject asset manifest as JSON array
-          // Ensure the manifest is valid JSON and escape any special characters
+          // Replace the entire const declaration to ensure valid JavaScript
           const manifestJson = JSON.stringify(assetManifest);
-          swContent = swContent.replace(/\{\{ASSET_MANIFEST\}\}/g, manifestJson);
+          // Replace the const ASSET_MANIFEST = []; line with the actual manifest
+          swContent = swContent.replace(
+            /const ASSET_MANIFEST = \[\];/,
+            `const ASSET_MANIFEST = ${manifestJson};`
+          );
+
+          // Validate the service worker script doesn't have syntax errors
+          // Check for common issues that would cause "object is not usable" error
+          if (swContent.includes('{{ASSET_MANIFEST}}') || swContent.includes('{{CACHE_VERSION}}')) {
+            console.warn('[Service Worker] Warning: Placeholders not fully replaced');
+          }
 
           writeFileSync(swDest, swContent);
           console.log(`[Service Worker] Copied with cache version: ${cacheVersion}`);

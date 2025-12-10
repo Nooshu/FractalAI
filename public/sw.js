@@ -16,13 +16,25 @@ const STATIC_ASSETS = [
 
 // Asset manifest injected at build time - contains all built assets for offline support
 // This will be replaced with the actual manifest during build
-const ASSET_MANIFEST = {{ASSET_MANIFEST}} || [];
+// Using a safe default to ensure valid JavaScript even if replacement fails
+const ASSET_MANIFEST = [];
 
 // Install event - cache static assets and all built assets for offline support
 self.addEventListener('install', (event) => {
   console.log('[Service Worker] Installing...', CACHE_VERSION);
+
+  // Validate that we have a valid cache name
+  if (!CACHE_NAME || typeof CACHE_NAME !== 'string') {
+    console.error('[Service Worker] Invalid cache name:', CACHE_NAME);
+    return;
+  }
+
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
+      if (!cache) {
+        throw new Error('Failed to open cache');
+      }
+
       console.log('[Service Worker] Caching static assets');
       // Combine static assets with asset manifest (filter out duplicates)
       // Validate ASSET_MANIFEST is an array
@@ -30,12 +42,22 @@ self.addEventListener('install', (event) => {
       const assetSet = new Set([...STATIC_ASSETS, ...manifest]);
       const allAssets = Array.from(assetSet);
       console.log(`[Service Worker] Pre-caching ${allAssets.length} assets for offline support`);
-      return cache.addAll(allAssets).catch((err) => {
+
+      // Filter out any invalid URLs
+      const validAssets = allAssets.filter((url) => {
+        if (typeof url !== 'string' || !url.startsWith('/')) {
+          console.warn(`[Service Worker] Skipping invalid asset URL: ${url}`);
+          return false;
+        }
+        return true;
+      });
+
+      return cache.addAll(validAssets).catch((err) => {
         console.warn('[Service Worker] Failed to cache some assets:', err);
         // Continue even if some assets fail to cache - cache what we can
         // Try caching assets individually to maximize what gets cached
         return Promise.allSettled(
-          allAssets.map((url) =>
+          validAssets.map((url) =>
             cache.add(url).catch((assetErr) => {
               console.warn(`[Service Worker] Failed to cache ${url}:`, assetErr.message);
               return null;
