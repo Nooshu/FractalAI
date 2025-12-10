@@ -2,7 +2,7 @@
 
 A web-based fractal generator using regl and WebGL. This project demonstrates interactive fractal visualization with real-time rendering capabilities, machine learning-powered discovery, and extensive performance optimizations.
 
-**Version:** 5.5.0
+**Version:** 6.0.0
 
 ## Features
 
