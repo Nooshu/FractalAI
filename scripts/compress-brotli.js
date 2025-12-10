@@ -134,12 +134,20 @@ async function processDirectory(dir, baseDir, stats = { files: 0, totalOriginal:
  * Main function
  */
 async function main() {
-  // Only run Brotli compression in production
+  // Only run Brotli compression in production CI environments
+  // Cloudflare Pages sets: CI=true, CF_PAGES=1, CF_PAGES_BRANCH
+  const isCI = process.env.CI === 'true' || process.env.CF_PAGES === '1' || process.env.CF_PAGES_BRANCH;
   const isProduction = process.env.NODE_ENV === 'production';
 
-  if (!isProduction) {
-    console.log('⏭️  Skipping Brotli compression (development mode)');
-    console.log('   Set NODE_ENV=production to enable compression\n');
+  // Only compress in CI/production environments, not local development builds
+  if (!isProduction || !isCI) {
+    if (!isProduction) {
+      console.log('⏭️  Skipping Brotli compression (development mode)');
+      console.log('   Set NODE_ENV=production to enable compression\n');
+    } else {
+      console.log('⏭️  Skipping Brotli compression (not in CI environment)');
+      console.log('   Compression runs automatically in Cloudflare Pages deployments\n');
+    }
     return;
   }
 
