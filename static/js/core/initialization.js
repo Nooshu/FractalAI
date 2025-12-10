@@ -51,7 +51,7 @@ function initDOMCache() {
  */
 function initFooterLinks() {
   const socialLinks = CONFIG.site.social;
-  
+
   // GitHub link
   const githubLink = document.querySelector('[data-social="github"]');
   if (githubLink) {
@@ -62,7 +62,7 @@ function initFooterLinks() {
       labelEl.textContent = socialLinks.github.label;
     }
   }
-  
+
   // Mastodon link
   const mastodonLink = document.querySelector('[data-social="mastodon"]');
   if (mastodonLink) {
@@ -73,7 +73,7 @@ function initFooterLinks() {
       labelEl.textContent = socialLinks.mastodon.label;
     }
   }
-  
+
   // Bluesky link
   const blueskyLink = document.querySelector('[data-social="bluesky"]');
   if (blueskyLink) {
@@ -113,12 +113,12 @@ async function initCanvasAndRenderer(appState) {
   appState.setRegl(reglContext);
   appState.setUpdateRendererSize(updateSize);
   appState.setWebGLCapabilities(webglCapabilities);
-  
+
   // Store WebGPU renderer if available
   if (webgpuRenderer) {
     appState.setWebGPURenderer(webgpuRenderer);
   }
-  
+
   // Log renderer type in development
   if (rendererType) {
     devLog.log(
@@ -133,7 +133,7 @@ async function initCanvasAndRenderer(appState) {
     import('../rendering/uniform-buffer.js').then(({ createFractalParamsUBO }) => {
       const ubo = createFractalParamsUBO(reglContext, webglCapabilities);
       appState.setFractalParamsUBO(ubo);
-      
+
       if (ubo) {
         devLog.log(
           '%c[WebGL2 UBO]%c Uniform Buffer Objects enabled for fractal parameters',
@@ -316,7 +316,7 @@ async function initCanvasAndRenderer(appState) {
         onContextRestored: async (_savedState) => {
           // Reinitialize WebGL resources
           await reinitializeWebGLResources(appState, canvasElement);
-          
+
           // Reload current fractal to recreate draw function with new regl context
           const currentFractalType = appState.getCurrentFractalType();
           if (currentFractalType) {
@@ -326,7 +326,7 @@ async function initCanvasAndRenderer(appState) {
               console.error('[Context Restore] Failed to reload fractal:', error);
             }
           }
-          
+
           // Trigger re-render after recovery
           const renderingEngine = appState.getRenderingEngine();
           if (renderingEngine) {
@@ -353,7 +353,7 @@ async function initCanvasAndRenderer(appState) {
  */
 async function reinitializeWebGLResources(appState, canvas) {
   const { CONFIG } = await import('./config.js');
-  
+
   // Reinitialize regl
   const createRegl = (await import('regl')).default;
   const regl = createRegl({
@@ -602,6 +602,20 @@ function setupUILayoutAndDisplays(appState, renderingEngine, updateCoordinateDis
     renderFractal: () => renderingEngine.renderFractal(),
     loadFractalFromPreset: loadFractalFromPreset,
   });
+
+  // Setup link to open themes & presets panel
+  const openThemesPresetsLink = document.getElementById('open-themes-presets-link');
+  if (openThemesPresetsLink) {
+    openThemesPresetsLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      const rightPanel = document.getElementById('themes-presets-panel');
+      const showRightPanelBtn = document.getElementById('show-right-panel-btn');
+      if (rightPanel && showRightPanelBtn) {
+        // Trigger the same action as the show button
+        showRightPanelBtn.click();
+      }
+    });
+  }
 
   // Setup mathematical information panel
   setupMathInfoPanel({
@@ -876,7 +890,7 @@ export async function init() {
 
   // Initialize DOM cache first
   initDOMCache();
-  
+
   // Initialize footer social links from config
   initFooterLinks();
 

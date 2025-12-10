@@ -168,7 +168,7 @@ body {
   min-height: 0; /* Important for flex children to allow shrinking and scrolling */
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 8px 0;
+  padding: 0 0;
   padding-bottom: var(--footer-height, 120px); /* Dynamically matches footer height */
 }
 
@@ -215,7 +215,8 @@ body {
 }
 
 /* Sections (Collapsible) */
-.section {
+.section,
+.collapsible-section {
   margin: 0;
   border-bottom: 1px solid var(--border-color);
   display: grid;
@@ -224,7 +225,8 @@ body {
   overflow: hidden;
 }
 
-.section:has(.section-content.active) {
+.section:has(.section-content.active),
+.collapsible-section:has(.section-content.active) {
   grid-template-rows: auto 1fr;
 }
 
@@ -1185,7 +1187,7 @@ body {
 .right-panel .panel-content {
   flex: 1;
   overflow: hidden auto;
-  padding: 8px 0;
+  padding: 0 0;
   padding-bottom: 150px; /* Extra padding at bottom to ensure buttons are visible */
 }
 
@@ -1291,10 +1293,20 @@ body {
   display: none;
 }
 
+/* Ensure exif section uses grid when visible */
+.section.exif-hidden {
+  display: none;
+}
+
 /* Debug Panel Styling */
 .debug-hidden,
 .panel-content .debug-hidden,
 .section-content .debug-hidden {
+  display: none;
+}
+
+/* Ensure debug section uses grid when visible */
+.section.debug-hidden {
   display: none;
 }
 
