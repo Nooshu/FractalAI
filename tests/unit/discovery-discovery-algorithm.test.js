@@ -233,6 +233,37 @@ describe('discovery/discovery-algorithm', () => {
         expect(candidate.colorScheme).toBe('fire');
       });
     });
+
+    it('should generate random Julia C parameters for Julia set fractals', async () => {
+      const { generateCandidates } = await import('../../static/js/discovery/discovery-algorithm.js');
+      const juliaTypes = ['julia', 'julia-snakes', 'multibrot-julia', 'burning-ship-julia', 'tricorn-julia', 'phoenix-julia', 'lambda-julia', 'hybrid-julia', 'magnet'];
+
+      for (const juliaType of juliaTypes) {
+        const candidates = await generateCandidates(juliaType, { count: 10 });
+        expect(candidates.length).toBeGreaterThan(0);
+
+        // Check that Julia C parameters are in the valid range (-2 to 2) and not all zeros
+        const juliaCValues = candidates.map(c => ({ x: c.juliaCX, y: c.juliaCY }));
+        const hasNonZeroValues = juliaCValues.some(c => c.x !== 0 || c.y !== 0);
+
+        expect(hasNonZeroValues).toBe(true); // At least some should be non-zero
+        juliaCValues.forEach(c => {
+          expect(c.x).toBeGreaterThanOrEqual(-2);
+          expect(c.x).toBeLessThanOrEqual(2);
+          expect(c.y).toBeGreaterThanOrEqual(-2);
+          expect(c.y).toBeLessThanOrEqual(2);
+        });
+      }
+    });
+
+    it('should use zero Julia C parameters for non-Julia fractals', async () => {
+      const { generateCandidates } = await import('../../static/js/discovery/discovery-algorithm.js');
+      const candidates = await generateCandidates('mandelbrot', { count: 5 });
+      candidates.forEach((candidate) => {
+        expect(candidate.juliaCX).toBe(0);
+        expect(candidate.juliaCY).toBe(0);
+      });
+    });
   });
 
   describe('discoverInterestingFractals', () => {

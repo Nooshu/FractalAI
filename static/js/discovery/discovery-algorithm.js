@@ -3,6 +3,8 @@
  * Uses heuristics for fast initial screening and Synaptic.js for ML-based scoring
  */
 
+import { isJuliaType } from '../fractals/utils.js';
+
 /**
  * Extract features from a fractal configuration for ML scoring
  * @param {Object} config - Fractal configuration
@@ -223,11 +225,20 @@ export async function generateCandidates(fractalType, options = {}) {
       offsetRange[0] + Math.random() * (offsetRange[1] - offsetRange[0]);
     const offsetY =
       offsetRange[0] + Math.random() * (offsetRange[1] - offsetRange[0]);
-    
+
     // Randomly select color scheme if not specified or if includeColorScheme is true
     const selectedColorScheme = includeColorScheme && colorScheme === null
       ? availableSchemes[Math.floor(Math.random() * availableSchemes.length)]
       : (colorScheme || 'classic');
+
+    // Generate Julia C parameters for Julia set fractals
+    // Use random values in the interesting range (-2 to 2) for variety
+    let juliaCX = 0;
+    let juliaCY = 0;
+    if (isJuliaType(fractalType)) {
+      juliaCX = -2 + Math.random() * 4;
+      juliaCY = -2 + Math.random() * 4;
+    }
 
     candidates.push({
       fractalType,
@@ -238,8 +249,8 @@ export async function generateCandidates(fractalType, options = {}) {
       colorScheme: selectedColorScheme,
       xScale: 1.0,
       yScale: 1.0,
-      juliaCX: 0,
-      juliaCY: 0,
+      juliaCX,
+      juliaCY,
     });
   }
 
