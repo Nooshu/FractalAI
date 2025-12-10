@@ -162,3 +162,4 @@ describe('discovery/favorites-manager', () => {
 });
 
 
+
