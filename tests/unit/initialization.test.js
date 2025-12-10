@@ -526,8 +526,9 @@ describe('initialization module', () => {
   });
 
   it('should handle deferred initialization error', async () => {
-    const sharingModule = await import('../../static/js/sharing/state-manager.js');
-    sharingModule.setupShareFractal.mockImplementation(() => {
+    // Mock setupShareFractal to throw an error
+    const { setupShareFractal } = await import('../../static/js/sharing/state-manager.js');
+    setupShareFractal.mockImplementation(() => {
       throw new Error('Test error');
     });
 
@@ -537,7 +538,7 @@ describe('initialization module', () => {
     await new Promise((resolve) => setTimeout(resolve, 10));
 
     expect(console.error).toHaveBeenCalledWith(
-      'Failed to load sharing module:',
+      'Failed to setup sharing module:',
       expect.any(Error)
     );
   });

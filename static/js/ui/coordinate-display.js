@@ -4,8 +4,23 @@
  */
 
 import { getElement } from '../core/dom-cache.js';
-import { updateDebugDisplay } from './debug-display.js';
 import { appState } from '../core/app-state.js';
+
+// Lazy load debug-display to avoid mixed static/dynamic import warnings
+// Only load when debug section is actually used
+let updateDebugDisplayFn = null;
+async function getUpdateDebugDisplay() {
+  if (!updateDebugDisplayFn) {
+    try {
+      const module = await import('./debug-display.js');
+      updateDebugDisplayFn = module.updateDebugDisplay;
+    } catch (error) {
+      // Provide a no-op if module fails to load
+      updateDebugDisplayFn = () => {};
+    }
+  }
+  return updateDebugDisplayFn;
+}
 
 /**
  * Format a number with appropriate precision
@@ -100,7 +115,19 @@ export function updateCoordinateAndDebugDisplay(getParams, getCurrentFractalType
     ? getCurrentFractalType()
     : appState.getCurrentFractalType();
   updateCoordinateDisplay(params);
-  updateDebugDisplay(currentFractalType, params);
+
+  // Only load and call debug display if debug section is visible (fire-and-forget)
+  const debugSection = document.querySelector('[data-section="debug"]')?.parentElement;
+  if (debugSection && !debugSection.classList.contains('debug-hidden')) {
+    // Load and update debug display asynchronously without blocking
+    getUpdateDebugDisplay().then((updateDebugDisplay) => {
+      if (updateDebugDisplay) {
+        updateDebugDisplay(currentFractalType, params);
+      }
+    }).catch(() => {
+      // Silently fail if debug display can't be loaded
+    });
+  }
 
   // Dispatch fractal-updated event so other components (like EXIF editor) can update
   window.dispatchEvent(

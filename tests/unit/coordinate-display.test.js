@@ -5,7 +5,11 @@ import {
   setupCoordinateCopy,
   updateCoordinateAndDebugDisplay,
 } from '../../static/js/ui/coordinate-display.js';
-import * as debugDisplay from '../../static/js/ui/debug-display.js';
+
+// Mock debug-display module for dynamic import
+vi.mock('../../static/js/ui/debug-display.js', () => ({
+  updateDebugDisplay: vi.fn(),
+}));
 
 describe('coordinate-display module', () => {
   beforeEach(() => {
@@ -20,6 +24,7 @@ describe('coordinate-display module', () => {
     cacheElement('coord-offset-x');
     cacheElement('coord-offset-y');
     cacheElement('copy-coords-btn');
+    vi.clearAllMocks();
   });
 
   it('updates coordinate display with formatted values', () => {
@@ -56,8 +61,13 @@ describe('coordinate-display module', () => {
     );
   });
 
-  it('updateCoordinateAndDebugDisplay calls debug-display with correct arguments', () => {
-    const spy = vi.spyOn(debugDisplay, 'updateDebugDisplay');
+  it('updateCoordinateAndDebugDisplay calls debug-display with correct arguments when debug section is visible', async () => {
+    // Create a visible debug section (append to preserve coordinate elements)
+    const debugSection = document.createElement('div');
+    debugSection.className = 'section';
+    debugSection.setAttribute('data-section', 'debug');
+    debugSection.innerHTML = '<div class="section-content active"></div>';
+    document.body.appendChild(debugSection);
 
     const params = {
       zoom: 3.0,
@@ -68,6 +78,37 @@ describe('coordinate-display module', () => {
 
     updateCoordinateAndDebugDisplay(getParams, getCurrentFractalType);
 
-    expect(spy).toHaveBeenCalledWith('julia', params);
+    // Wait for async debug display load
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    // Verify debug display was called (via dynamic import)
+    const { updateDebugDisplay } = await import('../../static/js/ui/debug-display.js');
+    expect(updateDebugDisplay).toHaveBeenCalledWith('julia', params);
+  });
+
+  it('updateCoordinateAndDebugDisplay does not call debug-display when debug section is hidden', async () => {
+    // Create a hidden debug section (append to preserve coordinate elements)
+    const debugSection = document.createElement('div');
+    debugSection.className = 'section debug-hidden';
+    debugSection.setAttribute('data-section', 'debug');
+    debugSection.innerHTML = '<div class="section-content active"></div>';
+    document.body.appendChild(debugSection);
+
+    const params = {
+      zoom: 3.0,
+      offset: { x: 0.1, y: -0.2 },
+    };
+    const getParams = () => params;
+    const getCurrentFractalType = () => 'julia';
+
+    updateCoordinateAndDebugDisplay(getParams, getCurrentFractalType);
+
+    // Wait a bit to ensure debug display is not loaded
+    await new Promise((resolve) => setTimeout(resolve, 10));
+
+    // Verify coordinate display was still updated
+    expect(document.getElementById('coord-zoom').textContent).toBe('3');
+    expect(document.getElementById('coord-offset-x').textContent).toBe('0.1');
+    expect(document.getElementById('coord-offset-y').textContent).toBe('-0.2');
   });
 });

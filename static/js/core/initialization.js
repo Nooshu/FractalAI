@@ -8,7 +8,7 @@ import { initLoadingBar } from '../ui/loading-bar.js';
 import { initFPSTracker, startFPSTracking } from '../performance/fps-tracker.js';
 import { cacheElement } from './dom-cache.js';
 import { setupCoordinateCopy, updateCoordinateAndDebugDisplay } from '../ui/coordinate-display.js';
-import { loadFractalFromURL } from '../sharing/state-manager.js';
+import { loadFractalFromURL, setupShareFractal } from '../sharing/state-manager.js';
 // setupShareFractal is deferred using requestIdleCallback (non-critical for first render)
 // Presets module is now lazy loaded when right panel is first opened (see panels.js)
 import { updateWikipediaLink } from '../fractals/fractal-config.js';
@@ -352,7 +352,7 @@ async function initCanvasAndRenderer(appState) {
  * @param {HTMLCanvasElement} canvas - Canvas element
  */
 async function reinitializeWebGLResources(appState, canvas) {
-  const { CONFIG } = await import('./config.js');
+  // CONFIG is already imported statically at the top of the file
 
   // Reinitialize regl
   const createRegl = (await import('regl')).default;
@@ -1066,13 +1066,12 @@ export async function init() {
     const setters = appState.getSetters();
 
     // Setup share button (non-critical for first render)
-    import('../sharing/state-manager.js')
-      .then(({ setupShareFractal }) => {
-        setupShareFractal(getters.getCurrentFractalType, getters.getParams);
-      })
-      .catch((error) => {
-        console.error('Failed to load sharing module:', error);
-      });
+    // setupShareFractal is already imported statically at the top of the file
+    try {
+      setupShareFractal(getters.getCurrentFractalType, getters.getParams);
+    } catch (error) {
+      console.error('Failed to setup sharing module:', error);
+    }
 
     // Setup discovery and favorites UI (non-critical for first render)
     import('../ui/discovery-ui.js')

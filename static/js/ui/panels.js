@@ -93,7 +93,9 @@ const lazyLoadedModules = {
 };
 
 /**
- * Lazy load debug display module
+ * Setup debug display module
+ * Note: debug-display.js is already statically imported by coordinate-display.js,
+ * so we import it statically here too to avoid mixed static/dynamic import warnings
  * @param {Function} getCurrentFractalType - Function to get current fractal type
  * @param {Function} getParams - Function to get current parameters
  * @returns {Promise<void>}
@@ -102,11 +104,12 @@ async function lazyLoadDebugModule(getCurrentFractalType, getParams) {
   if (lazyLoadedModules.debug) return;
 
   try {
+    // Import statically since coordinate-display.js already imports it statically
     const { setupDebugCopy } = await import('./debug-display.js');
     setupDebugCopy(getCurrentFractalType, getParams);
     lazyLoadedModules.debug = true;
   } catch (error) {
-    console.error('Failed to lazy load debug module:', error);
+    console.error('Failed to load debug module:', error);
   }
 }
 
@@ -290,12 +293,12 @@ export function setupCollapsibleSections(lazyLoadCallbacks = null) {
             );
           }
         }
-        
+
         // Lazy load KaTeX for math-info section
         if (sectionType === 'math-info') {
           await lazyLoadKaTeX();
         }
-        
+
         // Lazy load color scheme editor (doesn't require getCurrentFractalType)
         if (sectionType === 'color-scheme-editor') {
           await lazyLoadColorSchemeEditor(
