@@ -22,9 +22,7 @@ const COMPRESSIBLE_EXTENSIONS = new Set([
   '.svg',
   '.xml',
   '.txt',
-  '.woff2', // Fonts can benefit from Brotli
-  '.woff',
-  '.ttf',
+  // Fonts excluded - browsers handle font compression efficiently
 ]);
 
 // Directories to skip
@@ -39,7 +37,7 @@ const SKIP_FILES = new Set(['sw.js']); // Service worker should not be compresse
 async function compressFile(filePath, outputPath) {
   try {
     const input = readFileSync(filePath);
-    
+
     return new Promise((resolve, reject) => {
       const compress = createBrotliCompress({
         params: {
@@ -97,15 +95,15 @@ async function processDirectory(dir, baseDir, stats = { files: 0, totalOriginal:
       }
 
       const ext = extname(entry.name).toLowerCase();
-      
+
       // Only compress files with compressible extensions
       if (COMPRESSIBLE_EXTENSIONS.has(ext)) {
         const brPath = `${fullPath}.br`;
-        
+
         // Only compress if .br doesn't exist or source is newer
         const sourceStat = statSync(fullPath);
         let shouldCompress = true;
-        
+
         if (existsSync(brPath)) {
           const brStat = statSync(brPath);
           shouldCompress = sourceStat.mtime > brStat.mtime;
@@ -138,7 +136,7 @@ async function processDirectory(dir, baseDir, stats = { files: 0, totalOriginal:
 async function main() {
   // Only run Brotli compression in production
   const isProduction = process.env.NODE_ENV === 'production';
-  
+
   if (!isProduction) {
     console.log('⏭️  Skipping Brotli compression (development mode)');
     console.log('   Set NODE_ENV=production to enable compression\n');
@@ -146,7 +144,7 @@ async function main() {
   }
 
   const distDir = resolve(process.cwd(), 'dist');
-  
+
   if (!existsSync(distDir)) {
     console.error('Error: dist directory does not exist. Run "npm run build" first.');
     process.exit(1);
