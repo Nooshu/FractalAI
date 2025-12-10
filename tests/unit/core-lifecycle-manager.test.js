@@ -124,8 +124,8 @@ describe('LifecycleManager', () => {
     it('should return session duration', async () => {
       manager.startSession('fractal-change', 'mandelbrot');
 
-      // Wait a bit
-      await new Promise((resolve) => setTimeout(resolve, 10));
+      // Wait a bit (use 15ms to account for timing variations)
+      await new Promise((resolve) => setTimeout(resolve, 15));
 
       const duration = manager.getSessionDuration();
       expect(duration).toBeGreaterThanOrEqual(10);

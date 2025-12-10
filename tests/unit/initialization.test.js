@@ -150,6 +150,25 @@ vi.mock('../../static/js/workers/feature-detection.js', () => ({
 
 vi.mock('../../static/js/core/config.js', () => ({
   CONFIG: {
+    site: {
+      social: {
+        github: {
+          url: 'https://github.com/Nooshu/FractalAI',
+          label: 'Contribute',
+          rel: 'noopener noreferrer',
+        },
+        mastodon: {
+          url: 'https://hachyderm.io/@TheRealNooshu',
+          label: 'Mastodon',
+          rel: 'me noopener noreferrer',
+        },
+        bluesky: {
+          url: 'https://bsky.app/profile/therealnooshu.bsky.social',
+          label: 'Bluesky',
+          rel: 'noopener noreferrer',
+        },
+      },
+    },
     workers: {
       enabled: false,
       minCores: 2,

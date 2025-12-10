@@ -8,9 +8,6 @@ import {
 
 import {
   isValidInterestingView,
-  removeDuplicatePoints,
-  generateRandomInterestingPoint,
-  getRandomInterestingView,
 } from '../../static/js/fractals/random-view.js';
 
 import {
@@ -53,43 +50,8 @@ describe('random-view module', () => {
     canvas = { width: 800, height: 600 };
   });
 
-  it('removeDuplicatePoints replaces duplicates', () => {
-    const points = [
-      { x: 0, y: 0, zoom: 1 },
-      { x: 0, y: 0, zoom: 1 },
-    ];
-    const gen = vi.fn(() => ({ x: 1, y: 1, zoom: 2 }));
-    const result = removeDuplicatePoints(points, 'mandelbrot', gen);
-    expect(result.length).toBe(2);
-    expect(gen).toHaveBeenCalled();
-  });
-
-  it('generateRandomInterestingPoint returns a point', () => {
-    const pt = generateRandomInterestingPoint('mandelbrot', new Set());
-    expect(typeof pt.x).toBe('number');
-    expect(typeof pt.y).toBe('number');
-    expect(typeof pt.zoom).toBe('number');
-  });
-
-  it('getRandomInterestingView returns a view object', () => {
-    const getters = {
-      getCurrentFractalType: () => 'mandelbrot',
-      getCurrentFractalModule: () => ({ config: { interestingPoints: [{ x: 0, y: 0, zoom: 1 }] } }),
-      getParams: () => ({
-        iterations: 125,
-        zoom: 1,
-        offset: { x: 0, y: 0 },
-        xScale: 1,
-        yScale: 1,
-        juliaC: { x: 0, y: 0 },
-        colorScheme: 'classic',
-      }),
-      getCanvas: () => canvas,
-    };
-    const view = getRandomInterestingView(getters);
-    expect(view).toHaveProperty('offset');
-    expect(view).toHaveProperty('zoom');
-  });
+  // Note: removeDuplicatePoints, generateRandomInterestingPoint, and getRandomInterestingView
+  // have been removed/deprecated in favor of ML-based discovery
 
   it('isValidInterestingView returns boolean', () => {
     const valid = isValidInterestingView(
