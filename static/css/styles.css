@@ -109,6 +109,7 @@ body {
 /* Side Panel */
 .side-panel {
   width: var(--panel-width);
+  height: 100%;
   background: var(--bg-panel);
   display: flex;
   flex-direction: column;
@@ -164,7 +165,9 @@ body {
 
 .panel-content {
   flex: 1;
-  overflow: hidden auto;
+  min-height: 0; /* Important for flex children to allow shrinking and scrolling */
+  overflow-y: auto;
+  overflow-x: hidden;
   padding: 8px 0;
   padding-bottom: var(--footer-height, 120px); /* Dynamically matches footer height */
 }
@@ -215,6 +218,14 @@ body {
 .section {
   margin: 0;
   border-bottom: 1px solid var(--border-color);
+  display: grid;
+  grid-template-rows: auto 0fr;
+  transition: grid-template-rows 0.3s ease;
+  overflow: hidden;
+}
+
+.section:has(.section-content.active) {
+  grid-template-rows: auto 1fr;
 }
 
 .section-header {
@@ -277,19 +288,15 @@ body {
 }
 
 .section-content {
-  max-height: 0;
+  min-height: 0; /* Important: allows grid item to shrink below content size */
   overflow: hidden;
-  transition:
-    max-height 0.3s ease,
-    padding 0.3s ease;
+  transition: padding 0.3s ease;
   padding: 0 20px;
-  will-change: max-height;
-  contain: layout style;
 }
 
 .section-content.active {
-  max-height: 2000px; /* Much larger to accommodate any content */
   padding: 16px 20px;
+  overflow: visible; /* Allow content to be fully visible, parent panel-content handles scrolling */
 }
 
 /* Right panel section content should not clip - parent handles scrolling */
@@ -957,7 +964,7 @@ body {
   color: var(--text-secondary);
   margin-top: 6px;
   line-height: 1.4;
-  padding-left: 18px;
+  padding-left: 0;
 }
 
 /* Navigation list */
