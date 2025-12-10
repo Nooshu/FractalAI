@@ -924,8 +924,6 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
     const originalStyleWidth = canvas.style.width;
     const originalStyleHeight = canvas.style.height;
     
-    console.log('[Screenshot] Original canvas dimensions:', originalWidth, 'x', originalHeight);
-    
     const drawFractal = getDrawFractal();
     const currentFractalType = getCurrentFractalType();
     const regl = getRegl();
@@ -956,7 +954,6 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
 
         // Check WebGL max viewport dimensions
         const maxViewportDims = regl._gl.getParameter(regl._gl.MAX_VIEWPORT_DIMS);
-        console.log('[High-Res Export] WebGL max viewport:', maxViewportDims[0], 'x', maxViewportDims[1]);
         
         // Clamp dimensions to WebGL limits
         let finalTargetWidth = targetWidth;
@@ -965,35 +962,23 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
           const scale = Math.min(maxViewportDims[0] / finalTargetWidth, maxViewportDims[1] / finalTargetHeight);
           finalTargetWidth = Math.floor(finalTargetWidth * scale);
           finalTargetHeight = Math.floor(finalTargetHeight * scale);
-          console.warn(`[High-Res Export] Dimensions clamped to WebGL limits: ${finalTargetWidth}x${finalTargetHeight}`);
         }
         
-        console.log(`[High-Res Export] Rendering ${exportResolution.toUpperCase()} at ${finalTargetWidth}x${finalTargetHeight} (aspect ratio: ${currentAspectRatio.toFixed(3)})`);
-        
         try {
-          console.log('[High-Res Export] Forcing fractal reload at high resolution');
           
           // Temporarily resize the canvas internal dimensions
           // Don't change CSS style to avoid triggering device pixel ratio calculations
           canvas.width = finalTargetWidth;
           canvas.height = finalTargetHeight;
           
-          console.log('[High-Res Export] Canvas resized to:', canvas.width, 'x', canvas.height);
-          console.log('[High-Res Export] Canvas style (unchanged):', canvas.style.width, 'x', canvas.style.height);
-          
           // Manually set the WebGL viewport to match canvas internal dimensions
           // (Don't use regl.poll() as it applies device pixel ratio to CSS dimensions)
           regl._gl.viewport(0, 0, finalTargetWidth, finalTargetHeight);
-          
-          const viewportCheck = regl._gl.getParameter(regl._gl.VIEWPORT);
-          console.log('[High-Res Export] WebGL viewport manually set to:', viewportCheck[0], viewportCheck[1], viewportCheck[2], viewportCheck[3]);
           
           // DON'T reload the fractal - instead, create a NEW draw command directly
           const fractalModule = getCurrentFractalModule();
           const webglCapabilities = getWebGLCapabilities?.() || null;
           const ubo = getFractalParamsUBO?.() || null;
-          
-          console.log('[High-Res Export] Creating fresh draw command with resized canvas...');
           
           let highResDrawFractal;
           if (fractalModule.render.length >= 4 || (webglCapabilities?.isWebGL2 && ubo)) {
@@ -1004,13 +989,6 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
           } else {
             highResDrawFractal = fractalModule.render(regl, params, canvas);
           }
-          
-          console.log('[High-Res Export] Draw command created, canvas is:', canvas.width, 'x', canvas.height);
-          
-          const viewportBefore = regl._gl.getParameter(regl._gl.VIEWPORT);
-          console.log('[High-Res Export] Canvas before render:', canvas.width, 'x', canvas.height);
-          console.log('[High-Res Export] Viewport before render:', viewportBefore[0], viewportBefore[1], viewportBefore[2], viewportBefore[3]);
-          console.log('[High-Res Export] Draw function available:', !!highResDrawFractal);
           
           if (highResDrawFractal) {
             // Render directly without using the rendering engine
@@ -1032,7 +1010,6 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
             
             // Verify viewport is still correct after draw
             const viewportAfterDraw = gl.getParameter(gl.VIEWPORT);
-            console.log('[High-Res Export] Viewport immediately after draw:', viewportAfterDraw[0], viewportAfterDraw[1], viewportAfterDraw[2], viewportAfterDraw[3]);
             
             // Sample edge pixels to verify rendering at full resolution
             const bottomRightPixel = new Uint8Array(4);
@@ -1043,15 +1020,8 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
             gl.readPixels(10, 10, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, topLeftPixel);
             
             const viewportAfter = gl.getParameter(gl.VIEWPORT);
-            console.log('[High-Res Export] Direct render complete');
-            console.log('[High-Res Export] Canvas after render:', canvas.width, 'x', canvas.height);
-            console.log('[High-Res Export] Viewport after render:', viewportAfter[0], viewportAfter[1], viewportAfter[2], viewportAfter[3]);
-            console.log('[High-Res Export] Top-left pixel (10,10):', topLeftPixel[0], topLeftPixel[1], topLeftPixel[2], topLeftPixel[3]);
-            console.log('[High-Res Export] Center pixel:', centerPixel[0], centerPixel[1], centerPixel[2], centerPixel[3]);
-            console.log('[High-Res Export] Bottom-right pixel (near edge):', bottomRightPixel[0], bottomRightPixel[1], bottomRightPixel[2], bottomRightPixel[3]);
           }
           
-          console.log('[High-Res Export] High-res render complete');
 
           // Wait for rendering to complete
           await new Promise((resolve) => {
@@ -1060,7 +1030,6 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
                 if (regl._gl) {
                   regl._gl.finish();
                 }
-                console.log('[High-Res Export] Rendering complete');
                 resolve();
               });
             });
@@ -1077,16 +1046,11 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
             // Draw the WebGL canvas onto the 2D canvas at exact dimensions
             ctx.drawImage(canvas, 0, 0, canvas.width, canvas.height);
             
-            console.log('[High-Res Export] Canvas dimensions match:', canvas.width === exportCanvas2D.width && canvas.height === exportCanvas2D.height);
-            
             exportCanvas = exportCanvas2D;
-            console.log('[High-Res Export] Canvas copied via drawImage');
           } else {
             exportCanvas = canvas;
-            console.log('[High-Res Export] Using WebGL canvas directly');
           }
           
-          console.log('[High-Res Export] Canvas ready for export at', exportCanvas.width, 'x', exportCanvas.height);
         } catch (error) {
           console.error('[High-Res Export] Error:', error);
           alert('Failed to render high-resolution image. Please try again.');
@@ -1177,8 +1141,6 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
             canvas.style.width = originalStyleWidth;
             canvas.style.height = originalStyleHeight;
             
-            console.log('[High-Res Export] Canvas restored to original size after export');
-            
             // Reload fractal at original size to recreate draw command with correct dimensions
             await callbacks.loadFractal(currentFractalType);
             
@@ -1187,8 +1149,6 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
             if (renderingEngine) {
               await renderingEngine.renderFractal();
             }
-            
-            console.log('[High-Res Export] Display restored');
           }
         },
         'image/png',
