@@ -26,12 +26,74 @@ export default defineConfig({
     minify: 'esbuild', // Use esbuild for faster minification
     cssMinify: true, // Minify CSS
     reportCompressedSize: false, // Skip compressed size reporting for faster builds
+    chunkSizeWarningLimit: 1200, // Increase limit to 1.2MB (TensorFlow.js is ~1MB but lazy-loaded, so initial load is unaffected)
     rollupOptions: {
       output: {
         manualChunks(id) {
           // Put TensorFlow.js in its own chunk for lazy loading
           if (id.includes('@tensorflow/tfjs')) {
             return 'tensorflow';
+          }
+          
+          // Vendor dependencies - separate large libraries
+          if (id.includes('node_modules')) {
+            // Regl is a large library, put it in its own chunk
+            if (id.includes('regl')) {
+              return 'vendor-regl';
+            }
+            // piexifjs for EXIF handling
+            if (id.includes('piexifjs') || id.includes('piexif')) {
+              return 'vendor-piexif';
+            }
+            // All other node_modules go into a vendor chunk
+            return 'vendor';
+          }
+          
+          // Core rendering modules - separate heavy rendering code
+          if (id.includes('/rendering/')) {
+            // Engine is the core rendering orchestrator
+            if (id.includes('/rendering/engine.js')) {
+              return 'core-rendering';
+            }
+            // Canvas renderer setup
+            if (id.includes('/rendering/canvas-renderer.js')) {
+              return 'core-rendering';
+            }
+            // WebGPU renderer
+            if (id.includes('/rendering/webgpu-renderer.js')) {
+              return 'core-rendering';
+            }
+            // Other rendering utilities can stay together
+            return 'rendering-utils';
+          }
+          
+          // Discovery/ML modules - separate ML code
+          if (id.includes('/discovery/')) {
+            return 'discovery';
+          }
+          
+          // UI modules - separate UI code
+          if (id.includes('/ui/')) {
+            // Controls is the largest UI module
+            if (id.includes('/ui/controls.js')) {
+              return 'ui-controls';
+            }
+            // Other UI modules
+            return 'ui';
+          }
+          
+          // Core application state and initialization
+          if (id.includes('/core/')) {
+            // App state is large
+            if (id.includes('/core/app-state.js')) {
+              return 'core-state';
+            }
+            // Initialization is large
+            if (id.includes('/core/initialization.js')) {
+              return 'core-init';
+            }
+            // Other core modules
+            return 'core';
           }
           // Helper function to check if a fractal belongs to a family
           const isFamilyFractal = (familyName, fractalNames) => {
