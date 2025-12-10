@@ -10,7 +10,7 @@
   },
   "scripts": {
     "dev": "node scripts/generate-presets-manifest.js && vite",
-    "build": "node scripts/generate-presets-manifest.js && npx vite build && node scripts/compress-brotli.js",
+    "build": "node scripts/generate-presets-manifest.js && NODE_ENV=production npx vite build && NODE_ENV=production node scripts/compress-brotli.js",
     "build:prod": "NODE_ENV=production node scripts/generate-presets-manifest.js && vite build && node scripts/compress-brotli.js",
     "preview": "vite preview",
     "generate-manifest": "node scripts/generate-presets-manifest.js",
