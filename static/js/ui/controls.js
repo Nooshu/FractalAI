@@ -863,7 +863,7 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
         }
       }
 
-      // Reset juliaC from config if specified
+      // Reset juliaC from config if specified, or use default for Julia sets
       if (settings.juliaC !== undefined) {
         params.juliaC.x = settings.juliaC.x;
         params.juliaC.y = settings.juliaC.y;
@@ -871,6 +871,14 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
         if (juliaCImag) juliaCImag.value = settings.juliaC.y;
         if (juliaCRealValue) juliaCRealValue.textContent = settings.juliaC.x.toFixed(4);
         if (juliaCImagValue) juliaCImagValue.textContent = settings.juliaC.y.toFixed(4);
+      } else if (isJuliaType(currentFractalType)) {
+        // Reset to default Julia C parameters if not specified in config
+        params.juliaC.x = CONFIG.julia.defaultC.x;
+        params.juliaC.y = CONFIG.julia.defaultC.y;
+        if (juliaCReal) juliaCReal.value = CONFIG.julia.defaultC.x;
+        if (juliaCImag) juliaCImag.value = CONFIG.julia.defaultC.y;
+        if (juliaCRealValue) juliaCRealValue.textContent = CONFIG.julia.defaultC.x.toFixed(4);
+        if (juliaCImagValue) juliaCImagValue.textContent = CONFIG.julia.defaultC.y.toFixed(4);
       }
 
       // Reset iterations from config if specified
@@ -916,14 +924,14 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
   // Shared screenshot function to avoid code duplication
   const captureScreenshot = async (event) => {
     const canvas = getCanvas();
-    
+
     // IMPORTANT: Save original canvas dimensions FIRST, before any other operations
     // This ensures we capture the actual viewing dimensions, not fullscreen dimensions
     const originalWidth = canvas.width;
     const originalHeight = canvas.height;
     const originalStyleWidth = canvas.style.width;
     const originalStyleHeight = canvas.style.height;
-    
+
     const drawFractal = getDrawFractal();
     const currentFractalType = getCurrentFractalType();
     const regl = getRegl();
@@ -946,7 +954,7 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
       if (exportResolution === '4k') {
         // Calculate aspect ratio from current canvas to maintain fractal proportions
         const currentAspectRatio = originalWidth / originalHeight;
-        
+
         // 4K: aim for ~8 megapixels (3840×2160 = 8.3MP)
         // Use 3840 as base width and calculate height to maintain aspect ratio
         const targetWidth = 3840;
@@ -954,7 +962,7 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
 
         // Check WebGL max viewport dimensions
         const maxViewportDims = regl._gl.getParameter(regl._gl.MAX_VIEWPORT_DIMS);
-        
+
         // Clamp dimensions to WebGL limits
         let finalTargetWidth = targetWidth;
         let finalTargetHeight = targetHeight;
@@ -963,23 +971,23 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
           finalTargetWidth = Math.floor(finalTargetWidth * scale);
           finalTargetHeight = Math.floor(finalTargetHeight * scale);
         }
-        
+
         try {
-          
+
           // Temporarily resize the canvas internal dimensions
           // Don't change CSS style to avoid triggering device pixel ratio calculations
           canvas.width = finalTargetWidth;
           canvas.height = finalTargetHeight;
-          
+
           // Manually set the WebGL viewport to match canvas internal dimensions
           // (Don't use regl.poll() as it applies device pixel ratio to CSS dimensions)
           regl._gl.viewport(0, 0, finalTargetWidth, finalTargetHeight);
-          
+
           // DON'T reload the fractal - instead, create a NEW draw command directly
           const fractalModule = getCurrentFractalModule();
           const webglCapabilities = getWebGLCapabilities?.() || null;
           const ubo = getFractalParamsUBO?.() || null;
-          
+
           let highResDrawFractal;
           if (fractalModule.render.length >= 4 || (webglCapabilities?.isWebGL2 && ubo)) {
             highResDrawFractal = fractalModule.render(regl, params, canvas, {
@@ -989,28 +997,28 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
           } else {
             highResDrawFractal = fractalModule.render(regl, params, canvas);
           }
-          
+
           if (highResDrawFractal) {
             // Render directly without using the rendering engine
             regl.clear({
               color: [0, 0, 0, 1],
               depth: 1,
             });
-            
+
             // Force viewport one more time and wrap draw in explicit viewport context
             const gl = regl._gl;
             gl.viewport(0, 0, finalTargetWidth, finalTargetHeight);
-            
+
             // Execute draw with explicit viewport override
             regl({
               viewport: { x: 0, y: 0, width: finalTargetWidth, height: finalTargetHeight }
             })(() => {
               highResDrawFractal();
             });
-            
+
             // Verify viewport is still correct after draw
             const _viewportAfterDraw = gl.getParameter(gl.VIEWPORT);
-            
+
             // Sample edge pixels to verify rendering at full resolution
             const bottomRightPixel = new Uint8Array(4);
             const centerPixel = new Uint8Array(4);
@@ -1018,10 +1026,10 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
             gl.readPixels(finalTargetWidth - 10, finalTargetHeight - 10, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, bottomRightPixel);
             gl.readPixels(Math.floor(finalTargetWidth / 2), Math.floor(finalTargetHeight / 2), 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, centerPixel);
             gl.readPixels(10, 10, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, topLeftPixel);
-            
+
             const _viewportAfter = gl.getParameter(gl.VIEWPORT);
           }
-          
+
 
           // Wait for rendering to complete
           await new Promise((resolve) => {
@@ -1041,22 +1049,22 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
           exportCanvas2D.width = canvas.width; // Use actual canvas dimensions
           exportCanvas2D.height = canvas.height;
           const ctx = exportCanvas2D.getContext('2d');
-          
+
           if (ctx) {
             // Draw the WebGL canvas onto the 2D canvas at exact dimensions
             ctx.drawImage(canvas, 0, 0, canvas.width, canvas.height);
-            
+
             exportCanvas = exportCanvas2D;
           } else {
             exportCanvas = canvas;
           }
-          
+
         } catch (error) {
           console.error('[High-Res Export] Error:', error);
           alert('Failed to render high-resolution image. Please try again.');
           button.innerHTML = originalHTML;
           button.disabled = false;
-          
+
           // Restore canvas dimensions (both internal and style if it changed)
           canvas.width = originalWidth;
           canvas.height = originalHeight;
@@ -1067,7 +1075,7 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
           if (canvas.style.height !== originalStyleHeight) {
             canvas.style.height = originalStyleHeight;
           }
-          
+
           // Reload fractal and re-render
           await callbacks.loadFractal(currentFractalType);
           const renderingEngine = callbacks.getRenderingEngine?.();
@@ -1076,7 +1084,7 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
           }
           return;
         }
-        
+
         // DON'T restore canvas size yet - we need to export first!
       } else {
         // Default resolution - ensure we render before capturing
@@ -1138,10 +1146,10 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
             canvas.height = originalHeight;
             canvas.style.width = originalStyleWidth;
             canvas.style.height = originalStyleHeight;
-            
+
             // Reload fractal at original size to recreate draw command with correct dimensions
             await callbacks.loadFractal(currentFractalType);
-            
+
             // Re-render at original size to restore display
             const renderingEngine = callbacks.getRenderingEngine?.();
             if (renderingEngine) {
@@ -1168,7 +1176,7 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
     // Hide button by default, show only if feature flag is enabled
     if (CONFIG.features.webCodecs) {
       videoExportBtn.style.display = '';
-      
+
       const exportVideo = async () => {
 
       // Check if video recording is available (WebCodecs or MediaRecorder)
@@ -1215,7 +1223,7 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
             // Re-render fractal for each frame
             // In a real animation, you might want to change parameters over time
             renderingEngine.renderFractal();
-            
+
             // Wait for render to complete
             await new Promise((resolve) => {
               requestAnimationFrame(() => {
@@ -1403,14 +1411,14 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
   const selectRandomColorScheme = async () => {
     const params = getParams();
     const currentScheme = params.colorScheme;
-    
+
     // Get available schemes (exclude current one to avoid duplicates)
     const availableSchemes = colorSchemes.filter(scheme => scheme !== currentScheme);
-    
+
     // Randomly select from available schemes
     const randomIndex = Math.floor(Math.random() * availableSchemes.length);
     const newScheme = availableSchemes[randomIndex];
-    
+
     // Update the scheme
     params.colorScheme = newScheme;
     currentColorSchemeIndex = colorSchemes.indexOf(newScheme);
@@ -1446,7 +1454,7 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
 
   const startAutoCycle = () => {
     if (autoCycleInterval) return; // Already running
-    
+
     autoCycleInterval = setInterval(() => {
       if (isFullscreen()) {
         selectRandomColorScheme();
@@ -1527,7 +1535,7 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
   const startFadeTimer = () => {
     clearFadeTimer();
     if (!isFullscreen() || !fullscreenControls) return;
-    
+
     fadeTimeout = setTimeout(() => {
       if (isFullscreen() && fullscreenControls) {
         fullscreenControls.classList.add('faded');
@@ -1544,10 +1552,10 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
 
   const handleMouseMove = () => {
     if (!isFullscreen() || !fullscreenControls) return;
-    
+
     // Fade in UI on mouse movement
     fullscreenControls.classList.remove('faded');
-    
+
     // Restart fade timer
     startFadeTimer();
   };
