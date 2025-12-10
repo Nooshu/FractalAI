@@ -124,12 +124,23 @@ export function detectWebGLCapabilities(gl) {
     loseContext: !!extensions['WEBGL_lose_context'],
   };
 
+  // Get renderer info using standard RENDERER parameter (not deprecated WEBGL_debug_renderer_info)
+  // Note: The regl library may still use WEBGL_debug_renderer_info internally, which will show
+  // deprecation warnings in Firefox. This is a known issue with regl and will be fixed in future versions.
+  const rendererInfo = {
+    renderer: getParam(gl.RENDERER, 'Unknown'),
+    vendor: getParam(gl.VENDOR, 'Unknown'),
+    version: getParam(gl.VERSION, 'Unknown'),
+    shadingLanguageVersion: getParam(gl.SHADING_LANGUAGE_VERSION, 'Unknown'),
+  };
+
   return {
     version,
     isWebGL2,
     extensions,
     limits,
     features,
+    rendererInfo,
     gl,
   };
 }

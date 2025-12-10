@@ -2021,8 +2021,9 @@
 
         if (!isLocalhost) {
           window.addEventListener('load', () => {
+            // Add error handling for service worker registration
             navigator.serviceWorker
-              .register('/sw.js')
+              .register('/sw.js', { scope: '/' })
               .then((registration) => {
                 console.log('[Service Worker] Registered:', registration.scope);
 
@@ -2052,6 +2053,13 @@
               })
               .catch((error) => {
                 console.error('[Service Worker] Registration failed:', error);
+                // Provide more detailed error information
+                if (error.message) {
+                  console.error('[Service Worker] Error details:', error.message);
+                }
+                if (error.stack) {
+                  console.error('[Service Worker] Stack trace:', error.stack);
+                }
               });
           });
         } else {

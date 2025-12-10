@@ -379,7 +379,8 @@ export default defineConfig({
           swContent = swContent.replace(/\{\{CACHE_VERSION\}\}/g, cacheVersion);
 
           // Inject asset manifest as JSON array
-          const manifestJson = JSON.stringify(assetManifest, null, 2);
+          // Ensure the manifest is valid JSON and escape any special characters
+          const manifestJson = JSON.stringify(assetManifest);
           swContent = swContent.replace(/\{\{ASSET_MANIFEST\}\}/g, manifestJson);
 
           writeFileSync(swDest, swContent);
