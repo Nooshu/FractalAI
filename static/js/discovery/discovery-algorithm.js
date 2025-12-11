@@ -3,7 +3,7 @@
  * Uses heuristics for fast initial screening and Synaptic.js for ML-based scoring
  */
 
-import { isJuliaType } from '../fractals/utils.js';
+import { isJuliaType, getInterestingBounds } from '../fractals/utils.js';
 
 /**
  * Extract features from a fractal configuration for ML scoring
@@ -202,29 +202,40 @@ async function getAvailableColorSchemes() {
  * Generate candidate configurations for discovery
  * @param {string} fractalType - Type of fractal
  * @param {Object} options - Generation options
+ * @param {Object} fractalModule - Loaded fractal module (optional)
  * @returns {Promise<Array<Object>>} Array of candidate configurations
  */
-export async function generateCandidates(fractalType, options = {}) {
+export async function generateCandidates(fractalType, options = {}, fractalModule = null) {
   const {
     count = 100,
-    zoomRange = [0.5, 100],
-    offsetRange = [-2, 2],
+    zoomRange = null, // null means use interesting bounds
+    offsetRange = null, // null means use interesting bounds
     iterations = 125,
     colorScheme = null, // null means random selection
     includeColorScheme = true, // Whether to vary color schemes
   } = options;
+
+  // Get interesting bounds for this fractal type
+  const bounds = await getInterestingBounds(fractalType, fractalModule);
+
+  // Use interesting bounds if ranges not explicitly provided
+  const effectiveZoomRange = zoomRange || bounds.zoom;
+  const effectiveOffsetRange = offsetRange || [
+    Math.min(bounds.offsetX[0], bounds.offsetY[0]),
+    Math.max(bounds.offsetX[1], bounds.offsetY[1])
+  ];
 
   const candidates = [];
   const availableSchemes = await getAvailableColorSchemes();
 
   for (let i = 0; i < count; i++) {
     const zoom =
-      zoomRange[0] +
-      Math.random() * (zoomRange[1] - zoomRange[0]);
+      effectiveZoomRange[0] +
+      Math.random() * (effectiveZoomRange[1] - effectiveZoomRange[0]);
     const offsetX =
-      offsetRange[0] + Math.random() * (offsetRange[1] - offsetRange[0]);
+      bounds.offsetX[0] + Math.random() * (bounds.offsetX[1] - bounds.offsetX[0]);
     const offsetY =
-      offsetRange[0] + Math.random() * (offsetRange[1] - offsetRange[0]);
+      bounds.offsetY[0] + Math.random() * (bounds.offsetY[1] - bounds.offsetY[0]);
 
     // Randomly select color scheme if not specified or if includeColorScheme is true
     const selectedColorScheme = includeColorScheme && colorScheme === null
@@ -232,12 +243,12 @@ export async function generateCandidates(fractalType, options = {}) {
       : (colorScheme || 'classic');
 
     // Generate Julia C parameters for Julia set fractals
-    // Use random values in the interesting range (-2 to 2) for variety
+    // Use interesting bounds if available
     let juliaCX = 0;
     let juliaCY = 0;
     if (isJuliaType(fractalType)) {
-      juliaCX = -2 + Math.random() * 4;
-      juliaCY = -2 + Math.random() * 4;
+      juliaCX = bounds.juliaCX[0] + Math.random() * (bounds.juliaCX[1] - bounds.juliaCX[0]);
+      juliaCY = bounds.juliaCY[0] + Math.random() * (bounds.juliaCY[1] - bounds.juliaCY[0]);
     }
 
     candidates.push({
@@ -263,13 +274,15 @@ export async function generateCandidates(fractalType, options = {}) {
  * @param {Function} isValidInterestingView - Validation function
  * @param {Object} model - Trained Synaptic.js neural network
  * @param {Object} options - Discovery options
+ * @param {Object} fractalModule - Loaded fractal module (optional)
  * @returns {Promise<Array<Object>>} Array of discovered configurations sorted by score
  */
 export async function discoverInterestingFractals(
   fractalType,
   isValidInterestingView,
   model,
-  options = {}
+  options = {},
+  fractalModule = null
 ) {
   const {
     candidateCount = 100,
@@ -277,11 +290,11 @@ export async function discoverInterestingFractals(
     minScore = 0.5,
   } = options;
 
-  // Generate candidates
+  // Generate candidates using interesting bounds
   const candidates = await generateCandidates(fractalType, {
     count: candidateCount,
     ...options,
-  });
+  }, fractalModule);
 
   // Score all candidates
   const scored = await Promise.all(

@@ -171,5 +171,12 @@ export const config = {
   fallbackPosition: {
     offset: { x: -0.5, y: -0.6 },
     zoom: 1.2
-}
+},
+  // Interesting bounds for "surprise me" - constrains to areas with fractal structure
+  // Burning Ship has interesting features concentrated in the negative quadrant
+  interestingBounds: {
+    offsetX: [-2.5, 0.5],   // Main interesting area is in negative X
+    offsetY: [-2.5, 0.5],   // Main interesting area is in negative Y
+    zoom: [0.5, 100],       // From overview to deep zooms
+  }
 };

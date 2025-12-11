@@ -20,7 +20,7 @@ const vertexBufferCache = new Map();
 export function getFullScreenQuadBuffer(regl) {
   // Use regl context as cache key (each regl instance should have its own buffer)
   const cacheKey = regl._gl || regl;
-  
+
   if (vertexBufferCache.has(cacheKey)) {
     return vertexBufferCache.get(cacheKey);
   }
@@ -29,7 +29,7 @@ export function getFullScreenQuadBuffer(regl) {
   // Vertices: [-1, -1, 1, -1, -1, 1, 1, 1] forms a triangle strip covering the entire screen
   const quadBuffer = regl.buffer([-1, -1, 1, -1, -1, 1, 1, 1]);
   vertexBufferCache.set(cacheKey, quadBuffer);
-  
+
   return quadBuffer;
 }
 
@@ -438,7 +438,7 @@ export function computeColorForScheme(t, schemeIndexOrName, out = null) {
       // prism - Inverted prism (dark base with bright complementary colors)
       // Prism: inverted rainbow - uses complementary colors with inverted brightness
       const hue = ((t * 360 * 1.5 + 180) % 360) / 360; // Shift 180 degrees for complementary colors
-      
+
       // Calculate complementary colors
       const r = 0.5 + 0.5 * Math.cos(hue * 6.28 + 0.0);
       const g = 0.5 + 0.5 * Math.cos(hue * 6.28 + 2.09);
@@ -533,13 +533,13 @@ export function generatePaletteTexture(regl, colorScheme) {
     // Create texture using raw WebGL2 API for immutable storage
     const webglTexture = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, webglTexture);
-    
+
     // Allocate immutable storage (texStorage2D instead of texImage2D)
     gl.texStorage2D(gl.TEXTURE_2D, 1, gl.RGBA8, PALETTE_SIZE, 1);
-    
+
     // Upload texture data
     gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, PALETTE_SIZE, 1, gl.RGBA, gl.UNSIGNED_BYTE, paletteData);
-    
+
     // Set texture parameters
     // Use linear filtering for smooth color gradients in palette textures
     // The overhead is minimal for 1D textures (512x1), and the visual quality benefit is significant
@@ -547,9 +547,9 @@ export function generatePaletteTexture(regl, colorScheme) {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    
+
     gl.bindTexture(gl.TEXTURE_2D, null);
-    
+
     // Wrap the WebGL texture in a regl texture object
     texture = regl.texture({
       texture: webglTexture,
@@ -701,6 +701,89 @@ export function isJuliaType(fractalType) {
 }
 
 /**
+ * Get interesting bounds for a fractal type
+ * Returns bounds that constrain parameters to interesting areas of the fractal
+ * @param {string} fractalType - Type of fractal
+ * @param {Object} fractalModule - Loaded fractal module (optional, will be loaded if not provided)
+ * @returns {Promise<Object>} Bounds object with offsetX, offsetY, zoom, juliaCX, juliaCY ranges
+ */
+export async function getInterestingBounds(fractalType, fractalModule = null) {
+  // If module not provided, try to get it from cache
+  if (!fractalModule) {
+    try {
+      // Try to import the fractal loader to access cached modules
+      const { fractalLoader } = await import('./loader.js');
+      if (fractalLoader.isCached(fractalType)) {
+        // Load the fractal to get the module (loader handles caching)
+        fractalModule = await fractalLoader.loadFractal(fractalType);
+      }
+    } catch (error) {
+      // If we can't load, continue with defaults
+      // console.warn(`Could not load fractal module for ${fractalType}, using defaults`);
+    }
+  }
+
+  // Check if fractal module has interesting bounds defined
+  if (fractalModule?.config?.interestingBounds) {
+    return fractalModule.config.interestingBounds;
+  }
+
+  // Default bounds for escape-time fractals (Mandelbrot-like)
+  // These are conservative bounds that should work for most fractals
+  const defaultBounds = {
+    offsetX: [-2.5, 2.5],
+    offsetY: [-2.5, 2.5],
+    zoom: [0.5, 100],
+    juliaCX: [-2, 2],
+    juliaCY: [-2, 2],
+  };
+
+  // Fractal-specific defaults based on known interesting areas
+  // These are fallbacks if the fractal doesn't define its own bounds
+  const fractalDefaults = {
+    mandelbrot: {
+      offsetX: [-2.5, 1.5],
+      offsetY: [-2, 2],
+      zoom: [0.5, 100],
+    },
+    'burning-ship': {
+      offsetX: [-2.5, 0.5],
+      offsetY: [-2.5, 0.5],
+      zoom: [0.5, 100],
+    },
+    tricorn: {
+      offsetX: [-2, 2],
+      offsetY: [-2, 2],
+      zoom: [0.5, 100],
+    },
+    buffalo: {
+      offsetX: [-2.5, 1.5],
+      offsetY: [-2, 2],
+      zoom: [0.5, 100],
+    },
+    multibrot: {
+      offsetX: [-2.5, 2.5],
+      offsetY: [-2.5, 2.5],
+      zoom: [0.5, 100],
+    },
+    julia: {
+      offsetX: [-2, 2],
+      offsetY: [-2, 2],
+      zoom: [0.5, 100],
+      juliaCX: [-1, 1],
+      juliaCY: [-1, 1],
+    },
+  };
+
+  // Return fractal-specific defaults if available, otherwise use general defaults
+  const bounds = fractalDefaults[fractalType] || defaultBounds;
+  return {
+    ...defaultBounds,
+    ...bounds,
+  };
+}
+
+/**
  * Creates a standard regl draw command for 2D shader-based fractals
  * Reduces code duplication across fractal files
  * @param {Object} regl - The regl context
@@ -824,7 +907,7 @@ export function getVertexShader(useUBO = false) {
         gl_Position = vec4(position, 0, 1);
     }`;
   }
-  
+
   // WebGL1 version (default)
   return `
     attribute vec2 position;
@@ -879,7 +962,7 @@ export function generateUnrolledLoop(count, iterationFn) {
 export function generateAdaptiveUnrolledLoop(maxIterations, iterationFn, unrollCount = 8) {
   // Unroll first N iterations (common case optimization)
   const unrolled = generateUnrolledLoop(unrollCount, iterationFn);
-  
+
   // Continue with regular loop for remaining iterations
   const loopCode = `
     for (int i = ${unrollCount}; i < 200; i++) {
@@ -887,7 +970,7 @@ export function generateAdaptiveUnrolledLoop(maxIterations, iterationFn, unrollC
       ${iterationFn('i')}
     }
   `;
-  
+
   return unrolled + loopCode;
 }
 
@@ -902,7 +985,7 @@ export function createFragmentShader(fractalFunction, useUBO = false, precision 
   // Use highp for critical calculations, lowp for colors/textures
   const calcPrecision = precision === 'highp' ? 'highp' : precision === 'lowp' ? 'lowp' : 'mediump';
   const colorPrecision = 'lowp'; // Colors don't need high precision
-  
+
   // WebGL2 UBO version
   if (useUBO) {
     return `#version 300 es
@@ -910,7 +993,7 @@ export function createFragmentShader(fractalFunction, useUBO = false, precision 
     precision ${calcPrecision} float; // For fractal calculations
     precision ${colorPrecision} sampler2D; // For texture lookups
     #endif
-    
+
     layout(std140) uniform FractalParams {
       float uIterations;
       float uZoom;
@@ -918,55 +1001,55 @@ export function createFragmentShader(fractalFunction, useUBO = false, precision 
       vec2 uJuliaC;
       vec2 uScale; // xScale, yScale
     };
-    
+
     // Provide aliases for compatibility with fractal functions
     #define uXScale uScale.x
     #define uYScale uScale.y
-    
+
     uniform float uTime;
     uniform vec2 uResolution;
     uniform sampler2D uPalette;
-    
+
     in vec2 vUv;
     out vec4 fragColor;
-    
+
     // Precomputed constants for better performance
     const float LOG2 = 0.6931471805599453; // log(2.0)
     const float INV_LOG2 = 1.4426950408889634; // 1.0 / log(2.0)
     const float ESCAPE_RADIUS_SQ = 4.0; // Escape radius squared (2.0^2)
     const float ESCAPE_RADIUS_SQ_EARLY = 2.0; // Early exit threshold for faster bailout
-    
+
     ${fractalFunction}
-    
+
     void main() {
         vec2 uv = vUv;
-        
+
         // Precompute aspect ratio and scale once
         float aspect = uResolution.x / uResolution.y;
         float scale = 4.0 / uZoom;
-        
+
         // Optimize coordinate calculation using vector operations
         vec2 uvCentered = uv - 0.5;
         vec2 c = vec2(
             uvCentered.x * scale * aspect * uScale.x + uOffset.x,
             uvCentered.y * scale * uScale.y + uOffset.y
         );
-        
+
         float iterations = computeFractal(c);
-        
+
         // Normalized iteration value for color lookup
         // Use multiplication instead of division where possible
         float invIterations = 1.0 / uIterations;
         float t = clamp(iterations * invIterations, 0.0, 1.0);
-        
+
         // Texture-based palette lookup (much faster than computed colors)
         // Use lowp precision for color operations (faster, sufficient precision)
         ${colorPrecision} vec3 color = texture(uPalette, vec2(t, 0.5)).rgb;
-        
+
         // Points in the set are black - use step() to avoid branch
         float isInSet = step(uIterations, iterations);
         color = mix(color, vec3(0.0), isInSet);
-        
+
         fragColor = vec4(color, 1.0);
     }`;
   }
@@ -977,7 +1060,7 @@ export function createFragmentShader(fractalFunction, useUBO = false, precision 
     precision ${calcPrecision} float; // For fractal calculations
     precision ${colorPrecision} sampler2D; // For texture lookups
     #endif
-    
+
     uniform float uTime;
     uniform float uIterations;
     uniform float uZoom;
@@ -987,46 +1070,46 @@ export function createFragmentShader(fractalFunction, useUBO = false, precision 
     uniform sampler2D uPalette;
     uniform float uXScale;
     uniform float uYScale;
-    
+
     varying vec2 vUv;
-    
+
     // Precomputed constants for better performance
     const float LOG2 = 0.6931471805599453; // log(2.0)
     const float INV_LOG2 = 1.4426950408889634; // 1.0 / log(2.0)
     const float ESCAPE_RADIUS_SQ = 4.0; // Escape radius squared (2.0^2)
     const float ESCAPE_RADIUS_SQ_EARLY = 2.0; // Early exit threshold for faster bailout
-    
+
     ${fractalFunction}
-    
+
     void main() {
         vec2 uv = vUv;
-        
+
         // Precompute aspect ratio and scale once
         float aspect = uResolution.x / uResolution.y;
         float scale = 4.0 / uZoom;
-        
+
         // Optimize coordinate calculation using vector operations
         vec2 uvCentered = uv - 0.5;
         vec2 c = vec2(
             uvCentered.x * scale * aspect * uXScale + uOffset.x,
             uvCentered.y * scale * uYScale + uOffset.y
         );
-        
+
         float iterations = computeFractal(c);
-        
+
         // Normalized iteration value for color lookup
         // Use multiplication instead of division where possible
         float invIterations = 1.0 / uIterations;
         float t = clamp(iterations * invIterations, 0.0, 1.0);
-        
+
         // Texture-based palette lookup (much faster than computed colors)
         // Use lowp precision for color operations (faster, sufficient precision)
         ${colorPrecision} vec3 color = texture2D(uPalette, vec2(t, 0.5)).rgb;
-        
+
         // Points in the set are black - use step() to avoid branch
         float isInSet = step(uIterations, iterations);
         color = mix(color, vec3(0.0), isInSet);
-        
+
         gl_FragColor = vec4(color, 1.0);
     }
 `;

@@ -9,6 +9,7 @@ import {
 import { initializeModel, shouldRetrainModel, trainModel, saveModel } from './ml-trainer.js';
 import { getFavorites } from './favorites-manager.js';
 import { devLog } from '../core/logger.js';
+import { fractalLoader } from '../fractals/loader.js';
 
 let mlModel = null;
 let isModelInitializing = false;
@@ -26,7 +27,7 @@ export async function initializeDiscovery(_isValidInterestingView) {
   isModelInitializing = true;
   try {
     mlModel = await initializeModel();
-    
+
     // Retrain in background if needed
     if (shouldRetrainModel() && getFavorites().length >= 5) {
       // Retrain asynchronously without blocking
@@ -58,6 +59,19 @@ export async function getSurpriseMeFractal(
   isValidInterestingView,
   options = {}
 ) {
+  // Try to get the fractal module from cache to access interesting bounds
+  let fractalModule = null;
+  try {
+    if (fractalLoader.isCached(fractalType)) {
+      fractalModule = fractalLoader.cache.get(fractalType);
+    } else {
+      // Load the fractal module to get its config
+      fractalModule = await fractalLoader.loadFractal(fractalType);
+    }
+  } catch (error) {
+    console.warn(`Could not load fractal module for ${fractalType}, using default bounds`, error);
+  }
+
   const discoveries = await discoverInterestingFractals(
     fractalType,
     isValidInterestingView,
@@ -68,7 +82,8 @@ export async function getSurpriseMeFractal(
       minScore: options.minScore || 0.4,
       includeColorScheme: true, // Include color scheme variation
       ...options,
-    }
+    },
+    fractalModule
   );
 
   if (discoveries.length > 0) {
@@ -90,6 +105,19 @@ export async function getDiscoveredFractals(
   isValidInterestingView,
   options = {}
 ) {
+  // Try to get the fractal module from cache to access interesting bounds
+  let fractalModule = null;
+  try {
+    if (fractalLoader.isCached(fractalType)) {
+      fractalModule = fractalLoader.cache.get(fractalType);
+    } else {
+      // Load the fractal module to get its config
+      fractalModule = await fractalLoader.loadFractal(fractalType);
+    }
+  } catch (error) {
+    console.warn(`Could not load fractal module for ${fractalType}, using default bounds`, error);
+  }
+
   return await discoverInterestingFractals(
     fractalType,
     isValidInterestingView,
@@ -99,7 +127,8 @@ export async function getDiscoveredFractals(
       topK: options.topK || 10,
       minScore: options.minScore || 0.5,
       ...options,
-    }
+    },
+    fractalModule
   );
 }
 

@@ -9,7 +9,7 @@ const fractalFunction = `
         vec2 z = c;
         float zx2 = 0.0;
         float zy2 = 0.0;
-        
+
         // Unroll first 8 iterations for better performance
         zx2 = z.x * z.x;
         zy2 = z.y * z.y;
@@ -19,7 +19,7 @@ const fractalFunction = `
             return 1.0 - nu;
         }
         z = vec2(zx2 - zy2, 2.0 * z.x * z.y) + uJuliaC;
-        
+
         zx2 = z.x * z.x;
         zy2 = z.y * z.y;
         if (zx2 + zy2 > ESCAPE_RADIUS_SQ) {
@@ -28,7 +28,7 @@ const fractalFunction = `
             return 2.0 - nu;
         }
         z = vec2(zx2 - zy2, 2.0 * z.x * z.y) + uJuliaC;
-        
+
         zx2 = z.x * z.x;
         zy2 = z.y * z.y;
         if (zx2 + zy2 > ESCAPE_RADIUS_SQ) {
@@ -37,7 +37,7 @@ const fractalFunction = `
             return 3.0 - nu;
         }
         z = vec2(zx2 - zy2, 2.0 * z.x * z.y) + uJuliaC;
-        
+
         zx2 = z.x * z.x;
         zy2 = z.y * z.y;
         if (zx2 + zy2 > ESCAPE_RADIUS_SQ) {
@@ -46,7 +46,7 @@ const fractalFunction = `
             return 4.0 - nu;
         }
         z = vec2(zx2 - zy2, 2.0 * z.x * z.y) + uJuliaC;
-        
+
         zx2 = z.x * z.x;
         zy2 = z.y * z.y;
         if (zx2 + zy2 > ESCAPE_RADIUS_SQ) {
@@ -55,7 +55,7 @@ const fractalFunction = `
             return 5.0 - nu;
         }
         z = vec2(zx2 - zy2, 2.0 * z.x * z.y) + uJuliaC;
-        
+
         zx2 = z.x * z.x;
         zy2 = z.y * z.y;
         if (zx2 + zy2 > ESCAPE_RADIUS_SQ) {
@@ -64,7 +64,7 @@ const fractalFunction = `
             return 6.0 - nu;
         }
         z = vec2(zx2 - zy2, 2.0 * z.x * z.y) + uJuliaC;
-        
+
         zx2 = z.x * z.x;
         zy2 = z.y * z.y;
         if (zx2 + zy2 > ESCAPE_RADIUS_SQ) {
@@ -73,7 +73,7 @@ const fractalFunction = `
             return 7.0 - nu;
         }
         z = vec2(zx2 - zy2, 2.0 * z.x * z.y) + uJuliaC;
-        
+
         zx2 = z.x * z.x;
         zy2 = z.y * z.y;
         if (zx2 + zy2 > ESCAPE_RADIUS_SQ) {
@@ -82,11 +82,11 @@ const fractalFunction = `
             return 8.0 - nu;
         }
         z = vec2(zx2 - zy2, 2.0 * z.x * z.y) + uJuliaC;
-        
+
         // Continue with loop for remaining iterations
         for (int i = 8; i < 200; i++) {
             if (i >= int(uIterations)) break;
-            
+
             // Use squared magnitude check (faster than dot product)
             zx2 = z.x * z.x;
             zy2 = z.y * z.y;
@@ -97,7 +97,7 @@ const fractalFunction = `
                 float nu = log(log_zn * INV_LOG2) * INV_LOG2;
                 return float(i) + 1.0 - nu;
             }
-            
+
             // Optimized complex multiplication
             z = vec2(zx2 - zy2, 2.0 * z.x * z.y) + uJuliaC;
         }
@@ -140,5 +140,15 @@ export const config = {
     zoom: 1.5,
     cReal: -0.7269,
     cImag: 0.1889
-}
+},
+  // Interesting bounds for "surprise me" - constrains to areas with fractal structure
+  // Julia sets are typically centered around origin, and interesting C values
+  // are often on or near the boundary of the Mandelbrot set
+  interestingBounds: {
+    offsetX: [-2, 2],       // View centered around origin
+    offsetY: [-2, 2],       // View centered around origin
+    zoom: [0.5, 100],       // From overview to deep zooms
+    juliaCX: [-1, 1],       // Interesting C values are often near the unit circle
+    juliaCY: [-1, 1],       // Interesting C values are often near the unit circle
+  }
 };

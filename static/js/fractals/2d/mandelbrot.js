@@ -9,7 +9,7 @@ const fractalFunction = `
         vec2 z = vec2(0.0);
         float zx2 = 0.0;
         float zy2 = 0.0;
-        
+
         // Unroll first 8 iterations for better performance
         // Iterations 0-7: manual unroll (common case optimization)
         zx2 = z.x * z.x;
@@ -20,7 +20,7 @@ const fractalFunction = `
             return 1.0 - nu;
         }
         z = vec2(zx2 - zy2, 2.0 * z.x * z.y) + c;
-        
+
         zx2 = z.x * z.x;
         zy2 = z.y * z.y;
         if (zx2 + zy2 > ESCAPE_RADIUS_SQ) {
@@ -29,7 +29,7 @@ const fractalFunction = `
             return 2.0 - nu;
         }
         z = vec2(zx2 - zy2, 2.0 * z.x * z.y) + c;
-        
+
         zx2 = z.x * z.x;
         zy2 = z.y * z.y;
         if (zx2 + zy2 > ESCAPE_RADIUS_SQ) {
@@ -38,7 +38,7 @@ const fractalFunction = `
             return 3.0 - nu;
         }
         z = vec2(zx2 - zy2, 2.0 * z.x * z.y) + c;
-        
+
         zx2 = z.x * z.x;
         zy2 = z.y * z.y;
         if (zx2 + zy2 > ESCAPE_RADIUS_SQ) {
@@ -47,7 +47,7 @@ const fractalFunction = `
             return 4.0 - nu;
         }
         z = vec2(zx2 - zy2, 2.0 * z.x * z.y) + c;
-        
+
         zx2 = z.x * z.x;
         zy2 = z.y * z.y;
         if (zx2 + zy2 > ESCAPE_RADIUS_SQ) {
@@ -56,7 +56,7 @@ const fractalFunction = `
             return 5.0 - nu;
         }
         z = vec2(zx2 - zy2, 2.0 * z.x * z.y) + c;
-        
+
         zx2 = z.x * z.x;
         zy2 = z.y * z.y;
         if (zx2 + zy2 > ESCAPE_RADIUS_SQ) {
@@ -65,7 +65,7 @@ const fractalFunction = `
             return 6.0 - nu;
         }
         z = vec2(zx2 - zy2, 2.0 * z.x * z.y) + c;
-        
+
         zx2 = z.x * z.x;
         zy2 = z.y * z.y;
         if (zx2 + zy2 > ESCAPE_RADIUS_SQ) {
@@ -74,7 +74,7 @@ const fractalFunction = `
             return 7.0 - nu;
         }
         z = vec2(zx2 - zy2, 2.0 * z.x * z.y) + c;
-        
+
         zx2 = z.x * z.x;
         zy2 = z.y * z.y;
         if (zx2 + zy2 > ESCAPE_RADIUS_SQ) {
@@ -83,11 +83,11 @@ const fractalFunction = `
             return 8.0 - nu;
         }
         z = vec2(zx2 - zy2, 2.0 * z.x * z.y) + c;
-        
+
         // Continue with loop for remaining iterations
         for (int i = 8; i < 200; i++) {
             if (i >= int(uIterations)) break;
-            
+
             // Use squared magnitude check (faster than dot product)
             zx2 = z.x * z.x;
             zy2 = z.y * z.y;
@@ -100,7 +100,7 @@ const fractalFunction = `
                 float nu = log(log_zn * INV_LOG2) * INV_LOG2;
                 return float(i) + 1.0 - nu;
             }
-            
+
             // Optimized complex multiplication: (a+bi)^2 = (a^2-b^2) + 2abi
             z = vec2(zx2 - zy2, 2.0 * z.x * z.y) + c;
         }
@@ -141,5 +141,13 @@ export const config = {
   fallbackPosition: {
     offset: { x: -0.75, y: 0.1 },
     zoom: 50
-}
+},
+  // Interesting bounds for "surprise me" - constrains to areas with fractal structure
+  // The Mandelbrot set is contained within a circle of radius 2, but interesting
+  // features are concentrated in the main cardioid and surrounding bulbs
+  interestingBounds: {
+    offsetX: [-2.5, 1.5],  // Main set extends from ~-2 to 0.5, with some interesting areas beyond
+    offsetY: [-2, 2],       // Symmetric vertically
+    zoom: [0.5, 100],       // From overview to deep zooms
+  }
 };
