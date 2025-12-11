@@ -469,21 +469,50 @@ export function setupInputControls(getters, callbacks) {
 
     const aspect = rendererWidth / rendererHeight;
 
+    // Validate current zoom for numerical stability
+    if (!params.zoom || !isFinite(params.zoom) || params.zoom <= 0) {
+      console.warn('Invalid zoom level for double-click zoom');
+      return;
+    }
+
     // Convert to fractal coordinates using the exact same formula as the shader
     // Shader: (uv.x - 0.5) * scale * aspect * uXScale + uOffset.x
     // where scale = 4.0 / uZoom
+    // For better numerical stability at high zoom, calculate in steps to avoid precision loss
     const scale = 4.0 / params.zoom;
-    const fractalX = (uvX - 0.5) * scale * aspect * params.xScale + params.offset.x;
-    const fractalY = (uvY - 0.5) * scale * params.yScale + params.offset.y;
+
+    // Calculate the offset contribution from the UV position
+    // This is more numerically stable than doing all operations in one line
+    const uvOffsetX = (uvX - 0.5) * scale * aspect * params.xScale;
+    const uvOffsetY = (uvY - 0.5) * scale * params.yScale;
+
+    // Add the current offset to get the fractal coordinate
+    // Use addition with proper order to minimize precision loss
+    const fractalX = params.offset.x + uvOffsetX;
+    const fractalY = params.offset.y + uvOffsetY;
+
+    // Validate fractal coordinates
+    if (!isFinite(fractalX) || !isFinite(fractalY)) {
+      console.warn('Invalid fractal coordinates calculated (NaN or Infinity)');
+      return;
+    }
 
     // Zoom in by a factor (e.g., 2x)
     const zoomFactor = 2.0;
-    params.zoom *= zoomFactor;
+    const newZoom = params.zoom * zoomFactor;
+
+    // Validate new zoom
+    if (!isFinite(newZoom) || newZoom <= 0) {
+      console.warn('Invalid new zoom level calculated');
+      return;
+    }
 
     // Center on the clicked point by setting offset to the fractal coordinate
     // After zooming, when uv = 0.5 (center), the formula becomes:
     // (0.5 - 0.5) * (4.0 / newZoom) * aspect * xScale + offset = offset
     // So setting offset to the fractal coordinate centers it correctly
+    // This is mathematically exact and preserves precision
+    params.zoom = newZoom;
     params.offset.x = fractalX;
     params.offset.y = fractalY;
     updateCoordinateDisplay();
@@ -699,34 +728,38 @@ export function zoomToSelection(startX, startY, endX, endY, canvasRect, getters,
     return;
   }
 
-  // Calculate fractal coordinates for the selection corners
-  // This matches the shader formula: (uv - 0.5) * scale * aspect * uXScale + uOffset
-  const scale = 4.0 / params.zoom;
+  // Calculate center and size in UV space first for better numerical stability
+  // This avoids precision loss from adding/subtracting large fractal coordinates
+  const centerUVX = (x1 + x2) / 2;
+  const centerUVY = (y1 + y2) / 2;
+  const sizeUVX = Math.abs(x2 - x1);
+  const sizeUVY = Math.abs(y2 - y1);
 
-  // Top-left corner (x1, y1)
-  const fractalX1 = (x1 - 0.5) * scale * aspect * params.xScale + params.offset.x;
-  const fractalY1 = (y1 - 0.5) * scale * params.yScale + params.offset.y;
-
-  // Bottom-right corner (x2, y2)
-  const fractalX2 = (x2 - 0.5) * scale * aspect * params.xScale + params.offset.x;
-  const fractalY2 = (y2 - 0.5) * scale * params.yScale + params.offset.y;
-
-  // Validate fractal coordinates
+  // Validate UV calculations
   if (
-    !isFinite(fractalX1) ||
-    !isFinite(fractalY1) ||
-    !isFinite(fractalX2) ||
-    !isFinite(fractalY2)
+    !isFinite(centerUVX) ||
+    !isFinite(centerUVY) ||
+    !isFinite(sizeUVX) ||
+    !isFinite(sizeUVY) ||
+    sizeUVX <= 0 ||
+    sizeUVY <= 0
   ) {
-    console.warn('Invalid fractal coordinates calculated (NaN or Infinity)');
+    console.warn('Invalid UV space calculations');
     return;
   }
 
-  // Calculate center and size of selection in fractal space
-  const centerX = (fractalX1 + fractalX2) / 2;
-  const centerY = (fractalY1 + fractalY2) / 2;
-  const width = Math.abs(fractalX2 - fractalX1);
-  const height = Math.abs(fractalY2 - fractalY1);
+  // Precompute scale factor (matches shader: scale = 4.0 / uZoom)
+  const scale = 4.0 / params.zoom;
+
+  // Calculate center in fractal space using the shader formula
+  // Formula: (uv - 0.5) * scale * aspect * uXScale + uOffset
+  const centerX = (centerUVX - 0.5) * scale * aspect * params.xScale + params.offset.x;
+  const centerY = (centerUVY - 0.5) * scale * params.yScale + params.offset.y;
+
+  // Calculate size in fractal space directly from UV size
+  // This is more numerically stable than subtracting two large fractal coordinates
+  const width = sizeUVX * scale * aspect * params.xScale;
+  const height = sizeUVY * scale * params.yScale;
 
   // Validate selection size in fractal space
   if (width <= 0 || height <= 0 || !isFinite(width) || !isFinite(height)) {
@@ -745,14 +778,17 @@ export function zoomToSelection(startX, startY, endX, endY, canvasRect, getters,
   // height: (4.0 / newZoom) * yScale
   // We want these to match the selection dimensions
 
-  // Solve for newZoom:
-  // width = (4.0 / newZoom) * aspect * xScale  =>  newZoom = (4.0 * aspect * xScale) / width
-  // height = (4.0 / newZoom) * yScale  =>  newZoom = (4.0 * yScale) / height
+  // Solve for newZoom using more numerically stable formulas:
+  // width = sizeUVX * (4.0 / currentZoom) * aspect * xScale
+  // After zoom: width = (4.0 / newZoom) * aspect * xScale
+  // Equating: sizeUVX * (4.0 / currentZoom) = (4.0 / newZoom)
+  // => newZoom = currentZoom / sizeUVX
+  // Similarly for height: newZoom = currentZoom / sizeUVY
 
-  // Use the larger zoom value to ensure the selection fits within the viewport
-  // This ensures that the entire selection is visible after zooming
-  const zoomByWidth = (4.0 * aspect * params.xScale) / width;
-  const zoomByHeight = (4.0 * params.yScale) / height;
+  // Using UV space sizes is more numerically stable than dividing by fractal space sizes
+  // This avoids precision loss from division operations on potentially large numbers
+  const zoomByWidth = params.zoom / sizeUVX;
+  const zoomByHeight = params.zoom / sizeUVY;
 
   // Validate zoom calculations
   if (!isFinite(zoomByWidth) || !isFinite(zoomByHeight) || zoomByWidth <= 0 || zoomByHeight <= 0) {

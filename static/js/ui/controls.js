@@ -1449,19 +1449,134 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
   const fullscreenAutoCycleBtn = document.getElementById('fullscreen-auto-cycle');
   const autoCyclePlayIcon = document.getElementById('fullscreen-auto-cycle-play');
   const autoCyclePauseIcon = document.getElementById('fullscreen-auto-cycle-pause');
-  let autoCycleInterval = null;
-  const AUTO_CYCLE_INTERVAL = 2000; // 2 seconds between cycles
+  let autoCycleAnimationFrame = null;
+  let autoCycleTimeout = null;
+  let isWaitingForRender = false;
+  let wasRendering = false;
+  const MIN_CYCLE_DELAY = 1000; // Minimum 1 second between theme changes (even if render completes quickly)
+
+  /**
+   * Wait for rendering to complete, then schedule next theme change
+   */
+  const waitForRenderCompletion = () => {
+    if (!isFullscreen()) {
+      stopAutoCycle();
+      return;
+    }
+
+    const renderingEngine = callbacks.getRenderingEngine?.();
+    if (!renderingEngine) {
+      // Fallback: if we can't access rendering engine, use a timeout
+      const params = getParams();
+      const fallbackDelay = Math.max(MIN_CYCLE_DELAY, 2000 * (1 + Math.log10(Math.max(1, params.zoom)) * 0.5));
+      autoCycleTimeout = setTimeout(() => {
+        if (isFullscreen()) {
+          selectRandomColorScheme();
+          waitForRenderCompletion();
+        } else {
+          stopAutoCycle();
+        }
+      }, fallbackDelay);
+      return;
+    }
+
+    isWaitingForRender = true;
+    const renderStartTime = performance.now();
+    let hasStartedRendering = false;
+    const MAX_WAIT_FOR_START = 500; // Max 500ms to wait for rendering to start
+    const startWaitTimeout = setTimeout(() => {
+      // If rendering hasn't started after a delay, assume it completed instantly
+      if (!hasStartedRendering) {
+        hasStartedRendering = true;
+        wasRendering = false; // Treat as if it already completed
+      }
+    }, MAX_WAIT_FOR_START);
+
+    const checkRenderComplete = () => {
+      if (!isFullscreen()) {
+        clearTimeout(startWaitTimeout);
+        stopAutoCycle();
+        return;
+      }
+
+      const isCurrentlyRendering = renderingEngine.getIsProgressiveRendering?.() || false;
+
+      // Wait for rendering to start (in case there's a small delay)
+      if (!hasStartedRendering) {
+        if (isCurrentlyRendering) {
+          hasStartedRendering = true;
+          wasRendering = true;
+          clearTimeout(startWaitTimeout);
+        }
+        // Continue polling until rendering starts
+        autoCycleAnimationFrame = requestAnimationFrame(checkRenderComplete);
+        return;
+      }
+
+      // Detect transition from rendering to not rendering
+      if (wasRendering && !isCurrentlyRendering) {
+        // Rendering just completed
+        clearTimeout(startWaitTimeout);
+        const renderDuration = performance.now() - renderStartTime;
+        const delay = Math.max(MIN_CYCLE_DELAY - renderDuration, 0);
+
+        // Schedule next theme change after a short delay (if render was very fast)
+        autoCycleTimeout = setTimeout(() => {
+          if (isFullscreen()) {
+            selectRandomColorScheme();
+            waitForRenderCompletion();
+          } else {
+            stopAutoCycle();
+          }
+        }, delay);
+        isWaitingForRender = false;
+        wasRendering = false;
+        return;
+      }
+
+      // If rendering never started (completed instantly or was cached), wait minimum delay then continue
+      if (!wasRendering && !isCurrentlyRendering) {
+        // Check if we've waited long enough to determine rendering won't start
+        const elapsed = performance.now() - renderStartTime;
+        if (elapsed >= MAX_WAIT_FOR_START || hasStartedRendering) {
+          clearTimeout(startWaitTimeout);
+          const delay = Math.max(MIN_CYCLE_DELAY - elapsed, 0);
+
+          autoCycleTimeout = setTimeout(() => {
+            if (isFullscreen()) {
+              selectRandomColorScheme();
+              waitForRenderCompletion();
+            } else {
+              stopAutoCycle();
+            }
+          }, delay);
+          isWaitingForRender = false;
+          return;
+        }
+      }
+
+      // Update state for next check
+      wasRendering = isCurrentlyRendering;
+
+      // Continue polling
+      autoCycleAnimationFrame = requestAnimationFrame(checkRenderComplete);
+    };
+
+    // Start checking immediately
+    wasRendering = renderingEngine.getIsProgressiveRendering?.() || false;
+    hasStartedRendering = wasRendering;
+    if (hasStartedRendering) {
+      clearTimeout(startWaitTimeout);
+    }
+    autoCycleAnimationFrame = requestAnimationFrame(checkRenderComplete);
+  };
 
   const startAutoCycle = () => {
-    if (autoCycleInterval) return; // Already running
+    if (autoCycleAnimationFrame !== null || autoCycleTimeout !== null) return; // Already running
 
-    autoCycleInterval = setInterval(() => {
-      if (isFullscreen()) {
-        selectRandomColorScheme();
-      } else {
-        stopAutoCycle();
-      }
-    }, AUTO_CYCLE_INTERVAL);
+    // Start by changing to a random theme, then wait for it to render
+    selectRandomColorScheme();
+    waitForRenderCompletion();
 
     // Update button appearance
     if (autoCyclePlayIcon) autoCyclePlayIcon.style.display = 'none';
@@ -1472,10 +1587,16 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
   };
 
   const stopAutoCycle = () => {
-    if (autoCycleInterval) {
-      clearInterval(autoCycleInterval);
-      autoCycleInterval = null;
+    if (autoCycleAnimationFrame !== null) {
+      cancelAnimationFrame(autoCycleAnimationFrame);
+      autoCycleAnimationFrame = null;
     }
+    if (autoCycleTimeout !== null) {
+      clearTimeout(autoCycleTimeout);
+      autoCycleTimeout = null;
+    }
+    isWaitingForRender = false;
+    wasRendering = false;
 
     // Update button appearance
     if (autoCyclePlayIcon) autoCyclePlayIcon.style.display = 'block';
@@ -1488,7 +1609,7 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
   // Toggle auto-cycle on button click
   if (fullscreenAutoCycleBtn) {
     fullscreenAutoCycleBtn.addEventListener('click', () => {
-      if (autoCycleInterval) {
+      if (autoCycleAnimationFrame !== null || autoCycleTimeout !== null) {
         stopAutoCycle();
       } else {
         startAutoCycle();
