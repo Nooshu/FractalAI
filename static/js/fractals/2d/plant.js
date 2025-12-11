@@ -126,16 +126,16 @@ export function render(regl, params, canvas, options = {}) {
         } else if (scheme == 17) { // cosmic
             float darkBase = 0.05;
             float brightPeak = 1.0;
-            
+
             float phase1 = min(t * 2.0, 1.0);
             float phase2 = max(0.0, (t - 0.5) * 2.0);
-            
+
             float r = darkBase + (brightPeak - darkBase) * (phase1 * 0.4 + phase2 * 0.6);
             float g = darkBase + (brightPeak - darkBase) * (phase1 * 0.2 + phase2 * 0.8);
             float b = darkBase + (brightPeak - darkBase) * (phase1 * 0.6 + phase2 * 1.0);
-            
+
             float sparkle = sin(t * 3.14159 * 8.0) * 0.1 + 0.9;
-            
+
             return vec3(min(1.0, r * sparkle), min(1.0, g * sparkle), min(1.0, b * sparkle));
         } else if (scheme == 18) { // aurora
             float phase = t * 2.0;
@@ -240,28 +240,28 @@ export function render(regl, params, canvas, options = {}) {
       void main() {
         float aspect = uResolution.x / uResolution.y;
         float scale = 4.0 / uZoom;
-        
+
         // Transform vertex position to match the standard fractal coordinate system
         // For line-based fractals, maintain aspect ratio correctly
         vec2 fractalCoord = position;
         vec2 relative = fractalCoord - uOffset;
-        
+
         // Scale uniformly (same factor for x and y) to preserve shape
         vec2 scaled = vec2(
           relative.x / (scale * uScale.x),
           relative.y / (scale * uScale.y)
         );
-        
+
         // Apply aspect ratio correction to maintain shape across different window sizes
         // Divide x by aspect to compensate for wider screens, preserving the curve's proportions
         scaled.x /= aspect;
-        
+
         // Convert to clip space (-1 to 1) by multiplying by 2.0
         gl_Position = vec4(scaled * 2.0, 0.0, 1.0);
         vPosition = position;
       }`;
     }
-    
+
     return `
       precision mediump float;
       attribute vec2 position;
@@ -275,22 +275,22 @@ export function render(regl, params, canvas, options = {}) {
       void main() {
         float aspect = uResolution.x / uResolution.y;
         float scale = 4.0 / uZoom;
-        
+
         // Transform vertex position to match the standard fractal coordinate system
         // For line-based fractals, maintain aspect ratio correctly
         vec2 fractalCoord = position;
         vec2 relative = fractalCoord - uOffset;
-        
+
         // Scale uniformly (same factor for x and y) to preserve shape
         vec2 scaled = vec2(
           relative.x / (scale * uXScale),
           relative.y / (scale * uYScale)
         );
-        
+
         // Apply aspect ratio correction to maintain shape across different window sizes
         // Divide x by aspect to compensate for wider screens, preserving the curve's proportions
         scaled.x /= aspect;
-        
+
         // Convert to clip space (-1 to 1) by multiplying by 2.0
         gl_Position = vec4(scaled * 2.0, 0.0, 1.0);
         vPosition = position;
@@ -403,4 +403,10 @@ export const config = {
     offset: { x: 0, y: 0 },
     zoom: 1,
   },
+  // Interesting bounds for "surprise me" - Plant L-system has specific viewing area
+  interestingBounds: {
+    offsetX: [-1, 1],
+    offsetY: [0, 2],
+    zoom: [0.3, 5],
+  }
 };

@@ -24,22 +24,22 @@ bool isInsidePolygon(vec2 p, vec2 center, float radius, int n) {
     // Use cross product method to check if point is on the correct side of all edges
     for (int i = 0; i < 12; i++) {
         if (i >= n) break;
-        
+
         vec2 v1 = getPolygonVertex(n, i, center, radius);
-        
+
         // Get next vertex (handle wrap-around)
         int nextI = i + 1;
         if (nextI >= n) nextI = 0;
         vec2 v2 = getPolygonVertex(n, nextI, center, radius);
-        
+
         // Edge vector
         vec2 edge = v2 - v1;
         // Vector from v1 to point
         vec2 toPoint = p - v1;
-        
+
         // Cross product (2D: returns scalar)
         float cross = edge.x * toPoint.y - edge.y * toPoint.x;
-        
+
         // If point is on wrong side of any edge, it's outside
         if (cross < 0.0) {
             return false;
@@ -50,38 +50,38 @@ bool isInsidePolygon(vec2 p, vec2 center, float radius, int n) {
 
 float computeFractal(vec2 c) {
     int iterations = int(clamp(uIterations / 20.0, 1.0, 7.0));
-    
+
     // Start with a base polygon (use number of sides from xScale)
     // Use uXScale/uYScale (template provides aliases for UBO mode)
     int numSides = int(clamp(uXScale * 5.0 + 3.0, 3.0, 12.0));
-    
+
     // Base polygon centered at origin
     vec2 baseCenter = vec2(0.0, 0.0);
     float baseRadius = 0.9;
-    
+
     // Check if point is outside base polygon
     if (!isInsidePolygon(c, baseCenter, baseRadius, numSides)) {
         return 0.0;
     }
-    
+
     // Apply recursive polygon splitting iteratively
     float depth = 0.0;
     vec2 currentCenter = baseCenter;
     float currentRadius = baseRadius;
     int currentSides = numSides;
-    
+
     for (int i = 0; i < 7; i++) {
         if (i >= iterations) break;
-        
+
         // Check if still in current polygon
         if (!isInsidePolygon(c, currentCenter, currentRadius, currentSides)) {
             return depth * 20.0;
         }
-        
+
         // Split polygon by connecting vertices or edge midpoints
         // Strategy: split into smaller polygons by connecting every other vertex
         // This creates a star pattern that subdivides the polygon
-        
+
         // Calculate the scale factor for sub-polygons
         // For a polygon split by connecting every other vertex, the scale depends on n
         float scaleFactor;
@@ -97,12 +97,12 @@ float computeFractal(vec2 c) {
             // General formula: scale by approximately 1/sqrt(2) for larger polygons
             scaleFactor = 0.707;
         }
-        
+
         float subRadius = currentRadius * scaleFactor;
-        
+
         // Determine which sub-polygon contains the point
         // We'll create sub-polygons at the vertices and center
-        
+
         // Check center sub-polygon first
         if (isInsidePolygon(c, currentCenter, subRadius, currentSides)) {
             currentRadius = subRadius;
@@ -112,10 +112,10 @@ float computeFractal(vec2 c) {
             bool found = false;
             for (int j = 0; j < 12; j++) {
                 if (j >= currentSides) break;
-                
+
                 vec2 vertex = getPolygonVertex(currentSides, j, currentCenter, currentRadius);
                 vec2 subCenter = currentCenter + (vertex - currentCenter) * (1.0 - scaleFactor);
-                
+
                 if (isInsidePolygon(c, subCenter, subRadius, currentSides)) {
                     currentCenter = subCenter;
                     currentRadius = subRadius;
@@ -124,14 +124,14 @@ float computeFractal(vec2 c) {
                     break;
                 }
             }
-            
+
             if (!found) {
                 // Point is in a gap between sub-polygons
                 return depth * 15.0 + 10.0;
             }
         }
     }
-    
+
     // Return depth for coloring
     return depth * 10.0 + float(iterations) * 5.0 + float(numSides) * 2.0;
 }
@@ -225,4 +225,10 @@ export const config = {
     offset: { x: 0, y: 0 },
     zoom: 1,
   },
+  // Interesting bounds for "surprise me" - Recursive polygon splitting is always interesting
+  interestingBounds: {
+    offsetX: [-1, 1],
+    offsetY: [-1, 1],
+    zoom: [0.5, 10],
+  }
 };

@@ -12,20 +12,20 @@ bool isInVicsek(vec2 p, int maxIter) {
     // Normalize to [0, 1] range - make snowflake fill the view
     // At zoom=1, c ranges from about -2 to 2, so map [-1, 1] to the snowflake
     vec2 pos = p * 0.5 + 0.5;
-    
+
     // Check if we're outside the base square [-1, 1]
     if (p.x < -1.0 || p.x > 1.0 || p.y < -1.0 || p.y > 1.0) {
         return false;
     }
-    
+
     // Iteratively check each level
     for (int i = 0; i < 10; i++) {
         if (i >= maxIter) break;
-        
+
         // Scale position to check which of the 9 squares we're in
         vec2 scaled = pos * 3.0;
         vec2 cell = floor(scaled);
-        
+
         // The Vicsek fractal keeps:
         // - Center square (1, 1)
         // - Top middle (1, 2)
@@ -33,7 +33,7 @@ bool isInVicsek(vec2 p, int maxIter) {
         // - Left middle (0, 1)
         // - Right middle (2, 1)
         // All corners are removed: (0,0), (2,0), (0,2), (2,2)
-        
+
         // Check if we're in a removed corner
         if ((cell.x == 0.0 && cell.y == 0.0) ||  // Bottom-left corner
             (cell.x == 2.0 && cell.y == 0.0) ||  // Bottom-right corner
@@ -41,34 +41,34 @@ bool isInVicsek(vec2 p, int maxIter) {
             (cell.x == 2.0 && cell.y == 2.0)) {  // Top-right corner
             return false; // In a removed square
         }
-        
+
         // Move to next level - focus on the current cell
         pos = fract(scaled);
     }
-    
+
     return true;
 }
 
 float computeFractal(vec2 c) {
     int iterations = int(clamp(uIterations / 15.0, 1.0, 8.0));
-    
+
     // c is already transformed by zoom/offset in utils.js
     // Check if point is in the Vicsek snowflake
     if (!isInVicsek(c, iterations)) {
         // Point is in a removed square - return 0 for black
         return 0.0;
     }
-    
+
     // Point is in the snowflake - calculate depth for interesting coloring
     float depth = 0.0;
     vec2 pos = c * 0.5 + 0.5;
-    
+
     for (int i = 0; i < 10; i++) {
         if (i >= iterations) break;
-        
+
         vec2 scaled = pos * 3.0;
         vec2 cell = floor(scaled);
-        
+
         // Check if we're in the center
         if (cell.x == 1.0 && cell.y == 1.0) {
             depth += 5.0;
@@ -80,15 +80,15 @@ float computeFractal(vec2 c) {
                  (cell.x == 2.0 && cell.y == 1.0)) {  // Right middle
             depth += 3.0;
         }
-        
+
         // Distance from center of current cell for additional variation
         vec2 cellCenter = (cell + 0.5) / 3.0;
         float distFromCenter = length(pos - cellCenter);
         depth += distFromCenter * 2.0;
-        
+
         pos = fract(scaled);
     }
-    
+
     // Return color intensity based on depth - must be less than uIterations to be colored
     return mod(depth * 8.0, uIterations * 0.9);
 }
@@ -182,5 +182,11 @@ export const config = {
   fallbackPosition: {
     offset: { x: 0, y: 0 },
     zoom: 1
-}
+},
+  // Interesting bounds for "surprise me" - Vicsek fractal is always interesting
+  interestingBounds: {
+    offsetX: [-1, 1],
+    offsetY: [-1, 1],
+    zoom: [0.5, 10],
+  }
 };

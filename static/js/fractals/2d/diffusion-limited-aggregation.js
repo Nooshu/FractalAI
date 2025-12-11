@@ -173,25 +173,25 @@ export function render(regl, params, canvas) {
     void main() {
       float aspect = uResolution.x / uResolution.y;
       float scale = 4.0 / uZoom;
-      
+
       // Transform vertex position
       vec2 pos = position;
       pos -= uCenter;
       pos *= uScale;
-      
+
       // Apply user scale
       pos.x *= uXScale;
       pos.y *= uYScale;
-      
+
       // Convert to UV space (inverse of fragment shader transformation)
       vec2 uv = vec2(
         (pos.x - uOffset.x) / (scale * aspect) + 0.5,
         (pos.y - uOffset.y) / scale + 0.5
       );
-      
+
       // Convert UV to clip space
       gl_Position = vec4(uv * 2.0 - 1.0, 0, 1);
-      
+
       // Look up color from palette
       float t = clamp(colorValue, 0.0, 1.0);
       vColor = texture2D(uPalette, vec2(t, 0.5));
@@ -202,7 +202,7 @@ export function render(regl, params, canvas) {
   const fragmentShader = `
     precision mediump float;
     varying vec4 vColor;
-    
+
     void main() {
       gl_FragColor = vColor;
     }
@@ -262,4 +262,10 @@ export const config = {
     offset: { x: 0, y: 0 },
     zoom: 1,
   },
+  // Interesting bounds for "surprise me" - Diffusion-limited aggregation is always interesting
+  interestingBounds: {
+    offsetX: [-1, 1],
+    offsetY: [-1, 1],
+    zoom: [0.3, 5],
+  }
 };

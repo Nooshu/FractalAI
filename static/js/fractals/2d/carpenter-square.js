@@ -216,4 +216,10 @@ export const config = {
     offset: { x: 0, y: 0 },
     zoom: 1,
   },
+  // Interesting bounds for "surprise me" - Carpenter square is always interesting
+  interestingBounds: {
+    offsetX: [-1, 1],
+    offsetY: [-1, 1],
+    zoom: [0.5, 10],
+  }
 };

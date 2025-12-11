@@ -12,12 +12,12 @@ const fractalFunction = `
         vec2 z = c;
         float zx2 = 0.0;
         float zy2 = 0.0;
-        
+
         // Threshold for biomorph detection (can be adjusted via uXScale)
         // Default threshold is around 10.0, varied from 5.0 to 100.0
         // Higher values create more organic, complex biomorphic patterns
         float threshold = 5.0 + uXScale * 95.0;
-        
+
         // Unroll first few iterations for better performance
         // Check threshold ONLY - this is the ONLY escape condition for biomorphs
         if (abs(z.x) > threshold || abs(z.y) > threshold) {
@@ -31,7 +31,7 @@ const fractalFunction = `
         zy2 = z.y * z.y;
         // NO magnitude check - only threshold matters for biomorphs
         z = vec2(zx2 - zy2, 2.0 * z.x * z.y) + uJuliaC;
-        
+
         // Iteration 1
         if (abs(z.x) > threshold || abs(z.y) > threshold) {
             float t = max(abs(z.x) / threshold, abs(z.y) / threshold);
@@ -41,7 +41,7 @@ const fractalFunction = `
         zx2 = z.x * z.x;
         zy2 = z.y * z.y;
         z = vec2(zx2 - zy2, 2.0 * z.x * z.y) + uJuliaC;
-        
+
         // Iteration 2
         if (abs(z.x) > threshold || abs(z.y) > threshold) {
             float t = max(abs(z.x) / threshold, abs(z.y) / threshold);
@@ -51,7 +51,7 @@ const fractalFunction = `
         zx2 = z.x * z.x;
         zy2 = z.y * z.y;
         z = vec2(zx2 - zy2, 2.0 * z.x * z.y) + uJuliaC;
-        
+
         // Iteration 3
         if (abs(z.x) > threshold || abs(z.y) > threshold) {
             float t = max(abs(z.x) / threshold, abs(z.y) / threshold);
@@ -61,7 +61,7 @@ const fractalFunction = `
         zx2 = z.x * z.x;
         zy2 = z.y * z.y;
         z = vec2(zx2 - zy2, 2.0 * z.x * z.y) + uJuliaC;
-        
+
         // Iteration 4
         if (abs(z.x) > threshold || abs(z.y) > threshold) {
             float t = max(abs(z.x) / threshold, abs(z.y) / threshold);
@@ -71,7 +71,7 @@ const fractalFunction = `
         zx2 = z.x * z.x;
         zy2 = z.y * z.y;
         z = vec2(zx2 - zy2, 2.0 * z.x * z.y) + uJuliaC;
-        
+
         // Iteration 5
         if (abs(z.x) > threshold || abs(z.y) > threshold) {
             float t = max(abs(z.x) / threshold, abs(z.y) / threshold);
@@ -81,7 +81,7 @@ const fractalFunction = `
         zx2 = z.x * z.x;
         zy2 = z.y * z.y;
         z = vec2(zx2 - zy2, 2.0 * z.x * z.y) + uJuliaC;
-        
+
         // Iteration 6
         if (abs(z.x) > threshold || abs(z.y) > threshold) {
             float t = max(abs(z.x) / threshold, abs(z.y) / threshold);
@@ -91,7 +91,7 @@ const fractalFunction = `
         zx2 = z.x * z.x;
         zy2 = z.y * z.y;
         z = vec2(zx2 - zy2, 2.0 * z.x * z.y) + uJuliaC;
-        
+
         // Iteration 7
         if (abs(z.x) > threshold || abs(z.y) > threshold) {
             float t = max(abs(z.x) / threshold, abs(z.y) / threshold);
@@ -101,7 +101,7 @@ const fractalFunction = `
         zx2 = z.x * z.x;
         zy2 = z.y * z.y;
         z = vec2(zx2 - zy2, 2.0 * z.x * z.y) + uJuliaC;
-        
+
         // Iteration 8
         if (abs(z.x) > threshold || abs(z.y) > threshold) {
             float t = max(abs(z.x) / threshold, abs(z.y) / threshold);
@@ -111,22 +111,22 @@ const fractalFunction = `
         zx2 = z.x * z.x;
         zy2 = z.y * z.y;
         z = vec2(zx2 - zy2, 2.0 * z.x * z.y) + uJuliaC;
-        
+
         // Continue with loop for remaining iterations
         for (int i = 8; i < 200; i++) {
             if (i >= int(uIterations)) break;
-            
+
             // Check threshold ONLY - this is the ONLY escape condition
             if (abs(z.x) > threshold || abs(z.y) > threshold) {
                 float t = max(abs(z.x) / threshold, abs(z.y) / threshold);
                 float variation = (abs(z.x) + abs(z.y)) / (threshold * 2.0);
                 return float(i) + 1.0 + (t - 1.0) * 0.3 + variation * 0.2;
             }
-            
+
             zx2 = z.x * z.x;
             zy2 = z.y * z.y;
             // NO magnitude check - only threshold matters
-            
+
             z = vec2(zx2 - zy2, 2.0 * z.x * z.y) + uJuliaC;
         }
         return uIterations;
@@ -168,6 +168,14 @@ export const config = {
     zoom: 1.5,
     cReal: -0.7269,
     cImag: 0.1889
-}
+},
+  // Interesting bounds for "surprise me" - Biomorphs
+  interestingBounds: {
+    offsetX: [-2, 2],
+    offsetY: [-2, 2],
+    zoom: [0.5, 100],
+    juliaCX: [-1, 1],
+    juliaCY: [-1, 1],
+  }
 };
 

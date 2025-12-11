@@ -10,9 +10,9 @@ function generateLevyDragon(iterations) {
   // The Lévy dragon uses a recursive construction similar to Lévy C curve
   // Each line segment is replaced by two segments forming a right angle
   // but arranged in a dragon-like pattern with 45-degree turns
-  
+
   const vertices = [];
-  
+
   // Recursive function to generate the Lévy dragon
   // Each segment is replaced by two segments at 45 degrees (not 90 like Heighway)
   function levyDragon(x1, y1, x2, y2, depth, turnDirection) {
@@ -23,46 +23,46 @@ function generateLevyDragon(iterations) {
       }
       return;
     }
-    
+
     // Calculate the midpoint
     const midX = (x1 + x2) / 2;
     const midY = (y1 + y2) / 2;
-    
+
     // Calculate the direction vector
     const dx = x2 - x1;
     const dy = y2 - y1;
-    
+
     // For Lévy dragon, we create a corner point at 45 degrees
     // The perpendicular vector rotated 45 degrees
     const perpX = -dy;
     const perpY = dx;
     const perpLength = Math.sqrt(perpX * perpX + perpY * perpY);
-    
+
     // Normalize and scale for 45-degree angle
     // For a 45-degree turn, we use sqrt(2)/2 scaling
     const sqrt2_2 = 0.7071067811865476;
     const offset = (Math.sqrt(dx * dx + dy * dy) / 2) * sqrt2_2;
-    
+
     const normalizedPerpX = perpLength > 0 ? (perpX / perpLength) * offset : 0;
     const normalizedPerpY = perpLength > 0 ? (perpY / perpLength) * offset : 0;
-    
+
     // The corner point (alternating direction creates dragon pattern)
     const cornerX = midX + normalizedPerpX * turnDirection;
     const cornerY = midY + normalizedPerpY * turnDirection;
-    
+
     // Recursively generate the two segments
     // First segment: (x1, y1) -> corner
     levyDragon(x1, y1, cornerX, cornerY, depth + 1, turnDirection);
-    
+
     // Second segment: corner -> (x2, y2)
     // Alternate turn direction for dragon pattern
     levyDragon(cornerX, cornerY, x2, y2, depth + 1, -turnDirection);
   }
-  
+
   // Start with a base line from left to right
   vertices.push(-0.5, 0);
   levyDragon(-0.5, 0, 0.5, 0, 0, 1);
-  
+
   // Calculate bounding box and scale to fit
   let minX = Infinity, maxX = -Infinity;
   let minY = Infinity, maxY = -Infinity;
@@ -72,14 +72,14 @@ function generateLevyDragon(iterations) {
     minY = Math.min(minY, vertices[i + 1]);
     maxY = Math.max(maxY, vertices[i + 1]);
   }
-  
+
   // Calculate center and size
   const centerX = (minX + maxX) / 2;
   const centerY = (minY + maxY) / 2;
   const width = maxX - minX;
   const height = maxY - minY;
   const maxSize = Math.max(width, height);
-  
+
   // Scale to fit in a reasonable range and center at origin
   const scale = maxSize > 0 ? 2.0 / maxSize : 1.0;
   const scaledVertices = new Float32Array(vertices.length);
@@ -87,7 +87,7 @@ function generateLevyDragon(iterations) {
     scaledVertices[i] = (vertices[i] - centerX) * scale;
     scaledVertices[i + 1] = (vertices[i + 1] - centerY) * scale;
   }
-  
+
   return scaledVertices;
 }
 
@@ -106,28 +106,28 @@ function createLineFractalVertexShader(useUBO) {
     void main() {
       float aspect = uResolution.x / uResolution.y;
       float scale = 4.0 / uZoom;
-      
+
       // Transform vertex position to match the standard fractal coordinate system
       // For line-based fractals, maintain aspect ratio correctly
       vec2 fractalCoord = position;
       vec2 relative = fractalCoord - uOffset;
-      
+
       // Scale uniformly (same factor for x and y) to preserve shape
       vec2 scaled = vec2(
         relative.x / (scale * uScale.x),
         relative.y / (scale * uScale.y)
       );
-      
+
       // Apply aspect ratio correction to maintain shape across different window sizes
       // Divide x by aspect to compensate for wider screens, preserving the curve's proportions
       scaled.x /= aspect;
-      
+
       // Convert to clip space (-1 to 1) by multiplying by 2.0
       gl_Position = vec4(scaled * 2.0, 0.0, 1.0);
       vPosition = position;
     }`;
   }
-  
+
   return `
     precision mediump float;
     attribute vec2 position;
@@ -141,22 +141,22 @@ function createLineFractalVertexShader(useUBO) {
     void main() {
       float aspect = uResolution.x / uResolution.y;
       float scale = 4.0 / uZoom;
-      
+
       // Transform vertex position to match the standard fractal coordinate system
       // For line-based fractals, maintain aspect ratio correctly
       vec2 fractalCoord = position;
       vec2 relative = fractalCoord - uOffset;
-      
+
       // Scale uniformly (same factor for x and y) to preserve shape
       vec2 scaled = vec2(
         relative.x / (scale * uXScale),
         relative.y / (scale * uYScale)
       );
-      
+
       // Apply aspect ratio correction to maintain shape across different window sizes
       // Divide x by aspect to compensate for wider screens, preserving the curve's proportions
       scaled.x /= aspect;
-      
+
       // Convert to clip space (-1 to 1) by multiplying by 2.0
       gl_Position = vec4(scaled * 2.0, 0.0, 1.0);
       vPosition = position;
@@ -179,12 +179,12 @@ function createLineFractalFragmentShader(useUBO) {
       float dist = length(vPosition);
       float angle = atan(vPosition.y, vPosition.x);
       float t = fract(dist * 1.8 + angle * 0.4);
-      
+
       vec3 color = texture(uPalette, vec2(t, 0.5)).rgb;
       fragColor = vec4(color, 1.0);
     }`;
   }
-  
+
   return `
     precision mediump float;
     uniform sampler2D uPalette;
@@ -196,7 +196,7 @@ function createLineFractalFragmentShader(useUBO) {
       float dist = length(vPosition);
       float angle = atan(vPosition.y, vPosition.x);
       float t = fract(dist * 1.8 + angle * 0.4);
-      
+
       vec3 color = texture2D(uPalette, vec2(t, 0.5)).rgb;
       gl_FragColor = vec4(color, 1.0);
     }
@@ -277,6 +277,12 @@ export const config = {
   fallbackPosition: {
     offset: { x: 0, y: 0 },
     zoom: 1
-}
+},
+  // Interesting bounds for "surprise me" - Levy dragon is always interesting
+  interestingBounds: {
+    offsetX: [-1, 1],
+    offsetY: [-1, 1],
+    zoom: [0.5, 10],
+  }
 };
 

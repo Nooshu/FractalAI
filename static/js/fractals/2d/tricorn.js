@@ -11,7 +11,7 @@ const fractalFunction = `
         vec2 z = vec2(0.0);
         float zx2 = 0.0;
         float zy2 = 0.0;
-        
+
         // Unroll first 8 iterations for better performance
         // Iteration 0
         zx2 = z.x * z.x;
@@ -23,7 +23,7 @@ const fractalFunction = `
         }
         // Tricorn: z = conjugate(z)^2 + c = (x - iy)^2 + c = (x^2 - y^2) - 2ixy + c
         z = vec2(zx2 - zy2, -2.0 * z.x * z.y) + c;
-        
+
         // Iteration 1
         zx2 = z.x * z.x;
         zy2 = z.y * z.y;
@@ -33,7 +33,7 @@ const fractalFunction = `
             return 2.0 - nu;
         }
         z = vec2(zx2 - zy2, -2.0 * z.x * z.y) + c;
-        
+
         // Iteration 2
         zx2 = z.x * z.x;
         zy2 = z.y * z.y;
@@ -43,7 +43,7 @@ const fractalFunction = `
             return 3.0 - nu;
         }
         z = vec2(zx2 - zy2, -2.0 * z.x * z.y) + c;
-        
+
         // Iteration 3
         zx2 = z.x * z.x;
         zy2 = z.y * z.y;
@@ -53,7 +53,7 @@ const fractalFunction = `
             return 4.0 - nu;
         }
         z = vec2(zx2 - zy2, -2.0 * z.x * z.y) + c;
-        
+
         // Iteration 4
         zx2 = z.x * z.x;
         zy2 = z.y * z.y;
@@ -63,7 +63,7 @@ const fractalFunction = `
             return 5.0 - nu;
         }
         z = vec2(zx2 - zy2, -2.0 * z.x * z.y) + c;
-        
+
         // Iteration 5
         zx2 = z.x * z.x;
         zy2 = z.y * z.y;
@@ -73,7 +73,7 @@ const fractalFunction = `
             return 6.0 - nu;
         }
         z = vec2(zx2 - zy2, -2.0 * z.x * z.y) + c;
-        
+
         // Iteration 6
         zx2 = z.x * z.x;
         zy2 = z.y * z.y;
@@ -83,7 +83,7 @@ const fractalFunction = `
             return 7.0 - nu;
         }
         z = vec2(zx2 - zy2, -2.0 * z.x * z.y) + c;
-        
+
         // Iteration 7
         zx2 = z.x * z.x;
         zy2 = z.y * z.y;
@@ -93,11 +93,11 @@ const fractalFunction = `
             return 8.0 - nu;
         }
         z = vec2(zx2 - zy2, -2.0 * z.x * z.y) + c;
-        
+
         // Continue with loop for remaining iterations
         for (int i = 8; i < 200; i++) {
             if (i >= int(uIterations)) break;
-            
+
             // Use squared magnitude check (faster than dot product)
             zx2 = z.x * z.x;
             zy2 = z.y * z.y;
@@ -108,7 +108,7 @@ const fractalFunction = `
                 float nu = log(log_zn * INV_LOG2) * INV_LOG2;
                 return float(i) + 1.0 - nu;
             }
-            
+
             // Tricorn formula: z = conjugate(z)^2 + c
             z = vec2(zx2 - zy2, -2.0 * z.x * z.y) + c;
         }
@@ -150,4 +150,10 @@ export const config = {
     offset: { x: 0, y: 0 },
     zoom: 1,
   },
+  // Interesting bounds for "surprise me" - Tricorn is symmetric and centered
+  interestingBounds: {
+    offsetX: [-2, 2],
+    offsetY: [-2, 2],
+    zoom: [0.5, 100],
+  }
 };

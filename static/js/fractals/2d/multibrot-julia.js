@@ -11,7 +11,7 @@ function createMultibrotJuliaFragmentShader(useUBO) {
     #ifdef GL_ES
     precision highp float;
     #endif
-    
+
     layout(std140) uniform FractalParams {
       float uIterations;
       float uZoom;
@@ -19,21 +19,21 @@ function createMultibrotJuliaFragmentShader(useUBO) {
       vec2 uJuliaC;
       vec2 uScale; // xScale, yScale
     };
-    
+
     // Provide aliases for compatibility
     #define uXScale uScale.x
     #define uYScale uScale.y
-    
+
     uniform float uTime;
     uniform vec2 uResolution;
     uniform sampler2D uPalette;
-    
+
     in vec2 vUv;
     out vec4 fragColor;`
     : `#ifdef GL_ES
     precision highp float;
     #endif
-    
+
     uniform float uTime;
     uniform float uIterations;
     uniform float uZoom;
@@ -43,14 +43,14 @@ function createMultibrotJuliaFragmentShader(useUBO) {
     uniform sampler2D uPalette;
     uniform float uXScale;
     uniform float uYScale;
-    
+
     varying vec2 vUv;`;
 
   const textureFunction = useUBO ? 'texture' : 'texture2D';
   const outputVariable = useUBO ? 'fragColor' : 'gl_FragColor';
 
   return `${uniformDeclarations}
-    
+
     // Helper function to compute z^n for complex number z and real power n
     // Uses De Moivre's theorem: z^n = |z|^n * (cos(n*arg(z)) + i*sin(n*arg(z)))
     vec2 complexPower(vec2 z, float n) {
@@ -58,30 +58,30 @@ function createMultibrotJuliaFragmentShader(useUBO) {
             // Optimized case for n=2 (standard Julia)
             return vec2(z.x * z.x - z.y * z.y, 2.0 * z.x * z.y);
         }
-        
+
         float r = length(z);
         if (r < 0.0001) {
             return vec2(0.0, 0.0); // Avoid division by zero
         }
-        
+
         float theta = atan(z.y, z.x);
         float rn = pow(r, n);
         float nTheta = n * theta;
-        
+
         return vec2(rn * cos(nTheta), rn * sin(nTheta));
     }
-    
+
     float computeFractal(vec2 c) {
         // Multibrot Julia set: z = z^n + uJuliaC
         // Order n is controlled by uXScale (mapped from 2.0 to 10.0)
         float n = 2.0 + uXScale * 8.0; // Map xScale (0-1) to order (2-10)
         n = max(2.0, min(10.0, n)); // Clamp to reasonable range
-        
+
         // For Julia sets, z starts at the pixel coordinate c
         vec2 z = c;
         float zx2 = 0.0;
         float zy2 = 0.0;
-        
+
         // Unroll first few iterations for better performance
         z = complexPower(z, n) + uJuliaC;
         zx2 = z.x * z.x;
@@ -91,7 +91,7 @@ function createMultibrotJuliaFragmentShader(useUBO) {
             float nu = log(log_zn / log(2.0)) / log(2.0);
             return 0.0 + 1.0 - nu;
         }
-        
+
         z = complexPower(z, n) + uJuliaC;
         zx2 = z.x * z.x;
         zy2 = z.y * z.y;
@@ -100,7 +100,7 @@ function createMultibrotJuliaFragmentShader(useUBO) {
             float nu = log(log_zn / log(2.0)) / log(2.0);
             return 1.0 + 1.0 - nu;
         }
-        
+
         z = complexPower(z, n) + uJuliaC;
         zx2 = z.x * z.x;
         zy2 = z.y * z.y;
@@ -109,11 +109,11 @@ function createMultibrotJuliaFragmentShader(useUBO) {
             float nu = log(log_zn / log(2.0)) / log(2.0);
             return 2.0 + 1.0 - nu;
         }
-        
+
         // Continue with loop for remaining iterations
         for (int i = 3; i < 200; i++) {
             if (i >= int(uIterations)) break;
-            
+
             // Use squared magnitude check (faster than dot product)
             zx2 = z.x * z.x;
             zy2 = z.y * z.y;
@@ -123,13 +123,13 @@ function createMultibrotJuliaFragmentShader(useUBO) {
                 float nu = log(log_zn / log(2.0)) / log(2.0);
                 return float(i) + 1.0 - nu;
             }
-            
+
             // Multibrot Julia formula: z = z^n + uJuliaC
             z = complexPower(z, n) + uJuliaC;
         }
         return uIterations;
     }
-    
+
     void main() {
         vec2 uv = vUv;
         float aspect = uResolution.x / uResolution.y;
@@ -138,20 +138,20 @@ function createMultibrotJuliaFragmentShader(useUBO) {
             (uv.x - 0.5) * scale * aspect + uOffset.x,
             (uv.y - 0.5) * scale * uYScale + uOffset.y
         );
-        
+
         float iterations = computeFractal(c);
-        
+
         // Normalized iteration value for color lookup
         float t = clamp(iterations / uIterations, 0.0, 1.0);
-        
+
         // Texture-based palette lookup (much faster than computed colors)
         vec3 color = ${textureFunction}(uPalette, vec2(t, 0.5)).rgb;
-        
+
         // Points in the set are black
         if (iterations >= uIterations) {
             color = vec3(0.0);
         }
-        
+
         ${outputVariable} = vec4(color, 1.0);
     }`;
 }
@@ -242,4 +242,12 @@ export const config = {
     offset: { x: 0, y: 0 },
     zoom: 1,
   },
+  // Interesting bounds for "surprise me" - Multibrot Julia sets
+  interestingBounds: {
+    offsetX: [-2, 2],
+    offsetY: [-2, 2],
+    zoom: [0.5, 100],
+    juliaCX: [-1, 1],
+    juliaCY: [-1, 1],
+  }
 };

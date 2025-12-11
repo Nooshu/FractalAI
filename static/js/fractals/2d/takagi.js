@@ -21,18 +21,18 @@ float distToNearestInt(float x) {
 float takagi(float x) {
     float sum = 0.0;
     int maxTerms = int(clamp(uIterations / 10.0, 5.0, 30.0));
-    
+
     for (int n = 0; n < 30; n++) {
         if (n >= maxTerms) break;
-        
+
         float two_n = pow(2.0, float(n));
         float two_neg_n = pow(2.0, -float(n));
-        
+
         // Compute 2^(-n) * d(2^n * x, Z)
         float dist = distToNearestInt(two_n * x);
         sum += two_neg_n * dist;
     }
-    
+
     return sum;
 }
 
@@ -40,33 +40,33 @@ float computeFractal(vec2 c) {
     // Map x coordinate to domain [0, 1] for Takagi function
     // Takagi is typically defined on [0, 1]
     float x = (c.x + 2.0) / 4.0; // Map from [-2, 2] to [0, 1]
-    
+
     // Clamp x to [0, 1] range
     if (x < 0.0 || x > 1.0) {
         return 0.0;
     }
-    
+
     // Compute Takagi function value
     float t = takagi(x);
-    
+
     // Scale and center vertically
     // Takagi function ranges from 0 to approximately 0.5
     float scale = 0.8 + uYScale * 0.4; // 0.8 to 1.2
     float centerY = 0.0;
-    
+
     // Check if y coordinate is near the function value
     float y = c.y;
     float dist = abs(y - (t * scale + centerY));
-    
+
     // Create a curve by checking proximity to the function
     // Use a narrow band for the curve
     float curveWidth = 0.02 / uZoom; // Adaptive width based on zoom
     float intensity = 1.0 - smoothstep(0.0, curveWidth, dist);
-    
+
     // Add some detail based on the function's fractal nature
     // The Takagi function has detail at all scales
     float detail = fract(sin(x * 200.0) * 43758.5453) * 0.1;
-    
+
     return intensity * (uIterations / 20.0) + detail;
 }
 `;
@@ -104,6 +104,12 @@ export const config = {
   fallbackPosition: {
     offset: { x: 0, y: 0 },
     zoom: 1
-}
+},
+  // Interesting bounds for "surprise me" - Takagi function is always interesting
+  interestingBounds: {
+    offsetX: [-1, 1],
+    offsetY: [-1, 1],
+    zoom: [0.5, 10],
+  }
 };
 

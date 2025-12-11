@@ -176,23 +176,23 @@ export function render(regl, params, canvas) {
 
     void main() {
       float aspect = uResolution.x / uResolution.y;
-      
+
       // Transform vertex position
       vec2 pos = position;
-      
+
       // Apply user scale
       pos.x *= uXScale;
       pos.y *= uYScale;
-      
+
       // Apply zoom and offset (inverted offset to match standard fractal panning behavior)
       pos = pos * uZoom - uOffset;
-      
+
       // Apply aspect ratio correction
       pos.x /= aspect;
-      
+
       // Convert to clip space
       gl_Position = vec4(pos, 0, 1);
-      
+
       // Look up color from palette
       float t = clamp(colorValue, 0.0, 1.0);
       vColor = texture2D(uPalette, vec2(t, 0.5));
@@ -203,7 +203,7 @@ export function render(regl, params, canvas) {
   const fragmentShader = `
     precision mediump float;
     varying vec4 vColor;
-    
+
     void main() {
       gl_FragColor = vColor;
     }
@@ -260,4 +260,10 @@ export const config = {
     offset: { x: 0, y: 0 },
     zoom: 1,
   },
+  // Interesting bounds for "surprise me" - Percolation cluster is always interesting
+  interestingBounds: {
+    offsetX: [-1, 1],
+    offsetY: [-1, 1],
+    zoom: [0.5, 10],
+  }
 };

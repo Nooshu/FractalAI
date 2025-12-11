@@ -16,7 +16,7 @@ bool isInsideQuadrilateral(vec2 p, vec2 center, float size) {
     vec2 corner2 = center + vec2(size, -size);
     vec2 corner3 = center + vec2(size, size);
     vec2 corner4 = center + vec2(-size, size);
-    
+
     // Check if point is inside the square using cross products
     // For a square, we can check if point is within bounds
     vec2 toPoint = p - center;
@@ -36,41 +36,41 @@ int getQuadrant(vec2 p, vec2 center) {
 
 float computeFractal(vec2 c) {
     int iterations = int(clamp(uIterations / 20.0, 1.0, 7.0));
-    
+
     // Start with a base square centered at origin
     vec2 baseCenter = vec2(0.0, 0.0);
     float baseSize = 1.0;
-    
+
     // Check if point is outside base square
     if (!isInsideQuadrilateral(c, baseCenter, baseSize)) {
         return 0.0;
     }
-    
+
     // Apply quadrilateral subdivision iteratively
     float depth = 0.0;
     vec2 currentCenter = baseCenter;
     float currentSize = baseSize;
-    
+
     for (int i = 0; i < 7; i++) {
         if (i >= iterations) break;
-        
+
         // Check if still in current square
         if (!isInsideQuadrilateral(c, currentCenter, currentSize)) {
             return depth * 20.0;
         }
-        
+
         // Subdivide into 4 smaller squares
         float halfSize = currentSize * 0.5;
-        
+
         // Calculate centers of 4 sub-quadrilaterals
         vec2 subCenter0 = currentCenter + vec2(-halfSize, -halfSize); // Bottom-left
         vec2 subCenter1 = currentCenter + vec2(halfSize, -halfSize);   // Bottom-right
         vec2 subCenter2 = currentCenter + vec2(-halfSize, halfSize);  // Top-left
         vec2 subCenter3 = currentCenter + vec2(halfSize, halfSize);   // Top-right
-        
+
         // Determine which sub-quadrilateral contains the point
         bool found = false;
-        
+
         if (isInsideQuadrilateral(c, subCenter0, halfSize)) {
             currentCenter = subCenter0;
             currentSize = halfSize;
@@ -92,12 +92,12 @@ float computeFractal(vec2 c) {
             depth += 4.0;
             found = true;
         }
-        
+
         if (!found) {
             return depth * 20.0;
         }
     }
-    
+
     // Return depth for coloring
     return depth * 10.0 + float(iterations) * 5.0;
 }
@@ -191,4 +191,10 @@ export const config = {
     offset: { x: 0, y: 0 },
     zoom: 1,
   },
+  // Interesting bounds for "surprise me" - Quadrilateral subdivision is always interesting
+  interestingBounds: {
+    offsetX: [-1, 1],
+    offsetY: [-1, 1],
+    zoom: [0.5, 10],
+  }
 };

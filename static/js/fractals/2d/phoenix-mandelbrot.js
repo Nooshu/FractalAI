@@ -9,26 +9,26 @@ const fractalFunction = `
         // Formula: z_new = z^2 + c + p * z_prev
         // Where p is a parameter (Phoenix parameter)
         // This creates interesting "phoenix" patterns
-        
+
         // Phoenix parameter p (controlled by xScale and yScale)
         // xScale controls real part, yScale controls imaginary part
         // Use uXScale/uYScale (template provides aliases for UBO mode)
         vec2 p = vec2((uXScale - 0.5) * 2.0, (uYScale - 0.5) * 2.0);
         // Clamp to reasonable range
         p = clamp(p, vec2(-1.0, -1.0), vec2(1.0, 1.0));
-        
+
         vec2 z = vec2(0.0);
         vec2 z_prev = vec2(0.0);
         float zx2 = 0.0;
         float zy2 = 0.0;
-        
+
         // Unroll first few iterations for better performance
         // Iteration 0: z = 0, z_prev = 0, so z_new = 0^2 + c + p*0 = c
         z_prev = z;
         zx2 = z.x * z.x;
         zy2 = z.y * z.y;
         z = vec2(zx2 - zy2, 2.0 * z.x * z.y) + c + p * z_prev;
-        
+
         zx2 = z.x * z.x;
         zy2 = z.y * z.y;
         if (zx2 + zy2 > ESCAPE_RADIUS_SQ) {
@@ -36,13 +36,13 @@ const fractalFunction = `
             float nu = log(log_zn * INV_LOG2) * INV_LOG2;
             return 0.0 + 1.0 - nu;
         }
-        
+
         // Iteration 1
         z_prev = z;
         zx2 = z.x * z.x;
         zy2 = z.y * z.y;
         z = vec2(zx2 - zy2, 2.0 * z.x * z.y) + c + p * z_prev;
-        
+
         zx2 = z.x * z.x;
         zy2 = z.y * z.y;
         if (zx2 + zy2 > ESCAPE_RADIUS_SQ) {
@@ -50,13 +50,13 @@ const fractalFunction = `
             float nu = log(log_zn * INV_LOG2) * INV_LOG2;
             return 1.0 + 1.0 - nu;
         }
-        
+
         // Iteration 2
         z_prev = z;
         zx2 = z.x * z.x;
         zy2 = z.y * z.y;
         z = vec2(zx2 - zy2, 2.0 * z.x * z.y) + c + p * z_prev;
-        
+
         zx2 = z.x * z.x;
         zy2 = z.y * z.y;
         if (zx2 + zy2 > ESCAPE_RADIUS_SQ) {
@@ -64,15 +64,15 @@ const fractalFunction = `
             float nu = log(log_zn * INV_LOG2) * INV_LOG2;
             return 2.0 + 1.0 - nu;
         }
-        
+
         // Continue with loop for remaining iterations
         for (int i = 3; i < 200; i++) {
             if (i >= int(uIterations)) break;
-            
+
             // Calculate squared magnitudes
             zx2 = z.x * z.x;
             zy2 = z.y * z.y;
-            
+
             // Check for escape
             if (zx2 + zy2 > ESCAPE_RADIUS_SQ) {
                 // Smooth coloring using continuous escape
@@ -80,12 +80,12 @@ const fractalFunction = `
                 float nu = log(log_zn * INV_LOG2) * INV_LOG2;
                 return float(i) + 1.0 - nu;
             }
-            
+
             // Phoenix Mandelbrot formula: z_new = z^2 + c + p * z_prev
             z_prev = z;
             z = vec2(zx2 - zy2, 2.0 * z.x * z.y) + c + p * z_prev;
         }
-        
+
         return uIterations;
     }
 `;
@@ -124,4 +124,10 @@ export const config = {
     offset: { x: 0, y: 0 },
     zoom: 1,
   },
+  // Interesting bounds for "surprise me" - Phoenix has interesting features similar to Mandelbrot
+  interestingBounds: {
+    offsetX: [-2.5, 1.5],
+    offsetY: [-2, 2],
+    zoom: [0.5, 100],
+  }
 };

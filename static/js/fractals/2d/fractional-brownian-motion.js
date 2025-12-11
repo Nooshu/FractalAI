@@ -22,7 +22,7 @@ float simplexNoise(vec2 p) {
     vec2 i = floor(p + s);
     float t = (i.x + i.y) * G2;
     vec2 x0 = p - (i - t);
-    
+
     // Determine which simplex we're in
     vec2 i1;
     if (x0.x > x0.y) {
@@ -30,33 +30,33 @@ float simplexNoise(vec2 p) {
     } else {
         i1 = vec2(0.0, 1.0);
     }
-    
+
     // Offsets for the other two corners
     vec2 x1 = x0 - i1 + G2;
     vec2 x2 = x0 - 1.0 + 2.0 * G2;
-    
+
     // Hash values for the three corners
     vec2 h = hash(i);
     vec2 h1 = hash(i + i1);
     vec2 h2 = hash(i + 1.0);
-    
+
     // Calculate contribution from each corner
     vec3 w;
     w.x = 0.5 - dot(x0, x0);
     w.y = 0.5 - dot(x1, x1);
     w.z = 0.5 - dot(x2, x2);
-    
+
     // Clamp to avoid negative values
     w = max(w, 0.0);
-    
+
     // Weight contributions
     w = w * w * w;
-    
+
     // Calculate dot products
     float n0 = dot(h, x0);
     float n1 = dot(h1, x1);
     float n2 = dot(h2, x2);
-    
+
     // Combine contributions
     return 70.0 * (w.x * n0 + w.y * n1 + w.z * n2);
 }
@@ -70,12 +70,12 @@ float fbm(vec2 p, int octaves, float hurst) {
     float amplitude = 1.0;
     float frequency = 1.0;
     float maxValue = 0.0;
-    
+
     // Hurst exponent determines how amplitude decays with frequency
     // Standard fBm: amplitude *= 0.5, frequency *= 2.0
     // With Hurst: amplitude *= pow(2.0, -H), frequency *= 2.0
     float amplitudeDecay = pow(2.0, -hurst);
-    
+
     for (int i = 0; i < 8; i++) {
         if (i >= octaves) break;
         value += amplitude * simplexNoise(p * frequency);
@@ -83,7 +83,7 @@ float fbm(vec2 p, int octaves, float hurst) {
         frequency *= 2.0;
         amplitude *= amplitudeDecay;
     }
-    
+
     // Normalize to [-1, 1] range
     if (maxValue > 0.0) {
         return value / maxValue;
@@ -93,22 +93,22 @@ float fbm(vec2 p, int octaves, float hurst) {
 
 float computeFractal(vec2 c) {
     int octaves = int(clamp(uIterations / 30.0, 1.0, 6.0));
-    
+
     // Hurst exponent: controls roughness (0.0 to 1.0)
     // Map uXScale (0-1) to Hurst (0.1 to 0.9)
     // Lower values = rougher, higher values = smoother
     float hurst = 0.1 + uXScale * 0.8;
-    
+
     // Scale coordinates based on zoom and scale parameters
     float scale = 2.0 + uYScale * 3.0; // 2.0 to 5.0
     vec2 p = c * scale;
-    
+
     // Generate fractional Brownian motion
     float noise = fbm(p, octaves, hurst);
-    
+
     // Normalize to 0-1 range
     noise = noise * 0.5 + 0.5;
-    
+
     // Return value for coloring (multiply by iterations for better color mapping)
     return noise * uIterations;
 }
@@ -177,4 +177,10 @@ export const config = {
     offset: { x: 0, y: 0 },
     zoom: 1,
   },
+  // Interesting bounds for "surprise me" - Fractional Brownian motion is always interesting
+  interestingBounds: {
+    offsetX: [-1, 1],
+    offsetY: [-1, 1],
+    zoom: [0.5, 10],
+  }
 };

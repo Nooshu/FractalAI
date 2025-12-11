@@ -76,41 +76,41 @@ float computeFractal(vec2 c) {
     // Scale coordinates
     float scale = 2.0 + uYScale * 3.0; // 2.0 to 5.0
     vec2 p = c * scale;
-    
+
     // Number of iterations
     int maxIter = int(clamp(uIterations / 20.0, 15.0, 60.0));
-    
+
     // Initialize - start from a fixed point and iterate forward
     vec2 point = vec2(0.0, 0.0);
     float density = 0.0;
-    
+
     // IFS parameters (affine transformations)
     // Using multiple transformations with different variations
     mat2 transform1 = mat2(0.8, -0.6, 0.6, 0.8);
     vec2 offset1 = vec2(0.1, 0.1);
     int var1 = 3; // Swirl
-    
+
     mat2 transform2 = mat2(0.3, 0.0, 0.0, 0.3);
     vec2 offset2 = vec2(0.5, 0.0);
     int var2 = 2; // Spherical
-    
+
     mat2 transform3 = mat2(0.3, 0.0, 0.0, 0.3);
     vec2 offset3 = vec2(0.25, 0.5);
     int var3 = 7; // Spiral
-    
+
     // Variation weights (controlled by X Scale)
     float varWeight = 0.3 + uXScale * 0.7; // 0.3 to 1.0
-    
+
     // Iterate forward from origin
     for (int i = 0; i < 60; i++) {
         if (i >= maxIter) break;
-        
+
         // Choose transformation randomly (based on iteration and position)
         float choice = fract(sin(float(i) * 12.9898 + dot(point, vec2(78.233, 12.345))) * 43758.5453);
-        
+
         vec2 transformed;
         int varIndex;
-        
+
         if (choice < 0.33) {
             transformed = transform1 * point + offset1;
             varIndex = var1;
@@ -121,31 +121,31 @@ float computeFractal(vec2 c) {
             transformed = transform3 * point + offset3;
             varIndex = var3;
         }
-        
+
         // Apply variation
         vec2 varied = applyVariation(varIndex, transformed);
-        
+
         // Blend between transformed and varied based on varWeight
         point = mix(transformed, varied, varWeight);
-        
+
         // Check if point is near the query point p
         vec2 diff = point - p;
         float dist2 = dot(diff, diff);
-        
+
         // Accumulate density based on distance to query point
         density += 1.0 / (1.0 + dist2 * 10.0);
     }
-    
+
     // Also check reverse iteration (from query point)
     point = p;
     for (int i = 0; i < 60; i++) {
         if (i >= maxIter / 2) break;
-        
+
         float choice = fract(sin(float(i) * 12.9898 + dot(point, vec2(78.233, 12.345))) * 43758.5453);
-        
+
         vec2 transformed;
         int varIndex;
-        
+
         if (choice < 0.33) {
             transformed = transform1 * point + offset1;
             varIndex = var1;
@@ -156,14 +156,14 @@ float computeFractal(vec2 c) {
             transformed = transform3 * point + offset3;
             varIndex = var3;
         }
-        
+
         vec2 varied = applyVariation(varIndex, transformed);
         point = mix(transformed, varied, varWeight);
-        
+
         float dist2 = dot(point, point);
         density += 1.0 / (1.0 + dist2 * 10.0);
     }
-    
+
     // Normalize and return
     float result = density / float(maxIter);
     result = pow(result, 0.3); // Gamma correction for better contrast
@@ -234,4 +234,10 @@ export const config = {
     offset: { x: 0, y: 0 },
     zoom: 1,
   },
+  // Interesting bounds for "surprise me" - Fractal flame is always interesting
+  interestingBounds: {
+    offsetX: [-1, 1],
+    offsetY: [-1, 1],
+    zoom: [0.5, 10],
+  }
 };

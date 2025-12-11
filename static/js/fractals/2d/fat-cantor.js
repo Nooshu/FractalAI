@@ -12,79 +12,79 @@ const fractalFunction = `
         if (level == 0) {
             return (x >= 0.0 && x <= 1.0);
         }
-        
+
         // For Fat Cantor set, we remove the middle 1/4 (from 3/8 to 5/8)
         // This leaves 3/8 on the left and 3/8 on the right
         float scale = 1.0;
-        
+
         for (int i = 0; i < 15; i++) {
             if (i >= level) break;
-            
+
             // Each segment is divided into: [left 3/8] [removed 1/4] [right 3/8]
             float leftEnd = scale * 3.0 / 8.0;
             float removedStart = scale * 3.0 / 8.0;
             float removedEnd = scale * 5.0 / 8.0;
             float rightStart = scale * 5.0 / 8.0;
-            
+
             // Normalize x to [0, scale] range
             float localX = mod(x, scale);
-            
+
             // Check if in middle removed region
             if (localX >= removedStart && localX < removedEnd) {
                 return false;
             }
-            
+
             // If in right segment, adjust x for next iteration
             if (localX >= rightStart) {
                 x = localX - rightStart;
             } else {
                 x = localX;
             }
-            
+
             // Scale down to 3/8 of current scale (size of remaining segments)
             scale = scale * 3.0 / 8.0;
         }
-        
+
         return true;
     }
-    
+
     float computeFractal(vec2 c) {
         // Fat Cantor Set
         // Removes smaller middle portions (1/4 instead of 1/3)
         // This creates a "fatter" set with positive measure
-        
+
         // Normalize coordinates to work with the Cantor set
         float x = (c.x + 2.0) / 4.0; // Map from [-2, 2] to [0, 1]
         float y = c.y;
-        
+
         // Clamp x to [0, 1] range
         if (x < 0.0 || x > 1.0) {
             return 0.0;
         }
-        
+
         // Determine which iteration level we're viewing based on y coordinate
         // Each level is stacked vertically
         float levelHeight = 0.15; // Height of each iteration band
         float levelSpacing = 0.05; // Gap between bands
         float totalLevelHeight = levelHeight + levelSpacing;
-        
+
         // Center the Fat Cantor set vertically
         float startY = 1.5;
-        
+
         // Determine which iteration we're in
         int maxIterations = int(uIterations);
         if (maxIterations > 15) maxIterations = 15; // Cap at 15 iterations
-        
+
         float intensity = 0.0;
         bool inSegment = false;
         int segmentLevel = -1;
-        
+
         // Check each iteration level
         for (int level = 0; level < 15; level++) {
             if (level >= maxIterations) break;
-            
+
             float levelY = startY - float(level) * totalLevelHeight;
-            
+
             // Check if we're in the vertical range for this level
             if (y >= levelY - levelHeight && y <= levelY) {
                 // Check if x is in a Fat Cantor segment at this level
@@ -96,7 +96,7 @@ const fractalFunction = `
                 break;
             }
         }
-        
+
         if (inSegment) {
             // Vary intensity based on level for interesting coloring
             return intensity * (uIterations / 15.0);
@@ -140,5 +140,11 @@ export const config = {
   fallbackPosition: {
     offset: { x: 0, y: 0 },
     zoom: 1
-}
+},
+  // Interesting bounds for "surprise me" - Fat Cantor is always interesting
+  interestingBounds: {
+    offsetX: [-1, 1],
+    offsetY: [-1, 1],
+    zoom: [0.5, 10],
+  }
 };

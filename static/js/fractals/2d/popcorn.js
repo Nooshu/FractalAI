@@ -8,43 +8,43 @@ const fractalFunction = `
         // Popcorn fractal (also known as Clifford attractor variant)
         // Formula: x_n+1 = x_n - h*sin(y_n + tan(a*y_n))
         //          y_n+1 = y_n - h*sin(x_n + tan(b*x_n))
-        
+
         vec2 z = c;
         float h = 0.05; // Step parameter
         float a = 3.0;  // Parameter for y term
         float b = 3.0;  // Parameter for x term
-        
+
         // Track how far the point travels (orbit length)
         float orbitLength = 0.0;
         vec2 lastPos = z;
-        
+
         // We'll use orbit behavior to color the fractal
         // Points that create bounded, interesting patterns vs escaping points
         float escape = 0.0;
         bool escaped = false;
-        
+
         for (int i = 0; i < 200; i++) {
             if (i >= int(uIterations)) break;
-            
+
             // Calculate tan values (with safety checks)
             float tanY = tan(a * z.y);
             float tanX = tan(b * z.x);
-            
+
             // Clamp tan values to prevent infinity
             tanY = clamp(tanY, -10.0, 10.0);
             tanX = clamp(tanX, -10.0, 10.0);
-            
+
             // Popcorn map iteration
             float newX = z.x - h * sin(z.y + tanY);
             float newY = z.y - h * sin(z.x + tanX);
-            
+
             z = vec2(newX, newY);
-            
+
             // Track orbit length (distance traveled)
             vec2 delta = z - lastPos;
             orbitLength += length(delta);
             lastPos = z;
-            
+
             // Check for escape condition (moved very far from origin)
             float distSq = z.x * z.x + z.y * z.y;
             if (distSq > 100.0) {
@@ -52,7 +52,7 @@ const fractalFunction = `
                 escape = float(i);
                 break;
             }
-            
+
             // Check for extremely large values (numerical instability)
             if (abs(z.x) > 1000.0 || abs(z.y) > 1000.0) {
                 escaped = true;
@@ -60,7 +60,7 @@ const fractalFunction = `
                 break;
             }
         }
-        
+
         // Color based on orbit behavior
         if (escaped) {
             // Escaped points - use smooth escape time
@@ -110,5 +110,11 @@ export const config = {
   fallbackPosition: {
     offset: { x: 0, y: 0 },
     zoom: 1
-}
+},
+  // Interesting bounds for "surprise me" - Popcorn fractal is centered
+  interestingBounds: {
+    offsetX: [-2, 2],
+    offsetY: [-2, 2],
+    zoom: [0.5, 100],
+  }
 };

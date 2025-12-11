@@ -11,73 +11,73 @@ const fractalFunction = `
         if (level == 0) {
             return (x >= 0.0 && x <= 1.0);
         }
-        
+
         // For each level, check if x falls in the left third or right third
         float segmentWidth = 1.0 / pow(3.0, float(level));
         float scale = 1.0;
-        
+
         for (int i = 0; i < 15; i++) {
             if (i >= level) break;
-            
+
             float third = scale / 3.0;
-            
+
             // Normalize x to [0, scale] range
             float localX = mod(x, scale);
-            
+
             // Check if in middle third (removed region)
             if (localX >= third && localX < 2.0 * third) {
                 return false;
             }
-            
+
             // If in right third, adjust x for next iteration
             if (localX >= 2.0 * third) {
                 x = localX - 2.0 * third;
             } else {
                 x = localX;
             }
-            
+
             scale = third;
         }
-        
+
         return true;
     }
-    
+
     float computeFractal(vec2 c) {
         // Middle Third Cantor Set
         // Repeatedly removes the middle third of line segments
-        
+
         // Normalize coordinates to work with the Cantor set
         float x = (c.x + 2.0) / 4.0; // Map from [-2, 2] to [0, 1]
         float y = c.y;
-        
+
         // Clamp x to [0, 1] range
         if (x < 0.0 || x > 1.0) {
             return 0.0;
         }
-        
+
         // Determine which iteration level we're viewing based on y coordinate
         // Each level is stacked vertically
         float levelHeight = 0.15; // Height of each iteration band
         float levelSpacing = 0.05; // Gap between bands
         float totalLevelHeight = levelHeight + levelSpacing;
-        
+
         // Center the Cantor set vertically
         float startY = 1.5;
-        
+
         // Determine which iteration we're in
         int maxIterations = int(uIterations);
         if (maxIterations > 15) maxIterations = 15; // Cap at 15 iterations
-        
+
         float intensity = 0.0;
         bool inSegment = false;
         int segmentLevel = -1;
-        
+
         // Check each iteration level
         for (int level = 0; level < 15; level++) {
             if (level >= maxIterations) break;
-            
+
             float levelY = startY - float(level) * totalLevelHeight;
-            
+
             // Check if we're in the vertical range for this level
             if (y >= levelY - levelHeight && y <= levelY) {
                 // Check if x is in a Cantor segment at this level
@@ -89,7 +89,7 @@ const fractalFunction = `
                 break;
             }
         }
-        
+
         if (inSegment) {
             // Vary intensity based on level for interesting coloring
             return intensity * (uIterations / 15.0);
@@ -133,5 +133,11 @@ export const config = {
   fallbackPosition: {
     offset: { x: 0, y: 0 },
     zoom: 1
-}
+},
+  // Interesting bounds for "surprise me" - Cantor set is always interesting
+  interestingBounds: {
+    offsetX: [-1, 1],
+    offsetY: [-1, 1],
+    zoom: [0.5, 10],
+  }
 };

@@ -246,5 +246,11 @@ export const config = {
   fallbackPosition: {
     offset: { x: 0.0, y: 0.0 },
     zoom: 1
-}
+},
+  // Interesting bounds for "surprise me" - Multibrot sets are centered and symmetric
+  interestingBounds: {
+    offsetX: [-2.5, 2.5],
+    offsetY: [-2.5, 2.5],
+    zoom: [0.5, 100],
+  }
 };

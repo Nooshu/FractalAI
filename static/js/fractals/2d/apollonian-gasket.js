@@ -18,7 +18,7 @@ bool isInsideCircle(vec2 p, vec2 center, float radius) {
 
 float computeFractal(vec2 c) {
     int iterations = int(clamp(uIterations / 20.0, 1.0, 7.0));
-    
+
     // Start with three mutually tangent circles forming the base triangle
     // These are arranged in an equilateral triangle
     // Circle 1: bottom-left
@@ -30,16 +30,16 @@ float computeFractal(vec2 c) {
     // Circle 3: top
     vec2 c3 = vec2(0.0, 0.577);
     float r3 = 0.5;
-    
+
     // Outer bounding circle
     vec2 outerCenter = vec2(0.0, 0.0);
     float outerRadius = 1.2;
-    
+
     // Check if point is outside the outer bounding circle
     if (!isInsideCircle(c, outerCenter, outerRadius)) {
         return 0.0;
     }
-    
+
     // Apply recursive circle packing iteratively
     float depth = 0.0;
     vec2 currentPos = c;
@@ -49,10 +49,10 @@ float computeFractal(vec2 c) {
     float currentR1 = r1;
     float currentR2 = r2;
     float currentR3 = r3;
-    
+
     for (int i = 0; i < 7; i++) {
         if (i >= iterations) break;
-        
+
         // Check if point is inside any of the three circles
         if (isInsideCircle(currentPos, currentC1, currentR1)) {
             return depth * 12.0 + 1.0;
@@ -61,12 +61,12 @@ float computeFractal(vec2 c) {
         } else if (isInsideCircle(currentPos, currentC3, currentR3)) {
             return depth * 12.0 + 3.0;
         }
-        
+
         // Point is in a gap - calculate the inscribed circle in this gap
         // For Apollonian gasket, we inscribe a circle tangent to all three
         // Simplified: use the center of the gap (centroid of triangle formed by three circle centers)
         vec2 gapCenter = (currentC1 + currentC2 + currentC3) / 3.0;
-        
+
         // Approximate radius of inscribed circle
         // Distance from gap center to nearest circle boundary
         float dist1 = length(gapCenter - currentC1) - currentR1;
@@ -74,7 +74,7 @@ float computeFractal(vec2 c) {
         float dist3 = length(gapCenter - currentC3) - currentR3;
         float minDist = min(min(dist1, dist2), dist3);
         float inscribedRadius = minDist * 0.8; // Slightly smaller to ensure tangency
-        
+
         // Check if point is inside the inscribed circle
         if (isInsideCircle(currentPos, gapCenter, inscribedRadius)) {
             // Point is in the inscribed circle - recurse into it
@@ -95,11 +95,11 @@ float computeFractal(vec2 c) {
             vec2 toC2 = normalize(currentC2 - gapCenter);
             vec2 toC3 = normalize(currentC3 - gapCenter);
             vec2 toPoint = normalize(currentPos - gapCenter);
-            
+
             float dot1 = dot(toPoint, toC1);
             float dot2 = dot(toPoint, toC2);
             float dot3 = dot(toPoint, toC3);
-            
+
             // Find which direction the point is closest to
             if (dot1 >= dot2 && dot1 >= dot3) {
                 // Gap near circle 1
@@ -131,7 +131,7 @@ float computeFractal(vec2 c) {
             }
         }
     }
-    
+
     // Return depth for coloring
     return depth * 10.0 + float(iterations) * 5.0;
 }
@@ -226,4 +226,10 @@ export const config = {
     offset: { x: 0, y: 0 },
     zoom: 1,
   },
+  // Interesting bounds for "surprise me" - Apollonian gasket is always interesting
+  interestingBounds: {
+    offsetX: [-1, 1],
+    offsetY: [-1, 1],
+    zoom: [0.5, 10],
+  }
 };

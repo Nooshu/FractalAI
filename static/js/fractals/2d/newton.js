@@ -16,7 +16,7 @@ const fractalFunction = `
             (a.y * b.x - a.x * b.y) / denom
         );
     }
-    
+
     // Helper function to compute z^3
     vec2 complexCube(vec2 z) {
         float zx2 = z.x * z.x;
@@ -26,24 +26,24 @@ const fractalFunction = `
         // z^3 = (x+iy)^3 = x^3 - 3xy^2 + i(3x^2y - y^3)
         return vec2(zx3 - 3.0 * z.x * zy2, 3.0 * zx2 * z.y - zy3);
     }
-    
+
     // Helper function to compute z^2
     vec2 complexSquare(vec2 z) {
         return vec2(z.x * z.x - z.y * z.y, 2.0 * z.x * z.y);
     }
-    
+
     // Helper function to compute z^2 * 3 (for derivative)
     vec2 complexSquareTimes3(vec2 z) {
         vec2 z2 = complexSquare(z);
         return vec2(z2.x * 3.0, z2.y * 3.0);
     }
-    
+
     // Distance to a root
     float distanceToRoot(vec2 z, vec2 root) {
         vec2 diff = z - root;
         return length(diff);
     }
-    
+
     // Find which root z is closest to
     // Roots of z^3 - 1 = 0 are:
     // root1 = 1.0 + 0.0i
@@ -53,11 +53,11 @@ const fractalFunction = `
         vec2 root1 = vec2(1.0, 0.0);
         vec2 root2 = vec2(-0.5, 0.8660254);
         vec2 root3 = vec2(-0.5, -0.8660254);
-        
+
         float dist1 = distanceToRoot(z, root1);
         float dist2 = distanceToRoot(z, root2);
         float dist3 = distanceToRoot(z, root3);
-        
+
         if (dist1 < dist2 && dist1 < dist3) {
             return 1.0; // Root 1
         } else if (dist2 < dist3) {
@@ -66,55 +66,55 @@ const fractalFunction = `
             return 3.0; // Root 3
         }
     }
-    
+
     float computeFractal(vec2 c) {
         // Newton fractal for z^3 - 1 = 0
         // Newton's method: z_new = z - f(z) / f'(z)
         // f(z) = z^3 - 1
         // f'(z) = 3z^2
         // z_new = z - (z^3 - 1) / (3z^2)
-        
+
         vec2 z = c;
         float convergenceThreshold = 0.0001;
-        
+
         // Track which root we converge to
         float rootIndex = 0.0;
-        
+
         for (int i = 0; i < 200; i++) {
             if (i >= int(uIterations)) break;
-            
+
             // Check if we've converged to a root
             vec2 z3 = complexCube(z);
             vec2 fz = z3 - vec2(1.0, 0.0); // z^3 - 1
             float fzMag = length(fz);
-            
+
             if (fzMag < convergenceThreshold) {
                 // Converged! Find which root
                 rootIndex = findClosestRoot(z);
                 // Return iteration count with root offset for coloring
                 return float(i) + rootIndex * 0.33;
             }
-            
+
             // Compute derivative: f'(z) = 3z^2
             vec2 fPrime = complexSquareTimes3(z);
             float fPrimeMag = length(fPrime);
-            
+
             // Avoid division by zero
             if (fPrimeMag < 0.0001) {
                 // Derivative too small, can't continue
                 return uIterations;
             }
-            
+
             // Newton step: z_new = z - f(z) / f'(z)
             vec2 delta = complexDivide(fz, fPrime);
             z = z - delta;
-            
+
             // Check for divergence (moved too far)
             if (length(z) > 100.0) {
                 return uIterations;
             }
         }
-        
+
         // Didn't converge within iterations
         // Find closest root for coloring
         rootIndex = findClosestRoot(z);
@@ -157,4 +157,10 @@ export const config = {
     offset: { x: 0, y: 0 },
     zoom: 1,
   },
+  // Interesting bounds for "surprise me" - Newton fractal is centered around origin
+  interestingBounds: {
+    offsetX: [-2, 2],
+    offsetY: [-2, 2],
+    zoom: [0.5, 100],
+  }
 };

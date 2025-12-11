@@ -11,7 +11,7 @@ const fractalFunction = `
         vec2 z = vec2(0.0);
         float zx2 = 0.0;
         float zy2 = 0.0;
-        
+
         // Unroll first few iterations for better performance
         // Iteration 0
         zx2 = z.x * z.x;
@@ -25,7 +25,7 @@ const fractalFunction = `
         float z2_real = zx2 - zy2;
         float z2_imag = 2.0 * z.x * z.y;
         z = vec2(abs(z2_real), z2_imag) + c;
-        
+
         // Iteration 1
         zx2 = z.x * z.x;
         zy2 = z.y * z.y;
@@ -37,7 +37,7 @@ const fractalFunction = `
         z2_real = zx2 - zy2;
         z2_imag = 2.0 * z.x * z.y;
         z = vec2(abs(z2_real), z2_imag) + c;
-        
+
         // Iteration 2
         zx2 = z.x * z.x;
         zy2 = z.y * z.y;
@@ -49,15 +49,15 @@ const fractalFunction = `
         z2_real = zx2 - zy2;
         z2_imag = 2.0 * z.x * z.y;
         z = vec2(abs(z2_real), z2_imag) + c;
-        
+
         // Continue with loop for remaining iterations
         for (int i = 3; i < 200; i++) {
             if (i >= int(uIterations)) break;
-            
+
             // Calculate squared magnitudes
             zx2 = z.x * z.x;
             zy2 = z.y * z.y;
-            
+
             // Check for escape
             if (zx2 + zy2 > ESCAPE_RADIUS_SQ) {
                 // Smooth coloring using continuous escape
@@ -65,14 +65,14 @@ const fractalFunction = `
                 float nu = log(log_zn * INV_LOG2) * INV_LOG2;
                 return float(i) + 1.0 - nu;
             }
-            
+
             // Celtic Mandelbrot formula: compute z^2 normally, then take abs of real part only
             // z = abs(Re(z^2)) + i*Im(z^2) + c
             z2_real = zx2 - zy2;
             z2_imag = 2.0 * z.x * z.y;
             z = vec2(abs(z2_real), z2_imag) + c;
         }
-        
+
         return uIterations;
     }
 `;
@@ -111,4 +111,10 @@ export const config = {
     offset: { x: 0, y: 0 },
     zoom: 1,
   },
+  // Interesting bounds for "surprise me" - similar to Mandelbrot but with interesting features in negative X
+  interestingBounds: {
+    offsetX: [-2.5, 1.5],
+    offsetY: [-2, 2],
+    zoom: [0.5, 100],
+  }
 };

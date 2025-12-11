@@ -112,4 +112,12 @@ export const config = {
     offset: { x: 0, y: 0 },
     zoom: 1,
   },
+  // Interesting bounds for "surprise me" - Burning Ship Julia sets
+  interestingBounds: {
+    offsetX: [-2, 2],
+    offsetY: [-2, 2],
+    zoom: [0.5, 100],
+    juliaCX: [-1, 1],
+    juliaCY: [-1, 1],
+  }
 };

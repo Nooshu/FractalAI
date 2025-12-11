@@ -15,10 +15,10 @@ function generateDeRhamCurve(iterations) {
   const sqrt3 = 1.7320508075688772;
   const aReal = 0.25; // 1/4
   const aImag = sqrt3 * 0.25; // √3/4
-  
+
   // The curve maps the interval [0,1] to the complex plane
   // We recursively apply the two contraction mappings
-  
+
   // Helper function to compute a point on the curve using binary expansion
   // Each bit in the binary expansion of t determines which mapping to apply
   // The binary expansion t = 0.b₁b₂b₃... determines the sequence of mappings
@@ -26,14 +26,14 @@ function generateDeRhamCurve(iterations) {
     // Start with z = 0
     let zReal = 0;
     let zImag = 0;
-    
+
     // Apply mappings based on binary expansion of t
     // We need to read bits from most significant to least significant
     for (let depth = 0; depth < maxDepth; depth++) {
       // Extract the (depth+1)-th bit from binary expansion
       // For t in [0,1], bit k is: floor(t * 2^(k+1)) mod 2
       const bitValue = Math.floor(t * Math.pow(2, depth + 1)) % 2;
-      
+
       if (bitValue === 0) {
         // Apply d₀: z -> az (complex multiplication)
         const newReal = aReal * zReal - aImag * zImag;
@@ -51,14 +51,14 @@ function generateDeRhamCurve(iterations) {
         zImag = newImag;
       }
     }
-    
+
     return { x: zReal, y: zImag };
   }
-  
+
   // Generate the curve by sampling points
   // Use enough points to show the intricate detail
   const numPoints = Math.min(20000, Math.pow(2, Math.min(iterations + 2, 14)));
-  
+
   for (let i = 0; i <= numPoints; i++) {
     const t = i / numPoints;
     const point = computePoint(t, iterations);
@@ -108,28 +108,28 @@ function createLineFractalVertexShader(useUBO) {
     void main() {
       float aspect = uResolution.x / uResolution.y;
       float scale = 4.0 / uZoom;
-      
+
       // Transform vertex position to match the standard fractal coordinate system
       // For line-based fractals, maintain aspect ratio correctly
       vec2 fractalCoord = position;
       vec2 relative = fractalCoord - uOffset;
-      
+
       // Scale uniformly (same factor for x and y) to preserve shape
       vec2 scaled = vec2(
         relative.x / (scale * uScale.x),
         relative.y / (scale * uScale.y)
       );
-      
+
       // Apply aspect ratio correction to maintain shape across different window sizes
       // Divide x by aspect to compensate for wider screens, preserving the curve's proportions
       scaled.x /= aspect;
-      
+
       // Convert to clip space (-1 to 1) by multiplying by 2.0
       gl_Position = vec4(scaled * 2.0, 0.0, 1.0);
       vPosition = position;
     }`;
   }
-  
+
   return `
     precision mediump float;
     attribute vec2 position;
@@ -143,22 +143,22 @@ function createLineFractalVertexShader(useUBO) {
     void main() {
       float aspect = uResolution.x / uResolution.y;
       float scale = 4.0 / uZoom;
-      
+
       // Transform vertex position to match the standard fractal coordinate system
       // For line-based fractals, maintain aspect ratio correctly
       vec2 fractalCoord = position;
       vec2 relative = fractalCoord - uOffset;
-      
+
       // Scale uniformly (same factor for x and y) to preserve shape
       vec2 scaled = vec2(
         relative.x / (scale * uXScale),
         relative.y / (scale * uYScale)
       );
-      
+
       // Apply aspect ratio correction to maintain shape across different window sizes
       // Divide x by aspect to compensate for wider screens, preserving the curve's proportions
       scaled.x /= aspect;
-      
+
       // Convert to clip space (-1 to 1) by multiplying by 2.0
       gl_Position = vec4(scaled * 2.0, 0.0, 1.0);
       vPosition = position;
@@ -181,12 +181,12 @@ function createLineFractalFragmentShader(useUBO) {
       float dist = length(vPosition);
       float angle = atan(vPosition.y, vPosition.x);
       float t = fract(dist * 2.5 + angle * 0.5);
-      
+
       vec3 color = texture(uPalette, vec2(t, 0.5)).rgb;
       fragColor = vec4(color, 1.0);
     }`;
   }
-  
+
   return `
     precision mediump float;
     uniform sampler2D uPalette;
@@ -198,7 +198,7 @@ function createLineFractalFragmentShader(useUBO) {
       float dist = length(vPosition);
       float angle = atan(vPosition.y, vPosition.x);
       float t = fract(dist * 2.5 + angle * 0.5);
-      
+
       vec3 color = texture2D(uPalette, vec2(t, 0.5)).rgb;
       gl_FragColor = vec4(color, 1.0);
     }
@@ -280,6 +280,12 @@ export const config = {
   fallbackPosition: {
     offset: { x: 0, y: 0 },
     zoom: 1
-}
+},
+  // Interesting bounds for "surprise me" - De Rham curve is always interesting
+  interestingBounds: {
+    offsetX: [-1, 1],
+    offsetY: [-1, 1],
+    zoom: [0.5, 10],
+  }
 };
 

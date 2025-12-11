@@ -23,47 +23,47 @@ bool isOutsideCircle(vec2 p, vec2 center, float radius) {
 
 float computeFractal(vec2 c) {
     int iterations = int(clamp(uIterations / 20.0, 1.0, 7.0));
-    
+
     // Start with a base circle centered at origin
     vec2 baseCenter = vec2(0.0, 0.0);
     float baseRadius = 1.0;
-    
+
     // Check if point is outside base circle
     if (!isInsideCircle(c, baseCenter, baseRadius)) {
         return 0.0;
     }
-    
+
     // Apply recursive circular removal iteratively
     // Similar to Cantor set: remove middle third, but in circular form
     // We'll remove concentric rings, keeping outer and inner rings
-    
+
     float depth = 0.0;
     vec2 currentCenter = baseCenter;
     float currentRadius = baseRadius;
-    
+
     for (int i = 0; i < 7; i++) {
         if (i >= iterations) break;
-        
+
         // Check if still in current circle
         if (!isInsideCircle(c, currentCenter, currentRadius)) {
             return depth * 20.0;
         }
-        
+
         // Divide circle into three concentric rings:
         // Outer ring: radius from 2/3 to 1.0 (keep)
         // Middle ring: radius from 1/3 to 2/3 (remove)
         // Inner ring: radius from 0.0 to 1/3 (keep)
-        
+
         float outerRingMin = currentRadius * (2.0 / 3.0);
         float innerRingMax = currentRadius * (1.0 / 3.0);
-        
+
         float distFromCenter = length(c - currentCenter);
-        
+
         // Check if in removed middle ring
         if (distFromCenter > innerRingMax && distFromCenter <= outerRingMin) {
             return 0.0; // In removed region
         }
-        
+
         // Determine which ring we're in and recurse
         if (distFromCenter <= innerRingMax) {
             // In inner ring - recurse into it
@@ -83,7 +83,7 @@ float computeFractal(vec2 c) {
             return depth * 20.0;
         }
     }
-    
+
     // Return depth for coloring
     return depth * 10.0 + float(iterations) * 5.0;
 }
@@ -177,4 +177,10 @@ export const config = {
     offset: { x: 0, y: 0 },
     zoom: 1,
   },
+  // Interesting bounds for "surprise me" - Cantor dust circular is always interesting
+  interestingBounds: {
+    offsetX: [-1, 1],
+    offsetY: [-1, 1],
+    zoom: [0.5, 10],
+  }
 };

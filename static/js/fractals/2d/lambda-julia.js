@@ -12,7 +12,7 @@ const fractalFunction = `
         vec2 z = c;
         float zx2 = 0.0;
         float zy2 = 0.0;
-        
+
         // Unroll first few iterations for better performance
         // Iteration 0
         zx2 = z.x * z.x;
@@ -30,7 +30,7 @@ const fractalFunction = `
             uJuliaC.x * real_part - uJuliaC.y * imag_part,
             uJuliaC.x * imag_part + uJuliaC.y * real_part
         );
-        
+
         // Iteration 1
         zx2 = z.x * z.x;
         zy2 = z.y * z.y;
@@ -45,7 +45,7 @@ const fractalFunction = `
             uJuliaC.x * real_part - uJuliaC.y * imag_part,
             uJuliaC.x * imag_part + uJuliaC.y * real_part
         );
-        
+
         // Iteration 2
         zx2 = z.x * z.x;
         zy2 = z.y * z.y;
@@ -60,15 +60,15 @@ const fractalFunction = `
             uJuliaC.x * real_part - uJuliaC.y * imag_part,
             uJuliaC.x * imag_part + uJuliaC.y * real_part
         );
-        
+
         // Continue with loop for remaining iterations
         for (int i = 3; i < 200; i++) {
             if (i >= int(uIterations)) break;
-            
+
             // Calculate squared magnitudes
             zx2 = z.x * z.x;
             zy2 = z.y * z.y;
-            
+
             // Check for escape
             if (zx2 + zy2 > ESCAPE_RADIUS_SQ) {
                 // Smooth coloring using continuous escape
@@ -76,7 +76,7 @@ const fractalFunction = `
                 float nu = log(log_zn * INV_LOG2) * INV_LOG2;
                 return float(i) + 1.0 - nu;
             }
-            
+
             // Lambda Julia formula: z_{n+1} = λ * z_n * (1 - z_n)
             // z * (1 - z) = (x - x^2 + y^2) + i(y - 2xy)
             real_part = z.x - zx2 + zy2;
@@ -87,7 +87,7 @@ const fractalFunction = `
                 uJuliaC.x * imag_part + uJuliaC.y * real_part
             );
         }
-        
+
         return uIterations;
     }
 `;
@@ -128,4 +128,12 @@ export const config = {
     offset: { x: 0, y: 0 },
     zoom: 1,
   },
+  // Interesting bounds for "surprise me" - Lambda Julia sets
+  interestingBounds: {
+    offsetX: [-2, 2],
+    offsetY: [-2, 2],
+    zoom: [0.5, 100],
+    juliaCX: [-1, 1],
+    juliaCY: [-1, 1],
+  }
 };

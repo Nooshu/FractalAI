@@ -7,14 +7,14 @@ const fractalFunction = `
     // Buddhabrot: Classic orbit density visualization
     // Tracks how many escaping orbits pass through each pixel
     // Classic Buddhabrot is simpler than Nebulabrot - single channel, no iteration-based weighting
-    
+
     float computeFractal(vec2 c) {
         // Buddhabrot samples points in the complex plane and tracks their orbits
         // Only orbits that escape contribute to the density map
-        
+
         float density = 0.0;
         int numSamples = 8; // Number of sample points around current location
-        
+
         // Sample points in a circular pattern around the current pixel
         // This approximates the orbit density from many starting points
         for (int sample = 0; sample < 8; sample++) {
@@ -22,16 +22,16 @@ const fractalFunction = `
             float angle = float(sample) * 6.28318 / 8.0; // 2*PI / numSamples
             float radius = 0.015 / uZoom; // Scale sampling radius by zoom
             vec2 sampleC = c + vec2(cos(angle), sin(angle)) * radius;
-            
+
             // Track orbit for this starting point
             vec2 z = vec2(0.0);
             bool escaped = false;
             float orbitContrib = 0.0;
-            
+
             // Iterate and track the entire orbit path
             for (int i = 0; i < 200; i++) {
                 if (i >= int(uIterations)) break;
-                
+
                 // Check for escape
                 float zx2 = z.x * z.x;
                 float zy2 = z.y * z.y;
@@ -39,15 +39,15 @@ const fractalFunction = `
                     escaped = true;
                     break;
                 }
-                
+
                 // Standard Mandelbrot iteration: z = z^2 + c
                 z = vec2(zx2 - zy2, 2.0 * z.x * z.y) + sampleC;
-                
+
                 // Check if orbit passes through or near the current pixel
                 // Classic Buddhabrot: simple distance-based contribution
                 float distToPixel = length(z - c);
                 float threshold = 0.05 / uZoom; // Scale threshold by zoom
-                
+
                 if (distToPixel < threshold) {
                     // Orbit passes near this pixel - add to density
                     // Simple inverse distance weighting (no iteration-based weighting)
@@ -55,22 +55,22 @@ const fractalFunction = `
                     orbitContrib += influence;
                 }
             }
-            
+
             // Only count orbits that escaped (Buddhabrot only shows escaping orbits)
             if (escaped) {
                 density += orbitContrib;
             }
         }
-        
+
         // Average density across samples
         density /= float(numSamples);
-        
+
         // Classic Buddhabrot uses simpler scaling - no logarithmic compression
         // Just scale the density for visualization
         if (density > 0.0) {
             return density * uIterations * 0.5;
         }
-        
+
         // Points in the set return max iterations (rendered as black)
         return uIterations;
     }
@@ -109,6 +109,12 @@ export const config = {
   fallbackPosition: {
     offset: { x: -0.75, y: 0.1 },
     zoom: 50
-}
+},
+  // Interesting bounds for "surprise me" - Buddhabrot similar to Mandelbrot
+  interestingBounds: {
+    offsetX: [-2.5, 1.5],
+    offsetY: [-2, 2],
+    zoom: [0.5, 100],
+  }
 };
 

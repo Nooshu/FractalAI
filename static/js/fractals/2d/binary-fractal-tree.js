@@ -64,22 +64,22 @@ function createLineFractalVertexShader(useUBO) {
     void main() {
       float aspect = uResolution.x / uResolution.y;
       float scale = 4.0 / uZoom;
-      
+
       vec2 fractalCoord = position;
       vec2 relative = fractalCoord - uOffset;
-      
+
       vec2 scaled = vec2(
         relative.x / (scale * uScale.x),
         relative.y / (scale * uScale.y)
       );
-      
+
       scaled.x /= aspect;
-      
+
       gl_Position = vec4(scaled * 2.0, 0.0, 1.0);
       vPosition = position;
     }`;
   }
-  
+
   return `
     precision mediump float;
     attribute vec2 position;
@@ -93,17 +93,17 @@ function createLineFractalVertexShader(useUBO) {
     void main() {
       float aspect = uResolution.x / uResolution.y;
       float scale = 4.0 / uZoom;
-      
+
       vec2 fractalCoord = position;
       vec2 relative = fractalCoord - uOffset;
-      
+
       vec2 scaled = vec2(
         relative.x / (scale * uXScale),
         relative.y / (scale * uYScale)
       );
-      
+
       scaled.x /= aspect;
-      
+
       gl_Position = vec4(scaled * 2.0, 0.0, 1.0);
       vPosition = position;
     }
@@ -123,12 +123,12 @@ function createLineFractalFragmentShader(useUBO) {
     void main() {
       float dist = length(vPosition);
       float t = fract(dist * 2.5);
-      
+
       vec3 color = texture(uPalette, vec2(t, 0.5)).rgb;
       fragColor = vec4(color, 1.0);
     }`;
   }
-  
+
   return `
     precision mediump float;
     uniform sampler2D uPalette;
@@ -138,7 +138,7 @@ function createLineFractalFragmentShader(useUBO) {
     void main() {
       float dist = length(vPosition);
       float t = fract(dist * 2.5);
-      
+
       vec3 color = texture2D(uPalette, vec2(t, 0.5)).rgb;
       gl_FragColor = vec4(color, 1.0);
     }
@@ -150,7 +150,7 @@ export function render(regl, params, canvas, options = {}) {
   const webglCapabilities = options.webglCapabilities;
   const ubo = options.ubo;
   const useUBO = webglCapabilities?.isWebGL2 && ubo;
-  
+
   // Generate palette texture for the current color scheme
   const paletteTexture = generatePaletteTexture(regl, params.colorScheme);
 
@@ -225,6 +225,12 @@ export const config = {
   fallbackPosition: {
     offset: { x: 0, y: 0 },
     zoom: 2
-}
+},
+  // Interesting bounds for "surprise me" - Binary fractal tree is always interesting
+  interestingBounds: {
+    offsetX: [-1, 1],
+    offsetY: [-1, 1],
+    zoom: [0.5, 10],
+  }
 };
 
