@@ -1536,9 +1536,32 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
     clearFadeTimer();
     if (!isFullscreen() || !fullscreenControls) return;
 
+    // Don't start fade timer if any button is disabled, loading, or focused
+    const buttons = fullscreenControls.querySelectorAll('.fullscreen-control-btn');
+    const hasActiveButton = Array.from(buttons).some(btn =>
+      btn.disabled ||
+      btn.classList.contains('loading') ||
+      btn === document.activeElement
+    );
+
+    if (hasActiveButton) {
+      return; // Don't fade if buttons are active
+    }
+
     fadeTimeout = setTimeout(() => {
       if (isFullscreen() && fullscreenControls) {
-        fullscreenControls.classList.add('faded');
+        // Double-check that no buttons are active before fading
+        const buttons = fullscreenControls.querySelectorAll('.fullscreen-control-btn');
+        const hasActiveButton = Array.from(buttons).some(btn =>
+          btn.disabled ||
+          btn.classList.contains('loading') ||
+          btn === document.activeElement ||
+          btn.matches(':hover')
+        );
+
+        if (!hasActiveButton) {
+          fullscreenControls.classList.add('faded');
+        }
       }
     }, FADE_DELAY);
   };
@@ -1569,16 +1592,68 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
 
   const handleMouseLeaveControls = () => {
     if (!isFullscreen() || !fullscreenControls) return;
-    startFadeTimer();
+
+    // Don't start fade timer if any button is disabled, loading, or focused
+    const buttons = fullscreenControls.querySelectorAll('.fullscreen-control-btn');
+    const hasActiveButton = Array.from(buttons).some(btn =>
+      btn.disabled ||
+      btn.classList.contains('loading') ||
+      btn === document.activeElement ||
+      btn.matches(':hover')
+    );
+
+    if (!hasActiveButton) {
+      startFadeTimer();
+    }
   };
 
   // Add mouse movement listener
   document.addEventListener('mousemove', handleMouseMove);
 
-  // Add hover listeners to controls
+  // Add hover listeners to controls container
   if (fullscreenControls) {
     fullscreenControls.addEventListener('mouseenter', handleMouseEnterControls);
     fullscreenControls.addEventListener('mouseleave', handleMouseLeaveControls);
+
+    // Also add hover listeners to individual buttons to prevent fade when hovering
+    const buttons = fullscreenControls.querySelectorAll('.fullscreen-control-btn');
+    buttons.forEach((button) => {
+      button.addEventListener('mouseenter', handleMouseEnterControls);
+      button.addEventListener('mouseleave', (e) => {
+        // Only fade if mouse is not over any button or the container
+        if (!fullscreenControls.matches(':hover') && !Array.from(buttons).some(btn => btn.matches(':hover'))) {
+          handleMouseLeaveControls();
+        }
+      });
+
+      // Prevent fade when button is clicked, focused, or active
+      button.addEventListener('click', () => {
+        clearFadeTimer();
+        fullscreenControls.classList.remove('faded');
+        // Don't restart timer immediately after click - wait for mouse to leave
+      });
+
+      button.addEventListener('focus', handleMouseEnterControls);
+      button.addEventListener('blur', (e) => {
+        // Only fade on blur if not hovering and not another button is focused
+        if (!fullscreenControls.matches(':hover') &&
+            !Array.from(buttons).some(btn => btn.matches(':hover') || btn === document.activeElement)) {
+          handleMouseLeaveControls();
+        }
+      });
+
+      // Prevent fade when button is disabled/loading (e.g., surprise me button)
+      const observer = new MutationObserver(() => {
+        if (button.disabled || button.classList.contains('loading')) {
+          clearFadeTimer();
+          fullscreenControls.classList.remove('faded');
+        }
+      });
+      observer.observe(button, {
+        attributes: true,
+        attributeFilter: ['disabled', 'class']
+      });
+    });
   }
 
   // Listen for fullscreen changes

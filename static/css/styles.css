@@ -1861,11 +1861,13 @@ body {
   right: 20px;
   display: none;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
   z-index: 2000;
   pointer-events: none;
   opacity: 1;
   transition: opacity 0.5s ease-in-out;
+  /* Add padding to ensure scaled buttons don't cause hover issues */
+  padding: 4px;
 }
 
 .fullscreen-controls.visible {
@@ -1894,6 +1896,8 @@ body {
   position: relative;
   outline: none;
   will-change: transform;
+  transform-origin: center center;
+  z-index: 2001;
 }
 
 .fullscreen-control-btn:hover {
@@ -1902,6 +1906,14 @@ body {
   color: white;
   transform: scale(1.1);
   box-shadow: var(--button-blue-shadow-hover);
+  z-index: 2002;
+  pointer-events: auto;
+}
+
+/* Prevent hover from being lost when button scales */
+.fullscreen-control-btn:hover,
+.fullscreen-control-btn:hover * {
+  pointer-events: auto;
 }
 
 .fullscreen-control-btn:active {
