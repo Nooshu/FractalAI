@@ -480,6 +480,101 @@ export function computeColorForScheme(t, schemeIndexOrName, out = null) {
       out[2] = 0.1 + phase1 * 0.2 + phase2 * 0.7;
       return out;
     }
+    case 38: {
+      // noir-ember - near-black to ember red/orange to hot white
+      const x = t * t; // emphasize low end (more black)
+      const hot = Math.pow(t, 6); // highlights only near the top
+      out[0] = Math.min(1, 0.02 + x * 1.15);
+      out[1] = Math.min(1, 0.01 + x * 0.35 + hot * 0.9);
+      out[2] = Math.min(1, 0.01 + x * 0.08 + hot * 1.0);
+      return out;
+    }
+    case 39: {
+      // ultraviolet - black → violet → electric cyan
+      const a = Math.min(1, t * 1.25);
+      const b = Math.max(0, (t - 0.35) / 0.65);
+      out[0] = 0.02 + a * 0.55 + b * 0.05;
+      out[1] = 0.00 + a * 0.12 + b * 0.95;
+      out[2] = 0.08 + a * 0.95 + b * 0.15;
+      return out;
+    }
+    case 40: {
+      // toxic - black → neon green → sulfur yellow
+      const a = Math.min(1, t * 1.4);
+      const b = Math.max(0, (t - 0.55) / 0.45);
+      out[0] = 0.01 + b * 0.95;
+      out[1] = 0.05 + a * 0.95;
+      out[2] = 0.00 + a * 0.12;
+      return out;
+    }
+    case 41: {
+      // blood-moon - black → deep crimson → magenta highlights
+      const a = Math.pow(t, 1.2);
+      const h = Math.pow(t, 5.5);
+      out[0] = Math.min(1, 0.02 + a * 0.95);
+      out[1] = Math.min(1, 0.00 + a * 0.10 + h * 0.25);
+      out[2] = Math.min(1, 0.00 + a * 0.12 + h * 0.95);
+      return out;
+    }
+    case 42: {
+      // void-ice - black → deep blue → icy white
+      const a = Math.pow(t, 1.4);
+      const w = Math.pow(t, 7);
+      out[0] = Math.min(1, 0.01 + a * 0.25 + w * 0.95);
+      out[1] = Math.min(1, 0.02 + a * 0.55 + w * 0.95);
+      out[2] = Math.min(1, 0.08 + a * 0.95 + w * 0.95);
+      return out;
+    }
+    case 43: {
+      // acid-rain - stormy teal → acid green → bright mint
+      const a = Math.min(1, t * 1.1);
+      const b = Math.max(0, (t - 0.4) / 0.6);
+      const sparkle = Math.sin(t * Math.PI * 14) * 0.08 + 0.92;
+      out[0] = (0.02 + a * 0.15 + b * 0.25) * sparkle;
+      out[1] = (0.10 + a * 0.75 + b * 0.35) * sparkle;
+      out[2] = (0.12 + a * 0.55 + b * 0.45) * sparkle;
+      return out;
+    }
+    case 44: {
+      // solar-flare - black → orange → blinding yellow-white with flare pulses
+      const a = Math.pow(t, 1.1);
+      const hot = Math.pow(t, 5);
+      const flare = Math.sin(t * Math.PI * 10) * 0.12 + 0.88;
+      out[0] = Math.min(1, (0.02 + a * 1.05) * flare);
+      out[1] = Math.min(1, (0.01 + a * 0.55 + hot * 0.85) * flare);
+      out[2] = Math.min(1, (0.00 + a * 0.10 + hot * 1.00) * flare);
+      return out;
+    }
+    case 45: {
+      // deep-sea - abyss navy → teal → bioluminescent cyan
+      const a = Math.pow(t, 1.25);
+      const glow = Math.pow(Math.max(0, t - 0.55) / 0.45, 2.2);
+      out[0] = 0.00 + a * 0.08;
+      out[1] = 0.03 + a * 0.55 + glow * 0.45;
+      out[2] = 0.08 + a * 0.85 + glow * 0.25;
+      return out;
+    }
+    case 46: {
+      // chiaroscuro - high-contrast monochrome with subtle blue tint in highlights
+      const c = t < 0.55 ? Math.pow(t / 0.55, 1.8) * 0.35 : 0.35 + Math.pow((t - 0.55) / 0.45, 0.7) * 0.65;
+      out[0] = c;
+      out[1] = c * 0.98;
+      out[2] = Math.min(1, c * 1.08);
+      return out;
+    }
+    case 47: {
+      // spectral-night - dark rainbow with boosted saturation and deep shadows
+      const hue = ((t * 420) % 360) / 360;
+      const sat = 1.15;
+      const base = 0.12 + 0.35 * Math.pow(t, 1.6);
+      const r = 0.5 + 0.5 * Math.cos(hue * 6.28 + 0.0);
+      const g = 0.5 + 0.5 * Math.cos(hue * 6.28 + 2.09);
+      const b = 0.5 + 0.5 * Math.cos(hue * 6.28 + 4.18);
+      out[0] = Math.max(0, Math.min(1, base + (r - 0.5) * sat));
+      out[1] = Math.max(0, Math.min(1, base + (g - 0.5) * sat));
+      out[2] = Math.max(0, Math.min(1, base + (b - 0.5) * sat));
+      return out;
+    }
     default: // classic (scheme == 0)
       out[0] = t * 0.5;
       out[1] = t;
@@ -890,6 +985,16 @@ export function getColorSchemeIndex(scheme) {
     'prism',
     'mystic',
     'amber',
+    'noir-ember',
+    'ultraviolet',
+    'toxic',
+    'blood-moon',
+    'void-ice',
+    'acid-rain',
+    'solar-flare',
+    'deep-sea',
+    'chiaroscuro',
+    'spectral-night',
   ];
   return schemes.indexOf(scheme);
 }
