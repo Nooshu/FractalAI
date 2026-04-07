@@ -45,7 +45,22 @@
     "prettier": "3.7.4",
     "stylelint": "16.26.1",
     "stylelint-config-standard": "39.0.1",
-    "vite": "7.2.7",
+    "vite": "^7.3.2",
     "vitest": "4.0.15"
+  },
+  "overrides": {
+    "brace-expansion": "1.1.13",
+    "flatted": "3.4.2",
+    "picomatch": "4.0.4",
+    "micromatch": {
+      "picomatch": "2.3.2"
+    },
+    "ajv": "8.18.0",
+    "eslint": {
+      "ajv": "6.14.0"
+    },
+    "table": {
+      "ajv": "8.18.0"
+    }
   }
 }
