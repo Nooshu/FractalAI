@@ -14,7 +14,6 @@ import { loadFractalFromURL, setupShareFractal } from '../sharing/state-manager.
 import { updateWikipediaLink } from '../fractals/fractal-config.js';
 import { initUILayout } from '../ui/panels.js';
 import { setupMathInfoPanel } from '../ui/math-info-panel.js';
-import { fractalLoader, loadFractal } from '../fractals/loader.js';
 import { RenderingEngine } from '../rendering/engine.js';
 import { setupInputControls, zoomToSelection } from '../input/controls.js';
 import { setupUIControls } from '../ui/controls.js';
@@ -25,11 +24,22 @@ import { getColorSchemeIndex, computeColorForScheme } from '../fractals/utils.js
 import { getWorkerCapabilities } from '../workers/feature-detection.js';
 import { logSharedArrayBufferStatus } from '../workers/shared-array-buffer-utils.js';
 import { logWasmSimdStatus } from '../workers/wasm-simd-utils.js';
+import { detectWebGLCapabilities } from '../rendering/webgl-capabilities.js';
 import { CONFIG } from './config.js';
 import { LongTaskDetector } from '../performance/long-task-detector.js';
 import { lifecycleManager } from './lifecycle-manager.js';
 import { idleCleanupManager } from './idle-cleanup.js';
 import { devLog } from './logger.js';
+
+let fractalLoader = null;
+let loadFractal = null;
+
+async function ensureFractalLoader() {
+  if (fractalLoader && loadFractal) return;
+  const mod = await import('../fractals/loader.js');
+  fractalLoader = mod.fractalLoader;
+  loadFractal = mod.loadFractal;
+}
 
 /**
  * Initialize DOM cache and basic UI modules
@@ -374,7 +384,6 @@ async function reinitializeWebGLResources(appState, canvas) {
     try {
       const gl = regl._gl;
       if (gl) {
-        const { detectWebGLCapabilities } = await import('../rendering/webgl-capabilities.js');
         const webglCapabilities = detectWebGLCapabilities(gl);
         appState.setWebGLCapabilities(webglCapabilities);
 
@@ -849,6 +858,8 @@ function createUpdateCoordinateDisplay() {
  * Main initialization function
  */
 export async function init() {
+  await ensureFractalLoader();
+
   const updateWikipediaLinkFn = createUpdateWikipediaLink();
   const updateCoordinateDisplayFn = createUpdateCoordinateDisplay();
 

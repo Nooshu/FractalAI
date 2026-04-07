@@ -4,6 +4,7 @@
  */
 
 import { isJuliaType, getInterestingBounds } from '../fractals/utils.js';
+import { CONFIG } from '../core/config.js';
 
 /**
  * Extract features from a fractal configuration for ML scoring
@@ -149,53 +150,7 @@ export async function hybridScore(config, isValidInterestingView, model) {
  * @returns {Promise<Array<string>>} Array of color scheme names
  */
 async function getAvailableColorSchemes() {
-  try {
-    // Dynamically import CONFIG to avoid circular dependencies
-    const { CONFIG } = await import('../core/config.js');
-    return CONFIG.colors.schemes || ['classic'];
-  } catch (_error) {
-    // Fallback list if import fails
-    return [
-      'classic',
-      'fire',
-      'ocean',
-      'rainbow',
-      'rainbow-pastel',
-      'rainbow-dark',
-      'rainbow-vibrant',
-      'rainbow-double',
-      'rainbow-shifted',
-      'monochrome',
-      'forest',
-      'sunset',
-      'purple',
-      'cyan',
-      'gold',
-      'ice',
-      'neon',
-      'cosmic',
-      'aurora',
-      'coral',
-      'autumn',
-      'midnight',
-      'emerald',
-      'rosegold',
-      'electric',
-      'vintage',
-      'tropical',
-      'galaxy',
-      'lava',
-      'arctic',
-      'sakura',
-      'volcanic',
-      'mint',
-      'sunrise',
-      'steel',
-      'prism',
-      'mystic',
-      'amber',
-    ];
-  }
+  return CONFIG.colors.schemes || ['classic'];
 }
 
 /**

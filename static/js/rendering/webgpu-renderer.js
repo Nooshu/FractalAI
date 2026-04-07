@@ -4,6 +4,9 @@
  * Falls back to WebGL if WebGPU is not available or disabled
  */
 
+import { CONFIG } from '../core/config.js';
+import { devLog } from '../core/logger.js';
+
 /**
  * Create a WebGPU compute shader for Mandelbrot set computation
  * @param {Object} device - WebGPU device
@@ -331,8 +334,6 @@ export class WebGPURenderer {
  */
 export async function initWebGPURenderer(canvas, options = {}) {
   const { initWebGPU, formatWebGPUCapabilities } = await import('./webgpu-capabilities.js');
-  const { CONFIG } = await import('../core/config.js');
-  const { devLog } = await import('../core/logger.js');
 
   // Check if WebGPU is enabled
   if (!CONFIG.features.webgpu) {

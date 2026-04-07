@@ -9,6 +9,7 @@ import { updatePixelRatio } from './pixel-ratio.js';
 import { detectWebGLCapabilities, formatCapabilities } from './webgl-capabilities.js';
 import { initWebGPURenderer } from './webgpu-renderer.js';
 import { devLog } from '../core/logger.js';
+import { CONFIG } from '../core/config.js';
 
 /**
  * Initialize canvas and renderer (WebGPU or WebGL)
@@ -49,7 +50,6 @@ export async function initCanvasRenderer(canvasId, options = {}) {
   let webglCapabilities = null;
 
   // Try to initialize WebGPU if enabled
-  const { CONFIG } = await import('../core/config.js');
   if (CONFIG.features.webgpu && 'gpu' in navigator) {
     try {
       webgpuRenderer = await initWebGPURenderer(canvas, {

@@ -9,7 +9,13 @@ import {
 import { initializeModel, shouldRetrainModel, trainModel, saveModel } from './ml-trainer.js';
 import { getFavorites } from './favorites-manager.js';
 import { devLog } from '../core/logger.js';
-import { fractalLoader } from '../fractals/loader.js';
+
+let fractalLoader = null;
+async function ensureFractalLoader() {
+  if (fractalLoader) return;
+  const mod = await import('../fractals/loader.js');
+  fractalLoader = mod.fractalLoader;
+}
 
 let mlModel = null;
 let isModelInitializing = false;
@@ -59,6 +65,8 @@ export async function getSurpriseMeFractal(
   isValidInterestingView,
   options = {}
 ) {
+  await ensureFractalLoader();
+
   // Try to get the fractal module from cache to access interesting bounds
   let fractalModule = null;
   try {
@@ -105,6 +113,8 @@ export async function getDiscoveredFractals(
   isValidInterestingView,
   options = {}
 ) {
+  await ensureFractalLoader();
+
   // Try to get the fractal module from cache to access interesting bounds
   let fractalModule = null;
   try {

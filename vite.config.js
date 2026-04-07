@@ -49,56 +49,18 @@ export default defineConfig({
             return 'vendor';
           }
 
-          // Core rendering modules - separate heavy rendering code
-          if (id.includes('/rendering/')) {
-            // Engine is the core rendering orchestrator
-            if (id.includes('/rendering/engine.js')) {
-              return 'core-rendering';
-            }
-            // Canvas renderer setup
-            if (id.includes('/rendering/canvas-renderer.js')) {
-              return 'core-rendering';
-            }
-            // WebGPU renderer
-            if (id.includes('/rendering/webgpu-renderer.js')) {
-              return 'core-rendering';
-            }
-            // Other rendering utilities can stay together
-            return 'rendering-utils';
+          // Keep app-internal modules together.
+          // Splitting these into multiple manual chunks can create circular chunk graphs
+          // because core/rendering/ui/discovery import each other.
+          if (
+            id.includes('/core/') ||
+            id.includes('/rendering/') ||
+            id.includes('/ui/') ||
+            id.includes('/discovery/')
+          ) {
+            return 'app';
           }
 
-          // Discovery/ML modules - separate ML code
-          if (id.includes('/discovery/')) {
-            return 'discovery';
-          }
-
-          // UI modules - separate UI code
-          if (id.includes('/ui/')) {
-            // Controls is the largest UI module
-            if (id.includes('/ui/controls.js')) {
-              return 'ui-controls';
-            }
-            // Other UI modules
-            return 'ui';
-          }
-
-          // Core application state and initialization
-          if (id.includes('/core/')) {
-            // Core config must be with app-state to avoid initialization order issues
-            if (id.includes('/core/config.js')) {
-              return 'core-init';
-            }
-            // App state must be in same chunk as initialization to avoid circular deps
-            if (id.includes('/core/app-state.js') || id.includes('/core/initialization.js')) {
-              return 'core-init';
-            }
-            // Logger is used by app-state, keep it together
-            if (id.includes('/core/logger.js')) {
-              return 'core-init';
-            }
-            // Other core modules
-            return 'core';
-          }
           // Helper function to check if a fractal belongs to a family
           const isFamilyFractal = (familyName, fractalNames) => {
             if (id.includes(`/fractals/2d/families/${familyName}.js`)) {
