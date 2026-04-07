@@ -1,0 +1,15 @@
+---
+description: Testing & quality workflow (avoid regressions, handle flakiness)
+alwaysApply: true
+---
+
+# Testing & quality
+
+- **Fix the root cause**: Don’t “paper over” failing tests by loosening assertions unless the requirement truly changed.
+- **Unit tests**:
+  - Prefer deterministic tests (no time/network/randomness without control).
+  - For browser APIs (`localStorage`, `fullscreen`, `canvas`), use explicit mocks/stubs in tests.
+- **Lint/style**:
+  - Keep ESLint/Stylelint happy for edited files.
+  - If formatting changes are needed, prefer running the formatter rather than manual whitespace edits.
+

@@ -1754,6 +1754,14 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
         // Don't restart timer immediately after click - wait for mouse to leave
       });
 
+      // On touch devices, avoid leaving the button in a focused/hover-like visual state
+      // after tapping (mobile browsers can keep :hover until the next tap).
+      button.addEventListener('pointerup', () => {
+        if (button === document.activeElement) {
+          button.blur();
+        }
+      });
+
       button.addEventListener('focus', handleMouseEnterControls);
       button.addEventListener('blur', (e) => {
         // Only fade on blur if not hovering and not another button is focused

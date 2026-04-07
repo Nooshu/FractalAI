@@ -1,0 +1,18 @@
+---
+description: Frontend performance guardrails (Vite/Rollup, bundles, runtime)
+alwaysApply: true
+---
+
+# Performance guardrails
+
+- **Bundle splitting**:
+  - Avoid complex `manualChunks` that can create circular chunk graphs.
+  - Prefer stable, coarse splits: `vendor-*`, `synaptic`, and a single `app` chunk unless profiling shows otherwise.
+- **Runtime hot paths**:
+  - Avoid allocations in animation/render loops.
+  - Prefer cached lookups and preallocated typed arrays where practical.
+- **Async loading**:
+  - Use `import()` for truly optional features; don’t mix static and dynamic imports for the same module unless intentional.
+- **Diagnostics**:
+  - When performance is mentioned, measure first (build output, runtime timings, or a reproducible scenario).
+

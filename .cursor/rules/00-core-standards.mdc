@@ -1,0 +1,16 @@
+---
+description: Core repo standards (ESM, structure, verification)
+alwaysApply: true
+---
+
+# Core standards (always)
+
+- **JavaScript**: Use **ESM only** (`import`/`export`). Never introduce `require()` or CommonJS modules.
+- **Small diffs**: Prefer minimal, focused changes. Avoid sweeping refactors unless asked.
+- **No hidden work**: Don’t add unrelated features while fixing a bug/security issue.
+- **Verification**: After substantive changes, run the closest checks:
+  - `npm run build` for build-affecting changes
+  - `npm test` for logic changes (or the most relevant subset)
+  - `npm run lint` / `npm run stylelint` when touching JS/CSS
+- **Docs**: If behavior changes or a new command/config is added, update `README.md` or relevant docs.
+

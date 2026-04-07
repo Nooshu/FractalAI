@@ -166,9 +166,8 @@ body {
 .panel-content {
   flex: 1;
   min-height: 0; /* Important for flex children to allow shrinking and scrolling */
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding: 0 0;
+  overflow: hidden auto;
+  padding: 0;
   padding-bottom: var(--footer-height, 120px); /* Dynamically matches footer height */
 }
 
@@ -1187,7 +1186,7 @@ body {
 .right-panel .panel-content {
   flex: 1;
   overflow: hidden auto;
-  padding: 0 0;
+  padding: 0;
   padding-bottom: 150px; /* Extra padding at bottom to ensure buttons are visible */
 }
 
@@ -1866,6 +1865,7 @@ body {
   pointer-events: none;
   opacity: 1;
   transition: opacity 0.5s ease-in-out;
+
   /* Add padding to ensure scaled buttons don't cause hover issues */
   padding: 4px;
 }
@@ -1900,20 +1900,23 @@ body {
   z-index: 2001;
 }
 
-.fullscreen-control-btn:hover {
-  background: var(--button-blue-bg);
-  border-color: var(--accent-blue);
-  color: white;
-  transform: scale(1.1);
-  box-shadow: var(--button-blue-shadow-hover);
-  z-index: 2002;
-  pointer-events: auto;
-}
+/* Apply hover styles only on hover-capable pointers (prevents sticky :hover on touch) */
+@media (hover: hover) and (pointer: fine) {
+  .fullscreen-control-btn:hover {
+    background: var(--button-blue-bg);
+    border-color: var(--accent-blue);
+    color: white;
+    transform: scale(1.1);
+    box-shadow: var(--button-blue-shadow-hover);
+    z-index: 2002;
+    pointer-events: auto;
+  }
 
-/* Prevent hover from being lost when button scales */
-.fullscreen-control-btn:hover,
-.fullscreen-control-btn:hover * {
-  pointer-events: auto;
+  /* Prevent hover from being lost when button scales */
+  .fullscreen-control-btn:hover,
+  .fullscreen-control-btn:hover * {
+    pointer-events: auto;
+  }
 }
 
 .fullscreen-control-btn:active {

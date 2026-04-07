@@ -1,0 +1,20 @@
+---
+description: Dependency & security hygiene (npm audit, overrides, safe configs)
+alwaysApply: true
+---
+
+# Security & dependencies
+
+- **Never** commit secrets or credentials. Treat `.env*`, API keys, tokens, and private URLs as sensitive.
+- **Prefer upstream fixes**:
+  - Upgrade the direct dependency to a patched version first.
+  - Use `overrides` only when necessary for transitive fixes; document the reason in the PR/commit message.
+- **Overriding rules**:
+  - Pin to a **patched** version (no ranges) when using `overrides`.
+  - Avoid overriding to a different major unless it’s the only viable fix and the app still builds/tests.
+- **Audit loop**:
+  - After dependency changes: run `npm audit` and ensure it’s clean (or explain remaining advisories and risk).
+- **Dev server exposure**:
+  - Don’t widen network exposure (`server.host: true/0.0.0.0`) unless explicitly required.
+  - If you must expose it, ensure filesystem access is constrained and `server.fs` is configured intentionally.
+
