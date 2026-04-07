@@ -31,6 +31,29 @@ import { lifecycleManager } from './lifecycle-manager.js';
 import { idleCleanupManager } from './idle-cleanup.js';
 import { devLog } from './logger.js';
 
+function suppressFirefoxWebGLDebugRendererInfoDeprecation() {
+  // Firefox warns (and will remove) WEBGL_debug_renderer_info.
+  // Some third-party libs (e.g. regl) may still request it; returning null avoids console noise.
+  try {
+    const ua = navigator?.userAgent || '';
+    if (!ua.includes('Firefox')) return;
+
+    const proto = globalThis.WebGLRenderingContext?.prototype;
+    if (!proto?.getExtension) return;
+    if (proto.getExtension.__fractalaiPatched) return;
+
+    const original = proto.getExtension;
+    const patched = function getExtension(name) {
+      if (name === 'WEBGL_debug_renderer_info') return null;
+      return original.call(this, name);
+    };
+    patched.__fractalaiPatched = true;
+    proto.getExtension = patched;
+  } catch {
+    // Best-effort only
+  }
+}
+
 let fractalLoader = null;
 let loadFractal = null;
 
@@ -1161,6 +1184,7 @@ export async function init() {
 function bootstrap() {
   // Initialize on load
   window.addEventListener('load', async () => {
+    suppressFirefoxWebGLDebugRendererInfoDeprecation();
     await init();
 
     // Defer footer height tracking using requestIdleCallback

@@ -40,6 +40,9 @@ export function detectWebGLCapabilities(gl) {
   }
 
   for (const extName of supportedExtensions) {
+    // Firefox deprecates WEBGL_debug_renderer_info and will warn on access.
+    // We only use standard gl.RENDERER/gl.VENDOR anyway, so skip it.
+    if (extName === 'WEBGL_debug_renderer_info') continue;
     try {
       if (typeof gl.getExtension === 'function') {
         const ext = gl.getExtension(extName);

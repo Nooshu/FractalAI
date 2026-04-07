@@ -2028,11 +2028,18 @@
             }
 
             // Add error handling for service worker registration
-            navigator.serviceWorker
-              .register('/sw.js', {
+            let registrationPromise;
+            try {
+              registrationPromise = navigator.serviceWorker.register('/sw.js', {
                 scope: '/',
                 updateViaCache: 'none' // Always fetch the service worker script fresh
-              })
+              });
+            } catch (error) {
+              console.warn('[Service Worker] Registration skipped:', error);
+              return;
+            }
+
+            registrationPromise
               .then((registration) => {
                 if (!registration) {
                   throw new Error('Registration returned null');
@@ -2042,7 +2049,11 @@
                 // Check for updates periodically
                 setInterval(
                   () => {
-                    registration.update();
+                    try {
+                      registration.update();
+                    } catch {
+                      // Ignore: Firefox private browsing can make SW objects unusable
+                    }
                   },
                   60 * 60 * 1000
                 ); // Check every hour
@@ -2064,6 +2075,13 @@
                 });
               })
               .catch((error) => {
+                // In Firefox private browsing, SW can throw "object is not, or is no longer, usable".
+                // Treat as non-fatal and avoid spamming the console.
+                const msg = String(error?.message || error);
+                if (msg.includes('no longer usable') || msg.includes('not, or is no longer, usable')) {
+                  console.warn('[Service Worker] Registration unavailable in this browser mode');
+                  return;
+                }
                 console.error('[Service Worker] Registration failed:', error);
                 // Provide more detailed error information
                 if (error.message) {
