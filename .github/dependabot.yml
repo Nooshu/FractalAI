@@ -43,7 +43,7 @@ updates:
       prefix-development: 'chore'
       include: 'scope'
     # Ignore specific dependencies if needed
-    ignore:
+    ignore: []
       # Add dependencies to ignore here if needed
       # - dependency-name: "package-name"
       #   update-types: ["version-update:semver-major"]
