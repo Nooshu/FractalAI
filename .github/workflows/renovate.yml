@@ -21,4 +21,6 @@ jobs:
         with:
           token: ${{ secrets.RENOVATE_TOKEN }}
           configurationFile: .github/renovate-global.js
+        env:
+          LOG_LEVEL: debug
 
