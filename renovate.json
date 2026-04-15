@@ -4,13 +4,24 @@
   "labels": ["dependencies", "automated"],
   "commitMessagePrefix": "chore(deps):",
   "dependencyDashboard": true,
+  "dependencyDashboardTitle": "Renovate Dependency Dashboard",
+  "timezone": "Etc/UTC",
   "schedule": ["before 4am on Monday"],
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["before 4am on Monday"]
+  },
   "packageRules": [
     {
       "description": "Group non-major npm updates",
       "matchManagers": ["npm"],
       "matchUpdateTypes": ["minor", "patch"],
       "groupName": "npm non-major dependencies"
+    },
+    {
+      "matchManagers": ["github-actions"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "github-actions (minor+patch)"
     }
   ]
 }
