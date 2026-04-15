@@ -194,4 +194,3 @@ export function createOcclusionQueryManager(gl) {
 
   return new OcclusionQueryManager(gl);
 }
-

@@ -1,6 +1,4 @@
-import {
-  generatePaletteTexture
-} from '../utils.js';
+import { generatePaletteTexture } from '../utils.js';
 
 // Generate vertices for the Heighway dragon curve
 function generateHeighwayDragon(iterations) {
@@ -189,8 +187,8 @@ export function render(regl, params, canvas, options = {}) {
     vert: vertexShaderSource,
     frag: fragmentShaderSource,
     attributes: {
-      position: vertices
-},
+      position: vertices,
+    },
     uniforms: useUBO
       ? {
           uZoom: params.zoom,
@@ -198,8 +196,8 @@ export function render(regl, params, canvas, options = {}) {
           uResolution: [canvas.width, canvas.height],
           uPalette: paletteTexture,
           uIterations: params.iterations,
-          uScale: [params.xScale, params.yScale]
-}
+          uScale: [params.xScale, params.yScale],
+        }
       : {
           uZoom: params.zoom,
           uOffset: [params.offset.x, params.offset.y],
@@ -207,18 +205,18 @@ export function render(regl, params, canvas, options = {}) {
           uPalette: paletteTexture,
           uIterations: params.iterations,
           uXScale: params.xScale,
-          uYScale: params.yScale
-},
+          uYScale: params.yScale,
+        },
     viewport: {
       x: 0,
       y: 0,
       width: canvas.width,
-      height: canvas.height
-},
+      height: canvas.height,
+    },
     count: vertices.length / 2,
     primitive: 'line strip',
-    lineWidth: 1
-});
+    lineWidth: 1,
+  });
 
   return drawDragon;
 }
@@ -230,20 +228,20 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'rainbow-shifted'
-},
+    colorScheme: 'rainbow-shifted',
+  },
   initialPosition: {
     zoom: 2,
-    offset: { x: 0.2257, y: -0.1287 }
+    offset: { x: 0.2257, y: -0.1287 },
   },
   fallbackPosition: {
     offset: { x: 0, y: 0 },
-    zoom: 1
-},
+    zoom: 1,
+  },
   // Interesting bounds for "surprise me" - Heighway dragon is always interesting
   interestingBounds: {
     offsetX: [-1, 1],
     offsetY: [-1, 1],
     zoom: [0.5, 10],
-  }
+  },
 };

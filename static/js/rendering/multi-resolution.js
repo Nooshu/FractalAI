@@ -128,4 +128,3 @@ export class MultiResolutionManager {
 export function createMultiResolutionManager(options = {}) {
   return new MultiResolutionManager(options);
 }
-

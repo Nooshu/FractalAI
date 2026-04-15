@@ -97,26 +97,22 @@ function juliaIterations(zx, zy, cx, cy, maxIterations) {
  */
 function computeFractalPoint(cx, cy, params, fractalType) {
   const maxIterations = params.iterations;
-  let iterations = 0;
 
   switch (fractalType) {
     case 'mandelbrot':
-      iterations = mandelbrotIterations(cx, cy, maxIterations);
-      break;
+      return mandelbrotIterations(cx, cy, maxIterations) / maxIterations;
     case 'julia':
       if (params.juliaC) {
-        iterations = juliaIterations(cx, cy, params.juliaC.x, params.juliaC.y, maxIterations);
+        return (
+          juliaIterations(cx, cy, params.juliaC.x, params.juliaC.y, maxIterations) / maxIterations
+        );
       } else {
-        iterations = mandelbrotIterations(cx, cy, maxIterations);
+        return mandelbrotIterations(cx, cy, maxIterations) / maxIterations;
       }
-      break;
     default:
       // Fallback to Mandelbrot for unknown types
-      iterations = mandelbrotIterations(cx, cy, maxIterations);
+      return mandelbrotIterations(cx, cy, maxIterations) / maxIterations;
   }
-
-  // Normalize to 0-1 range
-  return iterations / maxIterations;
 }
 
 /**
@@ -168,10 +164,10 @@ async function computeTile(request) {
   let useWasm = false;
   if (wasmSimdUtils && wasmInstance) {
     const { computeTileWasm, computeTileOptimized } = wasmSimdUtils;
-    
+
     // Try WASM computation
     useWasm = computeTileWasm(wasmInstance, data, width, height, x, y, params, fractalType);
-    
+
     // If WASM failed, use optimized JavaScript
     if (!useWasm) {
       computeTileOptimized(data, width, height, x, y, params, fractalType, computeFractalPoint);
@@ -226,7 +222,7 @@ self.addEventListener('message', async (event) => {
 
   if (message.type === 'tile-request') {
     const response = await computeTile(message);
-    
+
     if (response.useSharedBuffer) {
       // Data is already in shared memory, just send metadata
       // The main thread can read directly from the shared buffer

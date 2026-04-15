@@ -1,7 +1,4 @@
-import {
-  generatePaletteTexture,
-  getVertexShader
-} from '../utils.js';
+import { generatePaletteTexture, getVertexShader } from '../utils.js';
 
 const fractalFunction = `
 // Barnsley Fern - Iterated Function System (IFS)
@@ -182,14 +179,14 @@ export function render(regl, params, canvas, options = {}) {
     frag: fragmentShaderSource,
     vert: vertexShaderSource,
     attributes: {
-      position: [-1, -1, 1, -1, -1, 1, 1, 1]
-},
+      position: [-1, -1, 1, -1, -1, 1, 1, 1],
+    },
     uniforms: useUBO
       ? {
           uTime: 0,
           uResolution: [canvas.width, canvas.height],
-          uPalette: paletteTexture
-}
+          uPalette: paletteTexture,
+        }
       : {
           uTime: 0,
           uResolution: [canvas.width, canvas.height],
@@ -199,8 +196,8 @@ export function render(regl, params, canvas, options = {}) {
           uJuliaC: [params.juliaC.x, params.juliaC.y],
           uPalette: paletteTexture,
           uXScale: params.xScale,
-          uYScale: params.yScale
-},
+          uYScale: params.yScale,
+        },
     // Bind UBO if available
     ...(useUBO && ubo?.glBuffer && ubo?.bind
       ? {
@@ -215,12 +212,12 @@ export function render(regl, params, canvas, options = {}) {
                 offset: params.offset,
                 juliaC: params.juliaC,
                 xScale: params.xScale,
-                yScale: params.yScale
-});
+                yScale: params.yScale,
+              });
               context.ubo.bind(program);
             }
-          }
-}
+          },
+        }
       : {}),
     primitive: 'triangle strip',
     count: 4,
@@ -228,9 +225,9 @@ export function render(regl, params, canvas, options = {}) {
       x: 0,
       y: 0,
       width: canvas.width,
-      height: canvas.height
-}
-});
+      height: canvas.height,
+    },
+  });
 
   return drawFractal;
 }
@@ -243,12 +240,12 @@ export const is2D = true;
 export const config = {
   initialSettings: {
     colorScheme: 'forest',
-    iterations: 15
-},
+    iterations: 15,
+  },
   initialPosition: {
     zoom: 1.403,
-    offset: { x: 0.7219, y: 0.9673 }
-},
+    offset: { x: 0.7219, y: 0.9673 },
+  },
   fallbackPosition: {
     offset: { x: 0, y: 0 },
     zoom: 1,
@@ -258,5 +255,5 @@ export const config = {
     offsetX: [0, 2],
     offsetY: [0, 2],
     zoom: [0.5, 5],
-  }
+  },
 };

@@ -1,7 +1,4 @@
-import {
-  createFragmentShader,
-  createStandardDrawCommand
-} from '../utils.js';
+import { createFragmentShader, createStandardDrawCommand } from '../utils.js';
 
 const fractalFunction = `
     // Helper function to check if a point is in the Cantor set at a given level
@@ -124,20 +121,20 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'cosmic'
-},
+    colorScheme: 'cosmic',
+  },
   initialPosition: {
     zoom: 1,
-    offset: { x: -0.015, y: 0.331 }
+    offset: { x: -0.015, y: 0.331 },
   },
   fallbackPosition: {
     offset: { x: 0, y: 0 },
-    zoom: 1
-},
+    zoom: 1,
+  },
   // Interesting bounds for "surprise me" - Cantor set is always interesting
   interestingBounds: {
     offsetX: [-1, 1],
     offsetY: [-1, 1],
     zoom: [0.5, 10],
-  }
+  },
 };

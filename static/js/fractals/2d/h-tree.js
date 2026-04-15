@@ -1,6 +1,4 @@
-import {
-  generatePaletteTexture
-} from '../utils.js';
+import { generatePaletteTexture } from '../utils.js';
 
 // Generate vertices for the H-tree fractal
 function generateHTree(iterations) {
@@ -24,24 +22,24 @@ function generateHTree(iterations) {
       x1: leftX,
       y1: bottomY,
       x2: leftX,
-      y2: topY
-});
+      y2: topY,
+    });
 
     // Horizontal middle line
     segments.push({
       x1: leftX,
       y1: cy,
       x2: rightX,
-      y2: cy
-});
+      y2: cy,
+    });
 
     // Right vertical line
     segments.push({
       x1: rightX,
       y1: bottomY,
       x2: rightX,
-      y2: topY
-});
+      y2: topY,
+    });
 
     // Recursively add smaller H's at the four corners
     const newSize = size / 2;
@@ -206,8 +204,8 @@ export function render(regl, params, canvas, options = {}) {
     vert: vertexShaderSource,
     frag: fragmentShaderSource,
     attributes: {
-      position: vertices
-},
+      position: vertices,
+    },
     uniforms: useUBO
       ? {
           uZoom: params.zoom,
@@ -215,8 +213,8 @@ export function render(regl, params, canvas, options = {}) {
           uResolution: [canvas.width, canvas.height],
           uPalette: paletteTexture,
           uIterations: params.iterations,
-          uScale: [params.xScale, params.yScale]
-}
+          uScale: [params.xScale, params.yScale],
+        }
       : {
           uZoom: params.zoom,
           uOffset: [params.offset.x, params.offset.y],
@@ -224,18 +222,18 @@ export function render(regl, params, canvas, options = {}) {
           uPalette: paletteTexture,
           uIterations: params.iterations,
           uXScale: params.xScale,
-          uYScale: params.yScale
-},
+          uYScale: params.yScale,
+        },
     viewport: {
       x: 0,
       y: 0,
       width: canvas.width,
-      height: canvas.height
-},
+      height: canvas.height,
+    },
     count: vertices.length / 2,
     primitive: 'lines',
-    lineWidth: 1
-});
+    lineWidth: 1,
+  });
 
   return drawHTree;
 }
@@ -247,20 +245,20 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'rainbow-pastel'
-},
+    colorScheme: 'rainbow-pastel',
+  },
   initialPosition: {
     zoom: 2,
-    offset: { x: 0.1054, y: 0.0943 }
+    offset: { x: 0.1054, y: 0.0943 },
   },
   fallbackPosition: {
     offset: { x: 0, y: 0 },
-    zoom: 1
-},
+    zoom: 1,
+  },
   // Interesting bounds for "surprise me" - H-tree is always interesting
   interestingBounds: {
     offsetX: [-1, 1],
     offsetY: [-1, 1],
     zoom: [0.5, 10],
-  }
+  },
 };

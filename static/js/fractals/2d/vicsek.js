@@ -1,8 +1,4 @@
-import {
-  generatePaletteTexture,
-  createFragmentShader,
-  getVertexShader
-} from '../utils.js';
+import { generatePaletteTexture, createFragmentShader, getVertexShader } from '../utils.js';
 
 const fractalFunction = `
 // Vicsek Snowflake (Box Fractal)
@@ -112,14 +108,14 @@ export function render(regl, params, canvas, options = {}) {
     frag: fragmentShader,
     vert: vertexShaderSource,
     attributes: {
-      position: [-1, -1, 1, -1, -1, 1, 1, 1]
-},
+      position: [-1, -1, 1, -1, -1, 1, 1, 1],
+    },
     uniforms: useUBO
       ? {
           uTime: 0,
           uResolution: [canvas.width, canvas.height],
-          uPalette: paletteTexture
-}
+          uPalette: paletteTexture,
+        }
       : {
           uTime: 0,
           uIterations: params.iterations,
@@ -129,8 +125,8 @@ export function render(regl, params, canvas, options = {}) {
           uJuliaC: [0, 0],
           uPalette: paletteTexture,
           uXScale: params.xScale,
-          uYScale: params.yScale
-},
+          uYScale: params.yScale,
+        },
     // Bind UBO if available
     ...(useUBO && ubo?.glBuffer && ubo?.bind
       ? {
@@ -145,12 +141,12 @@ export function render(regl, params, canvas, options = {}) {
                 offset: params.offset,
                 juliaC: { x: 0, y: 0 },
                 xScale: params.xScale,
-                yScale: params.yScale
-});
+                yScale: params.yScale,
+              });
               context.ubo.bind(program);
             }
-          }
-}
+          },
+        }
       : {}),
     primitive: 'triangle strip',
     count: 4,
@@ -158,9 +154,9 @@ export function render(regl, params, canvas, options = {}) {
       x: 0,
       y: 0,
       width: canvas.width,
-      height: canvas.height
-}
-});
+      height: canvas.height,
+    },
+  });
 
   return drawFractal;
 }
@@ -173,20 +169,20 @@ export const is2D = true;
 export const config = {
   initialSettings: {
     colorScheme: 'coral',
-    iterations: 90
-},
+    iterations: 90,
+  },
   initialPosition: {
     zoom: 1.548,
-    offset: { x: -0.0118, y: 0.036 }
+    offset: { x: -0.0118, y: 0.036 },
   },
   fallbackPosition: {
     offset: { x: 0, y: 0 },
-    zoom: 1
-},
+    zoom: 1,
+  },
   // Interesting bounds for "surprise me" - Vicsek fractal is always interesting
   interestingBounds: {
     offsetX: [-1, 1],
     offsetY: [-1, 1],
     zoom: [0.5, 10],
-  }
+  },
 };

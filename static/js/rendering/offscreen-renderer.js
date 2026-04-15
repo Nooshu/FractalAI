@@ -132,25 +132,13 @@ export class OffscreenRenderer {
         const ubo = options.ubo;
 
         let drawFractal;
-        if (
-          fractalModule.render.length >= 4 ||
-          (webglCapabilities?.isWebGL2 && ubo)
-        ) {
-          drawFractal = fractalModule.render(
-            this.offscreenRegl,
-            params,
-            this.offscreenCanvas,
-            {
-              webglCapabilities,
-              ubo,
-            }
-          );
+        if (fractalModule.render.length >= 4 || (webglCapabilities?.isWebGL2 && ubo)) {
+          drawFractal = fractalModule.render(this.offscreenRegl, params, this.offscreenCanvas, {
+            webglCapabilities,
+            ubo,
+          });
         } else {
-          drawFractal = fractalModule.render(
-            this.offscreenRegl,
-            params,
-            this.offscreenCanvas
-          );
+          drawFractal = fractalModule.render(this.offscreenRegl, params, this.offscreenCanvas);
         }
 
         // Execute draw command
@@ -311,4 +299,3 @@ export function createOffscreenRenderer(mainCanvas, options = {}) {
 
   return null;
 }
-

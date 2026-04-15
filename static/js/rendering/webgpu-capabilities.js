@@ -108,20 +108,25 @@ export function formatWebGPUCapabilities(capabilities) {
   }
 
   const lines = ['WebGPU: Supported'];
-  
+
   if (capabilities.adapterInfo) {
-    lines.push(`  Adapter: ${capabilities.adapterInfo.vendor || 'Unknown'} ${capabilities.adapterInfo.architecture || ''}`);
+    lines.push(
+      `  Adapter: ${capabilities.adapterInfo.vendor || 'Unknown'} ${capabilities.adapterInfo.architecture || ''}`
+    );
   }
-  
+
   if (capabilities.features && capabilities.features.length > 0) {
     lines.push(`  Features: ${capabilities.features.join(', ')}`);
   }
-  
+
   if (capabilities.limits) {
-    lines.push(`  Max Texture 2D: ${capabilities.limits.maxTextureDimension2D}x${capabilities.limits.maxTextureDimension2D}`);
-    lines.push(`  Max Compute Workgroup Size: ${capabilities.limits.maxComputeWorkgroupSizeX}x${capabilities.limits.maxComputeWorkgroupSizeY}x${capabilities.limits.maxComputeWorkgroupSizeZ}`);
+    lines.push(
+      `  Max Texture 2D: ${capabilities.limits.maxTextureDimension2D}x${capabilities.limits.maxTextureDimension2D}`
+    );
+    lines.push(
+      `  Max Compute Workgroup Size: ${capabilities.limits.maxComputeWorkgroupSizeX}x${capabilities.limits.maxComputeWorkgroupSizeY}x${capabilities.limits.maxComputeWorkgroupSizeZ}`
+    );
   }
 
   return lines.join('\n');
 }
-

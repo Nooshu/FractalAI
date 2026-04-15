@@ -1,7 +1,4 @@
-import {
-  createFragmentShader,
-  createStandardDrawCommand
-} from '../utils.js';
+import { createFragmentShader, createStandardDrawCommand } from '../utils.js';
 
 const fractalFunction = `
     float computeFractal(vec2 c) {
@@ -83,8 +80,8 @@ export function render(regl, params, canvas, options = {}) {
   return createStandardDrawCommand(regl, params, canvas, fragmentShader, {
     webglCapabilities,
     ubo,
-    juliaC: { x: 0, y: 0 }
-});
+    juliaC: { x: 0, y: 0 },
+  });
 }
 
 export const is2D = true;
@@ -94,20 +91,20 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'galaxy'
-},
+    colorScheme: 'galaxy',
+  },
   initialPosition: {
     zoom: 1,
-    offset: { x: 0, y: 0 }
+    offset: { x: 0, y: 0 },
   },
   fallbackPosition: {
     offset: { x: 0, y: 0 },
-    zoom: 1
-},
+    zoom: 1,
+  },
   // Interesting bounds for "surprise me" - Rose fractal is always interesting
   interestingBounds: {
     offsetX: [-1, 1],
     offsetY: [-1, 1],
     zoom: [0.5, 10],
-  }
+  },
 };

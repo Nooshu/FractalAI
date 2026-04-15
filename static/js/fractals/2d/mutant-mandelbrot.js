@@ -1,7 +1,4 @@
-import {
-  createFragmentShader,
-  createStandardDrawCommand
-} from '../utils.js';
+import { createFragmentShader, createStandardDrawCommand } from '../utils.js';
 
 const fractalFunction = `
     float computeFractal(vec2 c) {
@@ -108,20 +105,20 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'classic'
-},
+    colorScheme: 'classic',
+  },
   initialPosition: {
     zoom: 1,
-    offset: { x: -0.536, y: 0.006 }
+    offset: { x: -0.536, y: 0.006 },
   },
   fallbackPosition: {
     offset: { x: 0, y: 0 },
-    zoom: 1
-},
+    zoom: 1,
+  },
   // Interesting bounds for "surprise me" - mutant variants have interesting areas around origin
   interestingBounds: {
     offsetX: [-2.5, 1.5],
     offsetY: [-2, 2],
     zoom: [0.5, 100],
-  }
+  },
 };

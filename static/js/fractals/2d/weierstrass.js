@@ -1,7 +1,4 @@
-import {
-  createFragmentShader,
-  createStandardDrawCommand
-} from '../utils.js';
+import { createFragmentShader, createStandardDrawCommand } from '../utils.js';
 
 const fractalFunction = `
 // Weierstrass Function
@@ -102,16 +99,16 @@ export const config = {
   },
   initialPosition: {
     zoom: 1,
-    offset: { x: 0, y: 0 }
+    offset: { x: 0, y: 0 },
   },
   fallbackPosition: {
     offset: { x: 0, y: 0 },
-    zoom: 1
-},
+    zoom: 1,
+  },
   // Interesting bounds for "surprise me" - Weierstrass function is always interesting
   interestingBounds: {
     offsetX: [-1, 1],
     offsetY: [-1, 1],
     zoom: [0.5, 10],
-  }
+  },
 };

@@ -26,7 +26,8 @@ export default defineConfig({
   reporter: [
     ['html', { outputFolder: 'playwright-report' }],
     ['json', { outputFile: 'test-results/results.json' }],
-    ['list'],
+    // Keep console output compact; HTML/JSON reports contain full details.
+    ['dot'],
   ],
 
   // Shared settings for all projects

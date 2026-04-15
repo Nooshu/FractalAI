@@ -55,9 +55,7 @@ describe('sharing/decoder', () => {
 
     it('should handle URL-safe base64 with padding', () => {
       const state = { t: 'julia', z: 1.5 };
-      let encoded = btoa(JSON.stringify(state))
-        .replace(/\+/g, '-')
-        .replace(/\//g, '_');
+      let encoded = btoa(JSON.stringify(state)).replace(/\+/g, '-').replace(/\//g, '_');
 
       const decoded = decodeFractalState(encoded);
       expect(decoded).toBeTruthy();
@@ -99,4 +97,3 @@ describe('sharing/decoder', () => {
     });
   });
 });
-

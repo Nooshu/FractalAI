@@ -16,4 +16,3 @@ export const fractals = {
   'fractional-brownian-motion': fractionalBrownianMotion,
   'random-midpoint-displacement': randomMidpointDisplacement,
 };
-

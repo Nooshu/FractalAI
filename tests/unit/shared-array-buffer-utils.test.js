@@ -33,14 +33,14 @@ describe('shared-array-buffer-utils', () => {
     it('should return false if feature flag is disabled', () => {
       CONFIG.features.sharedArrayBuffer = false;
       global.SharedArrayBuffer = class SharedArrayBuffer {};
-      
+
       expect(canUseSharedArrayBuffer()).toBe(false);
     });
 
     it('should return false if SharedArrayBuffer is not available', () => {
       CONFIG.features.sharedArrayBuffer = true;
       delete global.SharedArrayBuffer;
-      
+
       expect(canUseSharedArrayBuffer()).toBe(false);
     });
 
@@ -51,7 +51,7 @@ describe('shared-array-buffer-utils', () => {
           this.byteLength = size;
         }
       };
-      
+
       // Mock the test buffer creation
       const originalSAB = global.SharedArrayBuffer;
       global.SharedArrayBuffer = class extends originalSAB {
@@ -59,7 +59,7 @@ describe('shared-array-buffer-utils', () => {
           super(size);
         }
       };
-      
+
       // Mock Int32Array for the test
       global.Int32Array = class Int32Array {
         constructor(buffer) {
@@ -67,7 +67,7 @@ describe('shared-array-buffer-utils', () => {
           this[0] = 1;
         }
       };
-      
+
       const result = canUseSharedArrayBuffer();
       expect(result).toBe(true);
     });
@@ -79,7 +79,7 @@ describe('shared-array-buffer-utils', () => {
           throw new Error('SharedArrayBuffer not available');
         }
       };
-      
+
       expect(canUseSharedArrayBuffer()).toBe(false);
     });
   });
@@ -87,7 +87,7 @@ describe('shared-array-buffer-utils', () => {
   describe('createSharedImageBuffer', () => {
     it('should return null if SharedArrayBuffer cannot be used', () => {
       CONFIG.features.sharedArrayBuffer = false;
-      
+
       const result = createSharedImageBuffer(800, 600);
       expect(result).toBeNull();
     });
@@ -104,18 +104,20 @@ describe('shared-array-buffer-utils', () => {
           this.buffer = buffer;
         }
       };
-      
+
       // Mock canUseSharedArrayBuffer to return true
       vi.doMock('../../static/js/workers/shared-array-buffer-utils.js', async () => {
-        const actual = await vi.importActual('../../static/js/workers/shared-array-buffer-utils.js');
+        const actual = await vi.importActual(
+          '../../static/js/workers/shared-array-buffer-utils.js'
+        );
         return {
           ...actual,
           canUseSharedArrayBuffer: () => true,
         };
       });
-      
+
       const result = createSharedImageBuffer(800, 600);
-      
+
       // Since we can't easily mock the internal canUseSharedArrayBuffer call,
       // we'll test the structure when it works
       if (result) {
@@ -134,7 +136,7 @@ describe('shared-array-buffer-utils', () => {
           throw new Error('Creation failed');
         }
       };
-      
+
       const result = createSharedImageBuffer(800, 600);
       expect(result).toBeNull();
     });
@@ -143,7 +145,7 @@ describe('shared-array-buffer-utils', () => {
   describe('createSharedScalarBuffer', () => {
     it('should return null if SharedArrayBuffer cannot be used', () => {
       CONFIG.features.sharedArrayBuffer = false;
-      
+
       const result = createSharedScalarBuffer(800, 600);
       expect(result).toBeNull();
     });
@@ -160,9 +162,9 @@ describe('shared-array-buffer-utils', () => {
           this.buffer = buffer;
         }
       };
-      
+
       const result = createSharedScalarBuffer(800, 600);
-      
+
       if (result) {
         expect(result).toHaveProperty('buffer');
         expect(result).toHaveProperty('view');
@@ -176,7 +178,7 @@ describe('shared-array-buffer-utils', () => {
   describe('checkCOOPCOEPHeaders', () => {
     it('should return false if SharedArrayBuffer is not available', () => {
       delete global.SharedArrayBuffer;
-      
+
       expect(checkCOOPCOEPHeaders()).toBe(false);
     });
 
@@ -192,7 +194,7 @@ describe('shared-array-buffer-utils', () => {
           this[0] = 42;
         }
       };
-      
+
       const result = checkCOOPCOEPHeaders();
       // The actual result depends on whether the mock works correctly
       // In a real browser, this would test if headers are present
@@ -205,7 +207,7 @@ describe('shared-array-buffer-utils', () => {
           throw new Error('Not available');
         }
       };
-      
+
       expect(checkCOOPCOEPHeaders()).toBe(false);
     });
   });
@@ -213,9 +215,9 @@ describe('shared-array-buffer-utils', () => {
   describe('logSharedArrayBufferStatus', () => {
     it('should not log if feature flag is disabled', () => {
       CONFIG.features.sharedArrayBuffer = false;
-      
+
       logSharedArrayBufferStatus();
-      
+
       expect(console.log).not.toHaveBeenCalled();
       expect(console.warn).not.toHaveBeenCalled();
     });
@@ -223,7 +225,7 @@ describe('shared-array-buffer-utils', () => {
     it('should log enabled status when available and functional', () => {
       CONFIG.features.sharedArrayBuffer = true;
       global.import = { meta: { env: { DEV: true } } };
-      
+
       // Mock SharedArrayBuffer to work correctly
       global.SharedArrayBuffer = class SharedArrayBuffer {
         constructor(size) {
@@ -236,9 +238,9 @@ describe('shared-array-buffer-utils', () => {
           this[0] = 1;
         }
       };
-      
+
       logSharedArrayBufferStatus();
-      
+
       // The function may or may not log depending on canUseSharedArrayBuffer result
       // We just verify it executes without error
       expect(typeof logSharedArrayBufferStatus).toBe('function');
@@ -247,7 +249,7 @@ describe('shared-array-buffer-utils', () => {
     it('should warn if available but not functional', () => {
       CONFIG.features.sharedArrayBuffer = true;
       global.import = { meta: { env: { DEV: true } } };
-      
+
       // Mock SharedArrayBuffer to exist but fail when creating Int32Array
       global.SharedArrayBuffer = class SharedArrayBuffer {
         constructor(size) {
@@ -259,9 +261,9 @@ describe('shared-array-buffer-utils', () => {
           throw new Error('Not available');
         }
       };
-      
+
       logSharedArrayBufferStatus();
-      
+
       // The function may warn depending on the actual canUseSharedArrayBuffer result
       // We just verify it executes without error
       expect(typeof logSharedArrayBufferStatus).toBe('function');
@@ -271,26 +273,25 @@ describe('shared-array-buffer-utils', () => {
       CONFIG.features.sharedArrayBuffer = true;
       delete global.SharedArrayBuffer;
       global.import = { meta: { env: { DEV: true } } };
-      
+
       logSharedArrayBufferStatus();
-      
+
       expect(console.warn).toHaveBeenCalled();
     });
 
     it('should respect DEV flag for logging', () => {
       CONFIG.features.sharedArrayBuffer = true;
-      
+
       // Clear previous calls
       console.log.mockClear();
       console.warn.mockClear();
-      
+
       // The function checks import.meta.env?.DEV
       // In test environment, DEV is typically true, so logging may occur
       // We just verify the function executes without error
       logSharedArrayBufferStatus();
-      
+
       expect(typeof logSharedArrayBufferStatus).toBe('function');
     });
   });
 });
-

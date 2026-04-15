@@ -1,7 +1,4 @@
-import {
-  createFragmentShader,
-  createStandardDrawCommand
-} from '../utils.js';
+import { createFragmentShader, createStandardDrawCommand } from '../utils.js';
 
 const fractalFunction = `
     float computeFractal(vec2 c) {
@@ -114,12 +111,12 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'rainbow'
-},
+    colorScheme: 'rainbow',
+  },
   initialPosition: {
     zoom: 2,
-    offset: { x: -0.6903, y: 0.0526 }
-},
+    offset: { x: -0.6903, y: 0.0526 },
+  },
   fallbackPosition: {
     offset: { x: 0, y: 0 },
     zoom: 1,
@@ -129,5 +126,5 @@ export const config = {
     offsetX: [-2.5, 1.5],
     offsetY: [-2, 2],
     zoom: [0.5, 100],
-  }
+  },
 };

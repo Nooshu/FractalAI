@@ -1,7 +1,4 @@
-import {
-  createFragmentShader,
-  createStandardDrawCommand
-} from '../utils.js';
+import { createFragmentShader, createStandardDrawCommand } from '../utils.js';
 
 const fractalFunction = `
     // Buddhabrot: Classic orbit density visualization
@@ -100,21 +97,20 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'vintage'
-},
+    colorScheme: 'vintage',
+  },
   initialPosition: {
     zoom: 4,
-    offset: { x: -0.7566, y: 0.4428 }
+    offset: { x: -0.7566, y: 0.4428 },
   },
   fallbackPosition: {
     offset: { x: -0.75, y: 0.1 },
-    zoom: 50
-},
+    zoom: 50,
+  },
   // Interesting bounds for "surprise me" - Buddhabrot similar to Mandelbrot
   interestingBounds: {
     offsetX: [-2.5, 1.5],
     offsetY: [-2, 2],
     zoom: [0.5, 100],
-  }
+  },
 };
-

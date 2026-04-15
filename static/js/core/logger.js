@@ -15,18 +15,18 @@ function isDevelopment() {
     if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '0.0.0.0') {
       return true;
     }
-    
+
     // Check for development flag in URL
     if (window.location.search.includes('dev=true')) {
       return true;
     }
   }
-  
+
   // Check for NODE_ENV in build (Vite sets this)
   if (import.meta.env?.DEV) {
     return true;
   }
-  
+
   return false;
 }
 
@@ -44,7 +44,7 @@ export const devLog = {
       console.log(...args);
     }
   },
-  
+
   /**
    * Debug message (console.debug)
    * @param {...any} args - Arguments to log
@@ -54,7 +54,7 @@ export const devLog = {
       console.debug(...args);
     }
   },
-  
+
   /**
    * Info message (console.info)
    * @param {...any} args - Arguments to log
@@ -64,7 +64,7 @@ export const devLog = {
       console.info(...args);
     }
   },
-  
+
   /**
    * Warning message (console.warn)
    * Warnings are shown in both dev and production
@@ -74,7 +74,7 @@ export const devLog = {
     // Warnings are always shown
     console.warn(...args);
   },
-  
+
   /**
    * Error message (console.error)
    * Errors are always shown in both dev and production
@@ -85,4 +85,3 @@ export const devLog = {
     console.error(...args);
   },
 };
-

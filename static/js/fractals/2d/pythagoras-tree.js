@@ -1,6 +1,4 @@
-import {
-  generatePaletteTexture
-} from '../utils.js';
+import { generatePaletteTexture } from '../utils.js';
 
 // Generate vertices for the Pythagoras tree fractal
 function generatePythagorasTree(iterations, angle) {
@@ -37,8 +35,8 @@ function generatePythagorasTree(iterations, angle) {
         x1: worldCorners[i][0],
         y1: worldCorners[i][1],
         x2: worldCorners[next][0],
-        y2: worldCorners[next][1]
-});
+        y2: worldCorners[next][1],
+      });
     }
 
     // Calculate child squares (Pythagoras tree)
@@ -67,13 +65,13 @@ function generatePythagorasTree(iterations, angle) {
 
     // Calculate positions for child squares
     // First child square (left side of triangle)
-    const child1CenterX = topLeftX + (dx * angle);
-    const child1CenterY = topLeftY + (dy * angle);
+    const child1CenterX = topLeftX + dx * angle;
+    const child1CenterY = topLeftY + dy * angle;
     const child1Rotation = rotation + Math.PI / 4; // 45 degrees
 
     // Second child square (right side of triangle)
-    const child2CenterX = topRightX - (dx * (1.0 - angle));
-    const child2CenterY = topRightY - (dy * (1.0 - angle));
+    const child2CenterX = topRightX - dx * (1.0 - angle);
+    const child2CenterY = topRightY - dy * (1.0 - angle);
     const child2Rotation = rotation - Math.PI / 4; // -45 degrees
 
     // Recursively add child squares
@@ -235,8 +233,8 @@ export function render(regl, params, canvas, options = {}) {
     vert: vertexShaderSource,
     frag: fragmentShaderSource,
     attributes: {
-      position: vertices
-},
+      position: vertices,
+    },
     uniforms: useUBO
       ? {
           uZoom: params.zoom,
@@ -244,8 +242,8 @@ export function render(regl, params, canvas, options = {}) {
           uResolution: [canvas.width, canvas.height],
           uPalette: paletteTexture,
           uIterations: params.iterations,
-          uScale: [params.xScale, params.yScale]
-}
+          uScale: [params.xScale, params.yScale],
+        }
       : {
           uZoom: params.zoom,
           uOffset: [params.offset.x, params.offset.y],
@@ -253,18 +251,18 @@ export function render(regl, params, canvas, options = {}) {
           uPalette: paletteTexture,
           uIterations: params.iterations,
           uXScale: params.xScale,
-          uYScale: params.yScale
-},
+          uYScale: params.yScale,
+        },
     viewport: {
       x: 0,
       y: 0,
       width: canvas.width,
-      height: canvas.height
-},
+      height: canvas.height,
+    },
     count: vertices.length / 2,
     primitive: 'lines',
-    lineWidth: 1
-});
+    lineWidth: 1,
+  });
 
   return drawPythagorasTree;
 }
@@ -276,21 +274,20 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'neon'
-},
+    colorScheme: 'neon',
+  },
   initialPosition: {
     zoom: 6.516,
-    offset: { x: 0.0568, y: -0.5476 }
+    offset: { x: 0.0568, y: -0.5476 },
   },
   fallbackPosition: {
     offset: { x: 0, y: 0 },
-    zoom: 2
-},
+    zoom: 2,
+  },
   // Interesting bounds for "surprise me" - Pythagoras tree is always interesting
   interestingBounds: {
     offsetX: [-1, 1],
     offsetY: [-1, 1],
     zoom: [0.5, 10],
-  }
+  },
 };
-

@@ -1,6 +1,4 @@
-import {
-  generatePaletteTexture
-} from '../utils.js';
+import { generatePaletteTexture } from '../utils.js';
 
 // Generate vertices for the De Rham curve
 // The De Rham curve is a family of self-similar curves defined by contraction mappings
@@ -66,8 +64,10 @@ function generateDeRhamCurve(iterations) {
   }
 
   // Calculate bounding box and scale to fit
-  let minX = Infinity, maxX = -Infinity;
-  let minY = Infinity, maxY = -Infinity;
+  let minX = Infinity,
+    maxX = -Infinity;
+  let minY = Infinity,
+    maxY = -Infinity;
   for (let i = 0; i < vertices.length; i += 2) {
     minX = Math.min(minX, vertices[i]);
     maxX = Math.max(maxX, vertices[i]);
@@ -230,8 +230,8 @@ export function render(regl, params, canvas, options = {}) {
     vert: vertexShaderSource,
     frag: fragmentShaderSource,
     attributes: {
-      position: vertices
-},
+      position: vertices,
+    },
     uniforms: useUBO
       ? {
           uZoom: params.zoom,
@@ -239,8 +239,8 @@ export function render(regl, params, canvas, options = {}) {
           uResolution: [canvas.width, canvas.height],
           uPalette: paletteTexture,
           uIterations: params.iterations,
-          uScale: [params.xScale, params.yScale]
-}
+          uScale: [params.xScale, params.yScale],
+        }
       : {
           uZoom: params.zoom,
           uOffset: [params.offset.x, params.offset.y],
@@ -248,18 +248,18 @@ export function render(regl, params, canvas, options = {}) {
           uPalette: paletteTexture,
           uIterations: params.iterations,
           uXScale: params.xScale,
-          uYScale: params.yScale
-},
+          uYScale: params.yScale,
+        },
     viewport: {
       x: 0,
       y: 0,
       width: canvas.width,
-      height: canvas.height
-},
+      height: canvas.height,
+    },
     count: vertexCount,
     primitive: 'line strip',
-    lineWidth: 1
-});
+    lineWidth: 1,
+  });
 
   return drawDeRham;
 }
@@ -271,21 +271,20 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'aurora'
-},
+    colorScheme: 'aurora',
+  },
   initialPosition: {
     zoom: 1.796,
-    offset: { x: 0.0287, y: 0.0888 }
+    offset: { x: 0.0287, y: 0.0888 },
   },
   fallbackPosition: {
     offset: { x: 0, y: 0 },
-    zoom: 1
-},
+    zoom: 1,
+  },
   // Interesting bounds for "surprise me" - De Rham curve is always interesting
   interestingBounds: {
     offsetX: [-1, 1],
     offsetY: [-1, 1],
     zoom: [0.5, 10],
-  }
+  },
 };
-

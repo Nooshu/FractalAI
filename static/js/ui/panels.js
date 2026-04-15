@@ -161,7 +161,11 @@ async function lazyLoadColorSchemeEditor(getParams, updateParams, renderFractal)
       setupColorSchemeEditor(getParams, updateParams, renderFractal);
       lazyLoadedModules.colorSchemeEditor = true;
     } else {
-      console.warn('Color scheme editor: Missing required callbacks', { getParams: !!getParams, updateParams: !!updateParams, renderFractal: !!renderFractal });
+      console.warn('Color scheme editor: Missing required callbacks', {
+        getParams: !!getParams,
+        updateParams: !!updateParams,
+        renderFractal: !!renderFractal,
+      });
     }
   } catch (error) {
     console.error('Failed to lazy load color scheme editor module:', error);

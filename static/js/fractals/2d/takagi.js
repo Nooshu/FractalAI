@@ -1,7 +1,4 @@
-import {
-  createFragmentShader,
-  createStandardDrawCommand
-} from '../utils.js';
+import { createFragmentShader, createStandardDrawCommand } from '../utils.js';
 
 const fractalFunction = `
 // Takagi Function (Takagi-Landsberg Function)
@@ -95,21 +92,20 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'rainbow-pastel'
-},
+    colorScheme: 'rainbow-pastel',
+  },
   initialPosition: {
     zoom: 5.851,
-    offset: { x: -0.0113, y: 0.6921 }
+    offset: { x: -0.0113, y: 0.6921 },
   },
   fallbackPosition: {
     offset: { x: 0, y: 0 },
-    zoom: 1
-},
+    zoom: 1,
+  },
   // Interesting bounds for "surprise me" - Takagi function is always interesting
   interestingBounds: {
     offsetX: [-1, 1],
     offsetY: [-1, 1],
     zoom: [0.5, 10],
-  }
+  },
 };
-

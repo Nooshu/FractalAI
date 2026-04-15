@@ -1,7 +1,4 @@
-import {
-  createFragmentShader,
-  createStandardDrawCommand
-} from '../utils.js';
+import { createFragmentShader, createStandardDrawCommand } from '../utils.js';
 
 const fractalFunction = `
 // Blancmange Curve (Takagi Curve)
@@ -103,21 +100,20 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'rainbow-pastel'
-},
+    colorScheme: 'rainbow-pastel',
+  },
   initialPosition: {
     zoom: 1,
-    offset: { x: -0.0015, y: 0.7649 }
+    offset: { x: -0.0015, y: 0.7649 },
   },
   fallbackPosition: {
     offset: { x: 0, y: 0 },
-    zoom: 1
-},
+    zoom: 1,
+  },
   // Interesting bounds for "surprise me" - Blancmange curve is always interesting
   interestingBounds: {
     offsetX: [-1, 1],
     offsetY: [-1, 1],
     zoom: [0.5, 10],
-  }
+  },
 };
-

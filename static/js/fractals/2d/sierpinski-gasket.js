@@ -1,7 +1,4 @@
-import {
-  getVertexShader,
-  generatePaletteTexture
-} from '../utils.js';
+import { getVertexShader, generatePaletteTexture } from '../utils.js';
 
 const fractalFunction = `
     // Generalised Sierpinski Gasket
@@ -258,8 +255,8 @@ export function render(regl, params, canvas, options = {}) {
       ? {
           uTime: 0,
           uResolution: [canvas.width, canvas.height],
-          uPalette: paletteTexture
-}
+          uPalette: paletteTexture,
+        }
       : {
           uTime: 0,
           uIterations: params.iterations,
@@ -269,14 +266,14 @@ export function render(regl, params, canvas, options = {}) {
           uJuliaC: [0, 0], // Not used
           uPalette: paletteTexture,
           uXScale: params.xScale, // Used for number of sides
-          uYScale: params.yScale
-},
+          uYScale: params.yScale,
+        },
     viewport: {
       x: 0,
       y: 0,
       width: canvas.width,
-      height: canvas.height
-},
+      height: canvas.height,
+    },
     count: 4,
     primitive: 'triangle strip',
     // Bind UBO if available
@@ -293,14 +290,14 @@ export function render(regl, params, canvas, options = {}) {
                 offset: params.offset,
                 juliaC: { x: 0, y: 0 },
                 xScale: params.xScale,
-                yScale: params.yScale
-});
+                yScale: params.yScale,
+              });
               context.ubo.bind(program);
             }
-          }
-}
-      : {})
-});
+          },
+        }
+      : {}),
+  });
 }
 
 export const is2D = true;
@@ -311,20 +308,20 @@ export const is2D = true;
 export const config = {
   initialSettings: {
     colorScheme: 'autumn',
-    xScale: 0.5
-},
+    xScale: 0.5,
+  },
   initialPosition: {
     zoom: 2,
-    offset: { x: 0.0169, y: 0.0961 }
+    offset: { x: 0.0169, y: 0.0961 },
   },
   fallbackPosition: {
     offset: { x: 0, y: 0 },
-    zoom: 1
-},
+    zoom: 1,
+  },
   // Interesting bounds for "surprise me" - Sierpinski gasket is always interesting
   interestingBounds: {
     offsetX: [-1, 1],
     offsetY: [-1, 1],
     zoom: [0.5, 10],
-  }
+  },
 };

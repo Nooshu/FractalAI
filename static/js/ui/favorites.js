@@ -126,7 +126,7 @@ export function addCurrentAsFavorite() {
   if (!getCurrentFractalState) return null;
 
   const state = getCurrentFractalState();
-  
+
   // Check if already favorited
   const existing = findMatchingFavorite(state);
   if (existing) {
@@ -135,7 +135,7 @@ export function addCurrentAsFavorite() {
 
   const id = addFavorite(state);
   renderFavorites();
-  
+
   // Trigger retraining in background
   setTimeout(() => {
     triggerRetraining();
@@ -166,7 +166,7 @@ function deleteFavorite(id) {
   if (confirm('Delete this favorite?')) {
     removeFavorite(id);
     renderFavorites();
-    
+
     // Trigger retraining in background
     setTimeout(() => {
       triggerRetraining();
@@ -193,4 +193,3 @@ function escapeHtml(text) {
   div.textContent = text;
   return div.innerHTML;
 }
-

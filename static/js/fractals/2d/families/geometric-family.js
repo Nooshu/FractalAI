@@ -26,4 +26,3 @@ export const fractals = {
   rose: rose,
   'menger-sponge': mengerSponge,
 };
-

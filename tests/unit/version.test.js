@@ -35,4 +35,3 @@ describe('version', () => {
     expect(versionString).toBe(`FractalAI v${versionModule.APP_VERSION}`);
   });
 });
-

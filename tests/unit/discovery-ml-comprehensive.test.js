@@ -53,14 +53,49 @@ describe('discovery/ml-trainer - Comprehensive ML Tests', () => {
 
       // Add diverse favorites
       const favorites = [
-        { fractalType: 'mandelbrot', zoom: 1.0, offsetX: 0, offsetY: 0, iterations: 125, colorScheme: 'classic' },
-        { fractalType: 'julia', zoom: 5.0, offsetX: -0.5, offsetY: 0.3, iterations: 150, colorScheme: 'fire' },
-        { fractalType: 'mandelbrot', zoom: 10.0, offsetX: 0.2, offsetY: -0.2, iterations: 200, colorScheme: 'ocean' },
-        { fractalType: 'burning-ship', zoom: 2.0, offsetX: -0.1, offsetY: 0.1, iterations: 100, colorScheme: 'rainbow' },
-        { fractalType: 'julia', zoom: 20.0, offsetX: 0.5, offsetY: -0.5, iterations: 175, colorScheme: 'monochrome' },
+        {
+          fractalType: 'mandelbrot',
+          zoom: 1.0,
+          offsetX: 0,
+          offsetY: 0,
+          iterations: 125,
+          colorScheme: 'classic',
+        },
+        {
+          fractalType: 'julia',
+          zoom: 5.0,
+          offsetX: -0.5,
+          offsetY: 0.3,
+          iterations: 150,
+          colorScheme: 'fire',
+        },
+        {
+          fractalType: 'mandelbrot',
+          zoom: 10.0,
+          offsetX: 0.2,
+          offsetY: -0.2,
+          iterations: 200,
+          colorScheme: 'ocean',
+        },
+        {
+          fractalType: 'burning-ship',
+          zoom: 2.0,
+          offsetX: -0.1,
+          offsetY: 0.1,
+          iterations: 100,
+          colorScheme: 'rainbow',
+        },
+        {
+          fractalType: 'julia',
+          zoom: 20.0,
+          offsetX: 0.5,
+          offsetY: -0.5,
+          iterations: 175,
+          colorScheme: 'monochrome',
+        },
       ];
 
-      favorites.forEach(fav => addFavorite(fav));
+      favorites.forEach((fav) => addFavorite(fav));
 
       const result = await trainModel();
 
@@ -98,7 +133,8 @@ describe('discovery/ml-trainer - Comprehensive ML Tests', () => {
 
   describe('Model Persistence', () => {
     it('should save and load model correctly', async () => {
-      const { trainModel, saveModel, loadModel } = await import('../../static/js/discovery/ml-trainer.js');
+      const { trainModel, saveModel, loadModel } =
+        await import('../../static/js/discovery/ml-trainer.js');
       const { addFavorite } = await import('../../static/js/discovery/favorites-manager.js');
 
       // Add favorites and train
@@ -143,10 +179,13 @@ describe('discovery/ml-trainer - Comprehensive ML Tests', () => {
       const { loadModel } = await import('../../static/js/discovery/ml-trainer.js');
 
       // Save a model with wrong version
-      localStorage.setItem('fractalai_ml_model', JSON.stringify({
-        version: 999, // Wrong version
-        layers: [],
-      }));
+      localStorage.setItem(
+        'fractalai_ml_model',
+        JSON.stringify({
+          version: 999, // Wrong version
+          layers: [],
+        })
+      );
 
       const model = await loadModel();
       expect(model).toBeNull();
@@ -186,7 +225,8 @@ describe('discovery/ml-trainer - Comprehensive ML Tests', () => {
 
   describe('Retraining Logic', () => {
     it('should detect when retraining is needed due to favorite increase', async () => {
-      const { shouldRetrainModel, saveModel, trainModel } = await import('../../static/js/discovery/ml-trainer.js');
+      const { shouldRetrainModel, saveModel, trainModel } =
+        await import('../../static/js/discovery/ml-trainer.js');
       const { addFavorite } = await import('../../static/js/discovery/favorites-manager.js');
 
       // Train initial model with 5 favorites
@@ -219,7 +259,8 @@ describe('discovery/ml-trainer - Comprehensive ML Tests', () => {
     });
 
     it('should detect when retraining is needed due to age', async () => {
-      const { shouldRetrainModel, saveModel, trainModel } = await import('../../static/js/discovery/ml-trainer.js');
+      const { shouldRetrainModel, saveModel, trainModel } =
+        await import('../../static/js/discovery/ml-trainer.js');
       const { addFavorite } = await import('../../static/js/discovery/favorites-manager.js');
 
       // Train initial model
@@ -241,18 +282,22 @@ describe('discovery/ml-trainer - Comprehensive ML Tests', () => {
       await saveModel(trainResult.model);
 
       // Manually set old timestamp (8 days ago)
-      const oldTimestamp = Date.now() - (8 * 24 * 60 * 60 * 1000);
-      localStorage.setItem('fractalai_ml_model_metadata', JSON.stringify({
-        version: 1,
-        timestamp: oldTimestamp,
-        favoriteCount: 5,
-      }));
+      const oldTimestamp = Date.now() - 8 * 24 * 60 * 60 * 1000;
+      localStorage.setItem(
+        'fractalai_ml_model_metadata',
+        JSON.stringify({
+          version: 1,
+          timestamp: oldTimestamp,
+          favoriteCount: 5,
+        })
+      );
 
       expect(shouldRetrainModel()).toBe(true);
     });
 
     it('should not retrain when model is recent and favorite count stable', async () => {
-      const { shouldRetrainModel, saveModel, trainModel } = await import('../../static/js/discovery/ml-trainer.js');
+      const { shouldRetrainModel, saveModel, trainModel } =
+        await import('../../static/js/discovery/ml-trainer.js');
       const { addFavorite } = await import('../../static/js/discovery/favorites-manager.js');
 
       for (let i = 0; i < 5; i++) {
@@ -279,7 +324,8 @@ describe('discovery/ml-trainer - Comprehensive ML Tests', () => {
 
   describe('Model Initialization', () => {
     it('should load existing model if available and valid', async () => {
-      const { initializeModel, trainModel, saveModel } = await import('../../static/js/discovery/ml-trainer.js');
+      const { initializeModel, trainModel, saveModel } =
+        await import('../../static/js/discovery/ml-trainer.js');
       const { addFavorite } = await import('../../static/js/discovery/favorites-manager.js');
 
       // Train and save a model
@@ -417,7 +463,8 @@ describe('discovery/ml-trainer - Comprehensive ML Tests', () => {
   describe('Discovery Integration with ML', () => {
     it('should use ML model in discovery when available', async () => {
       const { trainModel } = await import('../../static/js/discovery/ml-trainer.js');
-      const { discoverInterestingFractals } = await import('../../static/js/discovery/discovery-algorithm.js');
+      const { discoverInterestingFractals } =
+        await import('../../static/js/discovery/discovery-algorithm.js');
       const { addFavorite } = await import('../../static/js/discovery/favorites-manager.js');
       const isValidInterestingView = vi.fn(() => true);
 
@@ -454,7 +501,8 @@ describe('discovery/ml-trainer - Comprehensive ML Tests', () => {
     });
 
     it('should fallback to heuristic when model is null', async () => {
-      const { discoverInterestingFractals } = await import('../../static/js/discovery/discovery-algorithm.js');
+      const { discoverInterestingFractals } =
+        await import('../../static/js/discovery/discovery-algorithm.js');
       const isValidInterestingView = vi.fn(() => true);
 
       const discoveries = await discoverInterestingFractals(
@@ -765,13 +813,11 @@ describe('discovery/ml-trainer - Comprehensive ML Tests', () => {
       }));
 
       const startTime = performance.now();
-      const scores = await Promise.all(
-        configs.map(config => mlScore(config, trainResult.model))
-      );
+      const scores = await Promise.all(configs.map((config) => mlScore(config, trainResult.model)));
       const endTime = performance.now();
 
       expect(scores).toHaveLength(10);
-      scores.forEach(score => {
+      scores.forEach((score) => {
         expect(score).toBeGreaterThanOrEqual(0);
         expect(score).toBeLessThanOrEqual(1);
       });

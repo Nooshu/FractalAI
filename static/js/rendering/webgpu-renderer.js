@@ -161,7 +161,7 @@ export class WebGPURenderer {
     this.device = capabilities.device;
     this.adapter = capabilities.adapter;
     this.format = capabilities.format || 'bgra8unorm';
-    
+
     // Initialize context
     this.context = canvas.getContext('webgpu');
     if (!this.context) {
@@ -177,7 +177,7 @@ export class WebGPURenderer {
 
     // Create compute pipeline
     this.computePipeline = createMandelbrotComputePipeline(this.device);
-    
+
     // Create render pipeline
     this.renderPipeline = createRenderPipeline(this.device, this.format);
 
@@ -268,11 +268,7 @@ export class WebGPURenderer {
     const computePass = commandEncoder.beginComputePass();
     computePass.setPipeline(this.computePipeline.pipeline);
     computePass.setBindGroup(0, computeBindGroup);
-    computePass.dispatchWorkgroups(
-      Math.ceil(width / 8),
-      Math.ceil(height / 8),
-      1
-    );
+    computePass.dispatchWorkgroups(Math.ceil(width / 8), Math.ceil(height / 8), 1);
     computePass.end();
 
     // Create texture from output buffer
@@ -374,4 +370,3 @@ export async function initWebGPURenderer(canvas, options = {}) {
     return null;
   }
 }
-

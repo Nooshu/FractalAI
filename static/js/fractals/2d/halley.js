@@ -1,7 +1,4 @@
-import {
-  createFragmentShader,
-  createStandardDrawCommand
-} from '../utils.js';
+import { createFragmentShader, createStandardDrawCommand } from '../utils.js';
 
 const fractalFunction = `
     // Helper function for complex division: a / b
@@ -158,8 +155,8 @@ export function render(regl, params, canvas, options = {}) {
   return createStandardDrawCommand(regl, params, canvas, fragmentShader, {
     webglCapabilities,
     ubo,
-    juliaC: params.juliaC
-});
+    juliaC: params.juliaC,
+  });
 }
 
 export const is2D = true;
@@ -170,12 +167,12 @@ export const is2D = true;
 export const config = {
   initialSettings: {
     colorScheme: 'rainbow-double',
-    iterations: 50
-},
+    iterations: 50,
+  },
   initialPosition: {
     zoom: 1,
-    offset: { x: 0, y: 0 }
-},
+    offset: { x: 0, y: 0 },
+  },
   fallbackPosition: {
     offset: { x: 0, y: 0 },
     zoom: 1,
@@ -185,5 +182,5 @@ export const config = {
     offsetX: [-2, 2],
     offsetY: [-2, 2],
     zoom: [0.5, 100],
-  }
+  },
 };

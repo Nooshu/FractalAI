@@ -1,7 +1,4 @@
-import {
-  createFragmentShader,
-  createStandardDrawCommand
-} from '../utils.js';
+import { createFragmentShader, createStandardDrawCommand } from '../utils.js';
 
 const fractalFunction = `
     // Menger Carpet
@@ -118,21 +115,20 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'neon'
-},
+    colorScheme: 'neon',
+  },
   initialPosition: {
     zoom: 5.824,
-    offset: { x: 0.6464, y: 0.6658 }
+    offset: { x: 0.6464, y: 0.6658 },
   },
   fallbackPosition: {
     offset: { x: 0, y: 0 },
-    zoom: 1.456
-},
+    zoom: 1.456,
+  },
   // Interesting bounds for "surprise me" - Menger carpet is always interesting
   interestingBounds: {
     offsetX: [-1, 1],
     offsetY: [-1, 1],
     zoom: [0.5, 10],
-  }
+  },
 };
-

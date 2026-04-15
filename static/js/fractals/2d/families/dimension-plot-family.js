@@ -10,4 +10,3 @@ import * as fractalDimensionPlot from '../fractal-dimension-plot.js';
 export const fractals = {
   'fractal-dimension-plot': fractalDimensionPlot,
 };
-

@@ -11,39 +11,51 @@ A web-based fractal generator using regl and WebGL. This project demonstrates in
 FractalAI includes a comprehensive collection of fractals organized into families:
 
 #### Mandelbrot Family
+
 - Mandelbrot Set, Celtic Mandelbrot, Multibrot, Mutant Mandelbrot, Phoenix Mandelbrot, Burning Ship, Tricorn, Nebulabrot, Buddhabrot
 
 #### Julia Family
+
 - Julia Set, Julia Snakes, Multibrot Julia, Burning Ship Julia, Tricorn Julia, Phoenix Julia, Lambda Julia, Hybrid Julia
 
 #### Sierpinski Family
+
 - Sierpinski Triangle, Arrowhead, Carpet, Gasket, Hexagon, Pentagon, L-System variants
 
 #### Koch Family
+
 - Koch Snowflake, Quadratic Koch, Fractal Islands
 
 #### Dragon Curves
+
 - Heighway Dragon, Twindragon, Terdragon, Binary Dragon, Folded Paper Dragon, Dragon L-System
 
 #### Space-Filling Curves
+
 - Hilbert Curve, Peano Curve, Sierpinski Curve, Gosper Curve, Moore Curve, Levy C-Curve
 
 #### Cantor Family
+
 - Cantor Set, Fat Cantor, Smith-Volterra-Cantor, Random Cantor, Cantor Dust variants
 
 #### Tree & Plant Family
+
 - Fractal Tree, Binary/Ternary/Quaternary Trees, Pythagoras Tree, Barnsley Fern, Plant, L-System Trees (Oak, Pine), Fractal Canopy
 
 #### Attractors
+
 - Lorenz Attractor, Rössler Attractor, Chua Attractor, Magnet
 
 #### Root-Finding Fractals
+
 - Newton Fractal, Halley Fractal, Nova Fractal
 
 #### Tilings
+
 - Penrose Tiling, Pinwheel Tiling, Rhombic Tiling, Domino Substitution, Snowflake Tiling, Aperiodic Tilings
 
 #### Other Fractals
+
 - Apollonian Gasket, H-Tree, Vicsek, Cross, Diffusion-Limited Aggregation, Fractional Brownian Motion, Fractal Flame, Levy Flights, Menger Sponge/Carpet, Perlin Noise, Simplex Noise, Weierstrass Function, Takagi Function, Blancmange Curve, and many more!
 
 ### Interactive Controls
@@ -129,6 +141,7 @@ npm run build
 ```
 
 The built files will be in the `dist/` directory. The build process includes:
+
 - Preset manifest generation
 - Vite build with optimizations
 - Brotli compression for static assets
@@ -277,24 +290,27 @@ FractalAI includes various performance optimizations and experimental features t
 These features are enabled by default and will automatically activate when browser support is detected:
 
 #### ✅ **OffscreenCanvas** (`offscreenCanvas: true`)
+
 - **Location**: `static/js/core/config.js` → `CONFIG.features.offscreenCanvas`
 - **Implementation**: `static/js/rendering/offscreen-renderer.js`
-- **Browser Requirements**: 
+- **Browser Requirements**:
   - `OffscreenCanvas` API available
   - Chrome 69+, Firefox 105+, Safari 16.4+, Edge 79+
 - **What it does**: Renders fractals off the main thread using `OffscreenCanvas`, then transfers results using `transferToImageBitmap()` for non-blocking, smoother rendering
 - **Auto-enabled when**: Browser supports `OffscreenCanvas` API
 
 #### ✅ **Occlusion Queries** (`occlusionQueries: true`)
+
 - **Location**: `static/js/core/config.js` → `CONFIG.features.occlusionQueries`
 - **Implementation**: `static/js/rendering/occlusion-query.js`
-- **Browser Requirements**: 
+- **Browser Requirements**:
   - WebGL2 context
   - Chrome 56+, Firefox 51+, Safari 15.4+, Edge 79+
 - **What it does**: Uses occlusion queries to skip rendering invisible tiles, improving performance for tile-based rendering
 - **Auto-enabled when**: WebGL2 is available
 
 #### ✅ **Adaptive Quality** (`adaptiveQuality: true`)
+
 - **Location**: `static/js/core/config.js` → `CONFIG.features.adaptiveQuality`
 - **Implementation**: `static/js/rendering/adaptive-quality.js`
 - **Browser Requirements**: Any browser with WebGL
@@ -302,6 +318,7 @@ These features are enabled by default and will automatically activate when brows
 - **Auto-enabled when**: Always enabled (no browser requirements)
 
 #### ✅ **Multi-Resolution Rendering** (`multiResolution: true`)
+
 - **Location**: `static/js/core/config.js` → `CONFIG.features.multiResolution`
 - **Implementation**: `static/js/rendering/multi-resolution.js`
 - **Browser Requirements**: Any browser with WebGL
@@ -309,9 +326,10 @@ These features are enabled by default and will automatically activate when brows
 - **Auto-enabled when**: Always enabled (no browser requirements)
 
 #### ✅ **GPU Timer Queries** (`timerQuery: true`)
+
 - **Location**: `static/js/core/config.js` → `CONFIG.features.timerQuery`
 - **Implementation**: `static/js/rendering/gpu-timer.js`
-- **Browser Requirements**: 
+- **Browser Requirements**:
   - `EXT_disjoint_timer_query` extension (WebGL1) or `EXT_disjoint_timer_query_webgl2` extension (WebGL2)
   - Chrome 56+, Firefox 51+, Safari 15.4+, Edge 79+ (varies by extension support)
 - **What it does**: Provides accurate GPU timing measurements for performance profiling and adaptive quality management
@@ -322,9 +340,10 @@ These features are enabled by default and will automatically activate when brows
 These features are implemented but disabled by default. Enable them by setting the flag to `true` in `static/js/core/config.js`:
 
 #### 🔬 **WebGPU** (`webgpu: false`)
+
 - **Location**: `static/js/core/config.js` → `CONFIG.features.webgpu`
 - **Implementation**: `static/js/rendering/webgpu-renderer.js`
-- **Browser Requirements**: 
+- **Browser Requirements**:
   - `navigator.gpu` available
   - Chrome 113+, Edge 113+, Firefox 110+ (experimental)
   - Requires secure context (HTTPS or localhost)
@@ -333,9 +352,10 @@ These features are implemented but disabled by default. Enable them by setting t
 - **Status**: Experimental, may have compatibility issues
 
 #### 🔬 **WebGL Compute Shaders** (`computeShaders: false`)
+
 - **Location**: `static/js/core/config.js` → `CONFIG.features.computeShaders`
 - **Implementation**: `static/js/rendering/webgl-compute-renderer.js`
-- **Browser Requirements**: 
+- **Browser Requirements**:
   - WebGL2 context
   - `WEBGL_compute_shader` extension available
   - Currently in draft stage, limited browser support
@@ -344,9 +364,10 @@ These features are implemented but disabled by default. Enable them by setting t
 - **Status**: Experimental, extension not widely supported yet
 
 #### 🔬 **SharedArrayBuffer** (`sharedArrayBuffer: false`)
+
 - **Location**: `static/js/core/config.js` → `CONFIG.features.sharedArrayBuffer`
 - **Implementation**: `static/js/workers/shared-array-buffer-utils.js`
-- **Browser Requirements**: 
+- **Browser Requirements**:
   - `SharedArrayBuffer` available
   - Requires Cross-Origin-Opener-Policy (COOP) and Cross-Origin-Embedder-Policy (COEP) headers
   - Chrome 92+, Firefox 79+, Safari 15.2+, Edge 92+
@@ -355,6 +376,7 @@ These features are implemented but disabled by default. Enable them by setting t
 - **Status**: Requires server configuration for security headers
 
 #### 🔬 **Predictive Rendering** (`predictiveRendering: false`)
+
 - **Location**: `static/js/core/config.js` → `CONFIG.features.predictiveRendering`
 - **Implementation**: `static/js/rendering/predictive-rendering.js`
 - **Browser Requirements**: Any browser with WebGL
@@ -363,9 +385,10 @@ These features are implemented but disabled by default. Enable them by setting t
 - **Status**: Experimental, may not always improve performance
 
 #### 🔬 **WebCodecs API** (`webCodecs: false`)
+
 - **Location**: `static/js/core/config.js` → `CONFIG.features.webCodecs`
 - **Implementation**: `static/js/export/video-encoder.js`
-- **Browser Requirements**: 
+- **Browser Requirements**:
   - **WebCodecs API**: Chrome 94+, Edge 94+, Firefox 130+ (experimental), Safari 26.0+ (experimental)
   - **MediaRecorder API** (fallback): Chrome 47+, Firefox 25+, Safari 14.1+, Edge 79+
 - **What it does**: Hardware-accelerated video encoding for fractal animation export. Records fractal animations as video files (WebM format). Uses WebCodecs API when available for better performance, falls back to MediaRecorder API for broader browser support.
@@ -374,9 +397,10 @@ These features are implemented but disabled by default. Enable them by setting t
 - **Usage**: Click the "Export Video" button in the top action bar, enter duration (1-30 seconds), and the video will be recorded and downloaded
 
 #### 🔬 **WebAssembly SIMD** (`wasmSimd: false`)
+
 - **Location**: `static/js/core/config.js` → `CONFIG.features.wasmSimd`
 - **Implementation**: `static/js/workers/wasm-simd-utils.js`
-- **Browser Requirements**: 
+- **Browser Requirements**:
   - WebAssembly SIMD proposal support
   - Chrome 91+, Firefox 89+, Safari 16.4+, Edge 91+
 - **What it does**: Uses SIMD instructions in WebAssembly for faster CPU-based fractal computation fallback
@@ -393,6 +417,7 @@ Worker-based optimizations are controlled separately in `CONFIG.workers`:
 - **`workers.requireSharedArrayBuffer`**: `false` (optional, requires COOP/COEP headers)
 
 Workers are automatically enabled when:
+
 - Browser supports Web Workers
 - System has at least 2 CPU cores (configurable via `minCores`)
 - Feature detection passes (see `static/js/workers/feature-detection.js`)
@@ -405,10 +430,10 @@ To modify feature flags, edit `static/js/core/config.js`:
 export const CONFIG = {
   features: {
     // Enable an experimental feature
-    webgpu: true,  // Change from false to true
-    
+    webgpu: true, // Change from false to true
+
     // Disable a default feature
-    multiResolution: false,  // Change from true to false
+    multiResolution: false, // Change from true to false
   },
 };
 ```

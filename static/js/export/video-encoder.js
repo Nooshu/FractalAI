@@ -9,7 +9,9 @@
  * @returns {boolean} True if available
  */
 export function isWebCodecsAvailable() {
-  return typeof globalThis.VideoEncoder !== 'undefined' && typeof globalThis.VideoFrame !== 'undefined';
+  return (
+    typeof globalThis.VideoEncoder !== 'undefined' && typeof globalThis.VideoFrame !== 'undefined'
+  );
 }
 
 /**
@@ -17,7 +19,11 @@ export function isWebCodecsAvailable() {
  * @returns {boolean} True if available
  */
 export function isMediaRecorderAvailable() {
-  return typeof MediaRecorder !== 'undefined' && MediaRecorder.isTypeSupported('video/webm;codecs=vp9') || MediaRecorder.isTypeSupported('video/webm;codecs=vp8');
+  return (
+    (typeof MediaRecorder !== 'undefined' &&
+      MediaRecorder.isTypeSupported('video/webm;codecs=vp9')) ||
+    MediaRecorder.isTypeSupported('video/webm;codecs=vp8')
+  );
 }
 
 /**
@@ -175,46 +181,49 @@ export class WebCodecsVideoEncoder {
     return new Promise((resolve, reject) => {
       try {
         // Flush encoder to ensure all frames are processed
-        this.encoder.flush().then(() => {
-          this.isEncoding = false;
+        this.encoder
+          .flush()
+          .then(() => {
+            this.isEncoding = false;
 
-          // WebCodecs produces EncodedVideoChunk objects
-          // For a complete MP4 file, we would need a muxer library (e.g., mp4box.js)
-          // For now, we'll create a blob from the chunks
-          // Note: This creates a raw H.264 stream, not a complete MP4 file
-          
-          // Convert chunks to ArrayBuffer for blob creation
-          const chunkData = [];
-          for (const chunk of this.chunks) {
-            try {
-              const buffer = new ArrayBuffer(chunk.byteLength);
-              const view = new Uint8Array(buffer);
-              chunk.copyTo(view);
-              chunkData.push(buffer);
-            } catch (error) {
-              console.warn('[VideoEncoder] Failed to copy chunk:', error);
+            // WebCodecs produces EncodedVideoChunk objects
+            // For a complete MP4 file, we would need a muxer library (e.g., mp4box.js)
+            // For now, we'll create a blob from the chunks
+            // Note: This creates a raw H.264 stream, not a complete MP4 file
+
+            // Convert chunks to ArrayBuffer for blob creation
+            const chunkData = [];
+            for (const chunk of this.chunks) {
+              try {
+                const buffer = new ArrayBuffer(chunk.byteLength);
+                const view = new Uint8Array(buffer);
+                chunk.copyTo(view);
+                chunkData.push(buffer);
+              } catch (error) {
+                console.warn('[VideoEncoder] Failed to copy chunk:', error);
+              }
             }
-          }
 
-          // Create blob from chunk data
-          // Note: This is raw H.264 data, not a complete MP4
-          // For a working MP4, you would need to mux these chunks with a library
-          // For now, return as raw H.264 stream (may not be playable in all players)
-          const blob = new Blob(chunkData, { type: 'video/mp4' });
+            // Create blob from chunk data
+            // Note: This is raw H.264 data, not a complete MP4
+            // For a working MP4, you would need to mux these chunks with a library
+            // For now, return as raw H.264 stream (may not be playable in all players)
+            const blob = new Blob(chunkData, { type: 'video/mp4' });
 
-          // Clean up encoder
-          this.encoder.close();
-          this.encoder = null;
+            // Clean up encoder
+            this.encoder.close();
+            this.encoder = null;
 
-          if (this.onComplete) {
-            this.onComplete(blob, this.frameCount);
-          }
+            if (this.onComplete) {
+              this.onComplete(blob, this.frameCount);
+            }
 
-          resolve(blob);
-        }).catch((error) => {
-          this.isEncoding = false;
-          reject(error);
-        });
+            resolve(blob);
+          })
+          .catch((error) => {
+            this.isEncoding = false;
+            reject(error);
+          });
       } catch (error) {
         this.isEncoding = false;
         reject(error);
@@ -281,19 +290,24 @@ export async function recordFractalVideo(canvas, options = {}) {
 
   // Try WebCodecs first if available and requested
   const useWebCodecs = options.useWebCodecs !== false && isWebCodecsAvailable();
-  
+
   if (useWebCodecs) {
     try {
       return await recordWithWebCodecs(canvas, duration, fps, totalFrames, frameDuration, options);
     } catch (error) {
-      console.warn('[VideoEncoder] WebCodecs encoding failed, falling back to MediaRecorder:', error);
+      console.warn(
+        '[VideoEncoder] WebCodecs encoding failed, falling back to MediaRecorder:',
+        error
+      );
       // Fall through to MediaRecorder
     }
   }
 
   // Fallback to MediaRecorder (broader browser support, produces playable files)
   if (!isMediaRecorderAvailable()) {
-    throw new Error('Video recording is not available. Requires MediaRecorder API support (Chrome 47+, Firefox 25+, Safari 14.1+, Edge 79+).');
+    throw new Error(
+      'Video recording is not available. Requires MediaRecorder API support (Chrome 47+, Firefox 25+, Safari 14.1+, Edge 79+).'
+    );
   }
 
   return await recordWithMediaRecorder(canvas, duration, fps, totalFrames, frameDuration, options);
@@ -394,7 +408,7 @@ async function recordWithMediaRecorder(canvas, duration, fps, totalFrames, frame
     const recordFrame = async () => {
       if (frameCount >= totalFrames) {
         mediaRecorder.stop();
-        stream.getTracks().forEach(track => track.stop());
+        stream.getTracks().forEach((track) => track.stop());
         return;
       }
 
@@ -437,4 +451,3 @@ export function downloadVideo(blob, filename = 'fractal-video.webm') {
   document.body.removeChild(link);
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
-

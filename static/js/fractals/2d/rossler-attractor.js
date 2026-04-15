@@ -1,7 +1,4 @@
-import {
-  createFragmentShader,
-  createStandardDrawCommand
-} from '../utils.js';
+import { createFragmentShader, createStandardDrawCommand } from '../utils.js';
 
 const fractalFunction = `
     // Rössler Attractor
@@ -101,21 +98,20 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'galaxy'
-},
+    colorScheme: 'galaxy',
+  },
   initialPosition: {
     zoom: 0.5,
-    offset: { x: 0.0253, y: 0.2417 }
+    offset: { x: 0.0253, y: 0.2417 },
   },
   fallbackPosition: {
     offset: { x: 0, y: 0 },
-    zoom: 0.5
-},
+    zoom: 0.5,
+  },
   // Interesting bounds for "surprise me" - Rossler attractor is always interesting
   interestingBounds: {
     offsetX: [-2, 2],
     offsetY: [-2, 2],
     zoom: [0.3, 5],
-  }
+  },
 };
-

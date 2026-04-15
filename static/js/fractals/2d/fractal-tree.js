@@ -1,6 +1,4 @@
-import {
-  generatePaletteTexture
-} from '../utils.js';
+import { generatePaletteTexture } from '../utils.js';
 
 // Generate vertices for fractal tree (binary or ternary)
 function generateFractalTree(iterations, branchAngle, lengthRatio, numBranches) {
@@ -19,8 +17,8 @@ function generateFractalTree(iterations, branchAngle, lengthRatio, numBranches) 
       x1: x,
       y1: y,
       x2: endX,
-      y2: endY
-});
+      y2: endY,
+    });
 
     // Calculate new length for child branches
     const newLength = length * lengthRatio;
@@ -167,7 +165,7 @@ export function render(regl, params, canvas, options = {}) {
   const iterationLevel = Math.max(0, Math.min(10, Math.floor(params.iterations / 20)));
 
   // Use uXScale to control branch angle (0-60 degrees)
-  const branchAngle = (params.xScale * 60.0) * (Math.PI / 180.0);
+  const branchAngle = params.xScale * 60.0 * (Math.PI / 180.0);
 
   // Use uYScale to control length ratio (0.5-0.9)
   const lengthRatio = 0.5 + params.yScale * 0.4;
@@ -189,8 +187,8 @@ export function render(regl, params, canvas, options = {}) {
     vert: vertexShaderSource,
     frag: fragmentShaderSource,
     attributes: {
-      position: vertices
-},
+      position: vertices,
+    },
     uniforms: useUBO
       ? {
           uZoom: params.zoom,
@@ -198,8 +196,8 @@ export function render(regl, params, canvas, options = {}) {
           uResolution: [canvas.width, canvas.height],
           uPalette: paletteTexture,
           uIterations: params.iterations,
-          uScale: [params.xScale, params.yScale]
-}
+          uScale: [params.xScale, params.yScale],
+        }
       : {
           uZoom: params.zoom,
           uOffset: [params.offset.x, params.offset.y],
@@ -207,18 +205,18 @@ export function render(regl, params, canvas, options = {}) {
           uPalette: paletteTexture,
           uIterations: params.iterations,
           uXScale: params.xScale,
-          uYScale: params.yScale
-},
+          uYScale: params.yScale,
+        },
     viewport: {
       x: 0,
       y: 0,
       width: canvas.width,
-      height: canvas.height
-},
+      height: canvas.height,
+    },
     count: vertices.length / 2,
     primitive: 'lines',
-    lineWidth: 1
-});
+    lineWidth: 1,
+  });
 
   return drawFractalTree;
 }
@@ -238,17 +236,16 @@ export const config = {
   },
   initialPosition: {
     zoom: 0.678,
-    offset: { x: 1.1737, y: 1.9343 }
+    offset: { x: 1.1737, y: 1.9343 },
   },
   fallbackPosition: {
     offset: { x: 1.1737, y: 1.9343 },
-    zoom: 0.678
-},
+    zoom: 0.678,
+  },
   // Interesting bounds for "surprise me" - Fractal tree has specific viewing area
   interestingBounds: {
     offsetX: [0, 2],
     offsetY: [0, 2],
     zoom: [0.3, 5],
-  }
+  },
 };
-

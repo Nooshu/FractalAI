@@ -27,9 +27,7 @@ describe('Fractal Family Modules', () => {
   for (const familyName of familyModules) {
     it(`should load ${familyName} module`, async () => {
       try {
-        const module = await import(
-          `../../static/js/fractals/2d/families/${familyName}.js`
-        );
+        const module = await import(`../../static/js/fractals/2d/families/${familyName}.js`);
 
         // Family modules should export a fractals object
         expect(module).toHaveProperty('fractals');
@@ -50,9 +48,7 @@ describe('Fractal Family Modules', () => {
 
     it(`should export valid fractal modules from ${familyName}`, async () => {
       try {
-        const module = await import(
-          `../../static/js/fractals/2d/families/${familyName}.js`
-        );
+        const module = await import(`../../static/js/fractals/2d/families/${familyName}.js`);
 
         // Check that each fractal in the family has required exports
         for (const [_fractalName, fractalModule] of Object.entries(module.fractals)) {
@@ -72,9 +68,7 @@ describe('Fractal Family Modules', () => {
 
   it('should have consistent structure across all families', async () => {
     // Test with mandelbrot-family as reference
-    const module = await import(
-      '../../static/js/fractals/2d/families/mandelbrot-family.js'
-    );
+    const module = await import('../../static/js/fractals/2d/families/mandelbrot-family.js');
 
     expect(module).toHaveProperty('fractals');
     expect(typeof module.fractals).toBe('object');
@@ -84,4 +78,3 @@ describe('Fractal Family Modules', () => {
     expect(fractalKeys.length).toBeGreaterThan(0);
   });
 });
-

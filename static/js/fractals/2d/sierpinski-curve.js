@@ -1,6 +1,4 @@
-import {
-  generatePaletteTexture
-} from '../utils.js';
+import { generatePaletteTexture } from '../utils.js';
 
 // Generate vertices for the Sierpiński space-filling curve
 // The Sierpiński curve fills a square by recursively dividing it into 4 sub-squares (2x2 grid)
@@ -216,8 +214,8 @@ export function render(regl, params, canvas, options = {}) {
     vert: vertexShaderSource,
     frag: fragmentShaderSource,
     attributes: {
-      position: vertices
-},
+      position: vertices,
+    },
     uniforms: useUBO
       ? {
           uZoom: params.zoom,
@@ -225,8 +223,8 @@ export function render(regl, params, canvas, options = {}) {
           uResolution: [canvas.width, canvas.height],
           uPalette: paletteTexture,
           uIterations: params.iterations,
-          uScale: [params.xScale, params.yScale]
-}
+          uScale: [params.xScale, params.yScale],
+        }
       : {
           uZoom: params.zoom,
           uOffset: [params.offset.x, params.offset.y],
@@ -234,18 +232,18 @@ export function render(regl, params, canvas, options = {}) {
           uPalette: paletteTexture,
           uIterations: params.iterations,
           uXScale: params.xScale,
-          uYScale: params.yScale
-},
+          uYScale: params.yScale,
+        },
     viewport: {
       x: 0,
       y: 0,
       width: canvas.width,
-      height: canvas.height
-},
+      height: canvas.height,
+    },
     count: vertices.length / 2,
     primitive: 'line strip',
-    lineWidth: 1
-});
+    lineWidth: 1,
+  });
 
   return drawSierpinskiCurve;
 }
@@ -257,21 +255,20 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'neon'
-},
+    colorScheme: 'neon',
+  },
   initialPosition: {
     zoom: 3.49,
-    offset: { x: -0.0107, y: 0.0065 }
+    offset: { x: -0.0107, y: 0.0065 },
   },
   fallbackPosition: {
     offset: { x: 0, y: 0 },
-    zoom: 1
-},
+    zoom: 1,
+  },
   // Interesting bounds for "surprise me" - Sierpinski curve is always interesting
   interestingBounds: {
     offsetX: [-1, 1],
     offsetY: [-1, 1],
     zoom: [0.5, 10],
-  }
+  },
 };
-

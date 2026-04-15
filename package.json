@@ -5,7 +5,7 @@
   "license": "CC-BY-4.0",
   "type": "module",
   "engines": {
-    "node": ">=24.0.0",
+    "node": ">=24.14.1",
     "npm": ">=10.0.0"
   },
   "scripts": {
@@ -27,9 +27,9 @@
     "test": "vitest",
     "test:unit": "vitest tests/unit",
     "test:watch": "vitest --watch",
-    "test:visual": "playwright test",
-    "test:visual:update": "playwright test --update-snapshots",
-    "test:visual:ui": "playwright test --ui",
+    "test:visual": "FORCE_COLOR=0 playwright test",
+    "test:visual:update": "FORCE_COLOR=0 playwright test --update-snapshots",
+    "test:visual:ui": "FORCE_COLOR=0 playwright test --ui",
     "test:visual:report": "playwright show-report"
   },
   "dependencies": {
@@ -38,18 +38,20 @@
     "synaptic": "1.1.4"
   },
   "devDependencies": {
-    "@playwright/test": "1.57.0",
-    "@vitest/coverage-v8": "4.0.15",
-    "eslint": "9.39.1",
-    "jsdom": "27.3.0",
-    "prettier": "3.7.4",
-    "stylelint": "16.26.1",
-    "stylelint-config-standard": "39.0.1",
-    "vite": "^7.3.2",
-    "vitest": "4.0.15"
+    "@playwright/test": "1.59.1",
+    "@eslint/js": "10.0.1",
+    "@vitest/coverage-v8": "4.1.4",
+    "eslint": "10.2.0",
+    "esbuild": "0.28.0",
+    "jsdom": "29.0.2",
+    "prettier": "3.8.3",
+    "stylelint": "17.8.0",
+    "stylelint-config-standard": "40.0.0",
+    "vite": "^8.0.8",
+    "vitest": "4.1.4"
   },
   "overrides": {
-    "brace-expansion": "1.1.13",
+    "brace-expansion": "5.0.5",
     "flatted": "3.4.2",
     "picomatch": "4.0.4",
     "micromatch": {

@@ -173,4 +173,3 @@ export class ContextLossHandler {
 export function createContextLossHandler(canvas, options = {}) {
   return new ContextLossHandler(canvas, options);
 }
-

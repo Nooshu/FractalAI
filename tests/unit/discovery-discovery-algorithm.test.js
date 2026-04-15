@@ -40,7 +40,7 @@ describe('discovery/discovery-algorithm', () => {
       const features = extractFeatures(config);
       expect(features).toBeInstanceOf(Array);
       expect(features).toHaveLength(11);
-      expect(features.every(f => typeof f === 'number')).toBe(true);
+      expect(features.every((f) => typeof f === 'number')).toBe(true);
     });
 
     it('should normalize features correctly', async () => {
@@ -95,8 +95,20 @@ describe('discovery/discovery-algorithm', () => {
 
     it('should prefer moderate zoom levels', async () => {
       const { heuristicScore } = await import('../../static/js/discovery/discovery-algorithm.js');
-      const config1 = { fractalType: 'mandelbrot', zoom: 1.0, offsetX: 0, offsetY: 0, iterations: 125 };
-      const config2 = { fractalType: 'mandelbrot', zoom: 1000, offsetX: 0, offsetY: 0, iterations: 125 };
+      const config1 = {
+        fractalType: 'mandelbrot',
+        zoom: 1.0,
+        offsetX: 0,
+        offsetY: 0,
+        iterations: 125,
+      };
+      const config2 = {
+        fractalType: 'mandelbrot',
+        zoom: 1000,
+        offsetX: 0,
+        offsetY: 0,
+        iterations: 125,
+      };
       const score1 = heuristicScore(config1, isValidInterestingView);
       const score2 = heuristicScore(config2, isValidInterestingView);
       expect(score1).toBeGreaterThan(score2);
@@ -104,8 +116,20 @@ describe('discovery/discovery-algorithm', () => {
 
     it('should prefer views near origin', async () => {
       const { heuristicScore } = await import('../../static/js/discovery/discovery-algorithm.js');
-      const config1 = { fractalType: 'mandelbrot', zoom: 1.0, offsetX: 0, offsetY: 0, iterations: 125 };
-      const config2 = { fractalType: 'mandelbrot', zoom: 1.0, offsetX: 3, offsetY: 3, iterations: 125 };
+      const config1 = {
+        fractalType: 'mandelbrot',
+        zoom: 1.0,
+        offsetX: 0,
+        offsetY: 0,
+        iterations: 125,
+      };
+      const config2 = {
+        fractalType: 'mandelbrot',
+        zoom: 1.0,
+        offsetX: 3,
+        offsetY: 3,
+        iterations: 125,
+      };
       const score1 = heuristicScore(config1, isValidInterestingView);
       const score2 = heuristicScore(config2, isValidInterestingView);
       expect(score1).toBeGreaterThan(score2);
@@ -202,7 +226,8 @@ describe('discovery/discovery-algorithm', () => {
 
   describe('generateCandidates', () => {
     it('should generate candidate configurations', async () => {
-      const { generateCandidates } = await import('../../static/js/discovery/discovery-algorithm.js');
+      const { generateCandidates } =
+        await import('../../static/js/discovery/discovery-algorithm.js');
       const candidates = await generateCandidates('mandelbrot', { count: 10 });
       expect(candidates).toBeInstanceOf(Array);
       expect(candidates).toHaveLength(10);
@@ -217,13 +242,15 @@ describe('discovery/discovery-algorithm', () => {
     });
 
     it('should respect count option', async () => {
-      const { generateCandidates } = await import('../../static/js/discovery/discovery-algorithm.js');
+      const { generateCandidates } =
+        await import('../../static/js/discovery/discovery-algorithm.js');
       const candidates = await generateCandidates('julia', { count: 5 });
       expect(candidates).toHaveLength(5);
     });
 
     it('should include color scheme when specified', async () => {
-      const { generateCandidates } = await import('../../static/js/discovery/discovery-algorithm.js');
+      const { generateCandidates } =
+        await import('../../static/js/discovery/discovery-algorithm.js');
       const candidates = await generateCandidates('mandelbrot', {
         count: 5,
         colorScheme: 'fire',
@@ -235,19 +262,30 @@ describe('discovery/discovery-algorithm', () => {
     });
 
     it('should generate random Julia C parameters for Julia set fractals', async () => {
-      const { generateCandidates } = await import('../../static/js/discovery/discovery-algorithm.js');
-      const juliaTypes = ['julia', 'julia-snakes', 'multibrot-julia', 'burning-ship-julia', 'tricorn-julia', 'phoenix-julia', 'lambda-julia', 'hybrid-julia', 'magnet'];
+      const { generateCandidates } =
+        await import('../../static/js/discovery/discovery-algorithm.js');
+      const juliaTypes = [
+        'julia',
+        'julia-snakes',
+        'multibrot-julia',
+        'burning-ship-julia',
+        'tricorn-julia',
+        'phoenix-julia',
+        'lambda-julia',
+        'hybrid-julia',
+        'magnet',
+      ];
 
       for (const juliaType of juliaTypes) {
         const candidates = await generateCandidates(juliaType, { count: 10 });
         expect(candidates.length).toBeGreaterThan(0);
 
         // Check that Julia C parameters are in the valid range (-2 to 2) and not all zeros
-        const juliaCValues = candidates.map(c => ({ x: c.juliaCX, y: c.juliaCY }));
-        const hasNonZeroValues = juliaCValues.some(c => c.x !== 0 || c.y !== 0);
+        const juliaCValues = candidates.map((c) => ({ x: c.juliaCX, y: c.juliaCY }));
+        const hasNonZeroValues = juliaCValues.some((c) => c.x !== 0 || c.y !== 0);
 
         expect(hasNonZeroValues).toBe(true); // At least some should be non-zero
-        juliaCValues.forEach(c => {
+        juliaCValues.forEach((c) => {
           expect(c.x).toBeGreaterThanOrEqual(-2);
           expect(c.x).toBeLessThanOrEqual(2);
           expect(c.y).toBeGreaterThanOrEqual(-2);
@@ -257,7 +295,8 @@ describe('discovery/discovery-algorithm', () => {
     });
 
     it('should use zero Julia C parameters for non-Julia fractals', async () => {
-      const { generateCandidates } = await import('../../static/js/discovery/discovery-algorithm.js');
+      const { generateCandidates } =
+        await import('../../static/js/discovery/discovery-algorithm.js');
       const candidates = await generateCandidates('mandelbrot', { count: 5 });
       candidates.forEach((candidate) => {
         expect(candidate.juliaCX).toBe(0);
@@ -268,7 +307,8 @@ describe('discovery/discovery-algorithm', () => {
 
   describe('discoverInterestingFractals', () => {
     it('should discover interesting fractals', async () => {
-      const { discoverInterestingFractals } = await import('../../static/js/discovery/discovery-algorithm.js');
+      const { discoverInterestingFractals } =
+        await import('../../static/js/discovery/discovery-algorithm.js');
       const discoveries = await discoverInterestingFractals(
         'mandelbrot',
         isValidInterestingView,
@@ -284,7 +324,8 @@ describe('discovery/discovery-algorithm', () => {
     });
 
     it('should sort discoveries by score', async () => {
-      const { discoverInterestingFractals } = await import('../../static/js/discovery/discovery-algorithm.js');
+      const { discoverInterestingFractals } =
+        await import('../../static/js/discovery/discovery-algorithm.js');
       const discoveries = await discoverInterestingFractals(
         'mandelbrot',
         isValidInterestingView,
@@ -299,9 +340,3 @@ describe('discovery/discovery-algorithm', () => {
     });
   });
 });
-
-
-
-
-
-

@@ -47,10 +47,13 @@ describe('initCanvasRenderer', () => {
     const getZoom = vi.fn(() => 2);
     const onResize = vi.fn();
 
-    const { canvas: returnedCanvas, updateRendererSize } = await initCanvasRenderer('fractal-canvas', {
-      getZoom,
-      onResize,
-    });
+    const { canvas: returnedCanvas, updateRendererSize } = await initCanvasRenderer(
+      'fractal-canvas',
+      {
+        getZoom,
+        onResize,
+      }
+    );
 
     expect(returnedCanvas).toBe(canvas);
     expect(typeof updateRendererSize).toBe('function');

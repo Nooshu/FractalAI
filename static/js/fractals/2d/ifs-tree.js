@@ -1,7 +1,4 @@
-import {
-  createFragmentShader,
-  createStandardDrawCommand
-} from '../utils.js';
+import { createFragmentShader, createStandardDrawCommand } from '../utils.js';
 
 const fractalFunction = `
     // IFS Tree Attractor
@@ -97,21 +94,20 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'vintage'
-},
+    colorScheme: 'vintage',
+  },
   initialPosition: {
     zoom: 1.92,
-    offset: { x: 0.0013, y: 0.4625 }
+    offset: { x: 0.0013, y: 0.4625 },
   },
   fallbackPosition: {
     offset: { x: 0, y: 0.3 },
-    zoom: 2.5
-},
+    zoom: 2.5,
+  },
   // Interesting bounds for "surprise me" - IFS tree is always interesting
   interestingBounds: {
     offsetX: [-1, 1],
     offsetY: [-1, 1],
     zoom: [0.5, 10],
-  }
+  },
 };
-

@@ -179,9 +179,14 @@ describe('core FrameCache', () => {
 
     // Fill cache to maxSize
     for (let i = 0; i < 10; i++) {
-      largeCache.cacheFrame(mockCanvas, 'mandelbrot', { ...params, zoom: i }, {
-        destroy: vi.fn(),
-      });
+      largeCache.cacheFrame(
+        mockCanvas,
+        'mandelbrot',
+        { ...params, zoom: i },
+        {
+          destroy: vi.fn(),
+        }
+      );
     }
 
     expect(largeCache.size()).toBe(10);
@@ -283,12 +288,22 @@ describe('core FrameCache', () => {
 
     const largeCache = new FrameCache(3);
     largeCache.cacheFrame(mockCanvas, 'mandelbrot', params, errorFb);
-    largeCache.cacheFrame(mockCanvas, 'mandelbrot', { ...params, zoom: 2 }, {
-      destroy: vi.fn(),
-    });
-    largeCache.cacheFrame(mockCanvas, 'mandelbrot', { ...params, zoom: 3 }, {
-      destroy: vi.fn(),
-    });
+    largeCache.cacheFrame(
+      mockCanvas,
+      'mandelbrot',
+      { ...params, zoom: 2 },
+      {
+        destroy: vi.fn(),
+      }
+    );
+    largeCache.cacheFrame(
+      mockCanvas,
+      'mandelbrot',
+      { ...params, zoom: 3 },
+      {
+        destroy: vi.fn(),
+      }
+    );
 
     largeCache.trim(1);
 

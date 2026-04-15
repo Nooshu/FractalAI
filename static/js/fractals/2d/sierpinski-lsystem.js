@@ -1,6 +1,4 @@
-import {
-  generatePaletteTexture
-} from '../utils.js';
+import { generatePaletteTexture } from '../utils.js';
 
 // Generate vertices for the Sierpinski Arrowhead Curve using L-system
 // L-system rules:
@@ -240,8 +238,8 @@ export function render(regl, params, canvas, options = {}) {
     vert: vertexShaderSource,
     frag: fragmentShaderSource,
     attributes: {
-      position: vertices
-},
+      position: vertices,
+    },
     uniforms: useUBO
       ? {
           uZoom: params.zoom,
@@ -249,8 +247,8 @@ export function render(regl, params, canvas, options = {}) {
           uResolution: [canvas.width, canvas.height],
           uPalette: paletteTexture,
           uIterations: params.iterations,
-          uScale: [params.xScale, params.yScale]
-}
+          uScale: [params.xScale, params.yScale],
+        }
       : {
           uZoom: params.zoom,
           uOffset: [params.offset.x, params.offset.y],
@@ -258,18 +256,18 @@ export function render(regl, params, canvas, options = {}) {
           uPalette: paletteTexture,
           uIterations: params.iterations,
           uXScale: params.xScale,
-          uYScale: params.yScale
-},
+          uYScale: params.yScale,
+        },
     viewport: {
       x: 0,
       y: 0,
       width: canvas.width,
-      height: canvas.height
-},
+      height: canvas.height,
+    },
     count: vertexCount,
     primitive: 'line strip',
-    lineWidth: 1
-});
+    lineWidth: 1,
+  });
 
   return drawSierpinski;
 }
@@ -281,12 +279,12 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'coral'
-},
+    colorScheme: 'coral',
+  },
   initialPosition: {
     zoom: 1.35,
-    offset: { x: 0, y: 0 }
-},
+    offset: { x: 0, y: 0 },
+  },
   fallbackPosition: {
     offset: { x: 0, y: 0 },
     zoom: 1,
@@ -296,5 +294,5 @@ export const config = {
     offsetX: [-1, 1],
     offsetY: [-1, 1],
     zoom: [0.5, 10],
-  }
+  },
 };

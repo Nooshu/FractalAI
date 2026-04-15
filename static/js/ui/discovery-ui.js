@@ -4,7 +4,12 @@
  */
 
 import { initializeDiscovery, getSurpriseMeFractal } from '../discovery/discovery-manager.js';
-import { initializeFavorites, addCurrentAsFavorite, isCurrentFavorited, renderFavorites } from './favorites.js';
+import {
+  initializeFavorites,
+  addCurrentAsFavorite,
+  isCurrentFavorited,
+  renderFavorites,
+} from './favorites.js';
 import { isValidInterestingView } from '../fractals/random-view.js';
 
 let isInitialized = false;
@@ -125,7 +130,7 @@ export async function initializeDiscoveryUI(getters, onStateChange) {
 async function handleSurpriseMe() {
   const btn = document.getElementById('surprise-me-btn');
   const fullscreenBtn = document.getElementById('fullscreen-surprise-me');
-  
+
   if (!btn && !fullscreenBtn) return;
 
   const fractalType = getCurrentFractalType();
@@ -249,4 +254,3 @@ export function refreshFavorites() {
   renderFavorites();
   updateFavoriteButtonState();
 }
-

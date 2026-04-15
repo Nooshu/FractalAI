@@ -11,7 +11,10 @@ const originalConsoleWarn = console.warn;
 
 console.error = (...args) => {
   const message = args[0];
-  if (typeof message === 'string' && message.includes('Not implemented: navigation to another Document')) {
+  if (
+    typeof message === 'string' &&
+    message.includes('Not implemented: navigation to another Document')
+  ) {
     // Suppress this benign jsdom warning
     return;
   }
@@ -20,7 +23,10 @@ console.error = (...args) => {
 
 console.warn = (...args) => {
   const message = args[0];
-  if (typeof message === 'string' && message.includes('Not implemented: navigation to another Document')) {
+  if (
+    typeof message === 'string' &&
+    message.includes('Not implemented: navigation to another Document')
+  ) {
     // Suppress this benign jsdom warning
     return;
   }
@@ -48,4 +54,28 @@ console.log = (...args) => {
     }
   }
   originalConsoleLog.apply(console, args);
+};
+
+// jsdom sometimes emits "Not implemented: navigation to another Document" directly to stderr/stdout
+// (not through console.*). Filter it at the stream level so it doesn't add noise to test output.
+const originalStderrWrite = process.stderr.write.bind(process.stderr);
+const originalStdoutWrite = process.stdout.write.bind(process.stdout);
+const NAVIGATION_NOT_IMPLEMENTED = 'Not implemented: navigation to another Document';
+
+process.stderr.write = (chunk, encoding, cb) => {
+  const text = typeof chunk === 'string' ? chunk : chunk?.toString?.(encoding);
+  if (typeof text === 'string' && text.includes(NAVIGATION_NOT_IMPLEMENTED)) {
+    if (typeof cb === 'function') cb();
+    return true;
+  }
+  return originalStderrWrite(chunk, encoding, cb);
+};
+
+process.stdout.write = (chunk, encoding, cb) => {
+  const text = typeof chunk === 'string' ? chunk : chunk?.toString?.(encoding);
+  if (typeof text === 'string' && text.includes(NAVIGATION_NOT_IMPLEMENTED)) {
+    if (typeof cb === 'function') cb();
+    return true;
+  }
+  return originalStdoutWrite(chunk, encoding, cb);
 };

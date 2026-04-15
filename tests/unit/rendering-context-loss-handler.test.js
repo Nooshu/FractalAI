@@ -123,4 +123,3 @@ describe('rendering/context-loss-handler', () => {
     });
   });
 });
-

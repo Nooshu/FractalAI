@@ -6,9 +6,7 @@ import {
   getInitialRenderPosition,
 } from '../../static/js/fractals/fractal-config.js';
 
-import {
-  isValidInterestingView,
-} from '../../static/js/fractals/random-view.js';
+import { isValidInterestingView } from '../../static/js/fractals/random-view.js';
 
 import {
   computeColorForScheme,

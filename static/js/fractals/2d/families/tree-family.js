@@ -26,4 +26,3 @@ export const fractals = {
   'lsystem-tree-pine': pineTree,
   'fractal-canopy': fractalCanopy,
 };
-

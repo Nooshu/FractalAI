@@ -49,6 +49,7 @@ export default [
         FileReader: 'readonly',
         Event: 'readonly',
         HTMLElement: 'readonly',
+        MutationObserver: 'readonly',
         localStorage: 'readonly',
         // ES2021 globals
         Promise: 'readonly',
@@ -61,11 +62,14 @@ export default [
       },
     },
     rules: {
-      'no-unused-vars': ['warn', { 
-        argsIgnorePattern: '^_',
-        varsIgnorePattern: '^_',
-        caughtErrorsIgnorePattern: '^_'
-      }],
+      'no-unused-vars': [
+        'warn',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+        },
+      ],
       'no-console': 'off',
       'no-debugger': 'warn',
     },
@@ -87,6 +91,7 @@ export default [
       '**/playwright.config.js',
       '**/vite.config.js',
       '**/vitest.config.js',
+      '.github/**/*.js',
       'tests/**/*.js',
       'scripts/**/*.js',
     ],

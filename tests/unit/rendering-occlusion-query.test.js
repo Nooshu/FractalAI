@@ -11,14 +11,14 @@ describe('rendering/occlusion-query', () => {
   beforeEach(() => {
     // Mock WebGL2RenderingContext class
     global.WebGL2RenderingContext = class WebGL2RenderingContext {};
-    
+
     mockGl = {
       createQuery: vi.fn(() => ({})),
       deleteQuery: vi.fn(),
       beginQuery: vi.fn(),
       endQuery: vi.fn(),
       getQueryParameter: vi.fn(() => false),
-      ANY_SAMPLES_PASSED: 0x8C2F,
+      ANY_SAMPLES_PASSED: 0x8c2f,
       QUERY_RESULT_AVAILABLE: 0x8867,
       QUERY_RESULT: 0x8866,
     };
@@ -151,4 +151,3 @@ describe('rendering/occlusion-query', () => {
     });
   });
 });
-

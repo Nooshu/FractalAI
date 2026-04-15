@@ -1,7 +1,4 @@
-import {
-  createFragmentShader,
-  createStandardDrawCommand
-} from '../utils.js';
+import { createFragmentShader, createStandardDrawCommand } from '../utils.js';
 
 const fractalFunction = `
     float computeFractal(vec2 c) {
@@ -162,21 +159,21 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'midnight'
-},
+    colorScheme: 'midnight',
+  },
   initialPosition: {
     zoom: 1.2,
-    offset: { x: -0.2924, y: -0.2544 }
+    offset: { x: -0.2924, y: -0.2544 },
   },
   fallbackPosition: {
     offset: { x: -0.5, y: -0.6 },
-    zoom: 1.2
-},
+    zoom: 1.2,
+  },
   // Interesting bounds for "surprise me" - constrains to areas with fractal structure
   // Burning Ship has interesting features concentrated in the negative quadrant
   interestingBounds: {
-    offsetX: [-2.5, 0.5],   // Main interesting area is in negative X
-    offsetY: [-2.5, 0.5],   // Main interesting area is in negative Y
-    zoom: [0.5, 100],       // From overview to deep zooms
-  }
+    offsetX: [-2.5, 0.5], // Main interesting area is in negative X
+    offsetY: [-2.5, 0.5], // Main interesting area is in negative Y
+    zoom: [0.5, 100], // From overview to deep zooms
+  },
 };

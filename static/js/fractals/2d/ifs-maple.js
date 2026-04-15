@@ -1,7 +1,4 @@
-import {
-  createFragmentShader,
-  createStandardDrawCommand
-} from '../utils.js';
+import { createFragmentShader, createStandardDrawCommand } from '../utils.js';
 
 const fractalFunction = `
     // IFS Maple Leaf Attractor
@@ -102,21 +99,20 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'rainbow'
-},
+    colorScheme: 'rainbow',
+  },
   initialPosition: {
     zoom: 2.321,
-    offset: { x: 0.0742, y: 0.2625 }
+    offset: { x: 0.0742, y: 0.2625 },
   },
   fallbackPosition: {
     offset: { x: 0, y: -0.5 },
-    zoom: 3.0
-},
+    zoom: 3.0,
+  },
   // Interesting bounds for "surprise me" - IFS maple is always interesting
   interestingBounds: {
     offsetX: [-1, 1],
     offsetY: [-1, 1],
     zoom: [0.5, 10],
-  }
+  },
 };
-

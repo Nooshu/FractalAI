@@ -132,7 +132,8 @@ export class RenderingEngine {
     }
 
     // Start with low quality for immediate feedback
-    const initialIterations = startIterations || Math.max(20, Math.floor(adjustedTargetIterations * 0.2));
+    const initialIterations =
+      startIterations || Math.max(20, Math.floor(adjustedTargetIterations * 0.2));
     this.setCurrentProgressiveIterations(initialIterations);
     this.setTargetIterations(adjustedTargetIterations);
 
@@ -140,13 +141,10 @@ export class RenderingEngine {
     const progressiveParams = { ...params, iterations: initialIterations };
     const webglCapabilities = this.getWebGLCapabilities();
     const ubo = this.getFractalParamsUBO();
-    
+
     // Check if fractal render function supports UBO (new signature)
     let drawFractal;
-    if (
-      currentFractalModule.render.length >= 4 ||
-      (webglCapabilities?.isWebGL2 && ubo)
-    ) {
+    if (currentFractalModule.render.length >= 4 || (webglCapabilities?.isWebGL2 && ubo)) {
       // New signature: render(regl, params, canvas, options)
       drawFractal = currentFractalModule.render(regl, progressiveParams, canvas, {
         webglCapabilities,
@@ -171,7 +169,7 @@ export class RenderingEngine {
     const progressiveStep = () => {
       const currentIterations = this.getCurrentProgressiveIterations();
       const target = this.getTargetIterations();
-      
+
       if (currentIterations < target) {
         const newIterations = Math.min(currentIterations + stepSize, target);
         this.setCurrentProgressiveIterations(newIterations);
@@ -180,12 +178,9 @@ export class RenderingEngine {
         const updatedParams = { ...params, iterations: newIterations };
         const webglCapabilities = this.getWebGLCapabilities();
         const ubo = this.getFractalParamsUBO();
-        
+
         let updatedDrawFractal;
-        if (
-          currentFractalModule.render.length >= 4 ||
-          (webglCapabilities?.isWebGL2 && ubo)
-        ) {
+        if (currentFractalModule.render.length >= 4 || (webglCapabilities?.isWebGL2 && ubo)) {
           updatedDrawFractal = currentFractalModule.render(regl, updatedParams, canvas, {
             webglCapabilities,
             ubo,
@@ -194,49 +189,49 @@ export class RenderingEngine {
           updatedDrawFractal = currentFractalModule.render(regl, updatedParams, canvas);
         }
         this.setDrawFractal(updatedDrawFractal);
-        
+
         // Record frame time before rendering
         const frameStartTime = performance.now();
         const gpuTimer = this.getGPUTimer();
         const gpuQueryId = gpuTimer ? gpuTimer.beginQuery('progressiveRender') : -1;
-        
+
         if (updatedDrawFractal) {
           updatedDrawFractal();
         }
-        
+
         // End GPU query if started
         if (gpuTimer && gpuQueryId !== -1) {
           gpuTimer.endQuery(gpuQueryId);
         }
-        
+
         // Record frame time and update adaptive quality
         const frameEndTime = performance.now();
         const cpuFrameTime = frameEndTime - frameStartTime;
-        
+
         // Try to get GPU timing (may not be available immediately)
         let gpuFrameTime = null;
         if (gpuTimer && gpuQueryId !== -1) {
           const results = gpuTimer.pollQueries();
-          const result = results.find(r => r.queryId === gpuQueryId);
+          const result = results.find((r) => r.queryId === gpuQueryId);
           if (result && result.gpuTime !== null) {
             gpuFrameTime = result.gpuTime;
           }
         }
-        
+
         // Use GPU time if available, otherwise fall back to CPU time
         const frameTime = gpuFrameTime !== null ? gpuFrameTime : cpuFrameTime;
-        
+
         if (adaptiveQualityManager) {
           adaptiveQualityManager.recordFrameTime(frameTime);
           adaptiveQualityManager.updateQuality();
-          
+
           // Update target iterations if quality changed
           const newTarget = adaptiveQualityManager.getAdjustedIterations(params.iterations);
           if (newTarget !== target) {
             this.setTargetIterations(newTarget);
           }
         }
-        
+
         performanceInstrumentation.recordFrameTime(frameTime, gpuFrameTime);
         this.setNeedsRender(false); // Progressive rendering handles its own renders
 
@@ -443,12 +438,9 @@ export class RenderingEngine {
     // Call the fractal's render function to create draw command
     const webglCapabilities = this.getWebGLCapabilities();
     const ubo = this.getFractalParamsUBO();
-    
+
     let drawFractal;
-    if (
-      currentFractalModule.render.length >= 4 ||
-      (webglCapabilities?.isWebGL2 && ubo)
-    ) {
+    if (currentFractalModule.render.length >= 4 || (webglCapabilities?.isWebGL2 && ubo)) {
       drawFractal = currentFractalModule.render(regl, adjustedParams, canvas, {
         webglCapabilities,
         ubo,
@@ -456,7 +448,7 @@ export class RenderingEngine {
     } else {
       drawFractal = currentFractalModule.render(regl, adjustedParams, canvas);
     }
-    
+
     this.setDrawFractal(drawFractal);
 
     // Record frame time before rendering
@@ -477,25 +469,25 @@ export class RenderingEngine {
     // Record frame time and update adaptive quality
     const frameEndTime = performance.now();
     const cpuFrameTime = frameEndTime - frameStartTime;
-    
+
     // Try to get GPU timing (may not be available immediately)
     let gpuFrameTime = null;
     if (gpuTimer && gpuQueryId !== -1) {
       const results = gpuTimer.pollQueries();
-      const result = results.find(r => r.queryId === gpuQueryId);
+      const result = results.find((r) => r.queryId === gpuQueryId);
       if (result && result.gpuTime !== null) {
         gpuFrameTime = result.gpuTime;
       }
     }
-    
+
     // Use GPU time if available, otherwise fall back to CPU time
     const frameTime = gpuFrameTime !== null ? gpuFrameTime : cpuFrameTime;
-    
+
     if (adaptiveQualityManager) {
       adaptiveQualityManager.recordFrameTime(frameTime);
       adaptiveQualityManager.updateQuality();
     }
-    
+
     performanceInstrumentation.recordFrameTime(frameTime, gpuFrameTime);
 
     // Update predictive rendering with current parameters
@@ -515,7 +507,7 @@ export class RenderingEngine {
     const multiResolutionManager = this.getMultiResolutionManager();
     const webglCapabilities = this.getWebGLCapabilities();
     const adaptiveQualityManager = this.getAdaptiveQualityManager();
-    
+
     // Apply adaptive quality adjustments if enabled
     let adjustedParams = params;
     if (adaptiveQualityManager) {
@@ -528,13 +520,21 @@ export class RenderingEngine {
 
     const fullWidth = canvas.width;
     const fullHeight = canvas.height;
-    const { width: lowWidth, height: lowHeight } = multiResolutionManager.getLowResDimensions(fullWidth, fullHeight);
+    const { width: lowWidth, height: lowHeight } = multiResolutionManager.getLowResDimensions(
+      fullWidth,
+      fullHeight
+    );
 
     // Cleanup previous framebuffers
     multiResolutionManager.cleanup();
 
     // Create low-resolution framebuffer
-    const lowResFramebuffer = createOptimizedFramebuffer(regl, lowWidth, lowHeight, webglCapabilities);
+    const lowResFramebuffer = createOptimizedFramebuffer(
+      regl,
+      lowWidth,
+      lowHeight,
+      webglCapabilities
+    );
     multiResolutionManager.lowResFramebuffer = lowResFramebuffer;
 
     // Render to low-res framebuffer
@@ -542,10 +542,7 @@ export class RenderingEngine {
     // We'll override the viewport when rendering to the low-res framebuffer
     const ubo = this.getFractalParamsUBO();
     let drawFractal;
-    if (
-      currentFractalModule.render.length >= 4 ||
-      (webglCapabilities?.isWebGL2 && ubo)
-    ) {
+    if (currentFractalModule.render.length >= 4 || (webglCapabilities?.isWebGL2 && ubo)) {
       drawFractal = currentFractalModule.render(regl, adjustedParams, canvas, {
         webglCapabilities,
         ubo,
@@ -614,7 +611,7 @@ export class RenderingEngine {
       depth: 1,
     });
     lowResDrawCommand();
-    
+
     multiResolutionManager.currentResolution = 'low';
     multiResolutionManager.isRendering = true;
 
@@ -622,15 +619,17 @@ export class RenderingEngine {
     if (multiResolutionManager.enableHighRes) {
       const scheduleHighRes = () => {
         // Create high-res framebuffer
-        const highResFramebuffer = createOptimizedFramebuffer(regl, fullWidth, fullHeight, webglCapabilities);
+        const highResFramebuffer = createOptimizedFramebuffer(
+          regl,
+          fullWidth,
+          fullHeight,
+          webglCapabilities
+        );
         multiResolutionManager.highResFramebuffer = highResFramebuffer;
 
         // Recreate draw command for full resolution
         let highResDrawFractal;
-        if (
-          currentFractalModule.render.length >= 4 ||
-          (webglCapabilities?.isWebGL2 && ubo)
-        ) {
+        if (currentFractalModule.render.length >= 4 || (webglCapabilities?.isWebGL2 && ubo)) {
           highResDrawFractal = currentFractalModule.render(regl, adjustedParams, canvas, {
             webglCapabilities,
             ubo,
@@ -663,25 +662,25 @@ export class RenderingEngine {
         // Record frame time and update adaptive quality
         const frameEndTime = performance.now();
         const cpuFrameTime = frameEndTime - frameStartTime;
-        
+
         // Try to get GPU timing (may not be available immediately)
         let gpuFrameTime = null;
         if (gpuTimer && gpuQueryId !== -1) {
           const results = gpuTimer.pollQueries();
-          const result = results.find(r => r.queryId === gpuQueryId);
+          const result = results.find((r) => r.queryId === gpuQueryId);
           if (result && result.gpuTime !== null) {
             gpuFrameTime = result.gpuTime;
           }
         }
-        
+
         // Use GPU time if available, otherwise fall back to CPU time
         const frameTime = gpuFrameTime !== null ? gpuFrameTime : cpuFrameTime;
-        
+
         if (adaptiveQualityManager) {
           adaptiveQualityManager.recordFrameTime(frameTime);
           adaptiveQualityManager.updateQuality();
         }
-        
+
         performanceInstrumentation.recordFrameTime(frameTime, gpuFrameTime);
 
         // Display high-res frame
@@ -724,7 +723,7 @@ export class RenderingEngine {
           depth: 1,
         });
         highResDrawCommand();
-        
+
         multiResolutionManager.currentResolution = 'high';
         multiResolutionManager.isRendering = false;
 
@@ -751,9 +750,14 @@ export class RenderingEngine {
 
       // Schedule high-res rendering
       if (typeof requestIdleCallback !== 'undefined') {
-        multiResolutionManager.highResRenderId = requestIdleCallback(scheduleHighRes, { timeout: multiResolutionManager.highResDelay });
+        multiResolutionManager.highResRenderId = requestIdleCallback(scheduleHighRes, {
+          timeout: multiResolutionManager.highResDelay,
+        });
       } else {
-        multiResolutionManager.highResRenderId = setTimeout(scheduleHighRes, multiResolutionManager.highResDelay);
+        multiResolutionManager.highResRenderId = setTimeout(
+          scheduleHighRes,
+          multiResolutionManager.highResDelay
+        );
       }
     }
 
@@ -946,7 +950,7 @@ export class RenderingEngine {
     }
 
     // Add predictions to queue
-    predictions.forEach(prediction => {
+    predictions.forEach((prediction) => {
       predictiveRenderingManager.addPrediction(prediction);
     });
 
@@ -961,12 +965,7 @@ export class RenderingEngine {
       const { params: predictedParams, viewKey } = prediction;
 
       // Check if already cached
-      const cached = this.frameCache.getCachedFrame(
-        canvas,
-        fractalType,
-        predictedParams,
-        regl
-      );
+      const cached = this.frameCache.getCachedFrame(canvas, fractalType, predictedParams, regl);
 
       if (cached && cached.framebuffer) {
         // Already cached, mark as completed
@@ -989,7 +988,9 @@ export class RenderingEngine {
         // Apply adaptive quality if enabled
         let adjustedParams = predictedParams;
         if (adaptiveQualityManager) {
-          const adjustedIterations = adaptiveQualityManager.getAdjustedIterations(predictedParams.iterations);
+          const adjustedIterations = adaptiveQualityManager.getAdjustedIterations(
+            predictedParams.iterations
+          );
           adjustedParams = {
             ...predictedParams,
             iterations: adjustedIterations,
@@ -998,10 +999,7 @@ export class RenderingEngine {
 
         // Create draw command for predicted view
         let drawFractal;
-        if (
-          currentFractalModule.render.length >= 4 ||
-          (webglCapabilities?.isWebGL2 && ubo)
-        ) {
+        if (currentFractalModule.render.length >= 4 || (webglCapabilities?.isWebGL2 && ubo)) {
           drawFractal = currentFractalModule.render(regl, adjustedParams, canvas, {
             webglCapabilities,
             ubo,

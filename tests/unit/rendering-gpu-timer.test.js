@@ -16,7 +16,7 @@ describe('rendering/gpu-timer', () => {
       createQuery: vi.fn(() => ({})),
       deleteQuery: vi.fn(),
       getQueryParameter: vi.fn(() => false),
-      ANY_SAMPLES_PASSED: 0x8C2F,
+      ANY_SAMPLES_PASSED: 0x8c2f,
       QUERY_RESULT_AVAILABLE: 0x8867,
       QUERY_RESULT: 0x8866,
     };
@@ -85,4 +85,3 @@ describe('rendering/gpu-timer', () => {
     });
   });
 });
-

@@ -29,7 +29,7 @@ export function canUseSharedArrayBuffer() {
     const testBuffer = new SharedArrayBuffer(4);
     const testView = new Int32Array(testBuffer);
     testView[0] = 1;
-    
+
     // If we can read it back, SharedArrayBuffer is functional
     if (testView[0] === 1) {
       return true;
@@ -129,7 +129,7 @@ export function checkCOOPCOEPHeaders() {
     const testBuffer = new SharedArrayBuffer(4);
     const testView = new Int32Array(testBuffer);
     testView[0] = 42;
-    
+
     // If we can read it back, headers are likely present
     return testView[0] === 42;
   } catch (_error) {
@@ -169,4 +169,3 @@ export function logSharedArrayBufferStatus() {
     );
   }
 }
-

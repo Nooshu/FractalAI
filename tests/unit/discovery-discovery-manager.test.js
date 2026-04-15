@@ -50,7 +50,8 @@ describe('discovery/discovery-manager', () => {
   });
 
   it('should get multiple discovered fractals', async () => {
-    const { getDiscoveredFractals } = await import('../../static/js/discovery/discovery-manager.js');
+    const { getDiscoveredFractals } =
+      await import('../../static/js/discovery/discovery-manager.js');
     const isValidInterestingView = vi.fn(() => true);
     const fractals = await getDiscoveredFractals('mandelbrot', isValidInterestingView, {
       candidateCount: 20,
@@ -81,9 +82,3 @@ describe('discovery/discovery-manager', () => {
     expect(model === null || typeof model === 'object').toBe(true);
   });
 });
-
-
-
-
-
-

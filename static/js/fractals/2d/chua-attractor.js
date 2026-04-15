@@ -1,7 +1,4 @@
-import {
-  createFragmentShader,
-  createStandardDrawCommand
-} from '../utils.js';
+import { createFragmentShader, createStandardDrawCommand } from '../utils.js';
 
 const fractalFunction = `
     // Chua Attractor
@@ -108,21 +105,20 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'rainbow'
-},
+    colorScheme: 'rainbow',
+  },
   initialPosition: {
     zoom: 1,
-    offset: { x: 0, y: 0 }
+    offset: { x: 0, y: 0 },
   },
   fallbackPosition: {
     offset: { x: 0, y: 0 },
-    zoom: 0.5
-},
+    zoom: 0.5,
+  },
   // Interesting bounds for "surprise me" - Chua attractor is always interesting
   interestingBounds: {
     offsetX: [-2, 2],
     offsetY: [-2, 2],
     zoom: [0.3, 5],
-  }
+  },
 };
-

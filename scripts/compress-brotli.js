@@ -72,7 +72,11 @@ async function compressFile(filePath, outputPath) {
 /**
  * Recursively process directory
  */
-async function processDirectory(dir, baseDir, stats = { files: 0, totalOriginal: 0, totalCompressed: 0 }) {
+async function processDirectory(
+  dir,
+  baseDir,
+  stats = { files: 0, totalOriginal: 0, totalCompressed: 0 }
+) {
   const entries = readdirSync(dir, { withFileTypes: true });
   const promises = [];
 
@@ -136,7 +140,8 @@ async function processDirectory(dir, baseDir, stats = { files: 0, totalOriginal:
 async function main() {
   // Only run Brotli compression in production CI environments
   // Cloudflare Pages sets: CI=true, CF_PAGES=1, CF_PAGES_BRANCH
-  const isCI = process.env.CI === 'true' || process.env.CF_PAGES === '1' || process.env.CF_PAGES_BRANCH;
+  const isCI =
+    process.env.CI === 'true' || process.env.CF_PAGES === '1' || process.env.CF_PAGES_BRANCH;
   const isProduction = process.env.NODE_ENV === 'production';
 
   // Only compress in CI/production environments, not local development builds
@@ -178,4 +183,3 @@ main().catch((error) => {
   console.error('Fatal error:', error);
   process.exit(1);
 });
-

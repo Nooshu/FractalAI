@@ -1,6 +1,4 @@
-import {
-  generatePaletteTexture
-} from '../utils.js';
+import { generatePaletteTexture } from '../utils.js';
 
 // Generate vertices for the Moore space-filling curve
 // The Moore curve is a closed variant of the Hilbert curve that forms a loop
@@ -219,8 +217,8 @@ export function render(regl, params, canvas, options = {}) {
     vert: vertexShaderSource,
     frag: fragmentShaderSource,
     attributes: {
-      position: vertices
-},
+      position: vertices,
+    },
     uniforms: useUBO
       ? {
           uZoom: params.zoom,
@@ -228,8 +226,8 @@ export function render(regl, params, canvas, options = {}) {
           uResolution: () => [canvas.width, canvas.height],
           uPalette: paletteTexture,
           uIterations: params.iterations,
-          uScale: () => [params.xScale, params.yScale]
-}
+          uScale: () => [params.xScale, params.yScale],
+        }
       : {
           uZoom: params.zoom,
           uOffset: [params.offset.x, params.offset.y],
@@ -237,18 +235,18 @@ export function render(regl, params, canvas, options = {}) {
           uPalette: paletteTexture,
           uIterations: params.iterations,
           uXScale: () => params.xScale,
-          uYScale: () => params.yScale
-},
+          uYScale: () => params.yScale,
+        },
     viewport: {
       x: 0,
       y: 0,
       width: () => canvas.width,
-      height: () => canvas.height
-},
+      height: () => canvas.height,
+    },
     count: vertices.length / 2,
     primitive: 'line strip',
-    lineWidth: 1
-});
+    lineWidth: 1,
+  });
 
   return drawMooreCurve;
 }
@@ -260,20 +258,20 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'fire'
-},
+    colorScheme: 'fire',
+  },
   initialPosition: {
     zoom: 2.662,
-    offset: { x: 0.0016, y: 0.1022 }
+    offset: { x: 0.0016, y: 0.1022 },
   },
   fallbackPosition: {
     offset: { x: 0, y: 0 },
-    zoom: 1
-},
+    zoom: 1,
+  },
   // Interesting bounds for "surprise me" - Moore curve is always interesting
   interestingBounds: {
     offsetX: [-1, 1],
     offsetY: [-1, 1],
     zoom: [0.5, 10],
-  }
+  },
 };

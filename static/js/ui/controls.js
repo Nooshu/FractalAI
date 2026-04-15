@@ -967,13 +967,15 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
         let finalTargetWidth = targetWidth;
         let finalTargetHeight = targetHeight;
         if (finalTargetWidth > maxViewportDims[0] || finalTargetHeight > maxViewportDims[1]) {
-          const scale = Math.min(maxViewportDims[0] / finalTargetWidth, maxViewportDims[1] / finalTargetHeight);
+          const scale = Math.min(
+            maxViewportDims[0] / finalTargetWidth,
+            maxViewportDims[1] / finalTargetHeight
+          );
           finalTargetWidth = Math.floor(finalTargetWidth * scale);
           finalTargetHeight = Math.floor(finalTargetHeight * scale);
         }
 
         try {
-
           // Temporarily resize the canvas internal dimensions
           // Don't change CSS style to avoid triggering device pixel ratio calculations
           canvas.width = finalTargetWidth;
@@ -1011,7 +1013,7 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
 
             // Execute draw with explicit viewport override
             regl({
-              viewport: { x: 0, y: 0, width: finalTargetWidth, height: finalTargetHeight }
+              viewport: { x: 0, y: 0, width: finalTargetWidth, height: finalTargetHeight },
             })(() => {
               highResDrawFractal();
             });
@@ -1023,13 +1025,28 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
             const bottomRightPixel = new Uint8Array(4);
             const centerPixel = new Uint8Array(4);
             const topLeftPixel = new Uint8Array(4);
-            gl.readPixels(finalTargetWidth - 10, finalTargetHeight - 10, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, bottomRightPixel);
-            gl.readPixels(Math.floor(finalTargetWidth / 2), Math.floor(finalTargetHeight / 2), 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, centerPixel);
+            gl.readPixels(
+              finalTargetWidth - 10,
+              finalTargetHeight - 10,
+              1,
+              1,
+              gl.RGBA,
+              gl.UNSIGNED_BYTE,
+              bottomRightPixel
+            );
+            gl.readPixels(
+              Math.floor(finalTargetWidth / 2),
+              Math.floor(finalTargetHeight / 2),
+              1,
+              1,
+              gl.RGBA,
+              gl.UNSIGNED_BYTE,
+              centerPixel
+            );
             gl.readPixels(10, 10, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, topLeftPixel);
 
             const _viewportAfter = gl.getParameter(gl.VIEWPORT);
           }
-
 
           // Wait for rendering to complete
           await new Promise((resolve) => {
@@ -1058,7 +1075,6 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
           } else {
             exportCanvas = canvas;
           }
-
         } catch (error) {
           console.error('[High-Res Export] Error:', error);
           alert('Failed to render high-resolution image. Please try again.');
@@ -1127,7 +1143,8 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
 
           // Create download link
           const link = document.createElement('a');
-          const resolutionSuffix = exportResolution !== 'default' ? `-${exportResolution.toUpperCase()}` : '';
+          const resolutionSuffix =
+            exportResolution !== 'default' ? `-${exportResolution.toUpperCase()}` : '';
           link.download = `fractal-${currentFractalType}${resolutionSuffix}-${Date.now()}.png`;
           link.href = url;
 
@@ -1178,79 +1195,81 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
       videoExportBtn.style.display = '';
 
       const exportVideo = async () => {
+        // Check if video recording is available (WebCodecs or MediaRecorder)
+        const { isMediaRecorderAvailable, isWebCodecsAvailable } =
+          await import('../export/video-encoder.js');
+        if (!isMediaRecorderAvailable() && !isWebCodecsAvailable()) {
+          alert(
+            'Video export is not available in this browser.\n\nRequires MediaRecorder API (Chrome 47+, Firefox 25+, Safari 14.1+, Edge 79+) or WebCodecs API (Chrome 94+, Edge 94+, Firefox 130+).'
+          );
+          return;
+        }
 
-      // Check if video recording is available (WebCodecs or MediaRecorder)
-      const { isMediaRecorderAvailable, isWebCodecsAvailable } = await import('../export/video-encoder.js');
-      if (!isMediaRecorderAvailable() && !isWebCodecsAvailable()) {
-        alert('Video export is not available in this browser.\n\nRequires MediaRecorder API (Chrome 47+, Firefox 25+, Safari 14.1+, Edge 79+) or WebCodecs API (Chrome 94+, Edge 94+, Firefox 130+).');
-        return;
-      }
+        // Prompt for video duration
+        const durationInput = prompt('Enter video duration in seconds (1-30):', '5');
+        if (!durationInput) {
+          return; // User cancelled
+        }
 
-      // Prompt for video duration
-      const durationInput = prompt('Enter video duration in seconds (1-30):', '5');
-      if (!durationInput) {
-        return; // User cancelled
-      }
+        const duration = parseFloat(durationInput);
+        if (isNaN(duration) || duration < 1 || duration > 30) {
+          alert('Please enter a valid duration between 1 and 30 seconds.');
+          return;
+        }
 
-      const duration = parseFloat(durationInput);
-      if (isNaN(duration) || duration < 1 || duration > 30) {
-        alert('Please enter a valid duration between 1 and 30 seconds.');
-        return;
-      }
+        const canvas = getCanvas();
+        const currentFractalType = getCurrentFractalType();
+        const renderingEngine = callbacks.getRenderingEngine?.();
 
-      const canvas = getCanvas();
-      const currentFractalType = getCurrentFractalType();
-      const renderingEngine = callbacks.getRenderingEngine?.();
+        if (!canvas || !renderingEngine) {
+          alert('Canvas or rendering engine not available.');
+          return;
+        }
 
-      if (!canvas || !renderingEngine) {
-        alert('Canvas or rendering engine not available.');
-        return;
-      }
+        // Disable button and show progress
+        const originalHTML = videoExportBtn.innerHTML;
+        videoExportBtn.innerHTML = '<span>Recording...</span>';
+        videoExportBtn.disabled = true;
 
-      // Disable button and show progress
-      const originalHTML = videoExportBtn.innerHTML;
-      videoExportBtn.innerHTML = '<span>Recording...</span>';
-      videoExportBtn.disabled = true;
+        try {
+          const { recordFractalVideo, downloadVideo } = await import('../export/video-encoder.js');
 
-      try {
-        const { recordFractalVideo, downloadVideo } = await import('../export/video-encoder.js');
+          // Record video
+          const blob = await recordFractalVideo(canvas, {
+            duration: duration,
+            fps: 60,
+            onFrame: async (_canvas, _frameNumber) => {
+              // Re-render fractal for each frame
+              // In a real animation, you might want to change parameters over time
+              renderingEngine.renderFractal();
 
-        // Record video
-        const blob = await recordFractalVideo(canvas, {
-          duration: duration,
-          fps: 60,
-          onFrame: async (_canvas, _frameNumber) => {
-            // Re-render fractal for each frame
-            // In a real animation, you might want to change parameters over time
-            renderingEngine.renderFractal();
-
-            // Wait for render to complete
-            await new Promise((resolve) => {
-              requestAnimationFrame(() => {
-                requestAnimationFrame(resolve);
+              // Wait for render to complete
+              await new Promise((resolve) => {
+                requestAnimationFrame(() => {
+                  requestAnimationFrame(resolve);
+                });
               });
-            });
-          },
-          onProgress: (frameCount, totalFrames) => {
-            const progress = Math.round((frameCount / totalFrames) * 100);
-            videoExportBtn.innerHTML = `<span>Recording... ${progress}%</span>`;
-          },
-        });
+            },
+            onProgress: (frameCount, totalFrames) => {
+              const progress = Math.round((frameCount / totalFrames) * 100);
+              videoExportBtn.innerHTML = `<span>Recording... ${progress}%</span>`;
+            },
+          });
 
-        // Download video
-        const filename = `fractal-${currentFractalType}-${Date.now()}.webm`;
-        downloadVideo(blob, filename);
+          // Download video
+          const filename = `fractal-${currentFractalType}-${Date.now()}.webm`;
+          downloadVideo(blob, filename);
 
-        // Re-enable button
-        videoExportBtn.innerHTML = originalHTML;
-        videoExportBtn.disabled = false;
-      } catch (error) {
-        console.error('Error exporting video:', error);
-        alert(`Failed to export video: ${error.message}`);
-        videoExportBtn.innerHTML = originalHTML;
-        videoExportBtn.disabled = false;
-      }
-    };
+          // Re-enable button
+          videoExportBtn.innerHTML = originalHTML;
+          videoExportBtn.disabled = false;
+        } catch (error) {
+          console.error('Error exporting video:', error);
+          alert(`Failed to export video: ${error.message}`);
+          videoExportBtn.innerHTML = originalHTML;
+          videoExportBtn.disabled = false;
+        }
+      };
 
       videoExportBtn.addEventListener('click', exportVideo);
     } else {
@@ -1413,7 +1432,7 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
     const currentScheme = params.colorScheme;
 
     // Get available schemes (exclude current one to avoid duplicates)
-    const availableSchemes = colorSchemes.filter(scheme => scheme !== currentScheme);
+    const availableSchemes = colorSchemes.filter((scheme) => scheme !== currentScheme);
 
     // Randomly select from available schemes
     const randomIndex = Math.floor(Math.random() * availableSchemes.length);
@@ -1468,7 +1487,10 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
     if (!renderingEngine) {
       // Fallback: if we can't access rendering engine, use a timeout
       const params = getParams();
-      const fallbackDelay = Math.max(MIN_CYCLE_DELAY, 2000 * (1 + Math.log10(Math.max(1, params.zoom)) * 0.5));
+      const fallbackDelay = Math.max(
+        MIN_CYCLE_DELAY,
+        2000 * (1 + Math.log10(Math.max(1, params.zoom)) * 0.5)
+      );
       autoCycleTimeout = setTimeout(() => {
         if (isFullscreen()) {
           selectRandomColorScheme();
@@ -1659,10 +1681,8 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
 
     // Don't start fade timer if any button is disabled, loading, or focused
     const buttons = fullscreenControls.querySelectorAll('.fullscreen-control-btn');
-    const hasActiveButton = Array.from(buttons).some(btn =>
-      btn.disabled ||
-      btn.classList.contains('loading') ||
-      btn === document.activeElement
+    const hasActiveButton = Array.from(buttons).some(
+      (btn) => btn.disabled || btn.classList.contains('loading') || btn === document.activeElement
     );
 
     if (hasActiveButton) {
@@ -1673,11 +1693,12 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
       if (isFullscreen() && fullscreenControls) {
         // Double-check that no buttons are active before fading
         const buttons = fullscreenControls.querySelectorAll('.fullscreen-control-btn');
-        const hasActiveButton = Array.from(buttons).some(btn =>
-          btn.disabled ||
-          btn.classList.contains('loading') ||
-          btn === document.activeElement ||
-          btn.matches(':hover')
+        const hasActiveButton = Array.from(buttons).some(
+          (btn) =>
+            btn.disabled ||
+            btn.classList.contains('loading') ||
+            btn === document.activeElement ||
+            btn.matches(':hover')
         );
 
         if (!hasActiveButton) {
@@ -1715,12 +1736,15 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
     if (!isFullscreen() || !fullscreenControls) return;
 
     // Don't start fade timer if any button is disabled, loading, or focused
-    const buttons = fullscreenControls.querySelectorAll('.fullscreen-control-btn');
-    const hasActiveButton = Array.from(buttons).some(btn =>
-      btn.disabled ||
-      btn.classList.contains('loading') ||
-      btn === document.activeElement ||
-      btn.matches(':hover')
+    const buttons = fullscreenControls.querySelectorAll
+      ? Array.from(fullscreenControls.querySelectorAll('.fullscreen-control-btn'))
+      : [];
+    const hasActiveButton = buttons.some(
+      (btn) =>
+        btn.disabled ||
+        btn.classList.contains('loading') ||
+        btn === document.activeElement ||
+        btn.matches(':hover')
     );
 
     if (!hasActiveButton) {
@@ -1737,12 +1761,17 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
     fullscreenControls.addEventListener('mouseleave', handleMouseLeaveControls);
 
     // Also add hover listeners to individual buttons to prevent fade when hovering
-    const buttons = fullscreenControls.querySelectorAll('.fullscreen-control-btn');
+    const buttons = fullscreenControls.querySelectorAll
+      ? Array.from(fullscreenControls.querySelectorAll('.fullscreen-control-btn'))
+      : [];
     buttons.forEach((button) => {
       button.addEventListener('mouseenter', handleMouseEnterControls);
       button.addEventListener('mouseleave', (e) => {
         // Only fade if mouse is not over any button or the container
-        if (!fullscreenControls.matches(':hover') && !Array.from(buttons).some(btn => btn.matches(':hover'))) {
+        if (
+          !fullscreenControls.matches(':hover') &&
+          !buttons.some((btn) => btn.matches(':hover'))
+        ) {
           handleMouseLeaveControls();
         }
       });
@@ -1765,8 +1794,10 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
       button.addEventListener('focus', handleMouseEnterControls);
       button.addEventListener('blur', (e) => {
         // Only fade on blur if not hovering and not another button is focused
-        if (!fullscreenControls.matches(':hover') &&
-            !Array.from(buttons).some(btn => btn.matches(':hover') || btn === document.activeElement)) {
+        if (
+          !fullscreenControls.matches(':hover') &&
+          !buttons.some((btn) => btn.matches(':hover') || btn === document.activeElement)
+        ) {
           handleMouseLeaveControls();
         }
       });
@@ -1780,7 +1811,7 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
       });
       observer.observe(button, {
         attributes: true,
-        attributeFilter: ['disabled', 'class']
+        attributeFilter: ['disabled', 'class'],
       });
     });
   }

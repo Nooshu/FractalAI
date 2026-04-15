@@ -444,4 +444,3 @@ export function createWebGLComputeRenderer(gl, capabilities) {
 
   return null;
 }
-

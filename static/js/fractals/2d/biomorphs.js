@@ -1,7 +1,4 @@
-import {
-  createFragmentShader,
-  createStandardDrawCommand
-} from '../utils.js';
+import { createFragmentShader, createStandardDrawCommand } from '../utils.js';
 
 const fractalFunction = `
     float computeFractal(vec2 c) {
@@ -146,8 +143,8 @@ export function render(regl, params, canvas, options = {}) {
   return createStandardDrawCommand(regl, params, canvas, fragmentShader, {
     webglCapabilities,
     ubo,
-    juliaC: params.juliaC
-});
+    juliaC: params.juliaC,
+  });
 }
 
 export const is2D = true;
@@ -157,18 +154,18 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'midnight'
-},
+    colorScheme: 'midnight',
+  },
   initialPosition: {
     zoom: 1,
-    offset: { x: 0, y: 0 }
+    offset: { x: 0, y: 0 },
   },
   fallbackPosition: {
     offset: { x: 0, y: 0 },
     zoom: 1.5,
     cReal: -0.7269,
-    cImag: 0.1889
-},
+    cImag: 0.1889,
+  },
   // Interesting bounds for "surprise me" - Biomorphs
   interestingBounds: {
     offsetX: [-2, 2],
@@ -176,6 +173,5 @@ export const config = {
     zoom: [0.5, 100],
     juliaCX: [-1, 1],
     juliaCY: [-1, 1],
-  }
+  },
 };
-

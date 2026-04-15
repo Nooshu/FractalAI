@@ -22,4 +22,3 @@ export const fractals = {
   'ifs-maple': ifsMaple,
   'ifs-tree': ifsTree,
 };
-

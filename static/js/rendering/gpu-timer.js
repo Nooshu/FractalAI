@@ -52,8 +52,12 @@ export class GPUTimer {
     }
 
     if (this.isAvailable) {
-      devLog.log('[GPU Timer] GPU timing enabled via', 
-        capabilities.features.timerQuery.webgl2 ? 'EXT_disjoint_timer_query_webgl2' : 'EXT_disjoint_timer_query');
+      devLog.log(
+        '[GPU Timer] GPU timing enabled via',
+        capabilities.features.timerQuery.webgl2
+          ? 'EXT_disjoint_timer_query_webgl2'
+          : 'EXT_disjoint_timer_query'
+      );
     } else {
       devLog.log('[GPU Timer] GPU timing not available, falling back to CPU timing');
     }
@@ -115,7 +119,7 @@ export class GPUTimer {
     if (!query) return -1;
 
     const queryId = this.queryCounter++;
-    
+
     try {
       if (this.timerExt.beginQueryEXT) {
         this.timerExt.beginQueryEXT(this.timerExt.TIME_ELAPSED_EXT, query);
@@ -192,7 +196,10 @@ export class GPUTimer {
       try {
         // Check if query result is available
         if (this.timerExt.getQueryObjectEXT) {
-          available = this.timerExt.getQueryObjectEXT(query, this.timerExt.QUERY_RESULT_AVAILABLE_EXT);
+          available = this.timerExt.getQueryObjectEXT(
+            query,
+            this.timerExt.QUERY_RESULT_AVAILABLE_EXT
+          );
           if (available) {
             gpuTime = this.timerExt.getQueryObjectEXT(query, this.timerExt.QUERY_RESULT_EXT);
           }
@@ -289,4 +296,3 @@ export class GPUTimer {
 export function createGPUTimer(gl, capabilities) {
   return new GPUTimer(gl, capabilities);
 }
-

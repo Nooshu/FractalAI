@@ -1,7 +1,4 @@
-import {
-  getVertexShader,
-  generatePaletteTexture
-} from '../utils.js';
+import { getVertexShader, generatePaletteTexture } from '../utils.js';
 
 // Helper function to create UBO-aware fragment shader for multibrot-julia
 // Multibrot Julia needs custom handling: xScale is used for order, not coordinate transformation
@@ -179,8 +176,8 @@ export function render(regl, params, canvas, options = {}) {
       ? {
           uTime: 0,
           uResolution: [canvas.width, canvas.height],
-          uPalette: paletteTexture
-}
+          uPalette: paletteTexture,
+        }
       : {
           uTime: 0,
           uIterations: params.iterations,
@@ -190,14 +187,14 @@ export function render(regl, params, canvas, options = {}) {
           uJuliaC: [params.juliaC.x, params.juliaC.y],
           uPalette: paletteTexture,
           uXScale: params.xScale,
-          uYScale: params.yScale
-},
+          uYScale: params.yScale,
+        },
     viewport: {
       x: 0,
       y: 0,
       width: canvas.width,
-      height: canvas.height
-},
+      height: canvas.height,
+    },
     count: 4,
     primitive: 'triangle strip',
     // Bind UBO if available
@@ -214,14 +211,14 @@ export function render(regl, params, canvas, options = {}) {
                 offset: params.offset,
                 juliaC: params.juliaC,
                 xScale: params.xScale,
-                yScale: params.yScale
-});
+                yScale: params.yScale,
+              });
               context.ubo.bind(program);
             }
-          }
-}
-      : {})
-});
+          },
+        }
+      : {}),
+  });
 }
 
 export const is2D = true;
@@ -232,12 +229,12 @@ export const is2D = true;
 export const config = {
   initialSettings: {
     colorScheme: 'rainbow-pastel',
-    iterations: 25
-},
+    iterations: 25,
+  },
   initialPosition: {
     zoom: 1,
-    offset: { x: 0, y: 0 }
-},
+    offset: { x: 0, y: 0 },
+  },
   fallbackPosition: {
     offset: { x: 0, y: 0 },
     zoom: 1,
@@ -249,5 +246,5 @@ export const config = {
     zoom: [0.5, 100],
     juliaCX: [-1, 1],
     juliaCY: [-1, 1],
-  }
+  },
 };

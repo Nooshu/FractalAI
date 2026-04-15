@@ -26,9 +26,9 @@ describe('uniform-buffer', () => {
       getUniformBlockIndex: vi.fn(() => 0),
       uniformBlockBinding: vi.fn(),
       bindBufferBase: vi.fn(),
-      UNIFORM_BUFFER: 0x8A11,
-      DYNAMIC_DRAW: 0x88E8,
-      INVALID_INDEX: 0xFFFFFFFF,
+      UNIFORM_BUFFER: 0x8a11,
+      DYNAMIC_DRAW: 0x88e8,
+      INVALID_INDEX: 0xffffffff,
     };
 
     mockRegl = {
@@ -319,4 +319,3 @@ describe('uniform-buffer', () => {
     });
   });
 });
-

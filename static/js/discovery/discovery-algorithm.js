@@ -26,9 +26,7 @@ export function extractFeatures(config) {
   } = config;
 
   // Encode fractal type as a number (simple hash)
-  const typeHash = fractalType
-    .split('')
-    .reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  const typeHash = fractalType.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
 
   // Normalize features
   const features = [
@@ -177,7 +175,7 @@ export async function generateCandidates(fractalType, options = {}, fractalModul
   const effectiveZoomRange = zoomRange || bounds.zoom;
   const effectiveOffsetRange = offsetRange || [
     Math.min(bounds.offsetX[0], bounds.offsetY[0]),
-    Math.max(bounds.offsetX[1], bounds.offsetY[1])
+    Math.max(bounds.offsetX[1], bounds.offsetY[1]),
   ];
 
   const candidates = [];
@@ -185,17 +183,15 @@ export async function generateCandidates(fractalType, options = {}, fractalModul
 
   for (let i = 0; i < count; i++) {
     const zoom =
-      effectiveZoomRange[0] +
-      Math.random() * (effectiveZoomRange[1] - effectiveZoomRange[0]);
-    const offsetX =
-      bounds.offsetX[0] + Math.random() * (bounds.offsetX[1] - bounds.offsetX[0]);
-    const offsetY =
-      bounds.offsetY[0] + Math.random() * (bounds.offsetY[1] - bounds.offsetY[0]);
+      effectiveZoomRange[0] + Math.random() * (effectiveZoomRange[1] - effectiveZoomRange[0]);
+    const offsetX = bounds.offsetX[0] + Math.random() * (bounds.offsetX[1] - bounds.offsetX[0]);
+    const offsetY = bounds.offsetY[0] + Math.random() * (bounds.offsetY[1] - bounds.offsetY[0]);
 
     // Randomly select color scheme if not specified or if includeColorScheme is true
-    const selectedColorScheme = includeColorScheme && colorScheme === null
-      ? availableSchemes[Math.floor(Math.random() * availableSchemes.length)]
-      : (colorScheme || 'classic');
+    const selectedColorScheme =
+      includeColorScheme && colorScheme === null
+        ? availableSchemes[Math.floor(Math.random() * availableSchemes.length)]
+        : colorScheme || 'classic';
 
     // Generate Julia C parameters for Julia set fractals
     // Use interesting bounds if available
@@ -239,17 +235,17 @@ export async function discoverInterestingFractals(
   options = {},
   fractalModule = null
 ) {
-  const {
-    candidateCount = 100,
-    topK = 10,
-    minScore = 0.5,
-  } = options;
+  const { candidateCount = 100, topK = 10, minScore = 0.5 } = options;
 
   // Generate candidates using interesting bounds
-  const candidates = await generateCandidates(fractalType, {
-    count: candidateCount,
-    ...options,
-  }, fractalModule);
+  const candidates = await generateCandidates(
+    fractalType,
+    {
+      count: candidateCount,
+      ...options,
+    },
+    fractalModule
+  );
 
   // Score all candidates
   const scored = await Promise.all(
@@ -267,4 +263,3 @@ export async function discoverInterestingFractals(
 
   return filtered;
 }
-

@@ -1,7 +1,4 @@
-import {
-  createFragmentShader,
-  createStandardDrawCommand
-} from '../utils.js';
+import { createFragmentShader, createStandardDrawCommand } from '../utils.js';
 
 const fractalFunction = `
     float computeFractal(vec2 c) {
@@ -132,22 +129,22 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'classic'
-},
+    colorScheme: 'classic',
+  },
   initialPosition: {
     zoom: 1,
-    offset: { x: 0, y: 0 }
+    offset: { x: 0, y: 0 },
   },
   fallbackPosition: {
     offset: { x: -0.75, y: 0.1 },
-    zoom: 50
-},
+    zoom: 50,
+  },
   // Interesting bounds for "surprise me" - constrains to areas with fractal structure
   // The Mandelbrot set is contained within a circle of radius 2, but interesting
   // features are concentrated in the main cardioid and surrounding bulbs
   interestingBounds: {
-    offsetX: [-2.5, 1.5],  // Main set extends from ~-2 to 0.5, with some interesting areas beyond
-    offsetY: [-2, 2],       // Symmetric vertically
-    zoom: [0.5, 100],       // From overview to deep zooms
-  }
+    offsetX: [-2.5, 1.5], // Main set extends from ~-2 to 0.5, with some interesting areas beyond
+    offsetY: [-2, 2], // Symmetric vertically
+    zoom: [0.5, 100], // From overview to deep zooms
+  },
 };

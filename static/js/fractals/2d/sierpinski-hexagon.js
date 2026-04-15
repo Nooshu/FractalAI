@@ -1,7 +1,4 @@
-import {
-  createFragmentShader,
-  createStandardDrawCommand
-} from '../utils.js';
+import { createFragmentShader, createStandardDrawCommand } from '../utils.js';
 
 const fractalFunction = `
     // Sierpinski Hexagon
@@ -129,20 +126,20 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'coral'
-},
+    colorScheme: 'coral',
+  },
   initialPosition: {
     zoom: 1.871,
-    offset: { x: 0.0056, y: 0.0898 }
+    offset: { x: 0.0056, y: 0.0898 },
   },
   fallbackPosition: {
     offset: { x: 0, y: 0 },
-    zoom: 1
-},
+    zoom: 1,
+  },
   // Interesting bounds for "surprise me" - Sierpinski hexagon is always interesting
   interestingBounds: {
     offsetX: [-1, 1],
     offsetY: [-1, 1],
     zoom: [0.5, 10],
-  }
+  },
 };

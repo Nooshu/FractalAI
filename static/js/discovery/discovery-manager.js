@@ -3,9 +3,7 @@
  * Main interface for fractal discovery functionality
  */
 
-import {
-  discoverInterestingFractals,
-} from './discovery-algorithm.js';
+import { discoverInterestingFractals } from './discovery-algorithm.js';
 import { initializeModel, shouldRetrainModel, trainModel, saveModel } from './ml-trainer.js';
 import { getFavorites } from './favorites-manager.js';
 import { devLog } from '../core/logger.js';
@@ -60,11 +58,7 @@ export async function initializeDiscovery(_isValidInterestingView) {
  * @param {Object} options - Discovery options
  * @returns {Promise<Object|null>} Discovered fractal configuration
  */
-export async function getSurpriseMeFractal(
-  fractalType,
-  isValidInterestingView,
-  options = {}
-) {
+export async function getSurpriseMeFractal(fractalType, isValidInterestingView, options = {}) {
   await ensureFractalLoader();
 
   // Try to get the fractal module from cache to access interesting bounds
@@ -108,11 +102,7 @@ export async function getSurpriseMeFractal(
  * @param {Object} options - Discovery options
  * @returns {Promise<Array<Object>>} Array of discovered configurations
  */
-export async function getDiscoveredFractals(
-  fractalType,
-  isValidInterestingView,
-  options = {}
-) {
+export async function getDiscoveredFractals(fractalType, isValidInterestingView, options = {}) {
   await ensureFractalLoader();
 
   // Try to get the fractal module from cache to access interesting bounds
@@ -170,4 +160,3 @@ export async function triggerRetraining() {
 export function getModel() {
   return mlModel;
 }
-

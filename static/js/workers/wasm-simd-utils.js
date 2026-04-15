@@ -28,7 +28,7 @@ export function supportsWasmSimd() {
       const isChrome = /Chrome\/(\d+)/.test(ua);
       const isFirefox = /Firefox\/(\d+)/.test(ua);
       const isSafari = /Version\/(\d+).*Safari/.test(ua);
-      
+
       if (isChrome) {
         const version = parseInt(/Chrome\/(\d+)/.exec(ua)[1], 10);
         return version >= 91; // Chrome 91+ supports SIMD
@@ -41,7 +41,7 @@ export function supportsWasmSimd() {
         const version = parseInt(/Version\/(\d+)/.exec(ua)[1], 10);
         return version >= 16; // Safari 16.4+ supports SIMD (approximate check)
       }
-      
+
       // For other browsers, assume support if WebAssembly is available
       // Actual validation would require compiling a WASM module
       return true;
@@ -80,7 +80,7 @@ export async function loadWasmModule(_wasmPath = null) {
   // In production, this would fetch and compile a .wasm file:
   // const wasmBytes = await fetch(wasmPath).then(r => r.arrayBuffer());
   // return await WebAssembly.compile(wasmBytes);
-  
+
   return null;
 }
 
@@ -118,7 +118,16 @@ export async function instantiateWasmModule(module, imports = {}) {
  * @param {string} fractalType - Fractal type
  * @returns {boolean} True if computation succeeded
  */
-export function computeTileWasm(wasmInstance, buffer, width, height, xOffset, yOffset, params, _fractalType = 'mandelbrot') {
+export function computeTileWasm(
+  wasmInstance,
+  buffer,
+  width,
+  height,
+  xOffset,
+  yOffset,
+  params,
+  _fractalType = 'mandelbrot'
+) {
   // If WASM instance is available, use it
   if (wasmInstance && wasmInstance.exports && wasmInstance.exports.compute_tile) {
     try {
@@ -131,7 +140,7 @@ export function computeTileWasm(wasmInstance, buffer, width, height, xOffset, yO
       // Allocate buffer in WASM memory
       const bufferSize = width * height * 4; // 4 bytes per float32
       const bufferPtr = memory.buffer.byteLength;
-      
+
       // Grow memory if needed
       const pagesNeeded = Math.ceil(bufferSize / (64 * 1024)); // 64KB per page
       const currentPages = memory.buffer.byteLength / (64 * 1024);
@@ -185,7 +194,16 @@ export function computeTileWasm(wasmInstance, buffer, width, height, xOffset, yO
  * @param {string} fractalType - Fractal type
  * @param {Function} computePointFn - Function to compute a single point
  */
-export function computeTileOptimized(buffer, width, height, xOffset, yOffset, params, fractalType, computePointFn) {
+export function computeTileOptimized(
+  buffer,
+  width,
+  height,
+  xOffset,
+  yOffset,
+  params,
+  fractalType,
+  computePointFn
+) {
   const aspect = width / height;
   const scale = 4.0 / (params.zoom || 1.0);
   const offsetX = params.offset?.x || 0.0;
@@ -202,16 +220,16 @@ export function computeTileOptimized(buffer, width, height, xOffset, yOffset, pa
   // Use TypedArray for better performance
   let index = 0;
   for (let py = 0; py < height; py++) {
-    const centeredY = (py * invHeight) - 0.5;
+    const centeredY = py * invHeight - 0.5;
     const cy = centeredY * scaleY + offsetY;
-    
+
     for (let px = 0; px < width; px++) {
-      const centeredX = (px * invWidth) - 0.5;
+      const centeredX = px * invWidth - 0.5;
       const cx = centeredX * scaleAspectX + offsetX;
-      
+
       // Compute fractal value
       const value = computePointFn(cx, cy, params, fractalType);
-      
+
       // Store in buffer (using direct index for better performance)
       buffer[index++] = value;
     }
@@ -243,4 +261,3 @@ export function logWasmSimdStatus() {
     );
   }
 }
-

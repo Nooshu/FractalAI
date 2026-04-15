@@ -1,5 +1,13 @@
 import { defineConfig } from 'vite';
-import { copyFileSync, readFileSync, writeFileSync, cpSync, existsSync, readdirSync, statSync } from 'fs';
+import {
+  copyFileSync,
+  readFileSync,
+  writeFileSync,
+  cpSync,
+  existsSync,
+  readdirSync,
+  statSync,
+} from 'fs';
 import { resolve, relative } from 'path';
 import { execSync } from 'child_process';
 
@@ -314,7 +322,11 @@ export default defineConfig({
                 }
               } else if (entry.isFile()) {
                 // Skip service worker itself and source maps
-                if (!entry.name.endsWith('.map') && entry.name !== 'sw.js' && !entry.name.endsWith('.br')) {
+                if (
+                  !entry.name.endsWith('.map') &&
+                  entry.name !== 'sw.js' &&
+                  !entry.name.endsWith('.br')
+                ) {
                   assetManifest.push(relPath);
                 }
               }
@@ -369,7 +381,9 @@ export default defineConfig({
 
           writeFileSync(swDest, swContent);
           console.log(`[Service Worker] Copied with cache version: ${cacheVersion}`);
-          console.log(`[Service Worker] Pre-caching ${assetManifest.length} assets for offline support`);
+          console.log(
+            `[Service Worker] Pre-caching ${assetManifest.length} assets for offline support`
+          );
         } catch (err) {
           console.warn('Service worker not found, skipping copy');
         }

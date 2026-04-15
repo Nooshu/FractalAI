@@ -10,4 +10,3 @@ import * as deRhamCurve from '../de-rham-curve.js';
 export const fractals = {
   'de-rham-curve': deRhamCurve,
 };
-

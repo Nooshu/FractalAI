@@ -28,14 +28,18 @@ function showNotification(message, type = 'info', duration = 3000) {
 
   // Icons for different types
   const icons = {
-    success: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>',
-    error: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>',
+    success:
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>',
+    error:
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>',
     info: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>',
-    warning: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+    warning:
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
   };
 
   // Close button icon
-  const closeIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+  const closeIcon =
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
 
   notification.innerHTML = `
     <div class="notification-icon">${icons[type] || icons.info}</div>
@@ -91,10 +95,12 @@ function showConfirmation(message, confirmText = 'Confirm', cancelText = 'Cancel
     confirmation.className = 'notification notification-error notification-confirmation';
 
     // Warning triangle icon (red)
-    const warningIcon = '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="17" r="1" fill="currentColor"/><path d="M12 10L12 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M3.44722 18.1056L10.2111 4.57771C10.9482 3.10361 13.0518 3.10362 13.7889 4.57771L20.5528 18.1056C21.2177 19.4354 20.2507 21 18.7639 21H5.23607C3.7493 21 2.78231 19.4354 3.44722 18.1056Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    const warningIcon =
+      '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="17" r="1" fill="currentColor"/><path d="M12 10L12 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M3.44722 18.1056L10.2111 4.57771C10.9482 3.10361 13.0518 3.10362 13.7889 4.57771L20.5528 18.1056C21.2177 19.4354 20.2507 21 18.7639 21H5.23607C3.7493 21 2.78231 19.4354 3.44722 18.1056Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
     // Close button icon
-    const closeIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+    const closeIcon =
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
 
     confirmation.innerHTML = `
       <div class="notification-header">
@@ -243,11 +249,7 @@ function rgbToHex(r, g, b) {
 function hexToRgb(hex) {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   return result
-    ? [
-        parseInt(result[1], 16) / 255,
-        parseInt(result[2], 16) / 255,
-        parseInt(result[3], 16) / 255,
-      ]
+    ? [parseInt(result[1], 16) / 255, parseInt(result[2], 16) / 255, parseInt(result[3], 16) / 255]
     : [0, 0, 0];
 }
 
@@ -258,7 +260,12 @@ function hexToRgb(hex) {
  * @param {Function} onStopsChange - Optional callback when stops change (for auto-apply)
  * @param {Function} onUpdateButtonText - Optional callback to update save button text
  */
-function createGradientEditor(container, initialStops = null, onStopsChange = null, onUpdateButtonText = null) {
+function createGradientEditor(
+  container,
+  initialStops = null,
+  onStopsChange = null,
+  onUpdateButtonText = null
+) {
   const editor = document.createElement('div');
   editor.className = 'gradient-editor';
 
@@ -473,7 +480,7 @@ function createGradientEditor(container, initialStops = null, onStopsChange = nu
     stopsContainer.innerHTML = '';
     // Remove all existing handles from stopsWrapper (they're positioned absolutely over preview)
     const existingHandles = stopsWrapper.querySelectorAll('.gradient-stop-handle');
-    existingHandles.forEach(h => h.remove());
+    existingHandles.forEach((h) => h.remove());
 
     stops.forEach((stop, index) => {
       const stopEl = createStopElement(stop, index);
@@ -580,7 +587,12 @@ export function setupColorSchemeEditor(getParams, updateParams, renderFractal) {
     renderFractal();
   };
 
-  const gradientEditor = createGradientEditor(gradientContainer, null, autoApplyGradient, updateSaveButtonText);
+  const gradientEditor = createGradientEditor(
+    gradientContainer,
+    null,
+    autoApplyGradient,
+    updateSaveButtonText
+  );
   gradientContainer.appendChild(gradientEditor.element);
 
   // Action buttons
@@ -709,9 +721,11 @@ export function setupColorSchemeEditor(getParams, updateParams, renderFractal) {
 
   // Clean up temporary schemes (created when applying without saving)
   function cleanupTempSchemes() {
-    const tempSchemeNames = Array.from(customColorSchemes.keys()).filter(name => name.startsWith('_temp_'));
+    const tempSchemeNames = Array.from(customColorSchemes.keys()).filter((name) =>
+      name.startsWith('_temp_')
+    );
     if (tempSchemeNames.length > 0) {
-      tempSchemeNames.forEach(name => customColorSchemes.delete(name));
+      tempSchemeNames.forEach((name) => customColorSchemes.delete(name));
       saveCustomSchemes();
     }
   }
@@ -721,7 +735,9 @@ export function setupColorSchemeEditor(getParams, updateParams, renderFractal) {
     savedSchemesList.innerHTML = '';
 
     // Filter out temporary schemes from display
-    const savedSchemes = Array.from(customColorSchemes.entries()).filter(([name]) => !name.startsWith('_temp_'));
+    const savedSchemes = Array.from(customColorSchemes.entries()).filter(
+      ([name]) => !name.startsWith('_temp_')
+    );
 
     if (savedSchemes.length === 0) {
       const emptyMsg = document.createElement('div');
@@ -817,11 +833,7 @@ export function setupColorSchemeEditor(getParams, updateParams, renderFractal) {
 
       // Delete saved scheme
       deleteSchemeBtn.addEventListener('click', async () => {
-        const confirmed = await showConfirmation(
-          `Delete scheme "${name}"?`,
-          'Delete',
-          'Cancel'
-        );
+        const confirmed = await showConfirmation(`Delete scheme "${name}"?`, 'Delete', 'Cancel');
         if (confirmed) {
           customColorSchemes.delete(name);
           saveCustomSchemes();
@@ -911,7 +923,11 @@ export function setupColorSchemeEditor(getParams, updateParams, renderFractal) {
     });
 
     if (palettes.length === 0) {
-      showNotification('No custom palettes to export. Save at least one palette first.', 'warning', 4000);
+      showNotification(
+        'No custom palettes to export. Save at least one palette first.',
+        'warning',
+        4000
+      );
       return;
     }
 
@@ -921,18 +937,24 @@ export function setupColorSchemeEditor(getParams, updateParams, renderFractal) {
     };
 
     // Generate filename: scheme names joined with "-" + export date (Day-Month-Year)
-    const schemeNames = palettes.map(p => p.name)
-      .map(name => name.replace(/[^a-zA-Z0-9\s-]/g, '').trim().replace(/\s+/g, '-'))
-      .filter(name => name.length > 0)
+    const schemeNames = palettes
+      .map((p) => p.name)
+      .map((name) =>
+        name
+          .replace(/[^a-zA-Z0-9\s-]/g, '')
+          .trim()
+          .replace(/\s+/g, '-')
+      )
+      .filter((name) => name.length > 0)
       .join('-');
-    
+
     const now = new Date();
     const day = String(now.getDate()).padStart(2, '0');
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const year = now.getFullYear();
     const dateStr = `${day}-${month}-${year}`;
-    
-    const filename = schemeNames 
+
+    const filename = schemeNames
       ? `${schemeNames}-${dateStr}.json`
       : `color-palettes-${dateStr}.json`;
 
@@ -981,7 +1003,11 @@ export function setupColorSchemeEditor(getParams, updateParams, renderFractal) {
           if (importedCount > 0) {
             saveCustomSchemes();
             renderSavedSchemes();
-            showNotification(`Imported ${importedCount} palette${importedCount > 1 ? 's' : ''}${skippedCount > 0 ? ` (${skippedCount} skipped - already exist)` : ''}!`, 'success', 4000);
+            showNotification(
+              `Imported ${importedCount} palette${importedCount > 1 ? 's' : ''}${skippedCount > 0 ? ` (${skippedCount} skipped - already exist)` : ''}!`,
+              'success',
+              4000
+            );
           } else if (skippedCount > 0) {
             showNotification('All palettes already exist. No new palettes imported.', 'info', 4000);
           } else {
@@ -1055,4 +1081,3 @@ setCustomSchemeHandler((t, schemeName, out = null) => {
 
 // Load custom schemes on module load
 loadCustomSchemes();
-

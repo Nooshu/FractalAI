@@ -17,7 +17,7 @@ export function createOptimizedFramebuffer(regl, width, height, _webglCapabiliti
   // Regl requires OES_texture_half_float extension to be explicitly available,
   // which causes errors even when half-float is core (WebGL2) or extensions exist
   // Always use uint8 textures for reliable operation
-  
+
   // Create framebuffer with uint8 texture (always)
   const framebuffer = regl.framebuffer({
     width,

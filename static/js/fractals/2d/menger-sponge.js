@@ -1,7 +1,4 @@
-import {
-  createFragmentShader,
-  createStandardDrawCommand
-} from '../utils.js';
+import { createFragmentShader, createStandardDrawCommand } from '../utils.js';
 
 const fractalFunction = `
     // Menger Sponge (2D Projection)
@@ -123,21 +120,20 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'emerald'
-},
+    colorScheme: 'emerald',
+  },
   initialPosition: {
     zoom: 19.16,
-    offset: { x: -0.6697, y: 0.169 }
+    offset: { x: -0.6697, y: 0.169 },
   },
   fallbackPosition: {
     offset: { x: 0, y: 0 },
-    zoom: 1
-},
+    zoom: 1,
+  },
   // Interesting bounds for "surprise me" - Menger sponge is always interesting
   interestingBounds: {
     offsetX: [-1, 1],
     offsetY: [-1, 1],
     zoom: [0.5, 10],
-  }
+  },
 };
-

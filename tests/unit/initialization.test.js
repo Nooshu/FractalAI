@@ -50,7 +50,7 @@ vi.mock('../../static/js/fractals/loader.js', () => ({
 }));
 
 vi.mock('../../static/js/rendering/engine.js', () => {
-  const RenderingEngineClass = vi.fn().mockImplementation(function() {
+  const RenderingEngineClass = vi.fn().mockImplementation(function () {
     this.renderFractal = vi.fn();
     this.renderFractalProgressive = vi.fn();
     this.scheduleRender = vi.fn();
@@ -196,7 +196,7 @@ vi.mock('../../static/js/core/config.js', () => ({
 vi.mock('../../static/js/performance/long-task-detector.js', () => {
   const mockStart = vi.fn();
   const mockStop = vi.fn();
-  const LongTaskDetectorClass = vi.fn().mockImplementation(function() {
+  const LongTaskDetectorClass = vi.fn().mockImplementation(function () {
     this.start = mockStart;
     this.stop = mockStop;
   });
@@ -315,9 +315,11 @@ describe('initialization module', () => {
     const { initFPSTracker } = await import('../../static/js/performance/fps-tracker.js');
     const { initCanvasRenderer } = await import('../../static/js/rendering/canvas-renderer.js');
     const { appState } = await import('../../static/js/core/app-state.js');
-    const { LongTaskDetector: _LongTaskDetector } = await import('../../static/js/performance/long-task-detector.js');
+    const { LongTaskDetector: _LongTaskDetector } =
+      await import('../../static/js/performance/long-task-detector.js');
     const { idleCleanupManager } = await import('../../static/js/core/idle-cleanup.js');
-    const { RenderingEngine: _RenderingEngine } = await import('../../static/js/rendering/engine.js');
+    const { RenderingEngine: _RenderingEngine } =
+      await import('../../static/js/rendering/engine.js');
     const { setupUIControls } = await import('../../static/js/ui/controls.js');
     const { setupInputControls } = await import('../../static/js/input/controls.js');
     const { initUILayout } = await import('../../static/js/ui/panels.js');
@@ -344,7 +346,8 @@ describe('initialization module', () => {
     expect(appState.setWebGLCapabilities).toHaveBeenCalled();
 
     // Verify long task detector
-    const { LongTaskDetector: LongTaskDetectorClass } = await import('../../static/js/performance/long-task-detector.js');
+    const { LongTaskDetector: LongTaskDetectorClass } =
+      await import('../../static/js/performance/long-task-detector.js');
     expect(LongTaskDetectorClass).toHaveBeenCalled();
     const longTaskDetectorInstance = LongTaskDetectorClass.mock.results[0].value;
     expect(longTaskDetectorInstance.start).toHaveBeenCalled();
@@ -354,7 +357,8 @@ describe('initialization module', () => {
     expect(idleCleanupManager.start).toHaveBeenCalled();
 
     // Verify rendering engine
-    const { RenderingEngine: RenderingEngineClass } = await import('../../static/js/rendering/engine.js');
+    const { RenderingEngine: RenderingEngineClass } =
+      await import('../../static/js/rendering/engine.js');
     expect(RenderingEngineClass).toHaveBeenCalled();
     expect(appState.setRenderingEngine).toHaveBeenCalled();
 
@@ -466,7 +470,8 @@ describe('initialization module', () => {
     await init();
 
     expect(startFPSTracking).toHaveBeenCalled();
-    const { RenderingEngine: RenderingEngineClass } = await import('../../static/js/rendering/engine.js');
+    const { RenderingEngine: RenderingEngineClass } =
+      await import('../../static/js/rendering/engine.js');
     const renderingEngine = RenderingEngineClass.mock.results[0].value;
     expect(renderingEngine.startAnimation).toHaveBeenCalled();
     // Should not call loadFractal when loaded from URL
@@ -492,7 +497,8 @@ describe('initialization module', () => {
   });
 
   it('should setup cleanup handlers', async () => {
-    const { LongTaskDetector: LongTaskDetectorClass } = await import('../../static/js/performance/long-task-detector.js');
+    const { LongTaskDetector: LongTaskDetectorClass } =
+      await import('../../static/js/performance/long-task-detector.js');
     const { lifecycleManager } = await import('../../static/js/core/lifecycle-manager.js');
     const { idleCleanupManager } = await import('../../static/js/core/idle-cleanup.js');
     const { appState } = await import('../../static/js/core/app-state.js');

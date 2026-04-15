@@ -14,4 +14,3 @@ export const fractals = {
   'percolation-cluster': percolationCluster,
   'levy-flights': levyFlights,
 };
-

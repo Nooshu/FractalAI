@@ -1,8 +1,4 @@
-import {
-  generatePaletteTexture,
-  createFragmentShader,
-  getVertexShader
-} from '../utils.js';
+import { generatePaletteTexture, createFragmentShader, getVertexShader } from '../utils.js';
 
 const fractalFunction = `
 // Cross Fractal (T-Square Fractal)
@@ -111,14 +107,14 @@ export function render(regl, params, canvas, options = {}) {
     frag: fragmentShader,
     vert: vertexShaderSource,
     attributes: {
-      position: [-1, -1, 1, -1, -1, 1, 1, 1]
-},
+      position: [-1, -1, 1, -1, -1, 1, 1, 1],
+    },
     uniforms: useUBO
       ? {
           uTime: 0,
           uResolution: [canvas.width, canvas.height],
-          uPalette: paletteTexture
-}
+          uPalette: paletteTexture,
+        }
       : {
           uTime: 0,
           uIterations: params.iterations,
@@ -128,8 +124,8 @@ export function render(regl, params, canvas, options = {}) {
           uJuliaC: [0, 0],
           uPalette: paletteTexture,
           uXScale: params.xScale,
-          uYScale: params.yScale
-},
+          uYScale: params.yScale,
+        },
     // Bind UBO if available
     ...(useUBO && ubo?.glBuffer && ubo?.bind
       ? {
@@ -144,12 +140,12 @@ export function render(regl, params, canvas, options = {}) {
                 offset: params.offset,
                 juliaC: { x: 0, y: 0 },
                 xScale: params.xScale,
-                yScale: params.yScale
-});
+                yScale: params.yScale,
+              });
               context.ubo.bind(program);
             }
-          }
-}
+          },
+        }
       : {}),
     primitive: 'triangle strip',
     count: 4,
@@ -157,9 +153,9 @@ export function render(regl, params, canvas, options = {}) {
       x: 0,
       y: 0,
       width: canvas.width,
-      height: canvas.height
-}
-});
+      height: canvas.height,
+    },
+  });
 
   return drawFractal;
 }
@@ -174,20 +170,20 @@ export const config = {
     iterations: 240,
     xScale: 1.0,
     yScale: 1.0,
-    colorScheme: 'coral'
-},
+    colorScheme: 'coral',
+  },
   initialPosition: {
     zoom: 1.357,
-    offset: { x: -0.1595, y: 0.0074 }
+    offset: { x: -0.1595, y: 0.0074 },
   },
   fallbackPosition: {
     offset: { x: 0, y: 0 },
-    zoom: 1
-},
+    zoom: 1,
+  },
   // Interesting bounds for "surprise me" - Cross fractal is always interesting
   interestingBounds: {
     offsetX: [-1, 1],
     offsetY: [-1, 1],
     zoom: [0.5, 10],
-  }
+  },
 };

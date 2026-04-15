@@ -266,11 +266,11 @@ body {
 }
 
 /* Custom padding for Discovery section to align larger icon with other panels */
-.section-header[data-section="discovery"] {
+.section-header[data-section='discovery'] {
   padding: 2px 20px 2px 8px;
 }
 
-.section-header[data-section="discovery"] .section-title {
+.section-header[data-section='discovery'] .section-title {
   align-self: center;
   margin-top: 0;
   margin-left: -10px;
@@ -2650,7 +2650,9 @@ body.is-fullscreen .app-container .app-footer {
   gap: var(--notification-gap);
   pointer-events: auto;
   animation: slide-in-right 0.3s ease-out;
-  transition: opacity var(--transition-fast), transform var(--transition-fast);
+  transition:
+    opacity var(--transition-fast),
+    transform var(--transition-fast);
 }
 
 .notification.notification-success {
@@ -2709,7 +2711,9 @@ body.is-fullscreen .app-container .app-footer {
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-sm);
-  transition: color var(--transition-fast), background var(--transition-fast);
+  transition:
+    color var(--transition-fast),
+    background var(--transition-fast);
   width: var(--notification-icon-size);
   height: var(--notification-icon-size);
 }

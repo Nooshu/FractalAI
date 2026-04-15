@@ -494,7 +494,7 @@ export function computeColorForScheme(t, schemeIndexOrName, out = null) {
       const a = Math.min(1, t * 1.25);
       const b = Math.max(0, (t - 0.35) / 0.65);
       out[0] = 0.02 + a * 0.55 + b * 0.05;
-      out[1] = 0.00 + a * 0.12 + b * 0.95;
+      out[1] = 0.0 + a * 0.12 + b * 0.95;
       out[2] = 0.08 + a * 0.95 + b * 0.15;
       return out;
     }
@@ -504,7 +504,7 @@ export function computeColorForScheme(t, schemeIndexOrName, out = null) {
       const b = Math.max(0, (t - 0.55) / 0.45);
       out[0] = 0.01 + b * 0.95;
       out[1] = 0.05 + a * 0.95;
-      out[2] = 0.00 + a * 0.12;
+      out[2] = 0.0 + a * 0.12;
       return out;
     }
     case 41: {
@@ -512,8 +512,8 @@ export function computeColorForScheme(t, schemeIndexOrName, out = null) {
       const a = Math.pow(t, 1.2);
       const h = Math.pow(t, 5.5);
       out[0] = Math.min(1, 0.02 + a * 0.95);
-      out[1] = Math.min(1, 0.00 + a * 0.10 + h * 0.25);
-      out[2] = Math.min(1, 0.00 + a * 0.12 + h * 0.95);
+      out[1] = Math.min(1, 0.0 + a * 0.1 + h * 0.25);
+      out[2] = Math.min(1, 0.0 + a * 0.12 + h * 0.95);
       return out;
     }
     case 42: {
@@ -531,7 +531,7 @@ export function computeColorForScheme(t, schemeIndexOrName, out = null) {
       const b = Math.max(0, (t - 0.4) / 0.6);
       const sparkle = Math.sin(t * Math.PI * 14) * 0.08 + 0.92;
       out[0] = (0.02 + a * 0.15 + b * 0.25) * sparkle;
-      out[1] = (0.10 + a * 0.75 + b * 0.35) * sparkle;
+      out[1] = (0.1 + a * 0.75 + b * 0.35) * sparkle;
       out[2] = (0.12 + a * 0.55 + b * 0.45) * sparkle;
       return out;
     }
@@ -542,21 +542,22 @@ export function computeColorForScheme(t, schemeIndexOrName, out = null) {
       const flare = Math.sin(t * Math.PI * 10) * 0.12 + 0.88;
       out[0] = Math.min(1, (0.02 + a * 1.05) * flare);
       out[1] = Math.min(1, (0.01 + a * 0.55 + hot * 0.85) * flare);
-      out[2] = Math.min(1, (0.00 + a * 0.10 + hot * 1.00) * flare);
+      out[2] = Math.min(1, (0.0 + a * 0.1 + hot * 1.0) * flare);
       return out;
     }
     case 45: {
       // deep-sea - abyss navy → teal → bioluminescent cyan
       const a = Math.pow(t, 1.25);
       const glow = Math.pow(Math.max(0, t - 0.55) / 0.45, 2.2);
-      out[0] = 0.00 + a * 0.08;
+      out[0] = 0.0 + a * 0.08;
       out[1] = 0.03 + a * 0.55 + glow * 0.45;
       out[2] = 0.08 + a * 0.85 + glow * 0.25;
       return out;
     }
     case 46: {
       // chiaroscuro - high-contrast monochrome with subtle blue tint in highlights
-      const c = t < 0.55 ? Math.pow(t / 0.55, 1.8) * 0.35 : 0.35 + Math.pow((t - 0.55) / 0.45, 0.7) * 0.65;
+      const c =
+        t < 0.55 ? Math.pow(t / 0.55, 1.8) * 0.35 : 0.35 + Math.pow((t - 0.55) / 0.45, 0.7) * 0.65;
       out[0] = c;
       out[1] = c * 0.98;
       out[2] = Math.min(1, c * 1.08);
@@ -619,7 +620,8 @@ export function generatePaletteTexture(regl, colorScheme) {
 
   // Check if WebGL2 is available for immutable texture storage
   const gl = regl._gl;
-  const isWebGL2 = gl && typeof WebGL2RenderingContext !== 'undefined' && gl instanceof WebGL2RenderingContext;
+  const isWebGL2 =
+    gl && typeof WebGL2RenderingContext !== 'undefined' && gl instanceof WebGL2RenderingContext;
 
   let texture;
 
@@ -633,7 +635,17 @@ export function generatePaletteTexture(regl, colorScheme) {
     gl.texStorage2D(gl.TEXTURE_2D, 1, gl.RGBA8, PALETTE_SIZE, 1);
 
     // Upload texture data
-    gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, PALETTE_SIZE, 1, gl.RGBA, gl.UNSIGNED_BYTE, paletteData);
+    gl.texSubImage2D(
+      gl.TEXTURE_2D,
+      0,
+      0,
+      0,
+      PALETTE_SIZE,
+      1,
+      gl.RGBA,
+      gl.UNSIGNED_BYTE,
+      paletteData
+    );
 
     // Set texture parameters
     // Use linear filtering for smooth color gradients in palette textures

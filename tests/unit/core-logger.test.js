@@ -179,5 +179,3 @@ describe('core/logger', () => {
     expect(console.log).toHaveBeenCalledWith('message', 123, { key: 'value' });
   });
 });
-
-

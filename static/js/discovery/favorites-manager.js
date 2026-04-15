@@ -116,4 +116,3 @@ export function findMatchingFavorite(fractalState) {
     }) || null
   );
 }
-

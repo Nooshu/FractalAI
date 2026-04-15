@@ -64,4 +64,3 @@ describe('fractals/random-view', () => {
     });
   });
 });
-

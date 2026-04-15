@@ -436,11 +436,9 @@ async function reinitializeWebGLResources(appState, canvas) {
         }
 
         // Reinitialize compute shader renderer if enabled
-        if (
-          CONFIG.features.computeShaders &&
-          webglCapabilities.features?.computeShader
-        ) {
-          const { createWebGLComputeRenderer } = await import('../rendering/webgl-compute-renderer.js');
+        if (CONFIG.features.computeShaders && webglCapabilities.features?.computeShader) {
+          const { createWebGLComputeRenderer } =
+            await import('../rendering/webgl-compute-renderer.js');
           const computeRenderer = createWebGLComputeRenderer(gl, webglCapabilities);
           if (computeRenderer && computeRenderer.isComputeShaderAvailable()) {
             appState.setWebGLComputeRenderer(computeRenderer);
@@ -621,7 +619,13 @@ function setupInputControlsModule(appState, renderingEngine, updateCoordinateDis
  * @param {Function} updateCoordinateDisplay - Update coordinate display function
  * @param {Function} loadFractalFromPreset - Load fractal from preset function
  */
-function setupUILayoutAndDisplays(appState, renderingEngine, updateCoordinateDisplay, loadFractalFromPreset, loadFractalFn) {
+function setupUILayoutAndDisplays(
+  appState,
+  renderingEngine,
+  updateCoordinateDisplay,
+  loadFractalFromPreset,
+  loadFractalFn
+) {
   const getters = appState.getGetters();
 
   // Setup UI layout (collapsible sections and panel toggle) with lazy loading callbacks
@@ -1073,7 +1077,13 @@ export async function init() {
   }
 
   // Setup UI layout and displays
-  setupUILayoutAndDisplays(appState, renderingEngine, updateCoordinateDisplayFn, loadFractalFromPreset, loadFractal);
+  setupUILayoutAndDisplays(
+    appState,
+    renderingEngine,
+    updateCoordinateDisplayFn,
+    loadFractalFromPreset,
+    loadFractal
+  );
 
   // Initialize benchmark UI
   initBenchmarkUI(appState, renderingEngine, loadFractal);

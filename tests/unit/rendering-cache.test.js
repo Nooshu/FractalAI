@@ -167,4 +167,3 @@ describe('rendering/cache', () => {
     });
   });
 });
-

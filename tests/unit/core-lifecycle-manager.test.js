@@ -1,7 +1,11 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { LifecycleManager } from '../../static/js/core/lifecycle-manager.js';
 import { appState } from '../../static/js/core/app-state.js';
-import { clearPaletteCache, clearShaderCache, clearVertexBufferCache } from '../../static/js/fractals/utils.js';
+import {
+  clearPaletteCache,
+  clearShaderCache,
+  clearVertexBufferCache,
+} from '../../static/js/fractals/utils.js';
 
 // Mock the utils functions
 vi.mock('../../static/js/fractals/utils.js', () => ({

@@ -1,7 +1,4 @@
-import {
-  createFragmentShader,
-  createStandardDrawCommand
-} from '../utils.js';
+import { createFragmentShader, createStandardDrawCommand } from '../utils.js';
 
 const fractalFunction = `
     float computeFractal(vec2 c) {
@@ -118,8 +115,8 @@ export function render(regl, params, canvas, options = {}) {
   return createStandardDrawCommand(regl, params, canvas, fragmentShader, {
     webglCapabilities,
     ubo,
-    juliaC: params.juliaC
-});
+    juliaC: params.juliaC,
+  });
 }
 
 export const is2D = true;
@@ -129,26 +126,26 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'midnight'
-},
+    colorScheme: 'midnight',
+  },
   initialPosition: {
     zoom: 1,
-    offset: { x: 0, y: 0 }
+    offset: { x: 0, y: 0 },
   },
   fallbackPosition: {
     offset: { x: 0, y: 0 },
     zoom: 1.5,
     cReal: -0.7269,
-    cImag: 0.1889
-},
+    cImag: 0.1889,
+  },
   // Interesting bounds for "surprise me" - constrains to areas with fractal structure
   // Julia sets are typically centered around origin, and interesting C values
   // are often on or near the boundary of the Mandelbrot set
   interestingBounds: {
-    offsetX: [-2, 2],       // View centered around origin
-    offsetY: [-2, 2],       // View centered around origin
-    zoom: [0.5, 100],       // From overview to deep zooms
-    juliaCX: [-1, 1],       // Interesting C values are often near the unit circle
-    juliaCY: [-1, 1],       // Interesting C values are often near the unit circle
-  }
+    offsetX: [-2, 2], // View centered around origin
+    offsetY: [-2, 2], // View centered around origin
+    zoom: [0.5, 100], // From overview to deep zooms
+    juliaCX: [-1, 1], // Interesting C values are often near the unit circle
+    juliaCY: [-1, 1], // Interesting C values are often near the unit circle
+  },
 };

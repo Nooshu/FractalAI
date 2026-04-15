@@ -1,8 +1,4 @@
-import {
-  generatePaletteTexture,
-  createFragmentShader,
-  getVertexShader
-} from '../utils.js';
+import { generatePaletteTexture, createFragmentShader, getVertexShader } from '../utils.js';
 
 const fractalFunction = `
 // Amman Tiling Fractal Limit Set
@@ -150,14 +146,14 @@ export function render(regl, params, canvas, options = {}) {
     frag: fragmentShader,
     vert: vertexShaderSource,
     attributes: {
-      position: [-1, -1, 1, -1, -1, 1, 1, 1]
-},
+      position: [-1, -1, 1, -1, -1, 1, 1, 1],
+    },
     uniforms: useUBO
       ? {
           uTime: 0,
           uResolution: [canvas.width, canvas.height],
-          uPalette: paletteTexture
-}
+          uPalette: paletteTexture,
+        }
       : {
           uTime: 0,
           uIterations: params.iterations,
@@ -167,8 +163,8 @@ export function render(regl, params, canvas, options = {}) {
           uJuliaC: [0, 0],
           uPalette: paletteTexture,
           uXScale: params.xScale,
-          uYScale: params.yScale
-},
+          uYScale: params.yScale,
+        },
     // Bind UBO if available
     ...(useUBO && ubo?.glBuffer && ubo?.bind
       ? {
@@ -183,12 +179,12 @@ export function render(regl, params, canvas, options = {}) {
                 offset: params.offset,
                 juliaC: { x: 0, y: 0 },
                 xScale: params.xScale,
-                yScale: params.yScale
-});
+                yScale: params.yScale,
+              });
               context.ubo.bind(program);
             }
-          }
-}
+          },
+        }
       : {}),
     primitive: 'triangle strip',
     count: 4,
@@ -196,9 +192,9 @@ export function render(regl, params, canvas, options = {}) {
       x: 0,
       y: 0,
       width: canvas.width,
-      height: canvas.height
-}
-});
+      height: canvas.height,
+    },
+  });
 
   return drawFractal;
 }
@@ -211,12 +207,12 @@ export const is2D = true;
 export const config = {
   initialSettings: {
     colorScheme: 'classic',
-    iterations: 25
-},
+    iterations: 25,
+  },
   initialPosition: {
     zoom: 6.4,
-    offset: { x: 0.0396, y: 0.0619 }
-},
+    offset: { x: 0.0396, y: 0.0619 },
+  },
   fallbackPosition: {
     offset: { x: 0, y: 0 },
     zoom: 1,
@@ -226,5 +222,5 @@ export const config = {
     offsetX: [-1, 1],
     offsetY: [-1, 1],
     zoom: [1, 20],
-  }
+  },
 };

@@ -1,7 +1,4 @@
-import {
-  createFragmentShader,
-  createStandardDrawCommand
-} from '../utils.js';
+import { createFragmentShader, createStandardDrawCommand } from '../utils.js';
 
 const fractalFunction = `
     float computeFractal(vec2 c) {
@@ -90,8 +87,8 @@ export function render(regl, params, canvas, options = {}) {
   return createStandardDrawCommand(regl, params, canvas, fragmentShader, {
     webglCapabilities,
     ubo,
-    juliaC: { x: 0, y: 0 }
-});
+    juliaC: { x: 0, y: 0 },
+  });
 }
 
 export const is2D = true;
@@ -105,16 +102,16 @@ export const config = {
   },
   initialPosition: {
     zoom: 1,
-    offset: { x: 0, y: 0 }
+    offset: { x: 0, y: 0 },
   },
   fallbackPosition: {
     offset: { x: 0, y: 0 },
-    zoom: 1
-},
+    zoom: 1,
+  },
   // Interesting bounds for "surprise me" - Popcorn fractal is centered
   interestingBounds: {
     offsetX: [-2, 2],
     offsetY: [-2, 2],
     zoom: [0.5, 100],
-  }
+  },
 };

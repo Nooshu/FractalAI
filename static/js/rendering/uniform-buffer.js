@@ -180,4 +180,3 @@ export function getUniformBlockConfig(ubo, _bindingPoint = 0) {
     },
   };
 }
-

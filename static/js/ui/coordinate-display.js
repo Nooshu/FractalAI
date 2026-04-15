@@ -120,13 +120,15 @@ export function updateCoordinateAndDebugDisplay(getParams, getCurrentFractalType
   const debugSection = document.querySelector('[data-section="debug"]')?.parentElement;
   if (debugSection && !debugSection.classList.contains('debug-hidden')) {
     // Load and update debug display asynchronously without blocking
-    getUpdateDebugDisplay().then((updateDebugDisplay) => {
-      if (updateDebugDisplay) {
-        updateDebugDisplay(currentFractalType, params);
-      }
-    }).catch(() => {
-      // Silently fail if debug display can't be loaded
-    });
+    getUpdateDebugDisplay()
+      .then((updateDebugDisplay) => {
+        if (updateDebugDisplay) {
+          updateDebugDisplay(currentFractalType, params);
+        }
+      })
+      .catch(() => {
+        // Silently fail if debug display can't be loaded
+      });
   }
 
   // Dispatch fractal-updated event so other components (like EXIF editor) can update

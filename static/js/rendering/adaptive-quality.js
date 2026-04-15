@@ -20,9 +20,10 @@ export class AdaptiveQualityManager {
    * @param {number} options.samplesToAverage - Number of frame time samples to average (default: 10)
    */
   constructor(options = {}) {
-    this.targetFrameTime = options.targetFrameTime || CONFIG.performance?.targetFPS 
-      ? 1000 / CONFIG.performance.targetFPS 
-      : 16.67; // 60 FPS default
+    this.targetFrameTime =
+      options.targetFrameTime || CONFIG.performance?.targetFPS
+        ? 1000 / CONFIG.performance.targetFPS
+        : 16.67; // 60 FPS default
     this.minQuality = options.minQuality || 0.5;
     this.maxQuality = options.maxQuality || 1.0;
     this.qualityStep = options.qualityStep || 0.1;
@@ -69,7 +70,8 @@ export class AdaptiveQualityManager {
     }
 
     // Calculate average frame time
-    const avgFrameTime = this.frameTimeHistory.reduce((a, b) => a + b, 0) / this.frameTimeHistory.length;
+    const avgFrameTime =
+      this.frameTimeHistory.reduce((a, b) => a + b, 0) / this.frameTimeHistory.length;
 
     // Adjust quality based on frame time
     const thresholdHigh = this.targetFrameTime * 1.2; // 20% over target
@@ -77,11 +79,8 @@ export class AdaptiveQualityManager {
 
     if (avgFrameTime > thresholdHigh) {
       // Frame time too high - reduce quality
-      this.currentQuality = Math.max(
-        this.minQuality,
-        this.currentQuality - this.qualityStep
-      );
-      
+      this.currentQuality = Math.max(this.minQuality, this.currentQuality - this.qualityStep);
+
       devLog.log(
         `%c[Adaptive Quality]%c Reducing quality to ${this.currentQuality.toFixed(2)} (avg frame time: ${avgFrameTime.toFixed(2)}ms)`,
         'color: #FF9800; font-weight: bold;',
@@ -89,11 +88,8 @@ export class AdaptiveQualityManager {
       );
     } else if (avgFrameTime < thresholdLow) {
       // Frame time low enough - increase quality
-      this.currentQuality = Math.min(
-        this.maxQuality,
-        this.currentQuality + this.qualityStep
-      );
-      
+      this.currentQuality = Math.min(this.maxQuality, this.currentQuality + this.qualityStep);
+
       if (this.currentQuality < this.maxQuality) {
         devLog.log(
           `%c[Adaptive Quality]%c Increasing quality to ${this.currentQuality.toFixed(2)} (avg frame time: ${avgFrameTime.toFixed(2)}ms)`,
@@ -155,9 +151,10 @@ export class AdaptiveQualityManager {
    * @returns {Object} Statistics object
    */
   getStats() {
-    const avgFrameTime = this.frameTimeHistory.length > 0
-      ? this.frameTimeHistory.reduce((a, b) => a + b, 0) / this.frameTimeHistory.length
-      : 0;
+    const avgFrameTime =
+      this.frameTimeHistory.length > 0
+        ? this.frameTimeHistory.reduce((a, b) => a + b, 0) / this.frameTimeHistory.length
+        : 0;
 
     return {
       enabled: this.isEnabled,
@@ -177,4 +174,3 @@ export class AdaptiveQualityManager {
 export function createAdaptiveQualityManager(options = {}) {
   return new AdaptiveQualityManager(options);
 }
-

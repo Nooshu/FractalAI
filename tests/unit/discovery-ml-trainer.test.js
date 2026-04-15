@@ -40,21 +40,28 @@ describe('discovery/ml-trainer', () => {
   });
 
   it('should save and load model metadata', async () => {
-    const { saveModel, shouldRetrainModel } = await import('../../static/js/discovery/ml-trainer.js');
+    const { saveModel, shouldRetrainModel } =
+      await import('../../static/js/discovery/ml-trainer.js');
     // Create a mock model
     const mockModel = {
       toJSON: vi.fn(() => ({ layers: [] })),
     };
-    
+
     // Add some favorites first
     const { addFavorite } = await import('../../static/js/discovery/favorites-manager.js');
     for (let i = 0; i < 5; i++) {
-      addFavorite({ fractalType: 'mandelbrot', zoom: 1 + i, offsetX: 0, offsetY: 0, iterations: 125 });
+      addFavorite({
+        fractalType: 'mandelbrot',
+        zoom: 1 + i,
+        offsetX: 0,
+        offsetY: 0,
+        iterations: 125,
+      });
     }
-    
+
     const saved = await saveModel(mockModel);
     expect(saved).toBe(true);
-    
+
     // Check metadata was saved
     const metadata = localStorage.getItem('fractalai_ml_model_metadata');
     expect(metadata).toBeTruthy();
@@ -76,13 +83,19 @@ describe('discovery/ml-trainer', () => {
     const { initializeModel } = await import('../../static/js/discovery/ml-trainer.js');
     // Clear any existing model
     localStorage.clear();
-    
+
     // Add enough favorites for training
     const { addFavorite } = await import('../../static/js/discovery/favorites-manager.js');
     for (let i = 0; i < 5; i++) {
-      addFavorite({ fractalType: 'mandelbrot', zoom: 1 + i, offsetX: 0, offsetY: 0, iterations: 125 });
+      addFavorite({
+        fractalType: 'mandelbrot',
+        zoom: 1 + i,
+        offsetX: 0,
+        offsetY: 0,
+        iterations: 125,
+      });
     }
-    
+
     // This may take a while, so we'll just check it doesn't throw
     try {
       const model = await initializeModel();
@@ -94,9 +107,3 @@ describe('discovery/ml-trainer', () => {
     }
   });
 });
-
-
-
-
-
-

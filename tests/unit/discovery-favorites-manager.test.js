@@ -29,7 +29,8 @@ describe('discovery/favorites-manager', () => {
   });
 
   it('should save and retrieve favorites', async () => {
-    const { saveFavorites, getFavorites } = await import('../../static/js/discovery/favorites-manager.js');
+    const { saveFavorites, getFavorites } =
+      await import('../../static/js/discovery/favorites-manager.js');
     const testFavorites = [
       { id: '1', name: 'Test 1', fractalType: 'mandelbrot' },
       { id: '2', name: 'Test 2', fractalType: 'julia' },
@@ -40,7 +41,8 @@ describe('discovery/favorites-manager', () => {
   });
 
   it('should add a favorite with generated ID', async () => {
-    const { addFavorite, getFavorites } = await import('../../static/js/discovery/favorites-manager.js');
+    const { addFavorite, getFavorites } =
+      await import('../../static/js/discovery/favorites-manager.js');
     const fractalState = {
       fractalType: 'mandelbrot',
       zoom: 1.5,
@@ -60,7 +62,8 @@ describe('discovery/favorites-manager', () => {
   });
 
   it('should generate default name when name not provided', async () => {
-    const { addFavorite, getFavorites } = await import('../../static/js/discovery/favorites-manager.js');
+    const { addFavorite, getFavorites } =
+      await import('../../static/js/discovery/favorites-manager.js');
     const fractalState = { fractalType: 'mandelbrot' };
     addFavorite(fractalState);
     const favorites = getFavorites();
@@ -68,7 +71,8 @@ describe('discovery/favorites-manager', () => {
   });
 
   it('should remove a favorite by ID', async () => {
-    const { addFavorite, removeFavorite, getFavorites } = await import('../../static/js/discovery/favorites-manager.js');
+    const { addFavorite, removeFavorite, getFavorites } =
+      await import('../../static/js/discovery/favorites-manager.js');
     const id1 = addFavorite({ fractalType: 'mandelbrot' }, 'Test 1');
     const id2 = addFavorite({ fractalType: 'julia' }, 'Test 2');
     expect(getFavorites()).toHaveLength(2);
@@ -86,7 +90,8 @@ describe('discovery/favorites-manager', () => {
   });
 
   it('should update favorite name', async () => {
-    const { addFavorite, updateFavoriteName, getFavorite } = await import('../../static/js/discovery/favorites-manager.js');
+    const { addFavorite, updateFavoriteName, getFavorite } =
+      await import('../../static/js/discovery/favorites-manager.js');
     const id = addFavorite({ fractalType: 'mandelbrot' }, 'Old Name');
     const updated = updateFavoriteName(id, 'New Name');
     expect(updated).toBe(true);
@@ -101,7 +106,8 @@ describe('discovery/favorites-manager', () => {
   });
 
   it('should get favorite by ID', async () => {
-    const { addFavorite, getFavorite } = await import('../../static/js/discovery/favorites-manager.js');
+    const { addFavorite, getFavorite } =
+      await import('../../static/js/discovery/favorites-manager.js');
     const fractalState = { fractalType: 'mandelbrot', zoom: 2.0 };
     const id = addFavorite(fractalState, 'Test Favorite');
     const favorite = getFavorite(id);
@@ -119,7 +125,8 @@ describe('discovery/favorites-manager', () => {
   });
 
   it('should find matching favorite by fractal state', async () => {
-    const { addFavorite, findMatchingFavorite } = await import('../../static/js/discovery/favorites-manager.js');
+    const { addFavorite, findMatchingFavorite } =
+      await import('../../static/js/discovery/favorites-manager.js');
     const fractalState = {
       fractalType: 'mandelbrot',
       zoom: 1.5,
@@ -160,9 +167,3 @@ describe('discovery/favorites-manager', () => {
     localStorage.getItem = originalGetItem;
   });
 });
-
-
-
-
-
-

@@ -38,7 +38,7 @@ describe('webgpu-capabilities', () => {
     it('should return capabilities object structure when gpu is available', () => {
       mockNavigator.gpu = {};
       const result = detectWebGPUCapabilities();
-      
+
       expect(result).toHaveProperty('supported', false);
       expect(result).toHaveProperty('adapter', null);
       expect(result).toHaveProperty('device', null);
@@ -52,7 +52,7 @@ describe('webgpu-capabilities', () => {
     it('should return unsupported if navigator is undefined', async () => {
       global.navigator = undefined;
       const result = await initWebGPU();
-      
+
       expect(result.supported).toBe(false);
       expect(result.error).toContain('not available');
     });
@@ -60,7 +60,7 @@ describe('webgpu-capabilities', () => {
     it('should return unsupported if gpu is not in navigator', async () => {
       delete mockNavigator.gpu;
       const result = await initWebGPU();
-      
+
       expect(result.supported).toBe(false);
       expect(result.error).toContain('not available');
     });
@@ -71,7 +71,7 @@ describe('webgpu-capabilities', () => {
       };
 
       const result = await initWebGPU();
-      
+
       expect(result.supported).toBe(false);
       expect(result.error).toContain('No WebGPU adapter');
       expect(mockNavigator.gpu.requestAdapter).toHaveBeenCalledWith({
@@ -93,7 +93,7 @@ describe('webgpu-capabilities', () => {
       };
 
       const result = await initWebGPU();
-      
+
       expect(result.supported).toBe(false);
       expect(result.error).toBeDefined();
       expect(result.error).toBe('Device creation failed');
@@ -129,7 +129,7 @@ describe('webgpu-capabilities', () => {
       };
 
       const result = await initWebGPU();
-      
+
       expect(result.supported).toBe(true);
       expect(result.adapter).toBe(mockAdapter);
       expect(result.device).toBe(mockDevice);
@@ -152,7 +152,7 @@ describe('webgpu-capabilities', () => {
       };
 
       await initWebGPU({ powerPreference: 'low-power' });
-      
+
       expect(mockNavigator.gpu.requestAdapter).toHaveBeenCalledWith({
         powerPreference: 'low-power',
       });
@@ -173,7 +173,7 @@ describe('webgpu-capabilities', () => {
       };
 
       const result = await initWebGPU();
-      
+
       expect(result.supported).toBe(true);
       expect(result.adapterInfo).toBeNull();
     });
@@ -207,7 +207,7 @@ describe('webgpu-capabilities', () => {
       };
 
       const result = formatWebGPUCapabilities(capabilities);
-      
+
       expect(result).toContain('WebGPU: Supported');
       expect(result).toContain('Test Vendor');
       expect(result).toContain('feature1, feature2');
@@ -228,7 +228,7 @@ describe('webgpu-capabilities', () => {
       };
 
       const result = formatWebGPUCapabilities(capabilities);
-      
+
       expect(result).toContain('WebGPU: Supported');
       expect(result).not.toContain('Adapter:');
     });
@@ -245,10 +245,9 @@ describe('webgpu-capabilities', () => {
       };
 
       const result = formatWebGPUCapabilities(capabilities);
-      
+
       expect(result).toContain('WebGPU: Supported');
       expect(result).not.toContain('Features:');
     });
   });
 });
-

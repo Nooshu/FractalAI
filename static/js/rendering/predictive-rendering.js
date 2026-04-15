@@ -64,9 +64,9 @@ export class PredictiveRenderingManager {
       const deltaZoom = currentParams.zoom - this.lastParams.zoom;
 
       // Update velocity (with decay)
-      this.velocity.x = (this.velocity.x * this.velocityDecay) + (deltaOffsetX / deltaTime);
-      this.velocity.y = (this.velocity.y * this.velocityDecay) + (deltaOffsetY / deltaTime);
-      this.velocity.zoom = (this.velocity.zoom * this.velocityDecay) + (deltaZoom / deltaTime);
+      this.velocity.x = this.velocity.x * this.velocityDecay + deltaOffsetX / deltaTime;
+      this.velocity.y = this.velocity.y * this.velocityDecay + deltaOffsetY / deltaTime;
+      this.velocity.zoom = this.velocity.zoom * this.velocityDecay + deltaZoom / deltaTime;
 
       // Apply decay to velocity
       this.velocity.x *= this.velocityDecay;
@@ -85,8 +85,9 @@ export class PredictiveRenderingManager {
    */
   generateViewKey(params, fractalType) {
     // Round parameters to avoid floating point precision issues
-    const round = (val, precision = 6) => Math.round(val * Math.pow(10, precision)) / Math.pow(10, precision);
-    
+    const round = (val, precision = 6) =>
+      Math.round(val * Math.pow(10, precision)) / Math.pow(10, precision);
+
     return `${fractalType}_${round(params.zoom)}_${round(params.offset.x)}_${round(params.offset.y)}_${params.iterations}_${params.colorScheme}`;
   }
 
@@ -101,8 +102,7 @@ export class PredictiveRenderingManager {
 
     const predictions = [];
     const velocityMagnitude = Math.sqrt(
-      this.velocity.x * this.velocity.x + 
-      this.velocity.y * this.velocity.y
+      this.velocity.x * this.velocity.x + this.velocity.y * this.velocity.y
     );
 
     // Only predict if there's significant movement
@@ -113,15 +113,15 @@ export class PredictiveRenderingManager {
     // Predict multiple views along the movement trajectory
     for (let i = 1; i <= this.maxPredictions; i++) {
       const t = i * this.predictionDistance;
-      
+
       // Predict offset based on velocity
       const predictedOffset = {
-        x: currentParams.offset.x + (this.velocity.x * t),
-        y: currentParams.offset.y + (this.velocity.y * t),
+        x: currentParams.offset.x + this.velocity.x * t,
+        y: currentParams.offset.y + this.velocity.y * t,
       };
 
       // Predict zoom based on zoom velocity
-      const zoomFactor = 1 + (this.velocity.zoom * t);
+      const zoomFactor = 1 + this.velocity.zoom * t;
       const predictedZoom = currentParams.zoom * zoomFactor;
 
       // Clamp zoom to valid range
@@ -182,7 +182,7 @@ export class PredictiveRenderingManager {
     // Limit completed predictions set size
     if (this.completedPredictions.size > this.maxPredictions * 10) {
       const entries = Array.from(this.completedPredictions);
-      entries.slice(0, this.maxPredictions * 5).forEach(key => {
+      entries.slice(0, this.maxPredictions * 5).forEach((key) => {
         this.completedPredictions.delete(key);
       });
     }
@@ -251,4 +251,3 @@ export class PredictiveRenderingManager {
 export function createPredictiveRenderingManager(options = {}) {
   return new PredictiveRenderingManager(options);
 }
-

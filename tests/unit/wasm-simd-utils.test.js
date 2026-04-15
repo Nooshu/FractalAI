@@ -42,13 +42,13 @@ describe('wasm-simd-utils', () => {
   describe('supportsWasmSimd', () => {
     it('should return false if WebAssembly is undefined', () => {
       global.WebAssembly = undefined;
-      
+
       expect(supportsWasmSimd()).toBe(false);
     });
 
     it('should return false if WebAssembly.validate is not a function', () => {
       global.WebAssembly = {};
-      
+
       expect(supportsWasmSimd()).toBe(false);
     });
 
@@ -57,9 +57,10 @@ describe('wasm-simd-utils', () => {
         validate: vi.fn(),
       };
       global.navigator = {
-        userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+        userAgent:
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
       };
-      
+
       expect(supportsWasmSimd()).toBe(true);
     });
 
@@ -68,9 +69,10 @@ describe('wasm-simd-utils', () => {
         validate: vi.fn(),
       };
       global.navigator = {
-        userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36',
+        userAgent:
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36',
       };
-      
+
       expect(supportsWasmSimd()).toBe(false);
     });
 
@@ -81,7 +83,7 @@ describe('wasm-simd-utils', () => {
       global.navigator = {
         userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0',
       };
-      
+
       expect(supportsWasmSimd()).toBe(true);
     });
 
@@ -92,7 +94,7 @@ describe('wasm-simd-utils', () => {
       global.navigator = {
         userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:88.0) Gecko/20100101 Firefox/88.0',
       };
-      
+
       expect(supportsWasmSimd()).toBe(false);
     });
 
@@ -101,9 +103,10 @@ describe('wasm-simd-utils', () => {
         validate: vi.fn(),
       };
       global.navigator = {
-        userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.4 Safari/605.1.15',
+        userAgent:
+          'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.4 Safari/605.1.15',
       };
-      
+
       expect(supportsWasmSimd()).toBe(true);
     });
 
@@ -112,9 +115,10 @@ describe('wasm-simd-utils', () => {
         validate: vi.fn(),
       };
       global.navigator = {
-        userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Safari/605.1.15',
+        userAgent:
+          'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Safari/605.1.15',
       };
-      
+
       expect(supportsWasmSimd()).toBe(false);
     });
 
@@ -125,7 +129,7 @@ describe('wasm-simd-utils', () => {
       global.navigator = {
         userAgent: 'Unknown Browser',
       };
-      
+
       expect(supportsWasmSimd()).toBe(true);
     });
   });
@@ -134,14 +138,14 @@ describe('wasm-simd-utils', () => {
     it('should return false if feature flag is disabled', () => {
       CONFIG.features.wasmSimd = false;
       global.WebAssembly = { validate: vi.fn() };
-      
+
       expect(canUseWasmSimd()).toBe(false);
     });
 
     it('should return false if SIMD is not supported', () => {
       CONFIG.features.wasmSimd = true;
       global.WebAssembly = undefined;
-      
+
       expect(canUseWasmSimd()).toBe(false);
     });
 
@@ -151,7 +155,7 @@ describe('wasm-simd-utils', () => {
       global.navigator = {
         userAgent: 'Chrome/91.0.0.0',
       };
-      
+
       expect(canUseWasmSimd()).toBe(true);
     });
   });
@@ -159,7 +163,7 @@ describe('wasm-simd-utils', () => {
   describe('loadWasmModule', () => {
     it('should return null if WASM SIMD cannot be used', async () => {
       CONFIG.features.wasmSimd = false;
-      
+
       const result = await loadWasmModule();
       expect(result).toBeNull();
     });
@@ -168,7 +172,7 @@ describe('wasm-simd-utils', () => {
       CONFIG.features.wasmSimd = true;
       global.WebAssembly = { validate: vi.fn() };
       global.navigator = { userAgent: 'Chrome/91.0.0.0' };
-      
+
       const result = await loadWasmModule();
       expect(result).toBeNull();
     });
@@ -197,7 +201,7 @@ describe('wasm-simd-utils', () => {
       };
 
       const result = await instantiateWasmModule(mockModule);
-      
+
       expect(result).toBe(mockInstance);
       expect(global.WebAssembly.instantiate).toHaveBeenCalledWith(mockModule, {});
     });
@@ -210,7 +214,7 @@ describe('wasm-simd-utils', () => {
       global.import = { meta: { env: { DEV: true } } };
 
       const result = await instantiateWasmModule(mockModule);
-      
+
       expect(result).toBeNull();
       expect(console.error).toHaveBeenCalled();
     });
@@ -220,16 +224,16 @@ describe('wasm-simd-utils', () => {
     it('should return false if WASM instance is null', () => {
       const buffer = new Float32Array(100);
       const result = computeTileWasm(null, buffer, 10, 10, 0, 0, {}, 'mandelbrot');
-      
+
       expect(result).toBe(false);
     });
 
     it('should return false if WASM instance has no exports', () => {
       const wasmInstance = {};
       const buffer = new Float32Array(100);
-      
+
       const result = computeTileWasm(wasmInstance, buffer, 10, 10, 0, 0, {}, 'mandelbrot');
-      
+
       expect(result).toBe(false);
     });
 
@@ -238,9 +242,9 @@ describe('wasm-simd-utils', () => {
         exports: {},
       };
       const buffer = new Float32Array(100);
-      
+
       const result = computeTileWasm(wasmInstance, buffer, 10, 10, 0, 0, {}, 'mandelbrot');
-      
+
       expect(result).toBe(false);
     });
 
@@ -251,9 +255,9 @@ describe('wasm-simd-utils', () => {
         },
       };
       const buffer = new Float32Array(100);
-      
+
       const result = computeTileWasm(wasmInstance, buffer, 10, 10, 0, 0, {}, 'mandelbrot');
-      
+
       expect(result).toBe(false);
     });
 
@@ -319,7 +323,7 @@ describe('wasm-simd-utils', () => {
       global.import = { meta: { env: { DEV: true } } };
 
       const result = computeTileWasm(wasmInstance, buffer, 10, 10, 0, 0, {}, 'mandelbrot');
-      
+
       expect(result).toBe(false);
       expect(console.error).toHaveBeenCalled();
     });
@@ -380,9 +384,9 @@ describe('wasm-simd-utils', () => {
   describe('logWasmSimdStatus', () => {
     it('should not log if feature flag is disabled', () => {
       CONFIG.features.wasmSimd = false;
-      
+
       logWasmSimdStatus();
-      
+
       expect(console.log).not.toHaveBeenCalled();
       expect(console.warn).not.toHaveBeenCalled();
     });
@@ -392,9 +396,9 @@ describe('wasm-simd-utils', () => {
       global.WebAssembly = { validate: vi.fn() };
       global.navigator = { userAgent: 'Chrome/91.0.0.0' };
       global.import = { meta: { env: { DEV: true } } };
-      
+
       logWasmSimdStatus();
-      
+
       expect(console.log).toHaveBeenCalled();
     });
 
@@ -402,9 +406,9 @@ describe('wasm-simd-utils', () => {
       CONFIG.features.wasmSimd = true;
       global.WebAssembly = undefined;
       global.import = { meta: { env: { DEV: true } } };
-      
+
       logWasmSimdStatus();
-      
+
       expect(console.warn).toHaveBeenCalled();
     });
 
@@ -412,15 +416,15 @@ describe('wasm-simd-utils', () => {
       CONFIG.features.wasmSimd = true;
       global.WebAssembly = { validate: vi.fn() };
       global.navigator = { userAgent: 'Chrome/91.0.0.0' };
-      
+
       // Clear previous calls
       console.log.mockClear();
       console.warn.mockClear();
-      
+
       // Call the function - it will log if DEV is true (test environment)
       // or not log if DEV is false (production)
       logWasmSimdStatus();
-      
+
       // The function should check import.meta.env?.DEV before logging
       // In test environment, DEV is typically true, so logging is expected
       // We just verify the function executes without error
@@ -428,4 +432,3 @@ describe('wasm-simd-utils', () => {
     });
   });
 });
-

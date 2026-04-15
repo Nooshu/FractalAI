@@ -30,46 +30,49 @@ self.addEventListener('install', (event) => {
   }
 
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      if (!cache) {
-        throw new Error('Failed to open cache');
-      }
-
-      console.log('[Service Worker] Caching static assets');
-      // Combine static assets with asset manifest (filter out duplicates)
-      // Validate ASSET_MANIFEST is an array
-      const manifest = Array.isArray(ASSET_MANIFEST) ? ASSET_MANIFEST : [];
-      const assetSet = new Set([...STATIC_ASSETS, ...manifest]);
-      const allAssets = Array.from(assetSet);
-      console.log(`[Service Worker] Pre-caching ${allAssets.length} assets for offline support`);
-
-      // Filter out any invalid URLs
-      const validAssets = allAssets.filter((url) => {
-        if (typeof url !== 'string' || !url.startsWith('/')) {
-          console.warn(`[Service Worker] Skipping invalid asset URL: ${url}`);
-          return false;
+    caches
+      .open(CACHE_NAME)
+      .then((cache) => {
+        if (!cache) {
+          throw new Error('Failed to open cache');
         }
-        return true;
-      });
 
-      return cache.addAll(validAssets).catch((err) => {
-        console.warn('[Service Worker] Failed to cache some assets:', err);
-        // Continue even if some assets fail to cache - cache what we can
-        // Try caching assets individually to maximize what gets cached
-        return Promise.allSettled(
-          validAssets.map((url) =>
-            cache.add(url).catch((assetErr) => {
-              console.warn(`[Service Worker] Failed to cache ${url}:`, assetErr.message);
-              return null;
-            })
-          )
-        );
-      });
-    }).catch((err) => {
-      console.error('[Service Worker] Install failed:', err);
-      // Don't fail the install event, but log the error
-      return Promise.resolve();
-    })
+        console.log('[Service Worker] Caching static assets');
+        // Combine static assets with asset manifest (filter out duplicates)
+        // Validate ASSET_MANIFEST is an array
+        const manifest = Array.isArray(ASSET_MANIFEST) ? ASSET_MANIFEST : [];
+        const assetSet = new Set([...STATIC_ASSETS, ...manifest]);
+        const allAssets = Array.from(assetSet);
+        console.log(`[Service Worker] Pre-caching ${allAssets.length} assets for offline support`);
+
+        // Filter out any invalid URLs
+        const validAssets = allAssets.filter((url) => {
+          if (typeof url !== 'string' || !url.startsWith('/')) {
+            console.warn(`[Service Worker] Skipping invalid asset URL: ${url}`);
+            return false;
+          }
+          return true;
+        });
+
+        return cache.addAll(validAssets).catch((err) => {
+          console.warn('[Service Worker] Failed to cache some assets:', err);
+          // Continue even if some assets fail to cache - cache what we can
+          // Try caching assets individually to maximize what gets cached
+          return Promise.allSettled(
+            validAssets.map((url) =>
+              cache.add(url).catch((assetErr) => {
+                console.warn(`[Service Worker] Failed to cache ${url}:`, assetErr.message);
+                return null;
+              })
+            )
+          );
+        });
+      })
+      .catch((err) => {
+        console.error('[Service Worker] Install failed:', err);
+        // Don't fail the install event, but log the error
+        return Promise.resolve();
+      })
   );
   // Force activation of new service worker
   self.skipWaiting();
@@ -114,8 +117,19 @@ function getBrotliUrl(url) {
   }
 
   // Check if file is compressible
-  const compressibleExtensions = ['.js', '.css', '.html', '.json', '.svg', '.xml', '.txt', '.woff2', '.woff', '.ttf'];
-  const hasCompressibleExt = compressibleExtensions.some(ext => url.pathname.endsWith(ext));
+  const compressibleExtensions = [
+    '.js',
+    '.css',
+    '.html',
+    '.json',
+    '.svg',
+    '.xml',
+    '.txt',
+    '.woff2',
+    '.woff',
+    '.ttf',
+  ];
+  const hasCompressibleExt = compressibleExtensions.some((ext) => url.pathname.endsWith(ext));
 
   if (!hasCompressibleExt) {
     return null;
@@ -157,7 +171,7 @@ function createBrotliResponse(body, originalRequest) {
       'Content-Type': getContentType(url),
       'Content-Encoding': 'br',
       'Cache-Control': 'public, max-age=31536000',
-      'Vary': 'Accept-Encoding',
+      Vary: 'Accept-Encoding',
     },
   });
 }
@@ -227,7 +241,6 @@ self.addEventListener('fetch', (event) => {
 
   // Normal request handling (fallback or non-compressible files)
   function handleNormalRequest() {
-
     // Strategy 1: HTML files - Network first, fallback to cache
     // This ensures users always get the latest HTML
     if (

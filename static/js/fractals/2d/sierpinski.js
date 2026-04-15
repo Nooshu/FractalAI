@@ -1,7 +1,4 @@
-import {
-  createFragmentShader,
-  createStandardDrawCommand
-} from '../utils.js';
+import { createFragmentShader, createStandardDrawCommand } from '../utils.js';
 
 // Sierpinski triangle using barycentric coordinate method
 const fractalFunction = `
@@ -97,12 +94,12 @@ export const is2D = true;
 export const config = {
   initialSettings: {
     colorScheme: 'galaxy',
-    iterations: 25
-},
+    iterations: 25,
+  },
   initialPosition: {
     zoom: 1.772,
-    offset: { x: 0.0089, y: 0.039 }
-},
+    offset: { x: 0.0089, y: 0.039 },
+  },
   fallbackPosition: {
     offset: { x: 0, y: 0 },
     zoom: 1,
@@ -112,5 +109,5 @@ export const config = {
     offsetX: [-1, 1],
     offsetY: [-1, 1],
     zoom: [0.5, 10],
-  }
+  },
 };

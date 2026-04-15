@@ -138,7 +138,11 @@ export function render(regl, params, canvas, options = {}) {
   function createKochFragmentShader(useUBO) {
     if (useUBO) {
       // WebGL2 version - same logic but with WebGL2 syntax
-      return originalFragmentShader.replace('varying vec2 vPosition;', 'in vec2 vPosition;').replace('gl_FragColor', 'fragColor').replace('precision mediump float;', '#version 300 es\n    precision mediump float;').replace('void main()', 'out vec4 fragColor;\n\n    void main()');
+      return originalFragmentShader
+        .replace('varying vec2 vPosition;', 'in vec2 vPosition;')
+        .replace('gl_FragColor', 'fragColor')
+        .replace('precision mediump float;', '#version 300 es\n    precision mediump float;')
+        .replace('void main()', 'out vec4 fragColor;\n\n    void main()');
     }
     return originalFragmentShader;
   }
@@ -396,8 +400,8 @@ export function render(regl, params, canvas, options = {}) {
     frag: fragmentShaderSource,
 
     attributes: {
-      position: cachedBuffer
-},
+      position: cachedBuffer,
+    },
 
     uniforms: useUBO
       ? {
@@ -405,16 +409,16 @@ export function render(regl, params, canvas, options = {}) {
           uOffset: [params.offset.x, params.offset.y],
           uResolution: [canvas.width, canvas.height],
           uScale: [params.xScale, params.yScale],
-          uColorScheme: colorSchemeIndex
-}
+          uColorScheme: colorSchemeIndex,
+        }
       : {
           uZoom: params.zoom,
           uOffset: [params.offset.x, params.offset.y],
           uResolution: [canvas.width, canvas.height],
           uXScale: params.xScale,
           uYScale: params.yScale,
-          uColorScheme: colorSchemeIndex
-},
+          uColorScheme: colorSchemeIndex,
+        },
 
     primitive: 'line loop',
     count: vertexCount,
@@ -422,20 +426,20 @@ export function render(regl, params, canvas, options = {}) {
     lineWidth: 1, // WebGL only supports 1 on most systems
 
     depth: {
-      enable: false
-},
+      enable: false,
+    },
 
     blend: {
-      enable: false
-},
+      enable: false,
+    },
 
     viewport: {
       x: 0,
       y: 0,
       width: canvas.width,
-      height: canvas.height
-}
-});
+      height: canvas.height,
+    },
+  });
 
   return drawFractal;
 }
@@ -447,20 +451,20 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'rainbow-double'
-},
+    colorScheme: 'rainbow-double',
+  },
   initialPosition: {
     zoom: 3.095,
-    offset: { x: -0.0082, y: 0.0351 }
+    offset: { x: -0.0082, y: 0.0351 },
   },
   fallbackPosition: {
     offset: { x: 0, y: 0 },
-    zoom: 1
-},
+    zoom: 1,
+  },
   // Interesting bounds for "surprise me" - Koch snowflake is always interesting
   interestingBounds: {
     offsetX: [-1, 1],
     offsetY: [-1, 1],
     zoom: [0.5, 10],
-  }
+  },
 };

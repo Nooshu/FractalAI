@@ -33,7 +33,7 @@ describe('rendering/predictive-rendering', () => {
       // Simulate time passing
       manager.lastUpdateTime = performance.now() - 100;
       manager.updateVelocity(params1);
-      
+
       // Wait a bit and update again
       manager.lastUpdateTime = performance.now() - 50;
       manager.updateVelocity(params2);
@@ -159,4 +159,3 @@ describe('rendering/predictive-rendering', () => {
     });
   });
 });
-

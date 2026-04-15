@@ -16,4 +16,3 @@ export const fractals = {
   'spider-set': spiderSet,
   magnet: magnet,
 };
-

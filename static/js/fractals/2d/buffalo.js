@@ -1,7 +1,4 @@
-import {
-  createFragmentShader,
-  createStandardDrawCommand
-} from '../utils.js';
+import { createFragmentShader, createStandardDrawCommand } from '../utils.js';
 
 const fractalFunction = `
     float computeFractal(vec2 c) {
@@ -89,8 +86,8 @@ export function render(regl, params, canvas, options = {}) {
   return createStandardDrawCommand(regl, params, canvas, fragmentShader, {
     webglCapabilities,
     ubo,
-    juliaC: { x: 0, y: 0 }
-});
+    juliaC: { x: 0, y: 0 },
+  });
 }
 
 export const is2D = true;
@@ -100,20 +97,20 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'coral'
-},
+    colorScheme: 'coral',
+  },
   initialPosition: {
     zoom: 2,
-    offset: { x: -0.5473, y: 0.5336 }
+    offset: { x: -0.5473, y: 0.5336 },
   },
   fallbackPosition: {
     offset: { x: -0.5, y: 0.6 },
-    zoom: 1.2
-},
+    zoom: 1.2,
+  },
   // Interesting bounds for "surprise me" - Buffalo has interesting features in upper right quadrant
   interestingBounds: {
     offsetX: [-2.5, 1.5],
     offsetY: [-2, 2],
     zoom: [0.5, 100],
-  }
+  },
 };

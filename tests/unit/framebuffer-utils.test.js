@@ -200,4 +200,3 @@ describe('framebuffer-utils', () => {
     });
   });
 });
-

@@ -91,8 +91,7 @@ async function prepareTrainingData() {
   const negativeCount = favorites.length * 2;
   for (let i = 0; i < negativeCount; i++) {
     const randomConfig = {
-      fractalType: favorites[Math.floor(Math.random() * favorites.length)]
-        .fractalType,
+      fractalType: favorites[Math.floor(Math.random() * favorites.length)].fractalType,
       zoom: 0.1 + Math.random() * 100,
       offsetX: -2 + Math.random() * 4,
       offsetY: -2 + Math.random() * 4,
@@ -250,8 +249,7 @@ export function shouldRetrainModel() {
     // Retrain if:
     // 1. Favorite count increased significantly (20% more)
     // 2. Model is older than 7 days
-    const favoriteIncrease =
-      currentFavoriteCount > metadata.favoriteCount * 1.2;
+    const favoriteIncrease = currentFavoriteCount > metadata.favoriteCount * 1.2;
     const isOld = Date.now() - metadata.timestamp > 7 * 24 * 60 * 60 * 1000;
 
     return favoriteIncrease || isOld;

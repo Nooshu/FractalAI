@@ -89,7 +89,7 @@ export function setupMathInfoPanel(callbacks) {
     title.textContent = 'Formulas';
     section.appendChild(title);
 
-    formulas.forEach(formula => {
+    formulas.forEach((formula) => {
       const formulaDiv = document.createElement('div');
       formulaDiv.className = 'math-info-formula';
 
@@ -325,7 +325,7 @@ export function setupMathInfoPanel(callbacks) {
     const relatedList = document.createElement('div');
     relatedList.className = 'math-info-related';
 
-    relatedFractals.forEach(related => {
+    relatedFractals.forEach((related) => {
       const chip = document.createElement('span');
       chip.className = 'related-fractal-chip';
       chip.textContent = related.name;
@@ -372,4 +372,3 @@ export function setupMathInfoPanel(callbacks) {
     `;
   }
 }
-
