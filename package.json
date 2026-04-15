@@ -38,15 +38,15 @@
     "synaptic": "1.1.4"
   },
   "devDependencies": {
-    "@playwright/test": "1.57.0",
-    "@vitest/coverage-v8": "4.0.15",
+    "@playwright/test": "1.59.1",
+    "@vitest/coverage-v8": "4.1.4",
     "eslint": "9.39.1",
     "jsdom": "27.3.0",
-    "prettier": "3.7.4",
+    "prettier": "3.8.3",
     "stylelint": "16.26.1",
     "stylelint-config-standard": "39.0.1",
     "vite": "^7.3.2",
-    "vitest": "4.0.15"
+    "vitest": "4.1.4"
   },
   "overrides": {
     "brace-expansion": "1.1.13",
