@@ -79,3 +79,38 @@ process.stdout.write = (chunk, encoding, cb) => {
   }
   return originalStdoutWrite(chunk, encoding, cb);
 };
+
+// Ensure a deterministic localStorage implementation for unit tests.
+// Some environments/tooling can provide a partial/incompatible localStorage that breaks tests.
+{
+  const store = new Map();
+
+  const memoryLocalStorage = {
+    get length() {
+      return store.size;
+    },
+    clear() {
+      store.clear();
+    },
+    getItem(key) {
+      const k = String(key);
+      return store.has(k) ? store.get(k) : null;
+    },
+    key(index) {
+      const i = Number(index);
+      if (!Number.isFinite(i) || i < 0 || i >= store.size) return null;
+      return Array.from(store.keys())[i] ?? null;
+    },
+    removeItem(key) {
+      store.delete(String(key));
+    },
+    setItem(key, value) {
+      store.set(String(key), String(value));
+    },
+  };
+
+  Object.defineProperty(globalThis, 'localStorage', {
+    value: memoryLocalStorage,
+    configurable: true,
+  });
+}
