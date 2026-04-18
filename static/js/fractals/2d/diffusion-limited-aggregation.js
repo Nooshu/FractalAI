@@ -2,6 +2,7 @@ import { generatePaletteTexture } from '../utils.js';
 
 // Buffer cache for reuse
 let cachedBuffer = null;
+let cachedColorBuffer = null;
 let cachedVertexCount = 0;
 
 // Generate DLA structure using particle simulation
@@ -140,20 +141,23 @@ export function render(regl, params, canvas) {
   const positions = new Float32Array(vertices);
   const colors = new Float32Array(colorValues);
 
-  // Reuse buffer if possible, otherwise create new one
+  // Reuse buffers if possible, otherwise create new ones
   if (!cachedBuffer || cachedVertexCount !== vertexCount) {
     if (cachedBuffer) {
       cachedBuffer.destroy();
     }
+    if (cachedColorBuffer) {
+      cachedColorBuffer.destroy();
+    }
     cachedBuffer = regl.buffer(positions);
+    cachedColorBuffer = regl.buffer(colors);
     cachedVertexCount = vertexCount;
   } else {
-    // Buffer exists with same size, just update the data
     cachedBuffer.subdata(positions);
+    cachedColorBuffer.subdata(colors);
   }
 
-  // Create color buffer
-  const colorBuffer = regl.buffer(colors);
+  const colorBuffer = cachedColorBuffer;
 
   // Vertex shader
   const vertexShader = `

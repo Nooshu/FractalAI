@@ -903,32 +903,49 @@ export async function getInterestingBounds(fractalType, fractalModule = null) {
 export function createStandardDrawCommand(regl, params, canvas, fragmentShader, options = {}) {
   const paletteTexture = generatePaletteTexture(regl, params.colorScheme);
   const vertexShaderSource = options.vertexShader || vertexShader;
-  const juliaC =
-    options.juliaC !== undefined
-      ? [options.juliaC.x, options.juliaC.y]
-      : isJuliaType(options.fractalType || '')
-        ? [params.juliaC.x, params.juliaC.y]
-        : [0, 0];
 
   // Use persistent vertex buffer for better performance
   const quadBuffer = getFullScreenQuadBuffer(regl);
 
-  return regl({
+  function buildJuliaC(p) {
+    return options.juliaC !== undefined
+      ? [options.juliaC.x, options.juliaC.y]
+      : isJuliaType(options.fractalType || '')
+        ? [p.juliaC.x, p.juliaC.y]
+        : [0, 0];
+  }
+
+  function buildUniformProps(p) {
+    return {
+      uTime: options.uTime ?? 0,
+      uIterations: p.iterations,
+      uZoom: p.zoom,
+      uOffset: [p.offset.x, p.offset.y],
+      uResolution: [canvas.width, canvas.height],
+      uJuliaC: buildJuliaC(p),
+      uXScale: p.xScale,
+      uYScale: p.yScale,
+    };
+  }
+
+  // Single compiled pipeline; uniforms supplied per draw via regl.prop (avoids
+  // re-linking when only iteration count etc. changes, e.g. progressive render).
+  const drawInner = regl({
     vert: vertexShaderSource,
     frag: fragmentShader,
     attributes: {
       position: quadBuffer, // Reuse persistent buffer instead of inline data
     },
     uniforms: {
-      uTime: options.uTime ?? 0,
-      uIterations: params.iterations,
-      uZoom: params.zoom,
-      uOffset: [params.offset.x, params.offset.y],
-      uResolution: [canvas.width, canvas.height],
-      uJuliaC: juliaC,
+      uTime: regl.prop('uTime'),
+      uIterations: regl.prop('uIterations'),
+      uZoom: regl.prop('uZoom'),
+      uOffset: regl.prop('uOffset'),
+      uResolution: regl.prop('uResolution'),
+      uJuliaC: regl.prop('uJuliaC'),
       uPalette: paletteTexture,
-      uXScale: params.xScale,
-      uYScale: params.yScale,
+      uXScale: regl.prop('uXScale'),
+      uYScale: regl.prop('uYScale'),
     },
     viewport: {
       x: 0,
@@ -939,6 +956,17 @@ export function createStandardDrawCommand(regl, params, canvas, fragmentShader, 
     count: 4,
     primitive: 'triangle strip',
   });
+
+  let lastParams = params;
+
+  function draw(overrideParams) {
+    const p = overrideParams !== undefined ? overrideParams : lastParams;
+    lastParams = p;
+    drawInner(buildUniformProps(p));
+  }
+  draw.supportsProgressiveParams = true;
+
+  return draw;
 }
 
 // Color schemes (for CPU-side color calculations if needed)

@@ -112,6 +112,8 @@ function createMockRegl() {
   // Needed by generatePaletteTexture and line-based fractals that use buffers
   fn.texture = () => ({ destroy: () => {} });
   fn.buffer = () => ({ destroy: () => {} });
+  // Dynamic uniforms (createStandardDrawCommand uses regl.prop)
+  fn.prop = (name) => name;
   return fn;
 }
 

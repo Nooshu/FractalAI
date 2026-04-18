@@ -77,7 +77,7 @@ export class ProgressiveRenderer {
     const initialIterations = startIterations || Math.max(20, Math.floor(targetIterations * 0.2));
     this.state.currentProgressiveIterations = initialIterations;
 
-    // Create or recreate draw command with progressive iterations
+    // Build draw command once; iteration updates use uniforms (see createStandardDrawCommand)
     const progressiveParams = { ...params, iterations: this.state.currentProgressiveIterations };
     this.state.drawFractal = fractalModule.render(regl, progressiveParams, canvas);
 
@@ -98,11 +98,15 @@ export class ProgressiveRenderer {
           targetIterations
         );
 
-        // Recreate draw command with updated iterations
         const updatedParams = { ...params, iterations: this.state.currentProgressiveIterations };
-        this.state.drawFractal = fractalModule.render(regl, updatedParams, canvas);
-        if (this.state.drawFractal) {
-          this.state.drawFractal();
+        const draw = this.state.drawFractal;
+        if (draw && draw.supportsProgressiveParams) {
+          draw(updatedParams);
+        } else {
+          this.state.drawFractal = fractalModule.render(regl, updatedParams, canvas);
+          if (this.state.drawFractal) {
+            this.state.drawFractal();
+          }
         }
         this.state.needsRender = false;
 
