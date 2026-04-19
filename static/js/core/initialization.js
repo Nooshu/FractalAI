@@ -30,6 +30,7 @@ import { LongTaskDetector } from '../performance/long-task-detector.js';
 import { lifecycleManager } from './lifecycle-manager.js';
 import { idleCleanupManager } from './idle-cleanup.js';
 import { devLog } from './logger.js';
+import { isWebGPUFirstFractalType } from '../rendering/webgpu-fractals.js';
 
 function suppressFirefoxWebGLDebugRendererInfoDeprecation() {
   // Firefox warns (and will remove) WEBGL_debug_renderer_info.
@@ -125,12 +126,17 @@ function initFooterLinks() {
  * @returns {Object} Canvas, regl context, and updateRendererSize function
  */
 async function initCanvasAndRenderer(appState) {
+  // Used for WebGPU/WebGL backend switching when changing fractal family.
+  let rendererCleanup = null;
+  let currentRendererType = null;
+
   const {
     canvas: canvasElement,
     regl: reglContext,
     webgpuRenderer,
     updateRendererSize: updateSize,
     webglCapabilities,
+    cleanup: cleanupFn,
     rendererType,
   } = await initCanvasRenderer('fractal-canvas', {
     getZoom: () => appState.getParams().zoom,
@@ -140,7 +146,10 @@ async function initCanvasAndRenderer(appState) {
         renderingEngine.renderFractal();
       }
     },
+    allowWebGPU: isWebGPUFirstFractalType(appState.getCurrentFractalType()),
   });
+  rendererCleanup = cleanupFn;
+  currentRendererType = rendererType;
 
   appState.setCanvas(canvasElement);
   appState.setRegl(reglContext);
@@ -376,7 +385,86 @@ async function initCanvasAndRenderer(appState) {
     });
   }
 
-  return { canvasElement, reglContext, updateSize };
+  return {
+    canvasElement,
+    reglContext,
+    updateSize,
+    /**
+     * Ensure the correct backend for a fractal type.
+     * WebGPU is only enabled for the Mandelbrot family for now.
+     */
+    ensureRendererForFractalType: async (fractalType) => {
+      const wantWebGPU = isWebGPUFirstFractalType(fractalType);
+      const wantType = wantWebGPU ? 'webgpu' : 'webgl';
+      if (currentRendererType === wantType) return;
+
+      // Cleanup previous renderer wiring.
+      try {
+        if (rendererCleanup) rendererCleanup();
+      } catch {
+        // ignore
+      }
+      rendererCleanup = null;
+
+      // Tear down previous backend resources best-effort.
+      const prevRegl = appState.getRegl();
+      if (prevRegl?.destroy) {
+        try {
+          prevRegl.destroy();
+        } catch {
+          // ignore
+        }
+      }
+      appState.setRegl(null);
+
+      const prevWebGPU = appState.getWebGPURenderer();
+      if (prevWebGPU?.destroy) {
+        try {
+          prevWebGPU.destroy();
+        } catch {
+          // ignore
+        }
+      }
+      appState.setWebGPURenderer(null);
+      appState.setWebGLCapabilities(null);
+      appState.setFractalParamsUBO(null);
+
+      const result = await initCanvasRenderer('fractal-canvas', {
+        getZoom: () => appState.getParams().zoom,
+        onResize: () => {
+          const renderingEngine = appState.getRenderingEngine();
+          if (renderingEngine) renderingEngine.renderFractal();
+        },
+        allowWebGPU: wantWebGPU,
+      });
+
+      appState.setCanvas(result.canvas);
+      appState.setRegl(result.regl);
+      appState.setUpdateRendererSize(result.updateRendererSize);
+      appState.setWebGLCapabilities(result.webglCapabilities);
+      if (result.webgpuRenderer) {
+        appState.setWebGPURenderer(result.webgpuRenderer);
+      }
+      currentRendererType = result.rendererType;
+      rendererCleanup = result.cleanup;
+
+      // If we switched to WebGL, re-detect capabilities and re-init UBO.
+      if (result.regl?._gl) {
+        try {
+          const caps = detectWebGLCapabilities(result.regl._gl);
+          appState.setWebGLCapabilities(caps);
+
+          if (caps?.isWebGL2) {
+            const { createFractalParamsUBO } = await import('../rendering/uniform-buffer.js');
+            const ubo = createFractalParamsUBO(result.regl, caps);
+            appState.setFractalParamsUBO(ubo);
+          }
+        } catch {
+          // ignore
+        }
+      }
+    },
+  };
 }
 
 /**
@@ -523,7 +611,8 @@ function setupUIControlsModule(
   renderingEngine,
   loadFractal,
   updateWikipediaLink,
-  updateCoordinateDisplay
+  updateCoordinateDisplay,
+  ensureRendererForFractalType
 ) {
   const getters = appState.getGetters();
   const setters = appState.getSetters();
@@ -559,6 +648,7 @@ function setupUIControlsModule(
       renderFractal: () => renderingEngine.renderFractal(),
       getRenderingEngine: () => renderingEngine,
       cancelWorkerTasks: () => appState.cancelWorkerTasks(),
+      ensureRendererForFractalType: ensureRendererForFractalType,
       resetPredictiveRendering: () => {
         const predictiveRenderingManager = appState.getPredictiveRenderingManager();
         if (predictiveRenderingManager) {
@@ -963,7 +1053,7 @@ export async function init() {
   idleCleanupManager.start();
 
   // Initialize canvas and renderer (WebGPU or WebGL)
-  await initCanvasAndRenderer(appState);
+  const { ensureRendererForFractalType } = await initCanvasAndRenderer(appState);
 
   // Initialize rendering engine
   const renderingEngine = initRenderingEngine(appState);
@@ -977,7 +1067,8 @@ export async function init() {
     renderingEngine,
     loadFractal,
     updateWikipediaLinkFn,
-    updateCoordinateDisplayFn
+    updateCoordinateDisplayFn,
+    ensureRendererForFractalType
   );
 
   // Setup input controls (after rendering engine is initialized)

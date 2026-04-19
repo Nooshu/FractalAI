@@ -9,6 +9,7 @@ import { updatePixelRatio } from './pixel-ratio.js';
 import { incrementFrameCount } from '../performance/fps-tracker.js';
 import { performanceInstrumentation } from '../performance/instrumentation.js';
 import { createOptimizedFramebuffer } from './framebuffer-utils.js';
+import { isWebGPUFirstFractalType } from './webgpu-fractals.js';
 
 /**
  * Rendering Engine class
@@ -31,6 +32,7 @@ export class RenderingEngine {
     this.getTargetIterations = getters.getTargetIterations;
     this.getWebGLCapabilities = getters.getWebGLCapabilities;
     this.getFractalParamsUBO = getters.getFractalParamsUBO;
+    this.getWebGPURenderer = getters.getWebGPURenderer;
     this.getAdaptiveQualityManager = getters.getAdaptiveQualityManager;
     this.getPredictiveRenderingManager = getters.getPredictiveRenderingManager;
     this.getMultiResolutionManager = getters.getMultiResolutionManager;
@@ -81,6 +83,14 @@ export class RenderingEngine {
     const canvas = this.getCanvas();
     const currentFractalModule = this.getCurrentFractalModule();
     const params = this.getParams();
+
+    const webgpuRenderer = this.getWebGPURenderer ? this.getWebGPURenderer() : null;
+    const fractalType = this.getCurrentFractalType();
+    if (webgpuRenderer && isWebGPUFirstFractalType(fractalType)) {
+      // WebGPU path doesn't use progressive iterations yet; render at current params.
+      this.renderFractal();
+      return;
+    }
 
     if (!currentFractalModule || !currentFractalModule.render || !regl) {
       hideLoadingBar();
@@ -257,6 +267,25 @@ export class RenderingEngine {
     const canvas = this.getCanvas();
     const currentFractalModule = this.getCurrentFractalModule();
     const params = this.getParams();
+    const fractalType = this.getCurrentFractalType();
+    const webgpuRenderer = this.getWebGPURenderer ? this.getWebGPURenderer() : null;
+
+    if (webgpuRenderer && isWebGPUFirstFractalType(fractalType)) {
+      showLoadingBar();
+      updatePixelRatio(canvas, params.zoom);
+      const p = webgpuRenderer
+        .render(fractalType, params)
+        .then(() => {
+          hideLoadingBar();
+        })
+        .catch((error) => {
+          console.error('[WebGPU] Render failed:', error);
+          hideLoadingBar();
+        });
+      void p;
+      this.setNeedsRender(false);
+      return;
+    }
 
     if (!currentFractalModule) {
       // Silently return if no fractal module is loaded
