@@ -9,6 +9,11 @@ const WEBGPU_FIRST_FRACTALS = new Set([
   'julia',
   'multibrot',
   'multibrot-julia',
+  'burning-ship-julia',
+  // NOTE: tricorn-julia is still WebGL for now (snapshot mismatch)
+  'phoenix-julia',
+  'lambda-julia',
+  'hybrid-julia',
 ]);
 
 export function isWebGPUFirstFractalType(fractalType) {

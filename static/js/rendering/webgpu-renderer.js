@@ -5,7 +5,7 @@
 
 import { CONFIG } from '../core/config.js';
 import { devLog } from '../core/logger.js';
-import { computeColorForScheme } from '../fractals/utils.js';
+import { computeColorForScheme, getColorSchemeIndex } from '../fractals/utils.js';
 import { isWebGPUFirstFractalType } from './webgpu-fractals.js';
 
 const WORKGROUP_SIZE = 8;
@@ -17,11 +17,15 @@ function clampByte(x) {
 }
 
 function createPaletteBytes(colorScheme) {
+  const scheme =
+    typeof colorScheme === 'string' && colorScheme.startsWith('custom:')
+      ? colorScheme
+      : getColorSchemeIndex(colorScheme);
   const data = new Uint8Array(PALETTE_SIZE * 4);
   const out = new Float32Array(3);
   for (let i = 0; i < PALETTE_SIZE; i++) {
     const t = i / (PALETTE_SIZE - 1);
-    const rgb = computeColorForScheme(t, colorScheme, out);
+    const rgb = computeColorForScheme(t, scheme, out);
     const o = i * 4;
     data[o + 0] = clampByte(rgb[0] * 255);
     data[o + 1] = clampByte(rgb[1] * 255);
@@ -37,7 +41,7 @@ struct Params {
   width: u32,
   height: u32,
   iterations: u32,
-  mode: u32, /* 0=mandelbrot, 1=julia */
+  kind: u32, /* fractal kind enum (see JS mapping) */
   zoom: f32,
   offsetX: f32,
   offsetY: f32,
@@ -67,6 +71,8 @@ fn complexPow(z: vec2<f32>, n: f32) -> vec2<f32> {
   return vec2<f32>(rn * cos(nt), rn * sin(nt));
 }
 
+const INV_LOG2: f32 = 1.4426950408889634;
+
 @compute @workgroup_size(${WORKGROUP_SIZE}, ${WORKGROUP_SIZE})
 fn main(@builtin(global_invocation_id) gid: vec3<u32>) {
   if (gid.x >= params.width || gid.y >= params.height) {
@@ -88,7 +94,10 @@ fn main(@builtin(global_invocation_id) gid: vec3<u32>) {
 
   var z = vec2<f32>(0.0, 0.0);
   var cc = c;
-  if (params.mode == 1u) {
+  // kind:
+  // 0=mandelbrot, 1=julia, 2=multibrot, 3=multibrot-julia, 4=burning-ship-julia,
+  // 5=phoenix-julia, 6=lambda-julia, 7=hybrid-julia
+  if (params.kind == 1u || params.kind == 3u || params.kind == 4u || params.kind == 5u || params.kind == 6u || params.kind == 7u) {
     z = c;
     cc = vec2<f32>(params.juliaCX, params.juliaCY);
   }
@@ -97,16 +106,65 @@ fn main(@builtin(global_invocation_id) gid: vec3<u32>) {
   let order = clamp(params.order, 2.0, 10.0);
 
   var i: u32 = 0u;
+  var smoothIter: f32 = f32(maxIter);
   loop {
     if (i >= maxIter) { break; }
-    if (dot(z, z) > 4.0) { break; }
-    z = complexPow(z, order) + cc;
+    let r2 = dot(z, z);
+    if (r2 > 4.0) {
+      // Smooth coloring (matches our GLSL createFragmentShader behavior)
+      // log_zn = log(|z|^2) / 2 = log(|z|)
+      let log_zn = 0.5 * log(max(r2, 1e-16));
+      let nu = log(max(log_zn * INV_LOG2, 1e-16)) * INV_LOG2;
+      smoothIter = f32(i) + 1.0 - nu;
+      break;
+    }
+
+    if (params.kind == 4u) {
+      // Burning Ship Julia: z = (|Re(z)| + i|Im(z)|)^2 + c
+      let ax = abs(z.x);
+      let ay = abs(z.y);
+      z = vec2<f32>(ax * ax - ay * ay, 2.0 * ax * ay) + cc;
+    } else if (params.kind == 5u) {
+      // Phoenix Julia: z_new = z^2 + c + p * z_prev
+      // p is derived from xScale/yScale in [-1, 1]
+      let p = clamp(vec2<f32>((params.xScale - 0.5) * 2.0, (params.yScale - 0.5) * 2.0), vec2<f32>(-1.0), vec2<f32>(1.0));
+      let prev = z;
+      let sq = vec2<f32>(z.x * z.x - z.y * z.y, 2.0 * z.x * z.y);
+      z = sq + cc + p * prev;
+    } else if (params.kind == 6u) {
+      // Lambda Julia: z_{n+1} = λ * z_n * (1 - z_n), where λ = c
+      let zx2 = z.x * z.x;
+      let zy2 = z.y * z.y;
+      let real_part = z.x - zx2 + zy2;
+      let imag_part = z.y - 2.0 * z.x * z.y;
+      z = vec2<f32>(
+        cc.x * real_part - cc.y * imag_part,
+        cc.x * imag_part + cc.y * real_part
+      );
+    } else if (params.kind == 7u) {
+      // Hybrid Julia: alternate between z^2 and z^3
+      let isEven = (i & 1u) == 0u;
+      if (isEven) {
+        z = vec2<f32>(z.x * z.x - z.y * z.y, 2.0 * z.x * z.y) + cc;
+      } else {
+        // z^3 = (x^3 - 3xy^2) + i(3x^2y - y^3)
+        let zx2 = z.x * z.x;
+        let zy2 = z.y * z.y;
+        let real3 = zx2 * z.x - 3.0 * z.x * zy2;
+        let imag3 = 3.0 * zx2 * z.y - zy2 * z.y;
+        z = vec2<f32>(real3, imag3) + cc;
+      }
+    } else {
+      // Mandelbrot / Julia / Multibrot / Multibrot-Julia (order determines power)
+      z = complexPow(z, order) + cc;
+    }
+
     i = i + 1u;
   }
 
   var color: vec4<f32> = vec4<f32>(0.0, 0.0, 0.0, 1.0);
-  if (i < maxIter) {
-    let t = clamp(f32(i) / f32(maxIter), 0.0, 1.0);
+  if (smoothIter < f32(maxIter)) {
+    let t = clamp(smoothIter / f32(maxIter), 0.0, 1.0);
     color = textureSampleLevel(paletteTex, paletteSampler, vec2<f32>(t, 0.5), 0.0);
     color.a = 1.0;
   }
@@ -262,8 +320,26 @@ export class WebGPURenderer {
       this.paletteColorScheme = params.colorScheme;
     }
 
-    const mode = fractalType.includes('julia') || fractalType === 'julia' ? 1 : 0;
-    const isMultibrot = fractalType === 'multibrot' || fractalType === 'multibrot-julia';
+    const kind =
+      fractalType === 'mandelbrot'
+        ? 0
+        : fractalType === 'julia'
+          ? 1
+          : fractalType === 'multibrot'
+            ? 2
+            : fractalType === 'multibrot-julia'
+              ? 3
+              : fractalType === 'burning-ship-julia'
+                ? 4
+                : fractalType === 'phoenix-julia'
+                  ? 5
+                  : fractalType === 'lambda-julia'
+                    ? 6
+                    : fractalType === 'hybrid-julia'
+                      ? 7
+                  : 0;
+
+    const isMultibrot = kind === 2 || kind === 3;
     const order = isMultibrot ? 2.0 + (params.xScale ?? 0) * 8.0 : 2.0;
 
     const buf = new ArrayBuffer(PARAMS_SIZE_BYTES);
@@ -273,7 +349,7 @@ export class WebGPURenderer {
     u32[0] = width;
     u32[1] = height;
     u32[2] = Math.max(1, params.iterations | 0);
-    u32[3] = mode;
+    u32[3] = kind;
 
     f32[0] = params.zoom ?? 1.0;
     f32[1] = params.offset?.x ?? 0.0;
