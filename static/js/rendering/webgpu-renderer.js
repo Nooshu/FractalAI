@@ -73,6 +73,259 @@ fn complexPow(z: vec2<f32>, n: f32) -> vec2<f32> {
 
 const INV_LOG2: f32 = 1.4426950408889634;
 
+fn fmod(x: f32, y: f32) -> f32 {
+  return x - y * floor(x / y);
+}
+
+fn fmod3(x: vec3<f32>, y: f32) -> vec3<f32> {
+  return x - vec3<f32>(y) * floor(x / vec3<f32>(y));
+}
+
+fn barycentric(p: vec2<f32>, a: vec2<f32>, b: vec2<f32>, c: vec2<f32>) -> vec3<f32> {
+  let v0 = c - a;
+  let v1 = b - a;
+  let v2 = p - a;
+  let dot00 = dot(v0, v0);
+  let dot01 = dot(v0, v1);
+  let dot02 = dot(v0, v2);
+  let dot11 = dot(v1, v1);
+  let dot12 = dot(v1, v2);
+  let denom = dot00 * dot11 - dot01 * dot01;
+  let invDenom = 1.0 / max(denom, 1e-20);
+  let u = (dot11 * dot02 - dot01 * dot12) * invDenom;
+  let v = (dot00 * dot12 - dot01 * dot02) * invDenom;
+  return vec3<f32>(1.0 - u - v, v, u);
+}
+
+fn polygonVertex(n: u32, i: u32) -> vec2<f32> {
+  let PI: f32 = 3.14159265359;
+  var angle = f32(i) * 2.0 * PI / f32(n);
+  if (n == 3u) {
+    angle = angle - PI * 0.5;
+  } else if (n == 4u) {
+    angle = angle + PI * 0.25;
+  } else if (n == 5u) {
+    angle = angle - PI * 0.5;
+  } else if (n == 6u) {
+    angle = angle + 0.0;
+  } else {
+    angle = angle - PI * 0.5;
+  }
+  return vec2<f32>(cos(angle), sin(angle));
+}
+
+fn isInsidePolygon(p: vec2<f32>, center: vec2<f32>, radius: f32, n: u32) -> bool {
+  var i: u32 = 0u;
+  loop {
+    if (i >= n || i >= 12u) { break; }
+    let v1 = polygonVertex(n, i) * radius + center;
+    let ni = i + 1u;
+    let nextI = select(ni, 0u, ni >= n);
+    let v2 = polygonVertex(n, nextI) * radius + center;
+    let edge = v2 - v1;
+    let toPoint = p - v1;
+    let cross = edge.x * toPoint.y - edge.y * toPoint.x;
+    if (cross < 0.0) { return false; }
+    i = i + 1u;
+  }
+  return true;
+}
+
+fn sierpinskiTriangleValue(c: vec2<f32>, maxIter: u32) -> f32 {
+  let v0 = vec2<f32>(0.0, 0.866);
+  let v1 = vec2<f32>(-1.0, -0.866);
+  let v2 = vec2<f32>(1.0, -0.866);
+  var p = c;
+  let centerThreshold = 0.333;
+  var i: u32 = 0u;
+  loop {
+    if (i >= maxIter || i >= 200u) { break; }
+    let b = barycentric(p, v0, v1, v2);
+    if (b.x < 0.0 || b.y < 0.0 || b.z < 0.0) { return f32(i); }
+    if (b.x > centerThreshold && b.y > centerThreshold && b.z > centerThreshold) { return f32(i); }
+    if (b.x >= b.y && b.x >= b.z) {
+      p = (p - v0) * 2.0 + v0;
+    } else if (b.y >= b.z) {
+      p = (p - v1) * 2.0 + v1;
+    } else {
+      p = (p - v2) * 2.0 + v2;
+    }
+    i = i + 1u;
+  }
+  return f32(maxIter);
+}
+
+fn sierpinskiCarpetValue(c: vec2<f32>, uIter: u32) -> f32 {
+  let iterations = u32(clamp(f32(uIter) / 15.0, 1.0, 8.0));
+  if (c.x < -1.0 || c.x > 1.0 || c.y < -1.0 || c.y > 1.0) { return 0.0; }
+  var pos = c * 0.5 + vec2<f32>(0.5);
+  var i: u32 = 0u;
+  loop {
+    if (i >= iterations || i >= 10u) { break; }
+    let scaled = pos * 3.0;
+    let cell = floor(scaled);
+    if (cell.x == 1.0 && cell.y == 1.0) { return 0.0; }
+    pos = scaled - floor(scaled);
+    i = i + 1u;
+  }
+  var depth = 0.0;
+  pos = c * 0.5 + vec2<f32>(0.5);
+  i = 0u;
+  loop {
+    if (i >= iterations || i >= 10u) { break; }
+    let scaled = pos * 3.0;
+    let cell = floor(scaled);
+    if (cell.x == 1.0 && cell.y == 1.0) {
+      depth = depth + f32(i) * 5.0;
+      break;
+    }
+    let centerDist = abs(cell - vec2<f32>(1.0));
+    let maxDist = max(centerDist.x, centerDist.y);
+    depth = depth + maxDist * 2.0;
+    pos = scaled - floor(scaled);
+    i = i + 1u;
+  }
+  return fmod(depth * 10.0, f32(uIter) * 0.9);
+}
+
+fn mengerCarpetValue(c: vec2<f32>, uIter: u32) -> f32 {
+  let iterations = u32(clamp(f32(uIter) / 15.0, 1.0, 8.0));
+  if (c.x < -1.0 || c.x > 1.0 || c.y < -1.0 || c.y > 1.0) { return 0.0; }
+  var pos = c * 0.5 + vec2<f32>(0.5);
+  var i: u32 = 0u;
+  loop {
+    if (i >= iterations || i >= 10u) { break; }
+    let scaled = pos * 3.0;
+    let cell = floor(scaled);
+    if (cell.x == 1.0 && cell.y == 1.0) { return 0.0; }
+    if (cell.x == 1.0 && cell.y == 0.0) { return 0.0; }
+    if (cell.x == 1.0 && cell.y == 2.0) { return 0.0; }
+    if (cell.x == 0.0 && cell.y == 1.0) { return 0.0; }
+    if (cell.x == 2.0 && cell.y == 1.0) { return 0.0; }
+    pos = scaled - floor(scaled);
+    i = i + 1u;
+  }
+  var depth = 0.0;
+  pos = c * 0.5 + vec2<f32>(0.5);
+  i = 0u;
+  loop {
+    if (i >= iterations || i >= 10u) { break; }
+    let scaled = pos * 3.0;
+    let cell = floor(scaled);
+    let centerDist = abs(cell - vec2<f32>(1.0));
+    let maxDist = max(centerDist.x, centerDist.y);
+    let cornerDist = min(centerDist.x, centerDist.y);
+    depth = depth + maxDist * 2.0 + cornerDist * 1.5;
+    pos = scaled - floor(scaled);
+    i = i + 1u;
+  }
+  return fmod(depth * 10.0, f32(uIter) * 0.9);
+}
+
+fn sierpinskiPolygonValue(c: vec2<f32>, uIter: u32, n: u32, scaleFactor: f32, baseRadius: f32) -> f32 {
+  let maxDepth = u32(clamp(f32(uIter) / 20.0, 1.0, 6.0));
+  var currentPos = c;
+  var currentRadius = baseRadius;
+  var currentCenter = vec2<f32>(0.0);
+  var depth = 0.0;
+  var level: u32 = 0u;
+  loop {
+    if (level >= maxDepth || level >= 6u) { break; }
+    if (!isInsidePolygon(currentPos, currentCenter, currentRadius, n)) { return 0.0; }
+    let centerRadius = currentRadius * scaleFactor;
+    if (isInsidePolygon(currentPos, currentCenter, centerRadius, n)) { return 0.0; }
+    let subRadius = currentRadius * scaleFactor;
+    var found = false;
+    var i: u32 = 0u;
+    loop {
+      if (i >= n || i >= 12u) { break; }
+      let v = polygonVertex(n, i);
+      let subCenter = currentCenter + v * currentRadius * (1.0 - scaleFactor);
+      if (isInsidePolygon(currentPos, subCenter, subRadius, n)) {
+        currentCenter = subCenter;
+        currentRadius = subRadius;
+        depth = depth + 1.0;
+        found = true;
+        break;
+      }
+      i = i + 1u;
+    }
+    if (!found) { return depth * 15.0 + 10.0; }
+    level = level + 1u;
+  }
+  return depth * 15.0 + f32(maxDepth) * 5.0;
+}
+
+fn sierpinskiTetrahedronValue(c: vec2<f32>, uIter: u32) -> f32 {
+  let iterations = u32(clamp(f32(uIter) / 20.0, 1.0, 6.0));
+  var p = vec3<f32>(c.x, c.y, 0.0) * 1.5;
+  var scale = 1.0;
+  var inSet = true;
+  var depth = 0.0;
+  var i: u32 = 0u;
+  loop {
+    if (i >= iterations || i >= 6u) { break; }
+    p = p * scale;
+    scale = scale * 2.0;
+    p = fmod3(p + vec3<f32>(1.0), 2.0) - vec3<f32>(1.0);
+    let dist = length(p);
+    if (dist < 0.45) {
+      let absP = abs(p);
+      let maxCoord = max(max(absP.x, absP.y), absP.z);
+      let minCoord = min(min(absP.x, absP.y), absP.z);
+      let coordSpread = maxCoord - minCoord;
+      if (maxCoord < 0.35 && coordSpread < 0.25) {
+        inSet = false;
+        break;
+      }
+    }
+    depth = depth + 1.0;
+    i = i + 1u;
+  }
+  if (!inSet || depth == 0.0) { return 0.0; }
+  let distFromOrigin = length(c);
+  let angle = atan2(c.y, c.x);
+  let result = depth * 15.0 + distFromOrigin * 10.0 + sin(angle * 3.0) * 5.0;
+  return min(result, f32(uIter) * 0.9);
+}
+
+fn sierpinskiGasketValue(c: vec2<f32>, uIter: u32) -> f32 {
+  let n = u32(clamp(params.xScale * 6.0 + 3.0, 3.0, 12.0));
+  let maxDepth = u32(clamp(f32(uIter) / 30.0, 1.0, 6.0));
+  var currentPos = c;
+  var currentRadius = 0.85;
+  var currentCenter = vec2<f32>(0.0);
+  var depth = 0.0;
+  var level: u32 = 0u;
+  loop {
+    if (level >= maxDepth || level >= 6u) { break; }
+    if (!isInsidePolygon(currentPos, currentCenter, currentRadius, n)) { return 0.0; }
+    // Approximate module scaling factors; key behavior is "remove center" and recurse to vertex sub-polygons
+    let scaleFactor = select(1.0 / 2.0, 1.0 / 3.0, n == 6u);
+    let centerRadius = currentRadius * scaleFactor;
+    if (isInsidePolygon(currentPos, currentCenter, centerRadius, n)) { return 0.0; }
+    let subRadius = currentRadius * scaleFactor;
+    var found = false;
+    var i: u32 = 0u;
+    loop {
+      if (i >= n || i >= 12u) { break; }
+      let v = polygonVertex(n, i);
+      let subCenter = currentCenter + v * currentRadius * (1.0 - scaleFactor);
+      if (isInsidePolygon(currentPos, subCenter, subRadius, n)) {
+        currentCenter = subCenter;
+        currentRadius = subRadius;
+        depth = depth + 1.0;
+        found = true;
+        break;
+      }
+      i = i + 1u;
+    }
+    if (!found) { return depth * 15.0 + 10.0 + f32(n) * 2.0; }
+    level = level + 1u;
+  }
+  return depth * 15.0 + f32(maxDepth) * 5.0 + f32(n);
+}
+
 @compute @workgroup_size(${WORKGROUP_SIZE}, ${WORKGROUP_SIZE})
 fn main(@builtin(global_invocation_id) gid: vec3<u32>) {
   if (gid.x >= params.width || gid.y >= params.height) {
@@ -86,11 +339,51 @@ fn main(@builtin(global_invocation_id) gid: vec3<u32>) {
   let aspect = w / h;
   let scale = 4.0 / params.zoom;
 
-  // Coordinate transform matches our WebGL shaders: xScale usually 1.0; yScale can stretch.
-  let c = vec2<f32>(
+  // Coordinate transform:
+  // - Most fractals follow createFragmentShader: aspect * xScale on X, yScale on Y
+  // - sierpinski-gasket intentionally does NOT apply xScale (it uses xScale as a parameter)
+  let cDefault = vec2<f32>(
+    (uv.x - 0.5) * scale * aspect * params.xScale + params.offsetX,
+    (uv.y - 0.5) * scale * params.yScale + params.offsetY
+  );
+  let cGasket = vec2<f32>(
     (uv.x - 0.5) * scale * aspect + params.offsetX,
     (uv.y - 0.5) * scale * params.yScale + params.offsetY
   );
+  let c = select(cDefault, cGasket, params.kind == 26u);
+
+  // Sierpinski family (pixel/shader) kinds:
+  // 20=sierpinski, 21=sierpinski-carpet, 22=menger-carpet, 23=sierpinski-hexagon,
+  // 24=sierpinski-pentagon, 25=sierpinski-tetrahedron, 26=sierpinski-gasket
+  if (params.kind >= 20u && params.kind <= 26u) {
+    let maxIter = max(1u, params.iterations);
+    var iterValue: f32 = 0.0;
+    if (params.kind == 20u) {
+      iterValue = sierpinskiTriangleValue(c, maxIter);
+    } else if (params.kind == 21u) {
+      iterValue = sierpinskiCarpetValue(c, maxIter);
+    } else if (params.kind == 22u) {
+      iterValue = mengerCarpetValue(c, maxIter);
+    } else if (params.kind == 23u) {
+      iterValue = sierpinskiPolygonValue(c, maxIter, 6u, 1.0 / 3.0, 0.85);
+    } else if (params.kind == 24u) {
+      iterValue = sierpinskiPolygonValue(c, maxIter, 5u, 1.0 / (1.0 + 1.618033988749895), 0.9);
+    } else if (params.kind == 25u) {
+      iterValue = sierpinskiTetrahedronValue(c, maxIter);
+    } else if (params.kind == 26u) {
+      iterValue = sierpinskiGasketValue(c, maxIter);
+    }
+    // iterValue is produced by the selected fractal kernel above
+
+    var color: vec4<f32> = vec4<f32>(0.0, 0.0, 0.0, 1.0);
+    if (iterValue < f32(maxIter)) {
+      let t = clamp(iterValue / f32(maxIter), 0.0, 1.0);
+      color = textureSampleLevel(paletteTex, paletteSampler, vec2<f32>(t, 0.5), 0.0);
+      color.a = 1.0;
+    }
+    textureStore(outTex, vec2<i32>(i32(gid.x), i32(gid.y)), color);
+    return;
+  }
 
   var z = vec2<f32>(0.0, 0.0);
   var cc = c;
@@ -198,8 +491,74 @@ fn fs_main(@location(0) uv: vec2<f32>) -> @location(0) vec4<f32> {
 }
 `;
 
+  const lineShaderCode = `
+struct Params {
+  width: u32,
+  height: u32,
+  iterations: u32,
+  kind: u32,
+  zoom: f32,
+  offsetX: f32,
+  offsetY: f32,
+  order: f32,
+  xScale: f32,
+  yScale: f32,
+  juliaCX: f32,
+  juliaCY: f32,
+};
+
+@group(0) @binding(0) var<uniform> params: Params;
+@group(0) @binding(1) var paletteTex: texture_2d<f32>;
+@group(0) @binding(2) var paletteSampler: sampler;
+
+struct VSOut {
+  @builtin(position) pos: vec4<f32>,
+  @location(0) vPosition: vec2<f32>,
+};
+
+@vertex
+fn vs_main(@location(0) position: vec2<f32>) -> VSOut {
+  var out: VSOut;
+  let w = f32(params.width);
+  let h = f32(params.height);
+  let aspect = w / h;
+  let scale = 4.0 / params.zoom;
+  let relative = position - vec2<f32>(params.offsetX, params.offsetY);
+  var scaled = vec2<f32>(
+    relative.x / (scale * params.xScale),
+    relative.y / (scale * params.yScale)
+  );
+  scaled.x = scaled.x / aspect;
+  out.pos = vec4<f32>(scaled * 2.0, 0.0, 1.0);
+  out.vPosition = position;
+  return out;
+}
+
+@fragment
+fn fs_main(@location(0) vPosition: vec2<f32>) -> @location(0) vec4<f32> {
+  let dist = length(vPosition);
+  let angle = atan2(vPosition.y, vPosition.x);
+
+  // 40=sierpinski-arrowhead, 41=sierpinski-curve, 42=sierpinski-lsystem
+  var distMul = 1.5;
+  var angleMul = 0.3;
+  if (params.kind == 41u) {
+    distMul = 1.9;
+    angleMul = 0.28;
+  } else if (params.kind == 42u) {
+    distMul = 2.0;
+    angleMul = 0.3;
+  }
+
+  let t = fract(dist * distMul + angle * angleMul);
+  let rgb = textureSampleLevel(paletteTex, paletteSampler, vec2<f32>(t, 0.5), 0.0).rgb;
+  return vec4<f32>(rgb, 1.0);
+}
+`;
+
   const computeModule = device.createShaderModule({ code: computeShaderCode });
   const renderModule = device.createShaderModule({ code: renderShaderCode });
+  const lineModule = device.createShaderModule({ code: lineShaderCode });
 
   const computePipeline = device.createComputePipeline({
     layout: 'auto',
@@ -213,7 +572,177 @@ fn fs_main(@location(0) uv: vec2<f32>) -> @location(0) vec4<f32> {
     primitive: { topology: 'triangle-strip' },
   });
 
-  return { computePipeline, renderPipeline };
+  const linePipeline = device.createRenderPipeline({
+    layout: 'auto',
+    vertex: {
+      module: lineModule,
+      entryPoint: 'vs_main',
+      buffers: [
+        {
+          arrayStride: 8,
+          attributes: [{ shaderLocation: 0, offset: 0, format: 'float32x2' }],
+        },
+      ],
+    },
+    fragment: { module: lineModule, entryPoint: 'fs_main', targets: [{ format: presentationFormat }] },
+    primitive: { topology: 'line-strip' },
+  });
+
+  return { computePipeline, renderPipeline, linePipeline };
+}
+
+function generateSierpinskiArrowheadVertices(iterationLevel) {
+  const vertices = [];
+
+  function arrowhead(x1, y1, x2, y2, depth, direction) {
+    if (depth >= iterationLevel) {
+      if (depth === iterationLevel) vertices.push(x2, y2);
+      return;
+    }
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const x1_3 = x1 + dx / 3;
+    const y1_3 = y1 + dy / 3;
+    const x2_3 = x1 + (2 * dx) / 3;
+    const y2_3 = y1 + (2 * dy) / 3;
+
+    const segmentLength = Math.sqrt((x2_3 - x1_3) ** 2 + (y2_3 - y1_3) ** 2);
+    const height = (segmentLength * Math.sqrt(3)) / 2;
+    const perpX = -dy;
+    const perpY = dx;
+    const perpLength = Math.sqrt(perpX ** 2 + perpY ** 2) || 1;
+    const normalizedPerpX = (perpX / perpLength) * height;
+    const normalizedPerpY = (perpY / perpLength) * height;
+    const midX = (x1_3 + x2_3) / 2;
+    const midY = (y1_3 + y2_3) / 2;
+    const tipX = midX + normalizedPerpX * direction;
+    const tipY = midY + normalizedPerpY * direction;
+
+    arrowhead(x1, y1, x1_3, y1_3, depth + 1, direction);
+    arrowhead(x1_3, y1_3, tipX, tipY, depth + 1, -direction);
+    arrowhead(tipX, tipY, x2_3, y2_3, depth + 1, -direction);
+    arrowhead(x2_3, y2_3, x2, y2, depth + 1, direction);
+  }
+
+  const h = 0.866;
+  const w = 1.0;
+  const topX = 0;
+  const topY = h * 0.67;
+  const leftX = -w;
+  const leftY = -h * 0.33;
+  const rightX = w;
+  const rightY = -h * 0.33;
+
+  vertices.push(topX, topY);
+  arrowhead(topX, topY, leftX, leftY, 0, 1);
+  arrowhead(leftX, leftY, rightX, rightY, 0, -1);
+  arrowhead(rightX, rightY, topX, topY, 0, 1);
+
+  return new Float32Array(vertices);
+}
+
+function generateSierpinskiCurveVertices(iterationLevel) {
+  const vertices = [];
+  function sierpinski(x1, y1, x2, y2, depth, rot) {
+    if (depth >= iterationLevel) {
+      vertices.push(x2, y2);
+      return;
+    }
+    const width = x2 - x1;
+    const height = y2 - y1;
+    const halfWidth = width / 2;
+    const halfHeight = height / 2;
+    const squares = [
+      [x1, y1, x1 + halfWidth, y1 + halfHeight],
+      [x1, y1 + halfHeight, x1 + halfWidth, y1 + halfHeight * 2],
+      [x1 + halfWidth, y1 + halfHeight, x1 + halfWidth * 2, y1 + halfHeight * 2],
+      [x1 + halfWidth, y1, x1 + halfWidth * 2, y1 + halfHeight],
+    ];
+
+    let pattern, rotations;
+    if (rot === 0) {
+      pattern = [0, 3, 2, 1];
+      rotations = [0, 1, 2, 3];
+    } else if (rot === 1) {
+      pattern = [3, 2, 1, 0];
+      rotations = [1, 2, 3, 0];
+    } else if (rot === 2) {
+      pattern = [2, 1, 0, 3];
+      rotations = [2, 3, 0, 1];
+    } else {
+      pattern = [1, 0, 3, 2];
+      rotations = [3, 0, 1, 2];
+    }
+
+    for (let i = 0; i < pattern.length; i++) {
+      const idx = pattern[i];
+      const [sqX1, sqY1, sqX2, sqY2] = squares[idx];
+      sierpinski(sqX1, sqY1, sqX2, sqY2, depth + 1, rotations[i]);
+    }
+  }
+
+  vertices.push(-0.5, -0.5);
+  sierpinski(-0.5, -0.5, 0.5, 0.5, 0, 0);
+  return new Float32Array(vertices);
+}
+
+function generateSierpinskiLSystemVertices(iterationLevel, angleDeg) {
+  const angleRad = (angleDeg * Math.PI) / 180;
+  let lsystemString = 'A';
+  for (let i = 0; i < iterationLevel; i++) {
+    let newString = '';
+    for (let j = 0; j < lsystemString.length; j++) {
+      const char = lsystemString[j];
+      if (char === 'A') newString += 'B-A-B';
+      else if (char === 'B') newString += 'A+B+A';
+      else newString += char;
+    }
+    lsystemString = newString;
+  }
+
+  const vertices = [];
+  let x = 0;
+  let y = -0.5;
+  let currentAngle = Math.PI / 2;
+  const stepLength = 1.0;
+  vertices.push(x, y);
+
+  for (let i = 0; i < lsystemString.length; i++) {
+    const char = lsystemString[i];
+    if (char === 'A' || char === 'B') {
+      x += Math.cos(currentAngle) * stepLength;
+      y += Math.sin(currentAngle) * stepLength;
+      vertices.push(x, y);
+    } else if (char === '+') {
+      currentAngle += angleRad;
+    } else if (char === '-') {
+      currentAngle -= angleRad;
+    }
+  }
+
+  let minX = Infinity,
+    maxX = -Infinity;
+  let minY = Infinity,
+    maxY = -Infinity;
+  for (let i = 0; i < vertices.length; i += 2) {
+    minX = Math.min(minX, vertices[i]);
+    maxX = Math.max(maxX, vertices[i]);
+    minY = Math.min(minY, vertices[i + 1]);
+    maxY = Math.max(maxY, vertices[i + 1]);
+  }
+  const centerX = (minX + maxX) / 2;
+  const centerY = (minY + maxY) / 2;
+  const width = maxX - minX;
+  const height = maxY - minY;
+  const maxSize = Math.max(width, height) || 1;
+  const scale = 2.5 / maxSize;
+
+  const out = new Float32Array(vertices.length);
+  for (let i = 0; i < vertices.length; i += 2) {
+    out[i] = (vertices[i] - centerX) * scale;
+    out[i + 1] = (vertices[i + 1] - centerY) * scale;
+  }
+  return out;
 }
 
 /**
@@ -244,9 +773,13 @@ export class WebGPURenderer {
     });
 
     const presentationFormat = this.format;
-    const { computePipeline, renderPipeline } = createPipelines(this.device, presentationFormat);
+    const { computePipeline, renderPipeline, linePipeline } = createPipelines(
+      this.device,
+      presentationFormat
+    );
     this.computePipeline = computePipeline;
     this.renderPipeline = renderPipeline;
+    this.linePipeline = linePipeline;
 
     this.paramsBuffer = this.device.createBuffer({
       size: PARAMS_SIZE_BYTES,
@@ -282,6 +815,15 @@ export class WebGPURenderer {
    */
   async render(fractalType, params) {
     if (!isWebGPUFirstFractalType(fractalType)) return;
+
+    if (
+      fractalType === 'sierpinski-arrowhead' ||
+      fractalType === 'sierpinski-curve' ||
+      fractalType === 'sierpinski-lsystem'
+    ) {
+      await this.renderLineFractal(fractalType, params);
+      return;
+    }
 
     const width = Math.max(1, this.canvas.width | 0);
     const height = Math.max(1, this.canvas.height | 0);
@@ -337,6 +879,20 @@ export class WebGPURenderer {
                     ? 6
                     : fractalType === 'hybrid-julia'
                       ? 7
+                      : fractalType === 'sierpinski'
+                        ? 20
+                        : fractalType === 'sierpinski-carpet'
+                          ? 21
+                          : fractalType === 'menger-carpet'
+                            ? 22
+                            : fractalType === 'sierpinski-hexagon'
+                              ? 23
+                              : fractalType === 'sierpinski-pentagon'
+                                ? 24
+                                : fractalType === 'sierpinski-tetrahedron'
+                                  ? 25
+                                  : fractalType === 'sierpinski-gasket'
+                                    ? 26
                   : 0;
 
     const isMultibrot = kind === 2 || kind === 3;
@@ -408,6 +964,108 @@ export class WebGPURenderer {
     renderPass.end();
 
     this.device.queue.submit([encoder.finish()]);
+    await this.device.queue.onSubmittedWorkDone();
+  }
+
+  async renderLineFractal(fractalType, params) {
+    const width = Math.max(1, this.canvas.width | 0);
+    const height = Math.max(1, this.canvas.height | 0);
+
+    if (this.paletteTexture === null || this.paletteColorScheme !== params.colorScheme) {
+      const bytes = createPaletteBytes(params.colorScheme);
+      if (this.paletteTexture) this.paletteTexture.destroy();
+      this.paletteTexture = this.device.createTexture({
+        size: [PALETTE_SIZE, 1],
+        format: 'rgba8unorm',
+        usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST,
+      });
+      this.device.queue.writeTexture(
+        { texture: this.paletteTexture },
+        bytes,
+        { bytesPerRow: PALETTE_SIZE * 4, rowsPerImage: 1 },
+        { width: PALETTE_SIZE, height: 1, depthOrArrayLayers: 1 }
+      );
+      this.paletteColorScheme = params.colorScheme;
+    }
+
+    const kind =
+      fractalType === 'sierpinski-arrowhead'
+        ? 40
+        : fractalType === 'sierpinski-curve'
+          ? 41
+          : 42; // sierpinski-lsystem
+
+    const buf = new ArrayBuffer(PARAMS_SIZE_BYTES);
+    const u32 = new Uint32Array(buf, 0, 4);
+    const f32 = new Float32Array(buf, 16);
+    u32[0] = width;
+    u32[1] = height;
+    u32[2] = Math.max(1, params.iterations | 0);
+    u32[3] = kind;
+    f32[0] = params.zoom ?? 1.0;
+    f32[1] = params.offset?.x ?? 0.0;
+    f32[2] = params.offset?.y ?? 0.0;
+    f32[3] = 2.0;
+    f32[4] = params.xScale ?? 1.0;
+    f32[5] = params.yScale ?? 1.0;
+    f32[6] = 0.0;
+    f32[7] = 0.0;
+    this.device.queue.writeBuffer(this.paramsBuffer, 0, buf);
+
+    const iterationLevel =
+      fractalType === 'sierpinski-arrowhead'
+        ? Math.max(0, Math.min(7, Math.floor((params.iterations ?? 0) / 28)))
+        : fractalType === 'sierpinski-curve'
+          ? Math.max(0, Math.min(6, Math.floor((params.iterations ?? 0) / 33)))
+          : Math.max(0, Math.min(8, Math.floor((params.iterations ?? 0) / 25)));
+
+    const angleDeg = 45 + (params.xScale ?? 0) * 30;
+
+    const vertices =
+      fractalType === 'sierpinski-arrowhead'
+        ? generateSierpinskiArrowheadVertices(iterationLevel)
+        : fractalType === 'sierpinski-curve'
+          ? generateSierpinskiCurveVertices(iterationLevel)
+          : generateSierpinskiLSystemVertices(iterationLevel, angleDeg);
+
+    if (!this._lineVertexBuffer || this._lineVertexCapacity < vertices.byteLength) {
+      if (this._lineVertexBuffer) this._lineVertexBuffer.destroy();
+      this._lineVertexBuffer = this.device.createBuffer({
+        size: Math.max(vertices.byteLength, 1024),
+        usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
+      });
+      this._lineVertexCapacity = this._lineVertexBuffer.size;
+    }
+    this.device.queue.writeBuffer(this._lineVertexBuffer, 0, vertices);
+
+    const bindGroup = this.device.createBindGroup({
+      layout: this.linePipeline.getBindGroupLayout(0),
+      entries: [
+        { binding: 0, resource: { buffer: this.paramsBuffer } },
+        { binding: 1, resource: this.paletteTexture.createView() },
+        { binding: 2, resource: this.paletteSampler },
+      ],
+    });
+
+    const encoder = this.device.createCommandEncoder();
+    const pass = encoder.beginRenderPass({
+      colorAttachments: [
+        {
+          view: this.context.getCurrentTexture().createView(),
+          loadOp: 'clear',
+          clearValue: { r: 0, g: 0, b: 0, a: 1 },
+          storeOp: 'store',
+        },
+      ],
+    });
+    pass.setPipeline(this.linePipeline);
+    pass.setBindGroup(0, bindGroup);
+    pass.setVertexBuffer(0, this._lineVertexBuffer);
+    pass.draw(vertices.length / 2, 1, 0, 0);
+    pass.end();
+
+    this.device.queue.submit([encoder.finish()]);
+    await this.device.queue.onSubmittedWorkDone();
   }
 
   /**

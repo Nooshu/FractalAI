@@ -14,6 +14,11 @@ const WEBGPU_FIRST_FRACTALS = new Set([
   'phoenix-julia',
   'lambda-julia',
   'hybrid-julia',
+  // Sierpinski family (WebGPU-first)
+  // NOTE: Pixel-based Sierpinski variants still use WebGL for now (WebGPU output is black).
+  'sierpinski-arrowhead',
+  'sierpinski-curve',
+  'sierpinski-lsystem',
 ]);
 
 export function isWebGPUFirstFractalType(fractalType) {
