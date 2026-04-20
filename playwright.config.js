@@ -73,15 +73,18 @@ export default defineConfig({
     // },
   ],
 
-  // Web server configuration (for local testing)
-  webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:5173',
-    reuseExistingServer: !process.env.CI,
-    timeout: 120000,
-    stdout: 'ignore',
-    stderr: 'pipe',
-  },
+  // Web server configuration (for local testing).
+  // When `MANAGED_WEB_SERVER=1`, a wrapper script is responsible for starting/stopping Vite.
+  webServer: process.env.MANAGED_WEB_SERVER
+    ? undefined
+    : {
+        command: 'npm run dev -- --strictPort --host 127.0.0.1 --open=false',
+        url: 'http://localhost:5173',
+        reuseExistingServer: !process.env.CI,
+        timeout: 120000,
+        stdout: 'ignore',
+        stderr: 'pipe',
+      },
 
   // Expect configuration for visual comparisons
   expect: {

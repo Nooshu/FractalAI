@@ -27,9 +27,9 @@
     "test": "vitest",
     "test:unit": "vitest tests/unit",
     "test:watch": "vitest --watch",
-    "test:visual": "FORCE_COLOR=0 playwright test",
-    "test:visual:update": "FORCE_COLOR=0 playwright test --update-snapshots",
-    "test:visual:ui": "FORCE_COLOR=0 playwright test --ui",
+    "test:visual": "FORCE_COLOR=0 node scripts/run-visual-tests.js",
+    "test:visual:update": "FORCE_COLOR=0 node scripts/run-visual-tests.js --update-snapshots",
+    "test:visual:ui": "FORCE_COLOR=0 node scripts/run-visual-tests.js --ui",
     "test:visual:report": "playwright show-report"
   },
   "dependencies": {

@@ -19,6 +19,10 @@ const WEBGPU_FIRST_FRACTALS = new Set([
   'sierpinski-arrowhead',
   'sierpinski-curve',
   'sierpinski-lsystem',
+  // Koch family (WebGPU-first)
+  'koch',
+  'quadratic-koch',
+  'fractal-islands',
 ]);
 
 export function isWebGPUFirstFractalType(fractalType) {

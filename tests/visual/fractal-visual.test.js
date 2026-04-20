@@ -1,9 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { FRACTAL_TYPES, getFractalConfig } from './fractal-list.js';
 
-// Base URL for the application
-const BASE_URL = process.env.TEST_URL || 'http://localhost:5173';
-
 /**
  * Visual regression tests for all fractals
  *
@@ -19,7 +16,7 @@ FRACTAL_TYPES.forEach((fractalType) => {
 
   test(`Fractal: ${fractalType}`, async ({ page }) => {
     // Navigate to the application
-    await page.goto(BASE_URL);
+    await page.goto('/');
 
     // Wait for the page to be fully loaded
     await page.waitForLoadState('networkidle');

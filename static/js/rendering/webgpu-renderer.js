@@ -352,10 +352,10 @@ fn main(@builtin(global_invocation_id) gid: vec3<u32>) {
   );
   let c = select(cDefault, cGasket, params.kind == 26u);
 
-  // Sierpinski family (pixel/shader) kinds:
-  // 20=sierpinski, 21=sierpinski-carpet, 22=menger-carpet, 23=sierpinski-hexagon,
-  // 24=sierpinski-pentagon, 25=sierpinski-tetrahedron, 26=sierpinski-gasket
-  if (params.kind >= 20u && params.kind <= 26u) {
+  // Pixel/shader fractals we implement in compute:
+  // 20..26: Sierpinski pixel family (currently not enabled via allowlist)
+  // 30: fractal-islands
+  if ((params.kind >= 20u && params.kind <= 26u) || params.kind == 30u) {
     let maxIter = max(1u, params.iterations);
     var iterValue: f32 = 0.0;
     if (params.kind == 20u) {
@@ -372,6 +372,59 @@ fn main(@builtin(global_invocation_id) gid: vec3<u32>) {
       iterValue = sierpinskiTetrahedronValue(c, maxIter);
     } else if (params.kind == 26u) {
       iterValue = sierpinskiGasketValue(c, maxIter);
+    } else if (params.kind == 30u) {
+      // fractal-islands (ported from GLSL module; uses palette texture)
+      let iterations = u32(clamp(f32(maxIter) / 15.0, 1.0, 8.0));
+
+      // Membership test
+      var pos = clamp(c * 0.5 + vec2<f32>(0.5), vec2<f32>(0.0), vec2<f32>(1.0));
+      var ok = true;
+      var i: u32 = 0u;
+      loop {
+        if (i >= iterations || i >= 10u) { break; }
+        let scaled = pos * 3.0;
+        let cell = floor(scaled);
+        if (
+          (cell.x == 1.0 && cell.y == 1.0) ||
+          (cell.x == 0.0 && cell.y == 1.0) ||
+          (cell.x == 1.0 && cell.y == 0.0) ||
+          (cell.x == 1.0 && cell.y == 2.0) ||
+          (cell.x == 2.0 && cell.y == 1.0)
+        ) {
+          ok = false;
+          break;
+        }
+        pos = scaled - floor(scaled);
+        i = i + 1u;
+      }
+      if (!ok) {
+        iterValue = 0.0;
+      } else {
+        var depth = 0.0;
+        pos = c * 0.5 + vec2<f32>(0.5);
+        i = 0u;
+        loop {
+          if (i >= iterations || i >= 10u) { break; }
+          let scaled = pos * 3.0;
+          let cell = floor(scaled);
+          if (cell.x == 0.0 && cell.y == 0.0) {
+            depth = depth + 10.0;
+          } else if (cell.x == 2.0 && cell.y == 0.0) {
+            depth = depth + 8.0;
+          } else if (cell.x == 0.0 && cell.y == 2.0) {
+            depth = depth + 6.0;
+          } else if (cell.x == 2.0 && cell.y == 2.0) {
+            depth = depth + 4.0;
+          }
+          let cellCenter = (cell + vec2<f32>(0.5)) / 3.0;
+          let distFromCenter = length(pos - cellCenter);
+          depth = depth + distFromCenter * 3.0;
+          depth = depth + f32(i) * 2.0;
+          pos = scaled - floor(scaled);
+          i = i + 1u;
+        }
+        iterValue = fmod(depth * 7.0, f32(maxIter) * 0.9);
+      }
     }
     // iterValue is produced by the selected fractal kernel above
 
@@ -540,17 +593,27 @@ fn fs_main(@location(0) vPosition: vec2<f32>) -> @location(0) vec4<f32> {
   let angle = atan2(vPosition.y, vPosition.x);
 
   // 40=sierpinski-arrowhead, 41=sierpinski-curve, 42=sierpinski-lsystem
-  var distMul = 1.5;
-  var angleMul = 0.3;
-  if (params.kind == 41u) {
-    distMul = 1.9;
-    angleMul = 0.28;
-  } else if (params.kind == 42u) {
-    distMul = 2.0;
-    angleMul = 0.3;
+  // 50=koch, 51=quadratic-koch
+  var t: f32;
+  if (params.kind == 50u) {
+    // Koch: t = length(vPosition)*0.5 + 0.5
+    t = clamp(dist * 0.5 + 0.5, 0.0, 1.0);
+  } else {
+    var distMul = 1.5;
+    var angleMul = 0.3;
+    if (params.kind == 41u) {
+      distMul = 1.9;
+      angleMul = 0.28;
+    } else if (params.kind == 42u) {
+      distMul = 2.0;
+      angleMul = 0.3;
+    } else if (params.kind == 51u) {
+      distMul = 3.0;
+      angleMul = 0.0;
+    }
+    t = fract(dist * distMul + angle * angleMul);
   }
 
-  let t = fract(dist * distMul + angle * angleMul);
   let rgb = textureSampleLevel(paletteTex, paletteSampler, vec2<f32>(t, 0.5), 0.0).rgb;
   return vec4<f32>(rgb, 1.0);
 }
@@ -745,6 +808,129 @@ function generateSierpinskiLSystemVertices(iterationLevel, angleDeg) {
   return out;
 }
 
+function generateKochSnowflakeVertices(iterations) {
+  // Ported from `static/js/fractals/2d/koch.js` (CPU vertex generation)
+  const h = 0.75;
+  const w = h * (Math.sqrt(3) / 2);
+  const SQRT3_OVER_2 = Math.sqrt(3) / 2;
+  const ONE_THIRD = 1 / 3;
+  const TWO_THIRDS = 2 / 3;
+  const HALF = 0.5;
+
+  let vertices = [0, h * TWO_THIRDS, -w, -h * ONE_THIRD, w, -h * ONE_THIRD];
+  let vertexCount = 3;
+
+  for (let i = 0; i < iterations; i++) {
+    const newVertexCount = vertexCount * 4;
+    const newVertices = new Float32Array(newVertexCount * 2);
+    let writeIndex = 0;
+
+    for (let j = 0; j < vertexCount; j++) {
+      const aIndex = j * 2;
+      const bIndex = ((j + 1) % vertexCount) * 2;
+      const ax = vertices[aIndex];
+      const ay = vertices[aIndex + 1];
+      const bx = vertices[bIndex];
+      const by = vertices[bIndex + 1];
+
+      newVertices[writeIndex++] = ax;
+      newVertices[writeIndex++] = ay;
+
+      const dx = bx - ax;
+      const dy = by - ay;
+      const p1x = ax + dx * ONE_THIRD;
+      const p1y = ay + dy * ONE_THIRD;
+      newVertices[writeIndex++] = p1x;
+      newVertices[writeIndex++] = p1y;
+
+      const v_dx = dx * ONE_THIRD;
+      const v_dy = dy * ONE_THIRD;
+      newVertices[writeIndex++] = p1x + v_dx * HALF - v_dy * SQRT3_OVER_2;
+      newVertices[writeIndex++] = p1y + v_dx * SQRT3_OVER_2 + v_dy * HALF;
+
+      newVertices[writeIndex++] = ax + dx * TWO_THIRDS;
+      newVertices[writeIndex++] = ay + dy * TWO_THIRDS;
+    }
+
+    vertices = newVertices;
+    vertexCount = newVertexCount;
+  }
+
+  let minX = Infinity,
+    maxX = -Infinity;
+  let minY = Infinity,
+    maxY = -Infinity;
+  for (let i = 0; i < vertices.length; i += 2) {
+    minX = Math.min(minX, vertices[i]);
+    maxX = Math.max(maxX, vertices[i]);
+    minY = Math.min(minY, vertices[i + 1]);
+    maxY = Math.max(maxY, vertices[i + 1]);
+  }
+
+  const centerX = (minX + maxX) / 2;
+  const centerY = (minY + maxY) / 2;
+  const width = maxX - minX;
+  const height = maxY - minY;
+  const maxSize = Math.max(width, height);
+  const scale = maxSize > 0 ? 1.5 / maxSize : 1.0;
+
+  const scaledVertices = new Float32Array(vertices.length);
+  for (let i = 0; i < vertices.length; i += 2) {
+    scaledVertices[i] = (vertices[i] - centerX) * scale;
+    scaledVertices[i + 1] = (vertices[i + 1] - centerY) * scale;
+  }
+  return scaledVertices;
+}
+
+function generateQuadraticKochIslandVertices(iterations) {
+  // Ported from `static/js/fractals/2d/quadratic-koch.js`
+  let vertices = [
+    [-0.5, -0.5],
+    [0.5, -0.5],
+    [0.5, 0.5],
+    [-0.5, 0.5],
+    [-0.5, -0.5],
+  ];
+
+  for (let iter = 0; iter < iterations; iter++) {
+    const newVertices = [];
+    for (let i = 0; i < vertices.length - 1; i++) {
+      const p1 = vertices[i];
+      const p2 = vertices[i + 1];
+      const dx = p2[0] - p1[0];
+      const dy = p2[1] - p1[1];
+      const len = Math.sqrt(dx * dx + dy * dy) || 1;
+      const ux = dx / len;
+      const uy = dy / len;
+      const px = -uy;
+      const py = ux;
+      const segmentLen = len / 4;
+
+      const points = [
+        p1,
+        [p1[0] + ux * segmentLen, p1[1] + uy * segmentLen],
+        [p1[0] + ux * segmentLen + px * segmentLen, p1[1] + uy * segmentLen + py * segmentLen],
+        [p1[0] + ux * 2 * segmentLen + px * segmentLen, p1[1] + uy * 2 * segmentLen + py * segmentLen],
+        [p1[0] + ux * 2 * segmentLen + px * 2 * segmentLen, p1[1] + uy * 2 * segmentLen + py * 2 * segmentLen],
+        [p1[0] + ux * 3 * segmentLen + px * 2 * segmentLen, p1[1] + uy * 3 * segmentLen + py * 2 * segmentLen],
+        [p1[0] + ux * 3 * segmentLen + px * segmentLen, p1[1] + uy * 3 * segmentLen + py * segmentLen],
+        [p1[0] + ux * 4 * segmentLen + px * segmentLen, p1[1] + uy * 4 * segmentLen + py * segmentLen],
+      ];
+
+      for (let j = 0; j < points.length - 1; j++) newVertices.push(points[j]);
+    }
+    newVertices.push(newVertices[0]);
+    vertices = newVertices;
+  }
+
+  const flatVertices = new Float32Array(vertices.length * 2);
+  for (let i = 0; i < vertices.length; i++) {
+    flatVertices[i * 2] = vertices[i][0];
+    flatVertices[i * 2 + 1] = vertices[i][1];
+  }
+  return flatVertices;
+}
+
 /**
  * WebGPU Renderer class
  */
@@ -819,7 +1005,9 @@ export class WebGPURenderer {
     if (
       fractalType === 'sierpinski-arrowhead' ||
       fractalType === 'sierpinski-curve' ||
-      fractalType === 'sierpinski-lsystem'
+      fractalType === 'sierpinski-lsystem' ||
+      fractalType === 'koch' ||
+      fractalType === 'quadratic-koch'
     ) {
       await this.renderLineFractal(fractalType, params);
       return;
@@ -893,6 +1081,8 @@ export class WebGPURenderer {
                                   ? 25
                                   : fractalType === 'sierpinski-gasket'
                                     ? 26
+                                    : fractalType === 'fractal-islands'
+                                      ? 30
                   : 0;
 
     const isMultibrot = kind === 2 || kind === 3;
@@ -993,7 +1183,11 @@ export class WebGPURenderer {
         ? 40
         : fractalType === 'sierpinski-curve'
           ? 41
-          : 42; // sierpinski-lsystem
+          : fractalType === 'sierpinski-lsystem'
+            ? 42
+            : fractalType === 'koch'
+              ? 50
+              : 51; // quadratic-koch
 
     const buf = new ArrayBuffer(PARAMS_SIZE_BYTES);
     const u32 = new Uint32Array(buf, 0, 4);
@@ -1017,7 +1211,9 @@ export class WebGPURenderer {
         ? Math.max(0, Math.min(7, Math.floor((params.iterations ?? 0) / 28)))
         : fractalType === 'sierpinski-curve'
           ? Math.max(0, Math.min(6, Math.floor((params.iterations ?? 0) / 33)))
-          : Math.max(0, Math.min(8, Math.floor((params.iterations ?? 0) / 25)));
+          : fractalType === 'sierpinski-lsystem'
+            ? Math.max(0, Math.min(8, Math.floor((params.iterations ?? 0) / 25)))
+            : Math.max(0, Math.min(6, Math.floor((params.iterations ?? 0) / 30)));
 
     const angleDeg = 45 + (params.xScale ?? 0) * 30;
 
@@ -1026,7 +1222,11 @@ export class WebGPURenderer {
         ? generateSierpinskiArrowheadVertices(iterationLevel)
         : fractalType === 'sierpinski-curve'
           ? generateSierpinskiCurveVertices(iterationLevel)
-          : generateSierpinskiLSystemVertices(iterationLevel, angleDeg);
+          : fractalType === 'sierpinski-lsystem'
+            ? generateSierpinskiLSystemVertices(iterationLevel, angleDeg)
+            : fractalType === 'koch'
+              ? generateKochSnowflakeVertices(iterationLevel)
+              : generateQuadraticKochIslandVertices(iterationLevel);
 
     if (!this._lineVertexBuffer || this._lineVertexCapacity < vertices.byteLength) {
       if (this._lineVertexBuffer) this._lineVertexBuffer.destroy();
