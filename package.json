@@ -41,7 +41,7 @@
     "@playwright/test": "1.59.1",
     "@eslint/js": "10.0.1",
     "@vitest/coverage-v8": "4.1.4",
-    "eslint": "10.2.0",
+    "eslint": "10.2.1",
     "esbuild": "0.28.0",
     "jsdom": "29.0.2",
     "prettier": "3.8.3",
@@ -55,7 +55,7 @@
     "flatted": "3.4.2",
     "picomatch": "4.0.4",
     "micromatch": {
-      "picomatch": "2.3.2"
+      "picomatch": "4.0.4"
     },
     "ajv": "8.18.0",
     "eslint": {
