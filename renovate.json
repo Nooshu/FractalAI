@@ -1,0 +1,90 @@
+{
+	"$schema": "https://docs.renovatebot.com/renovate-schema.json",
+	"extends": ["config:recommended"],
+	"nvm": { "enabled": false },
+	"nodenv": { "enabled": false },
+	"packageRules": [
+		{
+			"description": "Do not update Node.js (pinned to project engine requirement)",
+			"matchPackageNames": ["node"],
+			"enabled": false
+		},
+		{
+			"description": "Group Vite ecosystem packages together",
+			"groupName": "Vite ecosystem",
+			"schedule": ["before 10am on monday"],
+			"matchPackageNames": ["/^vite/", "/^@vitest\\//", "vitest"]
+		},
+		{
+			"description": "Group linting and formatting tools",
+			"groupName": "linting and formatting tools",
+			"schedule": ["before 10am on monday"],
+			"matchPackageNames": [
+				"/^eslint/",
+				"/^@eslint\\//",
+				"/^stylelint/",
+				"prettier"
+			]
+		},
+		{
+			"description": "Group development dependencies",
+			"matchDepTypes": ["devDependencies"],
+			"groupName": "dev dependencies",
+			"schedule": ["before 10am on monday"],
+			"automerge": true,
+			"automergeType": "pr",
+			"minor": {
+				"automerge": true
+			},
+			"patch": {
+				"automerge": true
+			}
+		},
+		{
+			"description": "Auto-merge patch updates for production dependencies",
+			"matchDepTypes": ["dependencies"],
+			"matchUpdateTypes": ["patch"],
+			"automerge": true,
+			"automergeType": "pr"
+		},
+		{
+			"description": "Pin packages in the overrides section",
+			"matchPackageNames": [
+				"brace-expansion",
+				"flatted",
+				"picomatch",
+				"micromatch",
+				"ajv"
+			],
+			"matchManagers": ["npm"],
+			"rangeStrategy": "pin"
+		},
+		{
+			"description": "Major version updates require manual review",
+			"matchUpdateTypes": ["major"],
+			"automerge": false,
+			"labels": ["dependencies", "major-update"]
+		}
+	],
+	"schedule": ["before 10am on monday"],
+	"timezone": "UTC",
+	"prConcurrentLimit": 5,
+	"prHourlyLimit": 2,
+	"labels": ["dependencies"],
+	"assignees": [],
+	"reviewers": [],
+	"commitMessagePrefix": "chore:",
+	"commitMessageAction": "update",
+	"commitMessageTopic": "{{depName}}",
+	"commitMessageExtra": "to {{newVersion}}",
+	"semanticCommits": "enabled",
+	"separateMinorPatch": true,
+	"separateMajorMinor": true,
+	"ignoreDeps": [],
+	"vulnerabilityAlerts": {
+		"enabled": true,
+		"labels": ["security", "dependencies"],
+		"assignees": [],
+		"reviewers": []
+	}
+}
