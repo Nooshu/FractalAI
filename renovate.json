@@ -81,6 +81,8 @@
 	"separateMinorPatch": true,
 	"separateMajorMinor": true,
 	"ignoreDeps": [],
+	"dependencyDashboard": true,
+	"dependencyDashboardTitle": "Renovate Dependency Dashboard",
 	"vulnerabilityAlerts": {
 		"enabled": true,
 		"labels": ["security", "dependencies"],
