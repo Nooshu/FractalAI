@@ -66,7 +66,6 @@
 			"labels": ["dependencies", "major-update"]
 		}
 	],
-	"schedule": ["before 10am on monday"],
 	"timezone": "UTC",
 	"prConcurrentLimit": 5,
 	"prHourlyLimit": 2,
