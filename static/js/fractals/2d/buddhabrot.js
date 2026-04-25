@@ -1,4 +1,5 @@
 import { createFragmentShader, createStandardDrawCommand } from '../utils.js';
+import { createLumaDrawCommand } from '../luma-utils.js';
 
 const fractalFunction = `
     // Buddhabrot: Classic orbit density visualization
@@ -88,6 +89,10 @@ export function render(regl, params, canvas, options = {}) {
     ubo,
     juliaC: { x: 0, y: 0 }, // Not used for Buddhabrot
   });
+}
+
+export function renderLuma(device, params, canvas) {
+  return createLumaDrawCommand(device, 'buddhabrot', fractalFunction, params, canvas);
 }
 
 export const is2D = true;

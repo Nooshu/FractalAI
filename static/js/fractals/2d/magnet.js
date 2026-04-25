@@ -1,4 +1,5 @@
 import { vertexShader, createFragmentShader, generatePaletteTexture } from '../utils.js';
+import { createLumaDrawCommandFromFragmentSource } from '../luma-utils.js';
 
 const fractalFunction = `
     // Helper function for complex division: a / b
@@ -186,6 +187,11 @@ export function render(regl, params, canvas) {
   });
 
   return drawFractal;
+}
+
+export function renderLuma(device, params, canvas) {
+  const fragmentShaderUBO = createFragmentShader(fractalFunction, true);
+  return createLumaDrawCommandFromFragmentSource(device, 'magnet', fragmentShaderUBO, params, canvas);
 }
 
 export const is2D = true;

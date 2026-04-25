@@ -1,4 +1,5 @@
 import { createFragmentShader, createStandardDrawCommand } from '../utils.js';
+import { createLumaDrawCommand } from '../luma-utils.js';
 
 const fractalFunction = `
     float computeFractal(vec2 c) {
@@ -75,6 +76,10 @@ export function render(regl, params, canvas, options = {}) {
     ubo,
     juliaC: params.juliaC,
   });
+}
+
+export function renderLuma(device, params, canvas) {
+  return createLumaDrawCommand(device, 'julia-snakes', fractalFunction, params, canvas);
 }
 
 export const is2D = true;
