@@ -82,7 +82,7 @@
 	"ignoreDeps": [],
 	"dependencyDashboard": true,
 	"dependencyDashboardTitle": "Renovate Dependency Dashboard",
-	"dependencyDashboardFooter": "### Manual actions\n\n- [ ] <!-- manual-run --> **Run Renovate again now**\n",
+	"dependencyDashboardFooter": "### Manual actions\n\n- [ ] <!-- manual-run --> Check this box to trigger a request for Renovate to run again on this repository\n",
 	"vulnerabilityAlerts": {
 		"enabled": true,
 		"labels": ["security", "dependencies"],
