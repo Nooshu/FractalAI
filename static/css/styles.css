@@ -1808,6 +1808,13 @@ body {
   color: var(--text-secondary);
 }
 
+#renderer-backend-tag {
+  font-size: 0.72rem;
+  letter-spacing: 0.2px;
+  margin-bottom: 2px;
+  opacity: 0.95;
+}
+
 /* Loading Bar */
 .loading-bar {
   position: absolute;

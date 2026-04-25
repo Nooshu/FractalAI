@@ -10,6 +10,7 @@ import { incrementFrameCount } from '../performance/fps-tracker.js';
 import { performanceInstrumentation } from '../performance/instrumentation.js';
 import { createOptimizedFramebuffer } from './framebuffer-utils.js';
 import { isWebGPUFirstFractalType } from './webgpu-fractals.js';
+import { setRendererBackendTag } from '../ui/renderer-backend-tag.js';
 
 /**
  * Rendering Engine class
@@ -57,6 +58,27 @@ export class RenderingEngine {
     this.animationFrameId = null;
   }
 
+  _updateRendererBackendTag({ webgpuRenderer, fractalType, lumaDevice, currentFractalModule, regl }) {
+    if (webgpuRenderer && isWebGPUFirstFractalType(fractalType)) {
+      setRendererBackendTag('WebGPU');
+      return;
+    }
+    if (lumaDevice && currentFractalModule?.renderLuma) {
+      setRendererBackendTag('WebGL2');
+      return;
+    }
+    if (regl) {
+      const caps = this.getWebGLCapabilities ? this.getWebGLCapabilities() : null;
+      setRendererBackendTag(caps?.isWebGL2 ? 'WebGL2' : 'WebGL');
+      return;
+    }
+    if (webgpuRenderer) {
+      setRendererBackendTag('WebGPU');
+      return;
+    }
+    setRendererBackendTag('--');
+  }
+
   /**
    * Schedule a render using progressive rendering for faster feedback
    */
@@ -88,6 +110,13 @@ export class RenderingEngine {
 
     const webgpuRenderer = this.getWebGPURenderer ? this.getWebGPURenderer() : null;
     const fractalType = this.getCurrentFractalType();
+    this._updateRendererBackendTag({
+      webgpuRenderer,
+      fractalType,
+      lumaDevice,
+      currentFractalModule,
+      regl,
+    });
     if (webgpuRenderer && isWebGPUFirstFractalType(fractalType)) {
       // WebGPU path doesn't use progressive iterations yet; render at current params.
       this.renderFractal();
@@ -287,6 +316,14 @@ export class RenderingEngine {
     const params = this.getParams();
     const fractalType = this.getCurrentFractalType();
     const webgpuRenderer = this.getWebGPURenderer ? this.getWebGPURenderer() : null;
+
+    this._updateRendererBackendTag({
+      webgpuRenderer,
+      fractalType,
+      lumaDevice,
+      currentFractalModule,
+      regl,
+    });
 
     if (webgpuRenderer && isWebGPUFirstFractalType(fractalType)) {
       showLoadingBar();

@@ -58,6 +58,12 @@ function suppressFirefoxWebGLDebugRendererInfoDeprecation() {
 let fractalLoader = null;
 let loadFractal = null;
 
+// Input controls are bound to a specific canvas element. When we swap render backends
+// (WebGPU <-> WebGL), we must replace the canvas to reset its underlying graphics context,
+// and then re-bind input listeners to the new canvas.
+let inputControlsHandle = null;
+let rebindInputControlsForCanvas = null;
+
 async function ensureFractalLoader() {
   if (fractalLoader && loadFractal) return;
   const mod = await import('../fractals/loader.js');
@@ -408,6 +414,22 @@ async function initCanvasAndRenderer(appState) {
       const wantType = wantWebGPU ? 'webgpu' : 'webgl';
       if (currentRendererType === wantType) return;
 
+      const resetCanvasForBackendSwitch = () => {
+        const oldCanvas = document.getElementById('fractal-canvas');
+        if (!oldCanvas) return;
+
+        const newCanvas = document.createElement('canvas');
+        newCanvas.id = oldCanvas.id;
+        newCanvas.className = oldCanvas.className;
+
+        // Preserve layout-affecting style and current pixel dimensions.
+        newCanvas.width = oldCanvas.width;
+        newCanvas.height = oldCanvas.height;
+        newCanvas.style.cssText = oldCanvas.style.cssText;
+
+        oldCanvas.replaceWith(newCanvas);
+      };
+
       // Cleanup previous renderer wiring.
       try {
         if (rendererCleanup) rendererCleanup();
@@ -441,6 +463,11 @@ async function initCanvasAndRenderer(appState) {
       appState.setFractalParamsUBO(null);
       appState.setLumaDevice(null);
 
+      // Switching between WebGPU and WebGL on the same canvas is not reliable:
+      // once a canvas has a WebGPU context, WebGL contexts may fail to initialize (and vice versa).
+      // Replace the canvas element to guarantee a fresh graphics context.
+      resetCanvasForBackendSwitch();
+
       const result = await initCanvasRenderer('fractal-canvas', {
         getZoom: () => appState.getParams().zoom,
         onResize: () => {
@@ -459,6 +486,13 @@ async function initCanvasAndRenderer(appState) {
       }
       currentRendererType = result.rendererType;
       rendererCleanup = result.cleanup;
+
+      // Re-bind input listeners to the new canvas element.
+      try {
+        rebindInputControlsForCanvas?.();
+      } catch {
+        // ignore
+      }
 
       // If we switched to WebGL, re-detect capabilities and re-init UBO.
       if (result.regl?._gl) {
@@ -695,29 +729,40 @@ function setupUIControlsModule(
 function setupInputControlsModule(appState, renderingEngine, updateCoordinateDisplay) {
   const getters = appState.getGetters();
 
-  setupInputControls(
-    {
-      getCanvas: getters.getCanvas,
-      getParams: getters.getParams,
-      getUpdateRendererSize: getters.getUpdateRendererSize,
-    },
-    {
-      scheduleRender: () => renderingEngine.scheduleRender(),
-      updateCoordinateDisplay: updateCoordinateDisplay,
-      renderFractalProgressive: () => renderingEngine.renderFractalProgressive(),
-      zoomToSelection: (startX, startY, endX, endY, canvasRect) => {
-        zoomToSelection(
-          startX,
-          startY,
-          endX,
-          endY,
-          canvasRect,
-          { getCanvas: getters.getCanvas, getParams: getters.getParams },
-          { renderFractalProgressive: () => renderingEngine.renderFractalProgressive() }
-        );
+  const bind = () =>
+    setupInputControls(
+      {
+        getCanvas: getters.getCanvas,
+        getParams: getters.getParams,
+        getUpdateRendererSize: getters.getUpdateRendererSize,
       },
-    }
-  );
+      {
+        scheduleRender: () => renderingEngine.scheduleRender(),
+        updateCoordinateDisplay: updateCoordinateDisplay,
+        renderFractalProgressive: () => renderingEngine.renderFractalProgressive(),
+        zoomToSelection: (startX, startY, endX, endY, canvasRect) => {
+          zoomToSelection(
+            startX,
+            startY,
+            endX,
+            endY,
+            canvasRect,
+            { getCanvas: getters.getCanvas, getParams: getters.getParams },
+            { renderFractalProgressive: () => renderingEngine.renderFractalProgressive() }
+          );
+        },
+      }
+    );
+
+  // Initial bind
+  inputControlsHandle?.cleanup?.();
+  inputControlsHandle = bind();
+
+  // Make rebinding available to the renderer swapper.
+  rebindInputControlsForCanvas = () => {
+    inputControlsHandle?.cleanup?.();
+    inputControlsHandle = bind();
+  };
 }
 
 /**

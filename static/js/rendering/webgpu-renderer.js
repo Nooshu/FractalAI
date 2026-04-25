@@ -342,8 +342,13 @@ fn main(@builtin(global_invocation_id) gid: vec3<u32>) {
   // Coordinate transform:
   // - Most fractals follow createFragmentShader: aspect * xScale on X, yScale on Y
   // - sierpinski-gasket intentionally does NOT apply xScale (it uses xScale as a parameter)
+  // - multibrot and multibrot-julia intentionally do NOT apply xScale (xScale is the "order" control)
+  var xScaleCoord = params.xScale;
+  if (params.kind == 2u || params.kind == 3u) {
+    xScaleCoord = 1.0;
+  }
   let cDefault = vec2<f32>(
-    (uv.x - 0.5) * scale * aspect * params.xScale + params.offsetX,
+    (uv.x - 0.5) * scale * aspect * xScaleCoord + params.offsetX,
     (uv.y - 0.5) * scale * params.yScale + params.offsetY
   );
   let cGasket = vec2<f32>(

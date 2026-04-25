@@ -53,7 +53,11 @@ export default defineConfig({
     {
       name: 'chromium',
       use: {
-        ...devices['Desktop Chrome'],
+        // Avoid device presets here: they can change DPR/viewport and make canvas snapshots flaky.
+        browserName: 'chromium',
+        viewport: { width: 1280, height: 720 },
+        // Use DPR=2 consistently on retina macOS to match real rendering.
+        deviceScaleFactor: 2,
         launchOptions: {
           args: [
             // WebGL settings for headless mode

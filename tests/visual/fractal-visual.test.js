@@ -15,11 +15,49 @@ FRACTAL_TYPES.forEach((fractalType) => {
   const config = getFractalConfig(fractalType);
 
   test(`Fractal: ${fractalType}`, async ({ page }) => {
+    // Ensure a clean UI state per test run (panels can persist via storage).
+    await page.addInitScript(() => {
+      try {
+        localStorage.clear();
+        sessionStorage.clear();
+      } catch {
+        // ignore
+      }
+    });
+
     // Navigate to the application
     await page.goto('/');
 
     // Wait for the page to be fully loaded
     await page.waitForLoadState('networkidle');
+
+    // Force a stable layout/canvas size for deterministic screenshots.
+    // The app sizes the canvas based on surrounding panels + DPR, which can otherwise vary.
+    await page.addStyleTag({
+      content: `
+        /* Keep panels interactive (we use the controls), but hide visual clutter. */
+        #show-panel-btn,
+        #show-right-panel-btn,
+        .top-action-bar,
+        #fps,
+        #info-panel {
+          display: none !important;
+        }
+
+        .canvas-container {
+          width: 920px !important;
+          height: 720px !important;
+          max-width: 920px !important;
+          max-height: 720px !important;
+        }
+
+        #fractal-canvas {
+          width: 920px !important;
+          height: 720px !important;
+        }
+      `,
+    });
+    await page.evaluate(() => window.dispatchEvent(new Event('resize')));
 
     // Wait for canvas to be ready
     const canvas = page.locator('#fractal-canvas');
@@ -27,17 +65,13 @@ FRACTAL_TYPES.forEach((fractalType) => {
 
     // Select the fractal type from dropdown
     const fractalSelect = page.locator('#fractal-type');
-    await fractalSelect.selectOption(fractalType);
+    await fractalSelect.selectOption(fractalType, { force: true });
 
     // Check if auto-render is enabled - if not, click update button to render
     const autoRender = page.locator('#auto-render');
-    const isAutoRenderChecked = await autoRender.isChecked();
-
-    if (!isAutoRenderChecked) {
-      // Auto-render is disabled, so we need to manually trigger rendering
-      const updateBtn = page.locator('#update-fractal');
-      await updateBtn.click();
-    }
+    // Force auto-render ON so we don't depend on hidden UI buttons.
+    await autoRender.check({ force: true });
+    const isAutoRenderChecked = true;
 
     // Wait for fractal to load (check for loading bar to disappear)
     const loadingBar = page.locator('.loading-bar');
@@ -50,12 +84,12 @@ FRACTAL_TYPES.forEach((fractalType) => {
     // Set iterations if needed
     if (config.iterations !== 125) {
       const iterationsSlider = page.locator('#iterations');
-      await iterationsSlider.fill(config.iterations.toString());
+      await iterationsSlider.fill(config.iterations.toString(), { force: true });
 
       // Trigger update if auto-render is disabled
       if (!isAutoRenderChecked) {
         const updateBtn = page.locator('#update-fractal');
-        await updateBtn.click();
+        await updateBtn.click({ force: true });
         // Wait for loading bar again after iteration change
         try {
           await loadingBar.waitFor({ state: 'hidden', timeout: 10000 });
@@ -71,12 +105,6 @@ FRACTAL_TYPES.forEach((fractalType) => {
 
     // Additional wait for any animations or progressive rendering
     await page.waitForTimeout(500);
-
-    // Hide top action bar buttons, FPS meter, info panel, and right panel button for clean screenshots
-    await page.addStyleTag({
-      content:
-        '.top-action-bar { display: none !important; } #fps { display: none !important; } #info-panel { display: none !important; } #show-right-panel-btn { display: none !important; }',
-    });
 
     // Ensure canvas is fully rendered by checking for stable image
     // We'll take multiple screenshots and compare to ensure stability
