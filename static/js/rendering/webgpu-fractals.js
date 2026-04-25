@@ -15,7 +15,11 @@ const WEBGPU_FIRST_FRACTALS = new Set([
   'lambda-julia',
   'hybrid-julia',
   // Sierpinski family (WebGPU-first)
-  // NOTE: Pixel-based Sierpinski variants still use WebGL for now (WebGPU output is black).
+  // NOTE: If any of these regress in snapshots, move them back to WebGL.
+  'menger-carpet',
+  'sierpinski-pentagon',
+  'sierpinski-tetrahedron',
+  'sierpinski-gasket',
   'sierpinski-arrowhead',
   'sierpinski-curve',
   'sierpinski-lsystem',
