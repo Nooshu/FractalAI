@@ -1,0 +1,23 @@
+version: 2
+updates:
+  # Keep GitHub Actions up to date (security + bugfixes)
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "02:30"
+      timezone: "UTC"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+
+  # Keep npm dependencies up to date. Renovate handles most updates already,
+  # but this provides a backstop (and ensures Dependabot security updates too).
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
