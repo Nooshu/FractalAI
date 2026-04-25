@@ -133,7 +133,7 @@ export class LumaFractalRenderer {
   constructor(device) {
     this.device = device;
     this._cache = new Map();
-    this._palette = new Map(); // colorScheme -> {texture, sampler}
+    this._palette = new Map(); // colorScheme -> {texture}
 
     // Fullscreen quad (triangle strip)
     this._quadBuffer = device.createBuffer({
@@ -163,7 +163,6 @@ export class LumaFractalRenderer {
     for (const v of this._palette.values()) {
       try {
         v.texture?.destroy();
-        v.sampler?.destroy?.();
       } catch {
         // ignore
       }
@@ -185,15 +184,7 @@ export class LumaFractalRenderer {
     });
     texture.writeData(bytes, { width: PALETTE_SIZE, height: 1, bytesPerRow: PALETTE_SIZE * 4 });
 
-    // Use texture default sampler, but we keep an explicit sampler for binding clarity.
-    const sampler = this.device.createSampler({
-      magFilter: 'linear',
-      minFilter: 'linear',
-      addressModeU: 'clamp-to-edge',
-      addressModeV: 'clamp-to-edge',
-    });
-
-    const entry = { texture, sampler };
+    const entry = { texture };
     this._palette.set(colorScheme, entry);
     return entry;
   }
@@ -231,7 +222,6 @@ export class LumaFractalRenderer {
           { name: 'FrameParams', type: 'uniform', group: 0, location: 0 },
           { name: 'FractalParams', type: 'uniform', group: 0, location: 1 },
           { name: 'uPalette', type: 'texture', group: 0, location: 2 },
-          { name: 'uPaletteSampler', type: 'sampler', group: 0, location: 3 },
         ],
       },
       bufferLayout: [{ name: 'position', byteStride: 8, attributes: [{ location: 0, format: 'float32x2' }] }],
@@ -263,7 +253,7 @@ export class LumaFractalRenderer {
       record.fractalParams.write(packFractalParamsStd140(p));
       record.frameParams.write(packFrameParamsStd140(canvas, 0));
 
-      const { texture, sampler } = this._getPalette(p.colorScheme);
+      const { texture } = this._getPalette(p.colorScheme);
 
       const renderPass = this.device.beginRenderPass({
         clearColor: [0, 0, 0, 1],
@@ -277,7 +267,6 @@ export class LumaFractalRenderer {
           FrameParams: record.frameParams,
           FractalParams: record.fractalParams,
           uPalette: texture,
-          uPaletteSampler: sampler,
         },
       });
 
