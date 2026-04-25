@@ -27,5 +27,6 @@ jobs:
           RENOVATE_FORCE: ${{ github.event_name == 'workflow_dispatch' && '{"schedule":[]}' || '' }}
           RENOVATE_REPOSITORIES: '["Nooshu/FractalAI"]'
           RENOVATE_AUTODISCOVER: 'true'
+          RENOVATE_AUTODISCOVER_FILTER: '^Nooshu/FractalAI$'
           RENOVATE_GIT_AUTHOR: 'Matt Hobbs <matt@nooshu.com>'
 
