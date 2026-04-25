@@ -22,6 +22,7 @@ export class RenderingEngine {
     this.getCurrentFractalType = getters.getCurrentFractalType;
     this.getParams = getters.getParams;
     this.getRegl = getters.getRegl;
+    this.getLumaDevice = getters.getLumaDevice;
     this.getCanvas = getters.getCanvas;
     this.getDrawFractal = getters.getDrawFractal;
     this.getNeedsRender = getters.getNeedsRender;
@@ -80,6 +81,7 @@ export class RenderingEngine {
    */
   renderFractalProgressive(startIterations = null) {
     const regl = this.getRegl();
+    const lumaDevice = this.getLumaDevice ? this.getLumaDevice() : null;
     const canvas = this.getCanvas();
     const currentFractalModule = this.getCurrentFractalModule();
     const params = this.getParams();
@@ -89,6 +91,21 @@ export class RenderingEngine {
     if (webgpuRenderer && isWebGPUFirstFractalType(fractalType)) {
       // WebGPU path doesn't use progressive iterations yet; render at current params.
       this.renderFractal();
+      return;
+    }
+
+    const canUseLuma =
+      !!lumaDevice && !!currentFractalModule?.renderLuma && !this.getWebGPURenderer?.();
+
+    if (canUseLuma) {
+      // For luma.gl path we currently skip framebuffer caching and progressive iteration stepping
+      // is handled by draw function supporting override params.
+      updatePixelRatio(canvas, params.zoom);
+      const draw = currentFractalModule.renderLuma(lumaDevice, params, canvas, {});
+      this.setDrawFractal(draw);
+      if (draw) draw();
+      this.setIsProgressiveRendering(false);
+      hideLoadingBar();
       return;
     }
 
@@ -264,6 +281,7 @@ export class RenderingEngine {
    */
   renderFractal() {
     const regl = this.getRegl();
+    const lumaDevice = this.getLumaDevice ? this.getLumaDevice() : null;
     const canvas = this.getCanvas();
     const currentFractalModule = this.getCurrentFractalModule();
     const params = this.getParams();
@@ -284,6 +302,17 @@ export class RenderingEngine {
         });
       void p;
       this.setNeedsRender(false);
+      return;
+    }
+
+    if (lumaDevice && currentFractalModule?.renderLuma) {
+      showLoadingBar();
+      updatePixelRatio(canvas, params.zoom);
+      const draw = currentFractalModule.renderLuma(lumaDevice, params, canvas, {});
+      this.setDrawFractal(draw);
+      if (draw) draw();
+      this.setNeedsRender(false);
+      hideLoadingBar();
       return;
     }
 
@@ -963,12 +992,20 @@ export class RenderingEngine {
     }
 
     const regl = this.getRegl();
+    const lumaDevice = this.getLumaDevice ? this.getLumaDevice() : null;
     const canvas = this.getCanvas();
     const currentFractalModule = this.getCurrentFractalModule();
     const params = this.getParams();
     const fractalType = this.getCurrentFractalType();
 
-    if (!regl || !canvas || !currentFractalModule || !currentFractalModule.render) {
+    if ((!regl && !lumaDevice) || !canvas || !currentFractalModule) {
+      return;
+    }
+    if (lumaDevice && currentFractalModule.renderLuma) {
+      // Predictive rendering currently relies on regl framebuffers; skip for luma path.
+      return;
+    }
+    if (!regl || !currentFractalModule.render) {
       return;
     }
 

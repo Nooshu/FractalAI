@@ -33,16 +33,18 @@
     "test:visual:report": "playwright show-report"
   },
   "dependencies": {
+    "@luma.gl/core": "^9.3.3",
+    "@luma.gl/webgl": "^9.3.3",
     "piexifjs": "1.0.6",
     "regl": "2.1.1",
     "synaptic": "1.1.4"
   },
   "devDependencies": {
-    "@playwright/test": "1.59.1",
     "@eslint/js": "10.0.1",
+    "@playwright/test": "1.59.1",
     "@vitest/coverage-v8": "4.1.4",
-    "eslint": "10.2.1",
     "esbuild": "0.28.0",
+    "eslint": "10.2.1",
     "jsdom": "29.0.2",
     "prettier": "3.8.3",
     "stylelint": "17.8.0",

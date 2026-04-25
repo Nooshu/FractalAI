@@ -156,6 +156,16 @@ async function initCanvasAndRenderer(appState) {
   appState.setUpdateRendererSize(updateSize);
   appState.setWebGLCapabilities(webglCapabilities);
 
+  // Attach luma.gl device to the WebGL2 context (incremental migration path).
+  if (reglContext?._gl && webglCapabilities?.isWebGL2) {
+    import('../rendering/luma-device.js').then(({ attachLumaDevice }) => {
+      const device = attachLumaDevice(reglContext._gl);
+      if (device) {
+        appState.setLumaDevice(device);
+      }
+    });
+  }
+
   // Store WebGPU renderer if available
   if (webgpuRenderer) {
     appState.setWebGPURenderer(webgpuRenderer);
@@ -416,6 +426,7 @@ async function initCanvasAndRenderer(appState) {
         }
       }
       appState.setRegl(null);
+      appState.setLumaDevice(null);
 
       const prevWebGPU = appState.getWebGPURenderer();
       if (prevWebGPU?.destroy) {
@@ -428,6 +439,7 @@ async function initCanvasAndRenderer(appState) {
       appState.setWebGPURenderer(null);
       appState.setWebGLCapabilities(null);
       appState.setFractalParamsUBO(null);
+      appState.setLumaDevice(null);
 
       const result = await initCanvasRenderer('fractal-canvas', {
         getZoom: () => appState.getParams().zoom,
@@ -453,6 +465,12 @@ async function initCanvasAndRenderer(appState) {
         try {
           const caps = detectWebGLCapabilities(result.regl._gl);
           appState.setWebGLCapabilities(caps);
+
+          if (caps?.isWebGL2) {
+            const { attachLumaDevice } = await import('../rendering/luma-device.js');
+            const device = attachLumaDevice(result.regl._gl);
+            appState.setLumaDevice(device);
+          }
 
           if (caps?.isWebGL2) {
             const { createFractalParamsUBO } = await import('../rendering/uniform-buffer.js');
