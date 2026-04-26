@@ -81,6 +81,15 @@ fn fmod3(x: vec3<f32>, y: f32) -> vec3<f32> {
   return x - vec3<f32>(y) * floor(x / vec3<f32>(y));
 }
 
+fn fract(x: f32) -> f32 {
+  return x - floor(x);
+}
+
+fn hashNoise(p: vec2<f32>) -> f32 {
+  // GLSL-like: fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453)
+  return fract(sin(dot(p, vec2<f32>(12.9898, 78.233))) * 43758.5453);
+}
+
 fn barycentric(p: vec2<f32>, a: vec2<f32>, b: vec2<f32>, c: vec2<f32>) -> vec3<f32> {
   let v0 = c - a;
   let v1 = b - a;
@@ -95,6 +104,54 @@ fn barycentric(p: vec2<f32>, a: vec2<f32>, b: vec2<f32>, c: vec2<f32>) -> vec3<f
   let u = (dot11 * dot02 - dot01 * dot12) * invDenom;
   let v = (dot00 * dot12 - dot01 * dot02) * invDenom;
   return vec3<f32>(1.0 - u - v, v, u);
+}
+
+fn rotate(v: vec2<f32>, angle: f32) -> vec2<f32> {
+  let c = cos(angle);
+  let s = sin(angle);
+  return vec2<f32>(c * v.x - s * v.y, s * v.x + c * v.y);
+}
+
+fn isInsideRhombus(p: vec2<f32>, center: vec2<f32>, v1: vec2<f32>, v2: vec2<f32>) -> bool {
+  let rel = p - center;
+  let a = dot(rel, v1);
+  let b = dot(rel, v2);
+  let v1Len = length(v1);
+  let v2Len = length(v2);
+  return abs(a) <= v1Len * 0.5 && abs(b) <= v2Len * 0.5;
+}
+
+fn isInsideRectangle(p: vec2<f32>, center: vec2<f32>, v1: vec2<f32>, v2: vec2<f32>) -> bool {
+  // Same test as rhombus/rectangle in GLSL modules.
+  return isInsideRhombus(p, center, v1, v2);
+}
+
+fn isInsideTriangle(p: vec2<f32>, v0: vec2<f32>, v1: vec2<f32>, v2: vec2<f32>) -> bool {
+  let v0v1 = v1 - v0;
+  let v0v2 = v2 - v0;
+  let v0p = p - v0;
+  let dot00 = dot(v0v2, v0v2);
+  let dot01 = dot(v0v2, v0v1);
+  let dot02 = dot(v0v2, v0p);
+  let dot11 = dot(v0v1, v0v1);
+  let dot12 = dot(v0v1, v0p);
+  let denom = dot00 * dot11 - dot01 * dot01;
+  let invDenom = 1.0 / max(denom, 1e-20);
+  let u = (dot11 * dot02 - dot01 * dot12) * invDenom;
+  let v = (dot00 * dot12 - dot01 * dot02) * invDenom;
+  return (u >= 0.0) && (v >= 0.0) && (u + v <= 1.0);
+}
+
+fn isInsideHexagon(p: vec2<f32>, center: vec2<f32>, size: f32) -> bool {
+  let PI: f32 = 3.14159265359;
+  let rel = p - center;
+  let angle = atan2(rel.y, rel.x);
+  let dist = length(rel);
+  let angle60 = PI / 3.0;
+  // normalizedAngle = mod(angle + PI, angle60 * 2) - angle60
+  let normalizedAngle = fmod(angle + PI, angle60 * 2.0) - angle60;
+  let edgeDist = size * 0.5 / cos(normalizedAngle);
+  return dist <= edgeDist;
 }
 
 fn polygonVertex(n: u32, i: u32) -> vec2<f32> {
@@ -360,7 +417,8 @@ fn main(@builtin(global_invocation_id) gid: vec3<u32>) {
   // Pixel/shader fractals we implement in compute:
   // 20..26: Sierpinski pixel family (currently not enabled via allowlist)
   // 30: fractal-islands
-  if ((params.kind >= 20u && params.kind <= 26u) || params.kind == 30u) {
+  // 60..64: tilings family (aperiodic/domino/pinwheel/rhombic/snowflake)
+  if ((params.kind >= 20u && params.kind <= 26u) || params.kind == 30u || (params.kind >= 60u && params.kind <= 64u)) {
     let maxIter = max(1u, params.iterations);
     var iterValue: f32 = 0.0;
     if (params.kind == 20u) {
@@ -430,6 +488,318 @@ fn main(@builtin(global_invocation_id) gid: vec3<u32>) {
         }
         iterValue = fmod(depth * 7.0, f32(maxIter) * 0.9);
       }
+    } else if (params.kind == 60u) {
+      // aperiodic-tilings
+      let PHI: f32 = 1.618033988749;
+      let PI: f32 = 3.14159265359;
+      let scale = 3.0 + params.yScale * 4.0;
+      let p = c * scale;
+      let levels = u32(clamp(f32(maxIter) / 20.0, 2.0, 8.0));
+      let baseSize: f32 = 3.0;
+      let rotation = params.xScale * PI * 2.0;
+      var pattern: f32 = 0.0;
+      var level: u32 = 0u;
+      loop {
+        if (level >= levels || level >= 8u) { break; }
+        let scaleFactor = mix(2.0, PHI, fmod(f32(level), 2.0));
+        let currentSize = baseSize / pow(scaleFactor, f32(level));
+        var numTiles: u32 = 1u;
+        if (level > 0u) {
+          numTiles = u32(pow(6.0, f32(level - 1u))) + 1u;
+        }
+        var found = false;
+        var i: u32 = 0u;
+        loop {
+          if (i >= numTiles || i >= 50u) { break; }
+          let goldenAngle: f32 = 2.399963229728653;
+          let angle = f32(i) * goldenAngle + rotation;
+          let radius = currentSize * sqrt(f32(i)) * 0.35;
+          let tileCenter = vec2<f32>(cos(angle), sin(angle)) * radius;
+          let hexSize = currentSize * 0.85;
+          if (isInsideHexagon(p, tileCenter, hexSize)) {
+            let dist = length(p - tileCenter) / currentSize;
+            pattern = mix(f32(level) / max(1.0, f32(levels)), 1.0 - dist, 0.7);
+            found = true;
+            break;
+          }
+          let rhombAngle1 = PI / 6.0 + f32(level) * 0.1;
+          let rhombAngle2 = PI / 3.0 - f32(level) * 0.05;
+          let v1 = rotate(vec2<f32>(currentSize, 0.0), angle + rhombAngle1);
+          let v2 = rotate(vec2<f32>(currentSize * 1.2, 0.0), angle - rhombAngle2);
+          if (isInsideRhombus(p, tileCenter, v1, v2)) {
+            let dist = length(p - tileCenter) / currentSize;
+            pattern = mix(f32(level) / max(1.0, f32(levels)), 1.0 - dist, 0.7);
+            found = true;
+            break;
+          }
+          let v3 = rotate(vec2<f32>(currentSize * 0.9, 0.0), angle + PI / 4.0);
+          let v4 = rotate(vec2<f32>(currentSize * 0.9 * 1.4142135623730951, 0.0), angle - PI / 4.0);
+          if (isInsideRhombus(p, tileCenter, v3, v4)) {
+            let dist = length(p - tileCenter) / currentSize;
+            pattern = mix(f32(level) / max(1.0, f32(levels)), 1.0 - dist, 0.7);
+            found = true;
+            break;
+          }
+          let v5 = rotate(vec2<f32>(currentSize * PHI * 0.7, 0.0), angle + PI / 5.0);
+          let v6 = rotate(vec2<f32>(currentSize * 0.7, 0.0), angle - PI / 5.0);
+          if (isInsideRhombus(p, tileCenter, v5, v6)) {
+            let dist = length(p - tileCenter) / currentSize;
+            pattern = mix(f32(level) / max(1.0, f32(levels)), 1.0 - dist, 0.7);
+            found = true;
+            break;
+          }
+          i = i + 1u;
+        }
+        if (found) { break; }
+        level = level + 1u;
+      }
+      let noise = hashNoise(p) * 0.1;
+      let result = pattern + noise;
+      iterValue = result * f32(maxIter);
+    } else if (params.kind == 61u) {
+      // domino-substitution
+      let PI: f32 = 3.14159265359;
+      let scale = 3.0 + params.yScale * 3.0;
+      let p = c * scale;
+      let levels = u32(clamp(f32(maxIter) / 20.0, 2.0, 8.0));
+      let baseSize: f32 = 3.0;
+      let rotation = params.xScale * PI * 2.0;
+      var pattern: f32 = 0.0;
+      var level: u32 = 0u;
+      loop {
+        if (level >= levels || level >= 8u) { break; }
+        let currentSize = baseSize / pow(2.0, f32(level));
+        var numTiles: u32 = 1u;
+        if (level > 0u) {
+          numTiles = u32(pow(4.0, f32(level - 1u))) + 1u;
+        }
+        var found = false;
+        var i: u32 = 0u;
+        loop {
+          if (i >= numTiles || i >= 50u) { break; }
+          let angle = f32(i) * PI / 2.0 + rotation;
+          let radius = currentSize * sqrt(f32(i)) * 0.4;
+          let tileCenter = vec2<f32>(cos(angle), sin(angle)) * radius;
+          let dominoWidth = currentSize * 1.8;
+          let dominoHeight = currentSize * 0.9;
+          let v1 = rotate(vec2<f32>(dominoWidth, 0.0), angle);
+          let v2 = rotate(vec2<f32>(0.0, dominoHeight), angle);
+          if (isInsideRectangle(p, tileCenter, v1, v2)) {
+            let dist = length(p - tileCenter) / currentSize;
+            pattern = mix(f32(level) / max(1.0, f32(levels)), 1.0 - dist, 0.7);
+            found = true;
+            break;
+          }
+          let dominoWidth2 = currentSize * 0.9;
+          let dominoHeight2 = currentSize * 1.8;
+          let v3 = rotate(vec2<f32>(dominoWidth2, 0.0), angle);
+          let v4 = rotate(vec2<f32>(0.0, dominoHeight2), angle);
+          if (isInsideRectangle(p, tileCenter, v3, v4)) {
+            let dist = length(p - tileCenter) / currentSize;
+            pattern = mix(f32(level) / max(1.0, f32(levels)), 1.0 - dist, 0.7);
+            found = true;
+            break;
+          }
+          let dominoSize = currentSize * 1.2;
+          let v5 = rotate(vec2<f32>(dominoSize, 0.0), angle + PI / 4.0);
+          let v6 = rotate(vec2<f32>(0.0, dominoSize * 0.5), angle + PI / 4.0);
+          if (isInsideRectangle(p, tileCenter, v5, v6)) {
+            let dist = length(p - tileCenter) / currentSize;
+            pattern = mix(f32(level) / max(1.0, f32(levels)), 1.0 - dist, 0.7);
+            found = true;
+            break;
+          }
+          i = i + 1u;
+        }
+        if (found) { break; }
+        level = level + 1u;
+      }
+      let noise = hashNoise(p) * 0.1;
+      let result = pattern + noise;
+      iterValue = result * f32(maxIter);
+    } else if (params.kind == 62u) {
+      // pinwheel-tiling
+      let iterations = u32(clamp(f32(maxIter) / 20.0, 1.0, 6.0));
+      var pos = clamp(c * 0.5 + vec2<f32>(0.5), vec2<f32>(0.0), vec2<f32>(1.0));
+      let baseSize: f32 = 1.0;
+      var v0 = vec2<f32>(0.0, 0.0);
+      var v1 = vec2<f32>(baseSize, 0.0);
+      var v2 = vec2<f32>(0.0, baseSize * 2.0);
+      let trianglePos = vec2<f32>(
+        pos.x * baseSize,
+        pos.y * baseSize * 2.0 * (1.0 - pos.x * 0.5)
+      );
+      if (!isInsideTriangle(trianglePos, v0, v1, v2)) {
+        iterValue = 0.0;
+      } else {
+        var depth: f32 = 0.0;
+        var currentPos = trianglePos;
+        var currentV0 = v0;
+        var currentV1 = v1;
+        var currentV2 = v2;
+        var i: u32 = 0u;
+        loop {
+          if (i >= iterations || i >= 6u) { break; }
+          let mid01 = (currentV0 + currentV1) * 0.5;
+          let mid02 = (currentV0 + currentV2) * 0.5;
+          let mid12 = (currentV1 + currentV2) * 0.5;
+          var found = false;
+          if (isInsideTriangle(currentPos, currentV0, mid01, mid02)) {
+            currentV0 = currentV0;
+            currentV1 = mid01;
+            currentV2 = mid02;
+            depth = depth + 1.0;
+            found = true;
+          } else if (isInsideTriangle(currentPos, mid01, currentV1, mid12)) {
+            currentV0 = mid01;
+            currentV1 = currentV1;
+            currentV2 = mid12;
+            depth = depth + 2.0;
+            found = true;
+          } else if (isInsideTriangle(currentPos, mid02, mid12, currentV2)) {
+            currentV0 = mid02;
+            currentV1 = mid12;
+            currentV2 = currentV2;
+            depth = depth + 3.0;
+            found = true;
+          } else if (isInsideTriangle(currentPos, mid01, mid02, mid12)) {
+            currentV0 = mid01;
+            currentV1 = mid02;
+            currentV2 = mid12;
+            depth = depth + 4.0;
+            found = true;
+          } else if (isInsideTriangle(currentPos, mid02, mid01, mid12)) {
+            currentV0 = mid02;
+            currentV1 = mid01;
+            currentV2 = mid12;
+            depth = depth + 5.0;
+            found = true;
+          }
+          if (!found) {
+            break;
+          }
+          i = i + 1u;
+        }
+        iterValue = depth * 12.0 + f32(iterations) * 8.0;
+      }
+    } else if (params.kind == 63u) {
+      // rhombic-tiling
+      let PHI: f32 = 1.618033988749;
+      let PI: f32 = 3.14159265359;
+      let scale = 2.0 + params.yScale * 3.0;
+      let p = c * scale;
+      let levels = u32(clamp(f32(maxIter) / 25.0, 2.0, 8.0));
+      let baseSize: f32 = 2.5;
+      let rotation = params.xScale * PI * 2.0;
+      var pattern: f32 = 0.0;
+      var level: u32 = 0u;
+      loop {
+        if (level >= levels || level >= 8u) { break; }
+        let currentSize = baseSize / pow(PHI, f32(level));
+        var numTiles: u32 = 1u;
+        if (level > 0u) {
+          numTiles = u32(pow(5.0, f32(level - 1u))) + 1u;
+        }
+        var found = false;
+        var i: u32 = 0u;
+        loop {
+          if (i >= numTiles || i >= 50u) { break; }
+          let angle = f32(i) * PI * 2.0 / 5.0 + rotation;
+          let radius = currentSize * sqrt(f32(i)) * 0.4;
+          let tileCenter = vec2<f32>(cos(angle), sin(angle)) * radius;
+          let thickAngle = PI / 5.0;
+          let v1 = rotate(vec2<f32>(currentSize, 0.0), angle + thickAngle);
+          let v2 = rotate(vec2<f32>(currentSize * PHI, 0.0), angle - thickAngle);
+          if (isInsideRhombus(p, tileCenter, v1, v2)) {
+            let dist = length(p - tileCenter) / currentSize;
+            pattern = mix(f32(level) / max(1.0, f32(levels)), 1.0 - dist, 0.7);
+            found = true;
+            break;
+          }
+          let thinAngle = PI / 10.0;
+          let v3 = rotate(vec2<f32>(currentSize * PHI, 0.0), angle + thinAngle);
+          let v4 = rotate(vec2<f32>(currentSize, 0.0), angle - thinAngle);
+          if (isInsideRhombus(p, tileCenter, v3, v4)) {
+            let dist = length(p - tileCenter) / currentSize;
+            pattern = mix(f32(level) / max(1.0, f32(levels)), 1.0 - dist, 0.7);
+            found = true;
+            break;
+          }
+          let v5 = rotate(vec2<f32>(currentSize * 0.8, 0.0), angle + PI / 6.0);
+          let v6 = rotate(vec2<f32>(currentSize * 0.8 * PHI, 0.0), angle - PI / 6.0);
+          if (isInsideRhombus(p, tileCenter, v5, v6)) {
+            let dist = length(p - tileCenter) / currentSize;
+            pattern = mix(f32(level) / max(1.0, f32(levels)), 1.0 - dist, 0.7);
+            found = true;
+            break;
+          }
+          i = i + 1u;
+        }
+        if (found) { break; }
+        level = level + 1u;
+      }
+      let noise = hashNoise(p) * 0.1;
+      let result = pattern + noise;
+      iterValue = result * f32(maxIter);
+    } else if (params.kind == 64u) {
+      // snowflake-tiling
+      let PI: f32 = 3.14159265359;
+      let SQRT3: f32 = 1.7320508075688772;
+      let scale = 3.0 + params.yScale * 3.0;
+      let p = c * scale;
+      let levels = u32(clamp(f32(maxIter) / 20.0, 2.0, 8.0));
+      let baseSize: f32 = 3.0;
+      let rotation = params.xScale * PI * 2.0;
+      var pattern: f32 = 0.0;
+      var level: u32 = 0u;
+      loop {
+        if (level >= levels || level >= 8u) { break; }
+        let currentSize = baseSize / pow(2.0, f32(level));
+        var numTiles: u32 = 1u;
+        if (level > 0u) {
+          numTiles = u32(pow(6.0, f32(level - 1u))) + 1u;
+        }
+        var found = false;
+        var i: u32 = 0u;
+        loop {
+          if (i >= numTiles || i >= 50u) { break; }
+          let angle = f32(i) * PI / 3.0 + rotation;
+          let radius = currentSize * sqrt(f32(i)) * 0.3;
+          let tileCenter = vec2<f32>(cos(angle), sin(angle)) * radius;
+          let hexSize = currentSize * 0.9;
+          if (isInsideHexagon(p, tileCenter, hexSize)) {
+            let dist = length(p - tileCenter) / currentSize;
+            pattern = mix(f32(level) / max(1.0, f32(levels)), 1.0 - dist, 0.7);
+            found = true;
+            break;
+          }
+          let triSize = currentSize * 0.8;
+          let v0 = tileCenter;
+          let v1 = tileCenter + rotate(vec2<f32>(triSize, 0.0), angle);
+          let v2 = tileCenter + rotate(vec2<f32>(triSize * 0.5, triSize * SQRT3 * 0.5), angle);
+          if (isInsideTriangle(p, v0, v1, v2)) {
+            let dist = length(p - tileCenter) / currentSize;
+            pattern = mix(f32(level) / max(1.0, f32(levels)), 1.0 - dist, 0.7);
+            found = true;
+            break;
+          }
+          let v3 = tileCenter;
+          let v4 = tileCenter + rotate(vec2<f32>(triSize * 0.7, 0.0), angle + PI / 6.0);
+          let v5 = tileCenter + rotate(vec2<f32>(triSize * 0.35, triSize * SQRT3 * 0.35), angle + PI / 6.0);
+          if (isInsideTriangle(p, v3, v4, v5)) {
+            let dist = length(p - tileCenter) / currentSize;
+            pattern = mix(f32(level) / max(1.0, f32(levels)), 1.0 - dist, 0.7);
+            found = true;
+            break;
+          }
+          i = i + 1u;
+        }
+        if (found) { break; }
+        level = level + 1u;
+      }
+      let noise = hashNoise(p) * 0.1;
+      let result = pattern + noise;
+      iterValue = result * f32(maxIter);
     }
     // iterValue is produced by the selected fractal kernel above
 
@@ -1088,6 +1458,16 @@ export class WebGPURenderer {
                                     ? 26
                                     : fractalType === 'fractal-islands'
                                       ? 30
+                                      : fractalType === 'aperiodic-tilings'
+                                        ? 60
+                                        : fractalType === 'domino-substitution'
+                                          ? 61
+                                          : fractalType === 'pinwheel-tiling'
+                                            ? 62
+                                            : fractalType === 'rhombic-tiling'
+                                              ? 63
+                                              : fractalType === 'snowflake-tiling'
+                                                ? 64
                   : 0;
 
     const isMultibrot = kind === 2 || kind === 3;

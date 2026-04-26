@@ -27,6 +27,12 @@ const WEBGPU_FIRST_FRACTALS = new Set([
   'koch',
   'quadratic-koch',
   'fractal-islands',
+  // Tiling family (WebGPU-first)
+  'aperiodic-tilings',
+  'domino-substitution',
+  'pinwheel-tiling',
+  'rhombic-tiling',
+  'snowflake-tiling',
 ]);
 
 export function isWebGPUFirstFractalType(fractalType) {
