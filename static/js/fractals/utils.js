@@ -902,7 +902,8 @@ export async function getInterestingBounds(fractalType, fractalModule = null) {
  */
 export function createStandardDrawCommand(regl, params, canvas, fragmentShader, options = {}) {
   const paletteTexture = generatePaletteTexture(regl, params.colorScheme);
-  const vertexShaderSource = options.vertexShader || vertexShader;
+  const useUBO = options.webglCapabilities?.isWebGL2 && options.ubo;
+  const vertexShaderSource = options.vertexShader || getVertexShader(!!useUBO);
 
   // Use persistent vertex buffer for better performance
   const quadBuffer = getFullScreenQuadBuffer(regl);
@@ -916,16 +917,21 @@ export function createStandardDrawCommand(regl, params, canvas, fragmentShader, 
   }
 
   function buildUniformProps(p) {
-    return {
+    const base = {
       uTime: options.uTime ?? 0,
       uIterations: p.iterations,
       uZoom: p.zoom,
       uOffset: [p.offset.x, p.offset.y],
       uResolution: [canvas.width, canvas.height],
       uJuliaC: buildJuliaC(p),
-      uXScale: p.xScale,
-      uYScale: p.yScale,
     };
+    if (useUBO) {
+      base.uScale = [p.xScale, p.yScale];
+    } else {
+      base.uXScale = p.xScale;
+      base.uYScale = p.yScale;
+    }
+    return base;
   }
 
   // Single compiled pipeline; uniforms supplied per draw via regl.prop (avoids
@@ -934,19 +940,32 @@ export function createStandardDrawCommand(regl, params, canvas, fragmentShader, 
     vert: vertexShaderSource,
     frag: fragmentShader,
     attributes: {
-      position: quadBuffer, // Reuse persistent buffer instead of inline data
+      // Reuse persistent buffer instead of inline data.
+      // Explicit `size: 2` avoids WebGL attribute binding/link issues across drivers.
+      position: { buffer: quadBuffer, size: 2 },
     },
-    uniforms: {
-      uTime: regl.prop('uTime'),
-      uIterations: regl.prop('uIterations'),
-      uZoom: regl.prop('uZoom'),
-      uOffset: regl.prop('uOffset'),
-      uResolution: regl.prop('uResolution'),
-      uJuliaC: regl.prop('uJuliaC'),
-      uPalette: paletteTexture,
-      uXScale: regl.prop('uXScale'),
-      uYScale: regl.prop('uYScale'),
-    },
+    uniforms: useUBO
+      ? {
+          uTime: regl.prop('uTime'),
+          uIterations: regl.prop('uIterations'),
+          uZoom: regl.prop('uZoom'),
+          uOffset: regl.prop('uOffset'),
+          uResolution: regl.prop('uResolution'),
+          uJuliaC: regl.prop('uJuliaC'),
+          uPalette: paletteTexture,
+          uScale: regl.prop('uScale'),
+        }
+      : {
+          uTime: regl.prop('uTime'),
+          uIterations: regl.prop('uIterations'),
+          uZoom: regl.prop('uZoom'),
+          uOffset: regl.prop('uOffset'),
+          uResolution: regl.prop('uResolution'),
+          uJuliaC: regl.prop('uJuliaC'),
+          uPalette: paletteTexture,
+          uXScale: regl.prop('uXScale'),
+          uYScale: regl.prop('uYScale'),
+        },
     viewport: {
       x: 0,
       y: 0,
@@ -1131,7 +1150,9 @@ export function createFragmentShader(fractalFunction, useUBO = false, precision 
   const calcPrecision = precision === 'highp' ? 'highp' : precision === 'lowp' ? 'lowp' : 'mediump';
   const colorPrecision = 'lowp'; // Colors don't need high precision
 
-  // WebGL2 UBO version
+  // WebGL2 (GLSL 300) version
+  // Note: Keep parameters as regular uniforms rather than a UBO.
+  // Some render paths don’t have a reliable per-program UBO bind hook in regl.
   if (useUBO) {
     return `#version 300 es
     #ifdef GL_ES
@@ -1139,13 +1160,11 @@ export function createFragmentShader(fractalFunction, useUBO = false, precision 
     precision ${colorPrecision} sampler2D; // For texture lookups
     #endif
 
-    layout(std140) uniform FractalParams {
-      float uIterations;
-      float uZoom;
-      vec2 uOffset;
-      vec2 uJuliaC;
-      vec2 uScale; // xScale, yScale
-    };
+    uniform float uIterations;
+    uniform float uZoom;
+    uniform vec2 uOffset;
+    uniform vec2 uJuliaC;
+    uniform vec2 uScale; // xScale, yScale
 
     // Provide aliases for compatibility with fractal functions
     #define uXScale uScale.x

@@ -1,4 +1,5 @@
 import { getVertexShader, generatePaletteTexture } from '../utils.js';
+import { createLumaDrawCommandFromFragmentSource } from '../luma-utils.js';
 
 // Helper function to create UBO-aware fragment shader for hybrid-julia
 function createHybridJuliaFragmentShader(useUBO) {
@@ -229,6 +230,17 @@ export function render(regl, params, canvas, options = {}) {
         }
       : {}),
   });
+}
+
+export function renderLuma(device, params, canvas) {
+  const fragmentShader = createHybridJuliaFragmentShader(true);
+  return createLumaDrawCommandFromFragmentSource(
+    device,
+    'hybrid-julia',
+    fragmentShader,
+    params,
+    canvas
+  );
 }
 
 export const is2D = true;

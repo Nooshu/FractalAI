@@ -33,5 +33,25 @@ export function createOptimizedFramebuffer(regl, width, height, _webglCapabiliti
     stencil: false,
   });
 
+  // regl throws if `.destroy()` is called more than once.
+  // In fast resize / multi-resolution flows it’s easy for two cleanup paths to race,
+  // so make framebuffer destruction idempotent.
+  const originalDestroy = framebuffer.destroy?.bind(framebuffer);
+  if (originalDestroy) {
+    let destroyed = false;
+    framebuffer.destroy = () => {
+      // regl marks internal handles on destroy; avoid calling into regl if already gone.
+      // (These are non-public but stable enough for a safety guard in our app code.)
+      if (framebuffer._destroyed || framebuffer._framebuffer == null) return;
+      if (destroyed) return;
+      destroyed = true;
+      try {
+        originalDestroy();
+      } catch (_error) {
+        // best-effort cleanup
+      }
+    };
+  }
+
   return framebuffer;
 }

@@ -1,4 +1,5 @@
 import { getVertexShader, generatePaletteTexture } from '../utils.js';
+import { createLumaDrawCommandFromFragmentSource } from '../luma-utils.js';
 
 // Helper function to create UBO-aware fragment shader for multibrot
 // Multibrot needs custom handling: xScale is used for order, not coordinate transformation
@@ -222,6 +223,11 @@ export function render(regl, params, canvas, options = {}) {
         }
       : {}),
   });
+}
+
+export function renderLuma(device, params, canvas) {
+  const fragmentShader = createMultibrotFragmentShader(true);
+  return createLumaDrawCommandFromFragmentSource(device, 'multibrot', fragmentShader, params, canvas);
 }
 
 export const is2D = true;

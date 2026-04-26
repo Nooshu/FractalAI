@@ -9,6 +9,8 @@ import { updatePixelRatio } from './pixel-ratio.js';
 import { incrementFrameCount } from '../performance/fps-tracker.js';
 import { performanceInstrumentation } from '../performance/instrumentation.js';
 import { createOptimizedFramebuffer } from './framebuffer-utils.js';
+import { isWebGPUFirstFractalType } from './webgpu-fractals.js';
+import { setRendererBackendTag } from '../ui/renderer-backend-tag.js';
 
 /**
  * Rendering Engine class
@@ -21,6 +23,7 @@ export class RenderingEngine {
     this.getCurrentFractalType = getters.getCurrentFractalType;
     this.getParams = getters.getParams;
     this.getRegl = getters.getRegl;
+    this.getLumaDevice = getters.getLumaDevice;
     this.getCanvas = getters.getCanvas;
     this.getDrawFractal = getters.getDrawFractal;
     this.getNeedsRender = getters.getNeedsRender;
@@ -31,6 +34,7 @@ export class RenderingEngine {
     this.getTargetIterations = getters.getTargetIterations;
     this.getWebGLCapabilities = getters.getWebGLCapabilities;
     this.getFractalParamsUBO = getters.getFractalParamsUBO;
+    this.getWebGPURenderer = getters.getWebGPURenderer;
     this.getAdaptiveQualityManager = getters.getAdaptiveQualityManager;
     this.getPredictiveRenderingManager = getters.getPredictiveRenderingManager;
     this.getMultiResolutionManager = getters.getMultiResolutionManager;
@@ -52,6 +56,27 @@ export class RenderingEngine {
     this.renderScheduled = false;
     this.progressiveRenderAnimationFrame = null;
     this.animationFrameId = null;
+  }
+
+  _updateRendererBackendTag({ webgpuRenderer, fractalType, lumaDevice, currentFractalModule, regl }) {
+    if (webgpuRenderer && isWebGPUFirstFractalType(fractalType)) {
+      setRendererBackendTag('WebGPU');
+      return;
+    }
+    if (lumaDevice && currentFractalModule?.renderLuma) {
+      setRendererBackendTag('WebGL2');
+      return;
+    }
+    if (regl) {
+      const caps = this.getWebGLCapabilities ? this.getWebGLCapabilities() : null;
+      setRendererBackendTag(caps?.isWebGL2 ? 'WebGL2' : 'WebGL');
+      return;
+    }
+    if (webgpuRenderer) {
+      setRendererBackendTag('WebGPU');
+      return;
+    }
+    setRendererBackendTag('--');
   }
 
   /**
@@ -78,9 +103,40 @@ export class RenderingEngine {
    */
   renderFractalProgressive(startIterations = null) {
     const regl = this.getRegl();
+    const lumaDevice = this.getLumaDevice ? this.getLumaDevice() : null;
     const canvas = this.getCanvas();
     const currentFractalModule = this.getCurrentFractalModule();
     const params = this.getParams();
+
+    const webgpuRenderer = this.getWebGPURenderer ? this.getWebGPURenderer() : null;
+    const fractalType = this.getCurrentFractalType();
+    this._updateRendererBackendTag({
+      webgpuRenderer,
+      fractalType,
+      lumaDevice,
+      currentFractalModule,
+      regl,
+    });
+    if (webgpuRenderer && isWebGPUFirstFractalType(fractalType)) {
+      // WebGPU path doesn't use progressive iterations yet; render at current params.
+      this.renderFractal();
+      return;
+    }
+
+    const canUseLuma =
+      !!lumaDevice && !!currentFractalModule?.renderLuma && !this.getWebGPURenderer?.();
+
+    if (canUseLuma) {
+      // For luma.gl path we currently skip framebuffer caching and progressive iteration stepping
+      // is handled by draw function supporting override params.
+      updatePixelRatio(canvas, params.zoom);
+      const draw = currentFractalModule.renderLuma(lumaDevice, params, canvas, {});
+      this.setDrawFractal(draw);
+      if (draw) draw();
+      this.setIsProgressiveRendering(false);
+      hideLoadingBar();
+      return;
+    }
 
     if (!currentFractalModule || !currentFractalModule.render || !regl) {
       hideLoadingBar();
@@ -254,9 +310,48 @@ export class RenderingEngine {
    */
   renderFractal() {
     const regl = this.getRegl();
+    const lumaDevice = this.getLumaDevice ? this.getLumaDevice() : null;
     const canvas = this.getCanvas();
     const currentFractalModule = this.getCurrentFractalModule();
     const params = this.getParams();
+    const fractalType = this.getCurrentFractalType();
+    const webgpuRenderer = this.getWebGPURenderer ? this.getWebGPURenderer() : null;
+
+    this._updateRendererBackendTag({
+      webgpuRenderer,
+      fractalType,
+      lumaDevice,
+      currentFractalModule,
+      regl,
+    });
+
+    if (webgpuRenderer && isWebGPUFirstFractalType(fractalType)) {
+      showLoadingBar();
+      updatePixelRatio(canvas, params.zoom);
+      const p = webgpuRenderer
+        .render(fractalType, params)
+        .then(() => {
+          hideLoadingBar();
+        })
+        .catch((error) => {
+          console.error('[WebGPU] Render failed:', error);
+          hideLoadingBar();
+        });
+      void p;
+      this.setNeedsRender(false);
+      return;
+    }
+
+    if (lumaDevice && currentFractalModule?.renderLuma) {
+      showLoadingBar();
+      updatePixelRatio(canvas, params.zoom);
+      const draw = currentFractalModule.renderLuma(lumaDevice, params, canvas, {});
+      this.setDrawFractal(draw);
+      if (draw) draw();
+      this.setNeedsRender(false);
+      hideLoadingBar();
+      return;
+    }
 
     if (!currentFractalModule) {
       // Silently return if no fractal module is loaded
@@ -739,10 +834,14 @@ export class RenderingEngine {
 
         // Cleanup low-res framebuffer
         if (lowResFramebuffer) {
-          try {
-            lowResFramebuffer.destroy();
-          } catch (_error) {
-            // Ignore cleanup errors
+          // regl framebuffers throw on double-destroy; guard explicitly.
+          if (!lowResFramebuffer.__fractalaiDestroyed) {
+            lowResFramebuffer.__fractalaiDestroyed = true;
+            try {
+              lowResFramebuffer.destroy();
+            } catch (_error) {
+              // Ignore cleanup errors
+            }
           }
           multiResolutionManager.lowResFramebuffer = null;
         }
@@ -934,12 +1033,20 @@ export class RenderingEngine {
     }
 
     const regl = this.getRegl();
+    const lumaDevice = this.getLumaDevice ? this.getLumaDevice() : null;
     const canvas = this.getCanvas();
     const currentFractalModule = this.getCurrentFractalModule();
     const params = this.getParams();
     const fractalType = this.getCurrentFractalType();
 
-    if (!regl || !canvas || !currentFractalModule || !currentFractalModule.render) {
+    if ((!regl && !lumaDevice) || !canvas || !currentFractalModule) {
+      return;
+    }
+    if (lumaDevice && currentFractalModule.renderLuma) {
+      // Predictive rendering currently relies on regl framebuffers; skip for luma path.
+      return;
+    }
+    if (!regl || !currentFractalModule.render) {
       return;
     }
 

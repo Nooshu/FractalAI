@@ -53,7 +53,11 @@ export default defineConfig({
     {
       name: 'chromium',
       use: {
-        ...devices['Desktop Chrome'],
+        // Avoid device presets here: they can change DPR/viewport and make canvas snapshots flaky.
+        browserName: 'chromium',
+        viewport: { width: 1280, height: 720 },
+        // Use DPR=2 consistently on retina macOS to match real rendering.
+        deviceScaleFactor: 2,
         launchOptions: {
           args: [
             // WebGL settings for headless mode
@@ -73,15 +77,18 @@ export default defineConfig({
     // },
   ],
 
-  // Web server configuration (for local testing)
-  webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:5173',
-    reuseExistingServer: !process.env.CI,
-    timeout: 120000,
-    stdout: 'ignore',
-    stderr: 'pipe',
-  },
+  // Web server configuration (for local testing).
+  // When `MANAGED_WEB_SERVER=1`, a wrapper script is responsible for starting/stopping Vite.
+  webServer: process.env.MANAGED_WEB_SERVER
+    ? undefined
+    : {
+        command: 'npm run dev -- --strictPort --host 127.0.0.1 --open=false',
+        url: 'http://localhost:5173',
+        reuseExistingServer: !process.env.CI,
+        timeout: 120000,
+        stdout: 'ignore',
+        stderr: 'pipe',
+      },
 
   // Expect configuration for visual comparisons
   expect: {

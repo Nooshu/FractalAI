@@ -20,7 +20,7 @@ import { CONFIG } from '../core/config.js';
  * @returns {Promise<Object>} Promise resolving to object containing canvas, regl/webgpuRenderer, and updateRendererSize function
  */
 export async function initCanvasRenderer(canvasId, options = {}) {
-  const { getZoom, onResize } = options;
+  const { getZoom, onResize, allowWebGPU = true } = options;
 
   const canvas = document.getElementById(canvasId);
   if (!canvas) {
@@ -50,7 +50,7 @@ export async function initCanvasRenderer(canvasId, options = {}) {
   let webglCapabilities = null;
 
   // Try to initialize WebGPU if enabled
-  if (CONFIG.features.webgpu && 'gpu' in navigator) {
+  if (allowWebGPU && CONFIG.features.webgpu && 'gpu' in navigator) {
     try {
       webgpuRenderer = await initWebGPURenderer(canvas, {
         powerPreference: 'high-performance',

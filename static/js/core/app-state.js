@@ -18,6 +18,7 @@ export class AppStateManager {
   constructor() {
     // Rendering context and canvas
     this.regl = null;
+    this.lumaDevice = null; // luma.gl WebGL device attached to regl's context
     this.canvas = null;
     this.updateRendererSize = null;
     this.webglCapabilities = null;
@@ -71,6 +72,9 @@ export class AppStateManager {
   // Getters
   getRegl() {
     return this.regl;
+  }
+  getLumaDevice() {
+    return this.lumaDevice;
   }
   getCanvas() {
     return this.canvas;
@@ -201,6 +205,9 @@ export class AppStateManager {
   setRegl(value) {
     this.regl = value;
   }
+  setLumaDevice(value) {
+    this.lumaDevice = value;
+  }
   setCanvas(value) {
     this.canvas = value;
   }
@@ -281,6 +288,7 @@ export class AppStateManager {
   getGetters() {
     return {
       getRegl: () => this.getRegl(),
+      getLumaDevice: () => this.getLumaDevice(),
       getWebGLCapabilities: () => this.getWebGLCapabilities(),
       getFractalParamsUBO: () => this.getFractalParamsUBO(),
       getWebGPURenderer: () => this.getWebGPURenderer(),
@@ -315,6 +323,7 @@ export class AppStateManager {
   getSetters() {
     return {
       setRegl: (value) => this.setRegl(value),
+      setLumaDevice: (value) => this.setLumaDevice(value),
       setCanvas: (value) => this.setCanvas(value),
       setUpdateRendererSize: (value) => this.setUpdateRendererSize(value),
       setWebGPURenderer: (value) => this.setWebGPURenderer(value),

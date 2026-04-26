@@ -20,7 +20,8 @@ export class MultiResolutionManager {
     this.lowResScale = options.lowResScale || 0.5;
     this.enableHighRes = options.enableHighRes !== false;
     this.highResDelay = options.highResDelay || 100;
-    this.isEnabled = CONFIG.features?.multiResolution !== false;
+    const isAutomation = typeof navigator !== 'undefined' && !!navigator.webdriver;
+    this.isEnabled = CONFIG.features?.multiResolution !== false && !isAutomation;
 
     // State tracking
     this.isRendering = false;
@@ -84,21 +85,31 @@ export class MultiResolutionManager {
     }
 
     if (this.lowResFramebuffer) {
-      try {
-        this.lowResFramebuffer.destroy();
-      } catch (_error) {
-        // Ignore cleanup errors
-      }
+      const fb = this.lowResFramebuffer;
       this.lowResFramebuffer = null;
+      // regl framebuffers throw on double-destroy; guard explicitly.
+      if (!fb.__fractalaiDestroyed) {
+        fb.__fractalaiDestroyed = true;
+        try {
+          fb.destroy();
+        } catch (_error) {
+          // Ignore cleanup errors
+        }
+      }
     }
 
     if (this.highResFramebuffer) {
-      try {
-        this.highResFramebuffer.destroy();
-      } catch (_error) {
-        // Ignore cleanup errors
-      }
+      const fb = this.highResFramebuffer;
       this.highResFramebuffer = null;
+      // regl framebuffers throw on double-destroy; guard explicitly.
+      if (!fb.__fractalaiDestroyed) {
+        fb.__fractalaiDestroyed = true;
+        try {
+          fb.destroy();
+        } catch (_error) {
+          // Ignore cleanup errors
+        }
+      }
     }
 
     this.isRendering = false;

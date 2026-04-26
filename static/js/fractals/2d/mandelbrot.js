@@ -1,4 +1,5 @@
 import { createFragmentShader, createStandardDrawCommand } from '../utils.js';
+import { createLumaDrawCommand } from '../luma-utils.js';
 
 const fractalFunction = `
     float computeFractal(vec2 c) {
@@ -120,6 +121,10 @@ export function render(regl, params, canvas, options = {}) {
     ubo,
     juliaC: { x: 0, y: 0 }, // Not used for Mandelbrot
   });
+}
+
+export function renderLuma(device, params, canvas) {
+  return createLumaDrawCommand(device, 'mandelbrot', fractalFunction, params, canvas);
 }
 
 export const is2D = true;

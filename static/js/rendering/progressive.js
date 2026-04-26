@@ -110,8 +110,9 @@ export class ProgressiveRenderer {
         }
         this.state.needsRender = false;
 
-        // Schedule next step using requestAnimationFrame for smooth rendering aligned with display refresh
-        this.progressiveRenderAnimationFrame = requestAnimationFrame(progressiveStep);
+        // Schedule next step asynchronously. Using setTimeout(0) keeps progressive
+        // rendering deterministic and avoids rAF throttling in headless browsers.
+        this.progressiveRenderAnimationFrame = setTimeout(progressiveStep, 0);
       } else {
         this.state.isProgressiveRendering = false;
         // Cache the fully rendered frame
@@ -120,8 +121,8 @@ export class ProgressiveRenderer {
       }
     };
 
-    // Start progressive rendering using requestAnimationFrame for smooth rendering aligned with display refresh
-    this.progressiveRenderAnimationFrame = requestAnimationFrame(progressiveStep);
+    // Start progressive rendering asynchronously (see note above)
+    this.progressiveRenderAnimationFrame = setTimeout(progressiveStep, 0);
   }
 
   /**
@@ -129,7 +130,7 @@ export class ProgressiveRenderer {
    */
   cancel() {
     if (this.progressiveRenderAnimationFrame !== null) {
-      cancelAnimationFrame(this.progressiveRenderAnimationFrame);
+      clearTimeout(this.progressiveRenderAnimationFrame);
       this.progressiveRenderAnimationFrame = null;
       this.state.isProgressiveRendering = false;
     }

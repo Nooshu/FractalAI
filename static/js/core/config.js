@@ -122,7 +122,7 @@ export const CONFIG = {
   },
   features: {
     // WebGPU support (experimental, behind feature flag)
-    webgpu: false, // Enable when stable
+    webgpu: true,
     // WebGL compute shaders (experimental, when available)
     computeShaders: false,
     // SharedArrayBuffer for multi-threaded rendering (requires COOP/COEP headers)

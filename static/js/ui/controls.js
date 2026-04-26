@@ -67,6 +67,7 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
     cancelProgressiveRender: _cancelProgressiveRender,
     cancelWorkerTasks = () => {}, // Optional callback to cancel worker tasks
     resetPredictiveRendering = () => {}, // Optional callback to reset predictive rendering
+    ensureRendererForFractalType = async () => {}, // Optional callback for WebGPU/WebGL switching
   } = callbacks;
 
   // Get DOM elements
@@ -295,6 +296,14 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
 
     // Reset predictive rendering when fractal type changes
     resetPredictiveRendering();
+
+    // Ensure we have the right renderer backend before loading/rendering.
+    // (WebGPU-first is currently only enabled for the Mandelbrot family.)
+    try {
+      await ensureRendererForFractalType(newFractalType);
+    } catch (error) {
+      console.warn('[Renderer] Failed to switch backend:', error);
+    }
 
     // Load the new fractal module
     try {

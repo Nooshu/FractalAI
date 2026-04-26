@@ -118,6 +118,10 @@ export class OffscreenRenderer {
     // Resize offscreen canvas to match main canvas
     this.resize(this.mainCanvas.width, this.mainCanvas.height);
 
+    // Track cancellation independently of the promise (avoid TDZ access).
+    const renderState = { cancelled: false };
+    this.pendingRender = renderState;
+
     // Create render promise
     const renderPromise = new Promise((resolve, reject) => {
       try {
@@ -129,7 +133,8 @@ export class OffscreenRenderer {
 
         // Create draw command using fractal's render function
         const webglCapabilities = options.webglCapabilities || this.offscreenCapabilities;
-        const ubo = options.ubo;
+        // Offscreen rendering uses the classic uniform path for compatibility across drivers.
+        const ubo = null;
 
         let drawFractal;
         if (fractalModule.render.length >= 4 || (webglCapabilities?.isWebGL2 && ubo)) {
@@ -150,7 +155,7 @@ export class OffscreenRenderer {
         const imageBitmap = this.offscreenCanvas.transferToImageBitmap();
 
         // Check if render was cancelled
-        if (renderPromise.cancelled) {
+        if (renderState.cancelled) {
           if (imageBitmap) {
             imageBitmap.close();
           }
@@ -164,7 +169,6 @@ export class OffscreenRenderer {
       }
     });
 
-    this.pendingRender = renderPromise;
     return renderPromise;
   }
 
