@@ -1,78 +1,127 @@
-import { createFragmentShader, createStandardDrawCommand } from '../utils.js';
+import { createStandardDrawCommand } from '../utils.js';
 
-const fractalFunction = `
-    // Sierpinski Carpet
-    // Recursively removes the center square from a 3x3 grid
+function createSierpinskiCarpetShader({ useUBO }) {
+  // Palette-colored Sierpinski carpet shader:
+  // - black holes/background
+  // - filled squares sample from uPalette so UI themes work
+  // - recursion depth mapped from the iterations slider
+  if (useUBO) {
+    return `#version 300 es
+    precision highp float;
+    precision lowp sampler2D;
 
-    bool isInCarpet(vec2 p, int maxIter) {
-        // Normalize to [0, 1] range - make carpet fill the view
-        // At zoom=1, c ranges from about -2 to 2, so map [-1, 1] to the carpet
-        vec2 pos = p * 0.5 + 0.5;
+    uniform float uIterations;
+    uniform float uZoom;
+    uniform vec2 uOffset;
+    uniform vec2 uScale; // xScale, yScale
+    uniform float uTime;
+    uniform vec2 uResolution;
+    uniform sampler2D uPalette;
 
-        // Check if we're outside the base square [-1, 1]
+    in vec2 vUv;
+    out vec4 fragColor;
+
+    float carpetLevel(vec2 p, int maxIter) {
         if (p.x < -1.0 || p.x > 1.0 || p.y < -1.0 || p.y > 1.0) {
-            return false;
+            return -1.0;
         }
 
-        // Iteratively check each level
-        for (int i = 0; i < 10; i++) {
+        vec2 pos = p * 0.5 + 0.5; // [-1,1] -> [0,1]
+        for (int i = 0; i < 12; i++) {
             if (i >= maxIter) break;
-
-            // Scale position to check which of the 9 squares we're in
             vec2 scaled = pos * 3.0;
             vec2 cell = floor(scaled);
-
-            // Check if we're in the center square (1, 1)
             if (cell.x == 1.0 && cell.y == 1.0) {
-                return false; // In a removed square
+                return -1.0;
             }
-
-            // Move to next level - focus on the current cell
             pos = fract(scaled);
         }
-
-        return true;
+        // Subtle, deterministic variation within filled squares so palettes read well.
+        // Use the final local position plus recursion depth to pick a palette coordinate.
+        float v = fract(pos.x * 0.83 + pos.y * 0.57 + float(maxIter) * 0.11);
+        return v;
     }
 
-    float computeFractal(vec2 c) {
-        int iterations = int(clamp(uIterations / 15.0, 1.0, 8.0));
+    void main() {
+        float aspect = uResolution.x / uResolution.y;
+        float scale = 4.0 / uZoom;
+        vec2 uvCentered = vUv - 0.5;
+        vec2 c = vec2(
+            uvCentered.x * scale * aspect * uScale.x + uOffset.x,
+            uvCentered.y * scale * uScale.y + uOffset.y
+        );
 
-        // c is already transformed by zoom/offset in utils.js
-        // Check if point is in the carpet
-        if (!isInCarpet(c, iterations)) {
-            // Point is in a removed square - return 0 for black
-            return 0.0;
+        // Map the global iterations slider to discrete recursion depth.
+        // Matches the app’s general feel: higher iterations => deeper detail.
+        int depth = int(clamp(floor(uIterations / 30.0), 1.0, 10.0));
+
+        float lvl = carpetLevel(c, depth);
+        if (lvl < 0.0) {
+            fragColor = vec4(0.0, 0.0, 0.0, 1.0);
+            return;
         }
 
-        // Point is in the carpet - calculate depth for interesting coloring
-        float depth = 0.0;
-        vec2 pos = c * 0.5 + 0.5;
+        vec3 color = texture(uPalette, vec2(clamp(lvl, 0.0, 1.0), 0.5)).rgb;
+        fragColor = vec4(color, 1.0);
+    }`;
+  }
 
-        for (int i = 0; i < 10; i++) {
-            if (i >= iterations) break;
+  return `
+    precision highp float;
+    precision lowp sampler2D;
 
+    uniform float uTime;
+    uniform float uIterations;
+    uniform float uZoom;
+    uniform vec2 uOffset;
+    uniform vec2 uResolution;
+    uniform sampler2D uPalette;
+    uniform float uXScale;
+    uniform float uYScale;
+
+    varying vec2 vUv;
+
+    float carpetLevel(vec2 p, int maxIter) {
+        if (p.x < -1.0 || p.x > 1.0 || p.y < -1.0 || p.y > 1.0) {
+            return -1.0;
+        }
+
+        vec2 pos = p * 0.5 + 0.5; // [-1,1] -> [0,1]
+        for (int i = 0; i < 12; i++) {
+            if (i >= maxIter) break;
             vec2 scaled = pos * 3.0;
             vec2 cell = floor(scaled);
-
-            // Check proximity to center square for edge coloring
             if (cell.x == 1.0 && cell.y == 1.0) {
-                // Near a removed square
-                depth += float(i) * 5.0;
-                break;
+                return -1.0;
             }
-
-            // Distance from center of current 3x3 grid
-            vec2 centerDist = abs(cell - vec2(1.0));
-            float maxDist = max(centerDist.x, centerDist.y);
-
-            depth += maxDist * 2.0;
             pos = fract(scaled);
         }
+        float v = fract(pos.x * 0.83 + pos.y * 0.57 + float(maxIter) * 0.11);
+        return v;
+    }
 
-        // Return color intensity based on depth - must be less than uIterations to be colored
-        return mod(depth * 10.0, uIterations * 0.9);
+    void main() {
+        float aspect = uResolution.x / uResolution.y;
+        float scale = 4.0 / uZoom;
+        vec2 uvCentered = vUv - 0.5;
+        vec2 c = vec2(
+            uvCentered.x * scale * aspect * uXScale + uOffset.x,
+            uvCentered.y * scale * uYScale + uOffset.y
+        );
+
+        int depth = int(clamp(floor(uIterations / 30.0), 1.0, 10.0));
+
+        float lvl = carpetLevel(c, depth);
+        if (lvl < 0.0) {
+            gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+            return;
+        }
+
+        vec3 color = texture2D(uPalette, vec2(clamp(lvl, 0.0, 1.0), 0.5)).rgb;
+        gl_FragColor = vec4(color, 1.0);
     }
 `;
+}
 
 export function render(regl, params, canvas, options = {}) {
   // Check if UBOs should be used (WebGL2 optimization)
@@ -80,8 +129,7 @@ export function render(regl, params, canvas, options = {}) {
   const ubo = options.ubo;
   const useUBO = webglCapabilities?.isWebGL2 && ubo;
 
-  // Create fragment shader with UBO support if available
-  const fragmentShader = createFragmentShader(fractalFunction, useUBO);
+  const fragmentShader = createSierpinskiCarpetShader({ useUBO });
 
   // Use createStandardDrawCommand for UBO support
   return createStandardDrawCommand(regl, params, canvas, fragmentShader, {
@@ -98,11 +146,11 @@ export const is2D = true;
  */
 export const config = {
   initialSettings: {
-    colorScheme: 'galaxy',
+    colorScheme: 'purple',
   },
   initialPosition: {
-    zoom: 1.456,
-    offset: { x: 0.1169, y: 0.1266 },
+    zoom: 1.589,
+    offset: { x: 0.0619, y: 0.0653 },
   },
   fallbackPosition: {
     offset: { x: 0, y: 0 },
