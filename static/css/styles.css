@@ -2296,6 +2296,7 @@ body.is-fullscreen .app-container .app-footer {
   }
 
   .mobile-fractal-picker .styled-select {
+    min-height: 44px;
     padding: 8px 34px 8px 14px;
     font-size: 0.85rem;
     background: rgb(0 0 0 / 45%);
@@ -2304,6 +2305,7 @@ body.is-fullscreen .app-container .app-footer {
   }
 
   .mobile-theme-picker .styled-select {
+    min-height: 44px;
     padding: 8px 34px 8px 14px;
     font-size: 0.85rem;
     background: rgb(0 0 0 / 45%);
@@ -2312,6 +2314,7 @@ body.is-fullscreen .app-container .app-footer {
   }
 
   .mobile-pan-speed-picker .styled-select {
+    min-height: 44px;
     padding: 8px 34px 8px 14px;
     font-size: 0.85rem;
     background: rgb(0 0 0 / 45%);
