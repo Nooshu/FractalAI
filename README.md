@@ -2,7 +2,7 @@
 
 A web-based fractal generator using regl and WebGL. This project demonstrates interactive fractal visualization with real-time rendering capabilities, machine learning-powered discovery, and extensive performance optimizations.
 
-**Version:** 7.0.0
+**Version:** 7.1.0
 
 ## Features
 
@@ -77,7 +77,7 @@ FractalAI includes a comprehensive collection of fractals organized into familie
 
 FractalAI includes a **mobile-first minimal UI** for phones and tablets:
 
-- **Minimal controls**: semi-transparent dropdowns for **Fractal**, **Theme**, and **Pan speed (Low/Medium/High)**
+- **Minimal controls**: semi-transparent dropdowns for **Fractal** and **Theme**
 - **Touch navigation**:
   - **Drag** to pan
   - **Pinch** to zoom (anchored around the gesture midpoint)
@@ -128,10 +128,12 @@ FractalAI includes extensive performance optimizations for smooth, responsive re
 
 ## Requirements
 
-- Node.js v24.x LTS or higher
+- Node.js v22.16.0 or higher
 - npm v10.x or higher
 
 If you use [nvm](https://github.com/nvm-sh/nvm), run `nvm use` to automatically switch to the correct Node.js version.
+
+> Note: **Cloudflare Pages (build image v3)** uses **Node.js 22** by default. This repo pins `22.16.0` in `.nvmrc` to keep local development and Pages builds consistent.
 
 ## Installation
 
@@ -178,7 +180,7 @@ This project is configured for deployment on Cloudflare Pages using the v3 build
    - **Build command**: `npm run build` (⚠️ Do NOT use `npm install && npm run build` - Cloudflare Pages already runs `npm clean-install` automatically)
    - **Build output directory**: `dist`
    - **Root directory**: `/` (leave empty or use `/`)
-   - **Node version**: `24` (or higher)
+   - **Node version**: `22` (recommended to pin `22.16.0` to match `.nvmrc`)
 
 3. Deploy! Cloudflare Pages will automatically build and deploy on every push to your main branch.
 
