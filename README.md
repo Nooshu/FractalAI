@@ -2,7 +2,7 @@
 
 A web-based fractal generator using regl and WebGL. This project demonstrates interactive fractal visualization with real-time rendering capabilities, machine learning-powered discovery, and extensive performance optimizations.
 
-**Version:** 6.0.0
+**Version:** 7.0.0
 
 ## Features
 
@@ -72,6 +72,21 @@ FractalAI includes a comprehensive collection of fractals organized into familie
 - **Presets System** - Quick-load pre-configured fractal views
 - **Favorites System** - Save and manage favorite fractal configurations
 - **Share & URL State** - Share fractals via URL with encoded state
+
+### Mobile & Tablet Support
+
+FractalAI includes a **mobile-first minimal UI** for phones and tablets:
+
+- **Minimal controls**: semi-transparent dropdowns for **Fractal**, **Theme**, and **Pan speed (Low/Medium/High)**
+- **Touch navigation**:
+  - **Drag** to pan
+  - **Pinch** to zoom (anchored around the gesture midpoint)
+  - **Double-tap** to zoom in
+- **Performance on mobile**:
+  - Caps effective DPR and temporarily reduces internal resolution during touch interactions for smoother pan/zoom
+- **Shake-to-reset (mobile)**:
+  - Shake gestures are **best-effort** and depend on browser sensor support and permissions
+  - Some browsers/platforms may block motion sensors or reserve “shake” for browser UI
 
 ### Machine Learning-Powered Discovery
 
