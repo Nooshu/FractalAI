@@ -1006,8 +1006,7 @@ body {
 }
 
 .mobile-fractal-picker,
-.mobile-theme-picker,
-.mobile-pan-speed-picker {
+.mobile-theme-picker {
   display: none; /* Only visible in the mobile UI breakpoint */
 }
 
@@ -2278,20 +2277,9 @@ body.is-fullscreen .app-container .app-footer {
     pointer-events: auto;
   }
 
-  .mobile-pan-speed-picker {
-    display: block;
-    position: absolute;
-    left: 12px;
-    bottom: 12px;
-    z-index: 150; /* above canvas + below notifications */
-    pointer-events: auto;
-    max-width: min(220px, calc(100vw - 24px));
-  }
-
   /* Make sure the actual <select> receives taps even if parent has pointer-events quirks */
   .mobile-fractal-picker select,
-  .mobile-theme-picker select,
-  .mobile-pan-speed-picker select {
+  .mobile-theme-picker select {
     pointer-events: auto;
   }
 
@@ -2313,21 +2301,12 @@ body.is-fullscreen .app-container .app-footer {
     backdrop-filter: blur(10px);
   }
 
-  .mobile-pan-speed-picker .styled-select {
-    min-height: 44px;
-    padding: 8px 34px 8px 14px;
-    font-size: 0.85rem;
-    background: rgb(0 0 0 / 45%);
-    border: 1px solid rgb(255 255 255 / 20%);
-    backdrop-filter: blur(10px);
-  }
 
   /* Minimal top bar on mobile: picker only */
   .top-action-bar #update-fractal,
   .top-action-bar #reset-view,
   .top-action-bar #screenshot,
   .top-action-bar #video-export,
-  .top-action-bar #benchmark-toggle,
   .top-action-bar #benchmark-toggle {
     display: none;
   }

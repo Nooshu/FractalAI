@@ -18,8 +18,8 @@ FRACTAL_TYPES.forEach((fractalType) => {
     // Ensure a clean UI state per test run (panels can persist via storage).
     await page.addInitScript(() => {
       try {
-        localStorage.clear();
-        sessionStorage.clear();
+        globalThis.localStorage?.clear();
+        globalThis.sessionStorage?.clear();
       } catch {
         // ignore
       }

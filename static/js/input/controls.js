@@ -60,7 +60,6 @@ export function setupInputControls(getters, callbacks) {
 
   // Touch/pointer gesture state (mobile)
   const activePointers = new Map(); // pointerId -> { x, y, startX, startY }
-  let isPinching = false;
   let pinchStartDistance = 0;
   let pinchStartZoom = 1;
   let pinchPrevMid = null; // { x, y } in client coords
@@ -151,27 +150,43 @@ export function setupInputControls(getters, callbacks) {
     return true;
   };
 
-  const getMobilePanSensitivity = (zoom) => {
-    // Mobile-only tuning: inverse-with-zoom becomes unusably slow at high zoom levels.
-    // Use a log falloff instead so panning remains responsive while still getting
-    // gradually finer control as zoom increases.
-    const base = 0.0016; // slightly faster than desktop base at zoom 1
+  const getPanSensitivity = (zoom, { isTouch }) => {
+    /**
+     * Scale-aware panning (non-linear).
+     *
+     * Why this works better than a "linear reduction" (e.g. subtracting some constant as zoom grows):
+     * - The fractal "world units per screen pixel" shrink ~proportionally to 1/zoom.
+     * - If we keep panning in screen pixels but don't scale by zoom, high zoom magnifies tiny finger jitter
+     *   into huge world-space jumps.
+     * - Using \(delta / zoom^k\) keeps pan roughly consistent in world-space while allowing us to tune
+     *   the feel: k≈1 is physically intuitive; k>1 gives extra precision at extreme zoom without making
+     *   low zoom feel sluggish.
+     *
+     * Performance: this stays O(1) per pointer move; just one `Math.pow` and a couple multiplies.
+     */
     const z = Math.max(1, zoom || 1);
-    const denom = 1 + Math.log10(z) * 1.25;
-    const speed = (() => {
-      const fromGlobal = globalThis.__fractalaiMobilePanSpeed;
-      if (fromGlobal === 'low' || fromGlobal === 'medium' || fromGlobal === 'high') return fromGlobal;
-      try {
-        const fromStorage = localStorage.getItem('mobile-pan-speed');
-        if (fromStorage === 'low' || fromStorage === 'medium' || fromStorage === 'high') return fromStorage;
-      } catch {
-        // ignore
-      }
-      return 'medium';
-    })();
 
-    const multiplier = speed === 'high' ? 1.6 : speed === 'low' ? 0.75 : 1.0;
-    return (base / denom) * multiplier;
+    // Configurable exponent. Start around 1.0; slightly above 1 helps at very high zoom.
+    const kRaw = globalThis.__fractalaiPanZoomExponent;
+    const k = typeof kRaw === 'number' && isFinite(kRaw) && kRaw > 0 ? kRaw : 1.05;
+
+    // Base sensitivities (world units per pixel at zoom≈1). Touch is a bit higher to avoid "sticky" feel.
+    const base = isTouch ? 0.0016 : 0.001;
+
+    // 1) Clamp extremes: ensure we never get so small that panning feels twitchy/stalled due to quantization.
+    const minPanScaleRaw = globalThis.__fractalaiMinPanScale;
+    const minPanScale =
+      typeof minPanScaleRaw === 'number' && isFinite(minPanScaleRaw) && minPanScaleRaw > 0
+        ? minPanScaleRaw
+        : 1e-10;
+
+    const scale = base / Math.pow(z, k);
+    const clampedScale = Math.max(scale, minPanScale);
+
+    // 2) Device-based damping: touch input is noisier (micro-movements, sensor jitter), so dampen a bit.
+    const damping = isTouch ? 0.6 : 1.0;
+
+    return clampedScale * damping;
   };
 
   const setMobileInteractionActive = (active) => {
@@ -340,10 +355,7 @@ export function setupInputControls(getters, callbacks) {
       }
 
       // Adjust sensitivity based on zoom level for better control
-      // Sensitivity decreases with zoom to allow precise panning at high zoom levels
-      // Base sensitivity of 0.001 works well at zoom 1, and scales inversely with zoom
-      const baseSensitivity = 0.001;
-      const sensitivity = baseSensitivity / params.zoom;
+      const sensitivity = getPanSensitivity(params.zoom, { isTouch: false });
       params.offset.x -= deltaX * sensitivity;
       params.offset.y += deltaY * sensitivity;
       updateCoordinateDisplay();
@@ -692,7 +704,6 @@ export function setupInputControls(getters, callbacks) {
         pinchStartDistance = Math.max(1, getDistance(pts[0], pts[1]));
         pinchStartZoom = getParams().zoom;
         pinchPrevMid = getMidpoint(pts[0], pts[1]);
-        isPinching = true;
         isDragging = false;
         isSelecting = false;
         canvas.style.cursor = 'default';
@@ -700,7 +711,6 @@ export function setupInputControls(getters, callbacks) {
       }
 
       // Start 1-finger pan.
-      isPinching = false;
       isDragging = true;
       isSelecting = false;
       lastMouseX = e.clientX;
@@ -768,7 +778,6 @@ export function setupInputControls(getters, callbacks) {
 
         const mid = getMidpoint(p0, p1);
         pinchPrevMid = mid;
-        isPinching = true;
         isDragging = false;
         isSelecting = false;
 
@@ -782,7 +791,7 @@ export function setupInputControls(getters, callbacks) {
 
       // One-finger pan.
       if (isDragging) {
-        const sensitivity = getMobilePanSensitivity(params.zoom);
+        const sensitivity = getPanSensitivity(params.zoom, { isTouch: true });
         params.offset.x -= dx * sensitivity;
         params.offset.y += dy * sensitivity;
         updateCoordinateDisplay();
@@ -846,7 +855,6 @@ export function setupInputControls(getters, callbacks) {
           const remaining = Array.from(activePointers.values())[0];
           pinchStartZoom = getParams().zoom;
           pinchPrevMid = { x: remaining.x, y: remaining.y };
-          isPinching = false;
           isDragging = true;
           lastMouseX = remaining.x;
           lastMouseY = remaining.y;
@@ -856,7 +864,6 @@ export function setupInputControls(getters, callbacks) {
 
         // All touches ended.
         if (activePointers.size === 0) {
-          isPinching = false;
           isDragging = false;
           isSelecting = false;
           canvas.style.cursor = 'grab';

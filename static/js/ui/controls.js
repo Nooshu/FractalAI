@@ -77,7 +77,6 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
   const iterationsValue = document.getElementById('iterations-value');
   const colorSchemeSelect = document.getElementById('color-scheme');
   const mobileColorSchemeSelect = document.getElementById('mobile-color-scheme');
-  const mobilePanSpeedSelect = document.getElementById('mobile-pan-speed');
   const juliaCReal = document.getElementById('julia-c-real');
   const juliaCRealValue = document.getElementById('julia-c-real-value');
   const juliaCImag = document.getElementById('julia-c-imag');
@@ -115,32 +114,6 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
     autoRenderEnabled = true;
     if (autoRenderCheckbox) autoRenderCheckbox.checked = true;
     if (updateFractalBtn) updateFractalBtn.disabled = true;
-  }
-
-  // Mobile pan speed preference (used by touch pan logic in input controls)
-  if (isMobileUI && mobilePanSpeedSelect) {
-    const storageKey = 'mobile-pan-speed';
-    const saved = (() => {
-      try {
-        return localStorage.getItem(storageKey);
-      } catch {
-        return null;
-      }
-    })();
-
-    const initial = saved || mobilePanSpeedSelect.value || 'medium';
-    mobilePanSpeedSelect.value = initial;
-    globalThis.__fractalaiMobilePanSpeed = initial;
-
-    mobilePanSpeedSelect.addEventListener('change', (e) => {
-      const value = e.target.value || 'medium';
-      globalThis.__fractalaiMobilePanSpeed = value;
-      try {
-        localStorage.setItem(storageKey, value);
-      } catch {
-        // ignore
-      }
-    });
   }
 
   // Shared reset routine (used by the Reset View button and mobile shake gesture)
