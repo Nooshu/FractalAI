@@ -4,6 +4,10 @@ on:
   schedule:
     - cron: '15 2 * * 1' # Mondays at 02:15 UTC
   workflow_dispatch:
+  issues:
+    types: [edited]
+  issue_comment:
+    types: [created]
 
 permissions:
   contents: write
@@ -13,6 +17,9 @@ permissions:
 
 jobs:
   renovate:
+    if: >-
+      github.event_name != 'issues' && github.event_name != 'issue_comment' ||
+      startsWith(github.event.issue.title, 'Renovate Dependency Dashboard')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
