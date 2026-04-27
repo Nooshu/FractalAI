@@ -150,8 +150,11 @@ describe('input controls module', () => {
     expect(events).toContain('pointermove');
     expect(events).toContain('pointerleave');
     expect(events).toContain('wheel');
-    expect(windowEvents).toContain('pointermove');
-    expect(windowEvents).toContain('pointerup');
+    // Pointer move/up are now handled on the canvas with pointer capture
+    // so we can call preventDefault() for touch gestures (pinch/pan).
+    expect(windowEvents).not.toContain('pointermove');
+    expect(windowEvents).not.toContain('pointerup');
+    expect(events).toContain('pointerup');
 
     // Should not use mouse events when pointer events are available
     expect(events).not.toContain('mousedown');

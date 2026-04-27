@@ -58,6 +58,16 @@ export function setupInputControls(getters, callbacks) {
   let cachedCanvasRect = null;
   let originalIterations = null; // Store original iterations when dragging starts
 
+  // Touch/pointer gesture state (mobile)
+  const activePointers = new Map(); // pointerId -> { x, y, startX, startY }
+  let isPinching = false;
+  let pinchStartDistance = 0;
+  let pinchStartZoom = 1;
+  let pinchPrevMid = null; // { x, y } in client coords
+  let pointerMoved = false;
+  let lastTapAtMs = 0;
+  let lastTapClient = null; // { x, y }
+
   // Helper to get canvas rect (cached for performance)
   const getCanvasRect = () => {
     // Invalidate cache on resize or after a delay
@@ -99,6 +109,86 @@ export function setupInputControls(getters, callbacks) {
     return { x: fractalX, y: fractalY, mouseX, mouseY };
   };
 
+  const clampZoom = (zoom) => {
+    // Match bounds used by zoomToSelection to avoid extreme values / NaN.
+    const minZoom = 0.1;
+    const maxZoom = 1e10;
+    if (!isFinite(zoom) || zoom <= 0) return minZoom;
+    return Math.max(minZoom, Math.min(maxZoom, zoom));
+  };
+
+  const getMidpoint = (a, b) => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
+
+  const getDistance = (a, b) => {
+    const dx = a.x - b.x;
+    const dy = a.y - b.y;
+    return Math.hypot(dx, dy);
+  };
+
+  const setViewAnchoredAtClient = (anchorFractal, clientX, clientY, newZoom) => {
+    const params = getParams();
+    const rect = getCanvasRect();
+
+    const displayWidth = rect.width;
+    const displayHeight = rect.height;
+    if (!displayWidth || !displayHeight) return false;
+
+    const uvX = (clientX - rect.left) / displayWidth;
+    const uvY = (clientY - rect.top) / displayHeight;
+
+    const rendererWidth = canvas.width;
+    const rendererHeight = canvas.height;
+    if (!rendererWidth || !rendererHeight) return false;
+    const aspect = rendererWidth / rendererHeight;
+
+    const zoom = clampZoom(newZoom);
+    const scale = 4.0 / zoom;
+
+    // Solve offset so that the fractal coordinate under (clientX, clientY) stays equal to anchorFractal.
+    params.zoom = zoom;
+    params.offset.x = anchorFractal.x - (uvX - 0.5) * scale * aspect * params.xScale;
+    params.offset.y = anchorFractal.y - (uvY - 0.5) * scale * params.yScale;
+    return true;
+  };
+
+  const getMobilePanSensitivity = (zoom) => {
+    // Mobile-only tuning: inverse-with-zoom becomes unusably slow at high zoom levels.
+    // Use a log falloff instead so panning remains responsive while still getting
+    // gradually finer control as zoom increases.
+    const base = 0.0016; // slightly faster than desktop base at zoom 1
+    const z = Math.max(1, zoom || 1);
+    const denom = 1 + Math.log10(z) * 1.25;
+    const speed = (() => {
+      const fromGlobal = globalThis.__fractalaiMobilePanSpeed;
+      if (fromGlobal === 'low' || fromGlobal === 'medium' || fromGlobal === 'high') return fromGlobal;
+      try {
+        const fromStorage = localStorage.getItem('mobile-pan-speed');
+        if (fromStorage === 'low' || fromStorage === 'medium' || fromStorage === 'high') return fromStorage;
+      } catch {
+        // ignore
+      }
+      return 'medium';
+    })();
+
+    const multiplier = speed === 'high' ? 1.6 : speed === 'low' ? 0.75 : 1.0;
+    return (base / denom) * multiplier;
+  };
+
+  const setMobileInteractionActive = (active) => {
+    // Only treat touch-driven pointer interactions as "mobile interaction".
+    // This flag is used by pixel ratio sizing to temporarily reduce render resolution.
+    if (globalThis.__fractalaiMobileInteractionActive === active) return;
+    globalThis.__fractalaiMobileInteractionActive = active;
+    const updateRendererSize = getUpdateRendererSize?.();
+    if (updateRendererSize) {
+      try {
+        updateRendererSize();
+      } catch {
+        // ignore
+      }
+    }
+  };
+
   // Mouse down handler
   const handleMouseDown = (e) => {
     // Only start dragging on left mouse button
@@ -107,6 +197,9 @@ export function setupInputControls(getters, callbacks) {
       const target = e.target;
       if (target.closest?.('.fullscreen-control-btn')) {
         return; // Let the button handle its own click
+      }
+      if (target.closest?.('.mobile-ui-control')) {
+        return; // Let mobile UI controls handle their own interactions
       }
 
       const rect = getCanvasRect();
@@ -561,6 +654,61 @@ export function setupInputControls(getters, callbacks) {
   // Unified pointer event handlers (replaces separate mouse/touch handlers where possible)
   // Pointer events provide better cross-device support and can be more efficient
   const handlePointerDown = (e) => {
+    // If we tapped a UI button overlaying the canvas, do nothing.
+    const target = e.target;
+    if (target.closest?.('.fullscreen-control-btn')) return;
+    if (target.closest?.('.mobile-ui-control')) return;
+
+    // Always track pointers that start on the canvas. Use pointer capture so moves are delivered
+    // even if the pointer drifts outside the canvas during a gesture.
+    try {
+      canvas.setPointerCapture?.(e.pointerId);
+    } catch {
+      // ignore (not supported in some browsers)
+    }
+
+    const now = performance.now();
+    activePointers.set(e.pointerId, {
+      x: e.clientX,
+      y: e.clientY,
+      startX: e.clientX,
+      startY: e.clientY,
+    });
+    pointerMoved = false;
+
+    // Touch gestures: 1-finger pan, 2-finger pinch-to-zoom + pan.
+    if (e.pointerType === 'touch') {
+      e.preventDefault();
+      setMobileInteractionActive(true);
+
+      const params = getParams();
+      if (originalIterations === null && params.iterations > 100) {
+        originalIterations = params.iterations;
+        params.iterations = 100;
+      }
+
+      if (activePointers.size === 2) {
+        const pts = Array.from(activePointers.values());
+        pinchStartDistance = Math.max(1, getDistance(pts[0], pts[1]));
+        pinchStartZoom = getParams().zoom;
+        pinchPrevMid = getMidpoint(pts[0], pts[1]);
+        isPinching = true;
+        isDragging = false;
+        isSelecting = false;
+        canvas.style.cursor = 'default';
+        return;
+      }
+
+      // Start 1-finger pan.
+      isPinching = false;
+      isDragging = true;
+      isSelecting = false;
+      lastMouseX = e.clientX;
+      lastMouseY = e.clientY;
+      canvas.style.cursor = 'grabbing';
+      return;
+    }
+
     // Convert pointer event to mouse-like event for existing handler
     const mouseEvent = {
       ...e,
@@ -572,9 +720,77 @@ export function setupInputControls(getters, callbacks) {
       target: e.target,
     };
     handleMouseDown(mouseEvent);
+    // Mark move tracking for potential double-tap (mouse path won't use it, but safe).
+    lastTapAtMs = now;
   };
 
   const handlePointerMove = (e) => {
+    if (!activePointers.has(e.pointerId)) {
+      // Not a gesture that started on the canvas.
+      const mouseEvent = {
+        ...e,
+        clientX: e.clientX,
+        clientY: e.clientY,
+        shiftKey: e.shiftKey,
+        target: e.target,
+        closest: e.target.closest?.bind(e.target),
+      };
+      handleMouseMove(mouseEvent);
+      return;
+    }
+
+    const prev = activePointers.get(e.pointerId);
+    const dx = e.clientX - prev.x;
+    const dy = e.clientY - prev.y;
+    if (Math.abs(dx) > 2 || Math.abs(dy) > 2) pointerMoved = true;
+
+    activePointers.set(e.pointerId, { ...prev, x: e.clientX, y: e.clientY });
+
+    if (e.pointerType === 'touch') {
+      e.preventDefault();
+
+      const params = getParams();
+
+      // Pinch gesture (2+ pointers; we only use the first two).
+      if (activePointers.size >= 2) {
+        const pts = Array.from(activePointers.values());
+        const p0 = pts[0];
+        const p1 = pts[1];
+
+        // Anchor world coordinate under the previous midpoint using the current params (from last frame).
+        const prevMid = pinchPrevMid || getMidpoint(p0, p1);
+        const anchor = getFractalCoordsFromClient(prevMid.x, prevMid.y);
+        if (!anchor) return;
+
+        const dist = Math.max(1, getDistance(p0, p1));
+        const scale = dist / Math.max(1, pinchStartDistance);
+        const newZoom = pinchStartZoom * scale; // pinch out (bigger dist) => zoom in
+
+        const mid = getMidpoint(p0, p1);
+        pinchPrevMid = mid;
+        isPinching = true;
+        isDragging = false;
+        isSelecting = false;
+
+        const updated = setViewAnchoredAtClient(anchor, mid.x, mid.y, newZoom);
+        if (!updated) return;
+
+        updateCoordinateDisplay();
+        scheduleRender();
+        return;
+      }
+
+      // One-finger pan.
+      if (isDragging) {
+        const sensitivity = getMobilePanSensitivity(params.zoom);
+        params.offset.x -= dx * sensitivity;
+        params.offset.y += dy * sensitivity;
+        updateCoordinateDisplay();
+        scheduleRender();
+        return;
+      }
+    }
+
     // Convert pointer event to mouse-like event for existing handler
     const mouseEvent = {
       ...e,
@@ -588,6 +804,77 @@ export function setupInputControls(getters, callbacks) {
   };
 
   const handlePointerUp = (e) => {
+    if (activePointers.has(e.pointerId)) {
+      const record = activePointers.get(e.pointerId);
+      activePointers.delete(e.pointerId);
+
+      if (e.pointerType === 'touch') {
+        e.preventDefault();
+
+        // Double-tap to zoom in (mobile equivalent of dblclick).
+        const now = performance.now();
+        const moved =
+          Math.hypot(record.x - record.startX, record.y - record.startY) > 8 || pointerMoved;
+        const tapPos = { x: record.x, y: record.y };
+
+        if (!moved && activePointers.size === 0) {
+          const isDoubleTap =
+            now - lastTapAtMs < 320 &&
+            lastTapClient &&
+            Math.hypot(tapPos.x - lastTapClient.x, tapPos.y - lastTapClient.y) < 28;
+
+          if (isDoubleTap) {
+            const coords = getFractalCoordsFromClient(tapPos.x, tapPos.y);
+            if (coords) {
+              const params = getParams();
+              params.zoom = clampZoom(params.zoom * 2.0);
+              params.offset.x = coords.x;
+              params.offset.y = coords.y;
+              updateCoordinateDisplay();
+              renderFractalProgressive();
+            }
+            lastTapAtMs = 0;
+            lastTapClient = null;
+          } else {
+            lastTapAtMs = now;
+            lastTapClient = tapPos;
+          }
+        }
+
+        // If pinch ended and one pointer remains, transition back to pan smoothly.
+        if (activePointers.size === 1) {
+          const remaining = Array.from(activePointers.values())[0];
+          pinchStartZoom = getParams().zoom;
+          pinchPrevMid = { x: remaining.x, y: remaining.y };
+          isPinching = false;
+          isDragging = true;
+          lastMouseX = remaining.x;
+          lastMouseY = remaining.y;
+          canvas.style.cursor = 'grabbing';
+          return;
+        }
+
+        // All touches ended.
+        if (activePointers.size === 0) {
+          isPinching = false;
+          isDragging = false;
+          isSelecting = false;
+          canvas.style.cursor = 'grab';
+          setMobileInteractionActive(false);
+
+          // Restore iterations and trigger full render after gesture.
+          if (originalIterations !== null) {
+            const params = getParams();
+            params.iterations = originalIterations;
+            originalIterations = null;
+            renderFractalProgressive();
+          }
+        }
+
+        return;
+      }
+    }
+
     // Convert pointer event to mouse-like event for existing handler
     const mouseEvent = {
       ...e,
@@ -603,8 +890,9 @@ export function setupInputControls(getters, callbacks) {
   // Use pointer events for unified mouse/touch handling (better performance and cross-device support)
   if (window.PointerEvent) {
     canvas.addEventListener('pointerdown', handlePointerDown);
-    window.addEventListener('pointermove', handlePointerMove, { passive: true });
-    window.addEventListener('pointerup', handlePointerUp, { passive: true });
+    canvas.addEventListener('pointermove', handlePointerMove, { passive: false });
+    canvas.addEventListener('pointerup', handlePointerUp, { passive: false });
+    canvas.addEventListener('pointercancel', handlePointerUp, { passive: false });
     canvas.addEventListener('pointerleave', handleMouseLeave, { passive: true });
     canvas.addEventListener('pointermove', handleCanvasMouseMove, { passive: true });
   } else {
@@ -629,8 +917,9 @@ export function setupInputControls(getters, callbacks) {
   const cleanup = () => {
     if (window.PointerEvent) {
       canvas.removeEventListener('pointerdown', handlePointerDown);
-      window.removeEventListener('pointermove', handlePointerMove);
-      window.removeEventListener('pointerup', handlePointerUp);
+      canvas.removeEventListener('pointermove', handlePointerMove);
+      canvas.removeEventListener('pointerup', handlePointerUp);
+      canvas.removeEventListener('pointercancel', handlePointerUp);
       canvas.removeEventListener('pointerleave', handleMouseLeave);
       canvas.removeEventListener('pointermove', handleCanvasMouseMove);
     } else {

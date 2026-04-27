@@ -1499,6 +1499,18 @@
         </button>
 
         <div class="top-action-bar">
+          <label class="mobile-fractal-picker mobile-ui-control" for="mobile-fractal-type">
+            <span class="sr-only">Fractal type</span>
+            <select id="mobile-fractal-type" class="styled-select" aria-label="Select fractal type">
+              <!-- Populated from the main fractal select at runtime -->
+            </select>
+          </label>
+          <label class="mobile-theme-picker mobile-ui-control" for="mobile-color-scheme">
+            <span class="sr-only">Theme</span>
+            <select id="mobile-color-scheme" class="styled-select" aria-label="Select theme">
+              <!-- Populated from the main theme select at runtime -->
+            </select>
+          </label>
           <button id="update-fractal" class="top-action-btn" aria-label="Render fractal">
             <svg
               width="18"
@@ -1589,6 +1601,14 @@
           <div id="loading-bar" class="loading-bar"></div>
           <canvas id="fractal-canvas"></canvas>
           <div id="selection-box" class="selection-box"></div>
+          <label class="mobile-pan-speed-picker mobile-ui-control" for="mobile-pan-speed">
+            <span class="sr-only">Pan speed</span>
+            <select id="mobile-pan-speed" class="styled-select" aria-label="Pan speed">
+              <option value="low">Pan: Low</option>
+              <option value="medium" selected>Pan: Medium</option>
+              <option value="high">Pan: High</option>
+            </select>
+          </label>
           <div id="info-panel">
             <div id="renderer-backend-tag" aria-label="Rendering backend">Renderer: --</div>
             <div id="fps">FPS: --</div>

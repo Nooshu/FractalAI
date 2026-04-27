@@ -10,6 +10,7 @@
   },
   "scripts": {
     "dev": "node scripts/generate-presets-manifest.js && vite",
+    "dev:network": "node scripts/generate-presets-manifest.js && node -e \"import os from 'node:os'; const port=5173; const ifaces=os.networkInterfaces(); const ips=Object.values(ifaces).flat().filter(Boolean).filter((i)=>i.family==='IPv4' && !i.internal).map((i)=>i.address); const ip=ips[0]||'localhost'; console.log('\\nNetwork preview:\\n- Local:   http://localhost:' + port + '/\\n- Network: http://' + ip + ':' + port + '/\\n');\" && vite --host 0.0.0.0 --port 5173",
     "build": "node scripts/generate-presets-manifest.js && NODE_ENV=production npx vite build && NODE_ENV=production node scripts/compress-brotli.js",
     "build:prod": "NODE_ENV=production node scripts/generate-presets-manifest.js && NODE_ENV=production vite build && NODE_ENV=production node scripts/compress-brotli.js",
     "preview": "vite preview",

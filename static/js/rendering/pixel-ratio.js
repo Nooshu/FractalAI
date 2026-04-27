@@ -5,6 +5,44 @@
 
 import { CONFIG } from '../core/config.js';
 
+function isCoarsePointerDevice() {
+  try {
+    return window.matchMedia?.('(pointer: coarse)')?.matches ?? false;
+  } catch {
+    return false;
+  }
+}
+
+function isMobileViewport() {
+  try {
+    return window.matchMedia?.('(width <= 768px)')?.matches ?? false;
+  } catch {
+    return false;
+  }
+}
+
+function getMobileDprCap() {
+  // Best-practice heuristic: limit DPR on mobile to keep fragment workload reasonable.
+  // Use deviceMemory (when available) to be more conservative on low-memory devices.
+  const mem = Number(navigator?.deviceMemory);
+  if (Number.isFinite(mem) && mem > 0) {
+    if (mem <= 2) return 1.25;
+    if (mem <= 4) return 1.5;
+  }
+  return 1.75;
+}
+
+function getEffectiveBasePixelRatio() {
+  const configured = CONFIG.canvas.basePixelRatio;
+  const dpr = window.devicePixelRatio || 1;
+  const base = configured || dpr;
+
+  const isMobileLike = isCoarsePointerDevice() && isMobileViewport();
+  if (!isMobileLike) return base;
+
+  return Math.min(base, getMobileDprCap());
+}
+
 /**
  * Calculate pixel ratio based on zoom level
  * Higher zoom = higher pixel ratio for better quality
@@ -14,9 +52,14 @@ import { CONFIG } from '../core/config.js';
 export function calculatePixelRatio(zoom) {
   // Scale pixel ratio with zoom, but cap it to avoid performance issues
   // Base pixel ratio * sqrt(zoom) gives a good balance
-  const basePixelRatio = CONFIG.canvas.basePixelRatio || window.devicePixelRatio || 1;
+  const basePixelRatio = getEffectiveBasePixelRatio();
   const zoomMultiplier = Math.min(Math.sqrt(zoom), CONFIG.canvas.maxPixelRatio);
-  return basePixelRatio * zoomMultiplier;
+
+  // During touch interactions (pan/pinch), drop internal resolution for responsiveness.
+  // This is toggled by the input controls (mobile only).
+  const interactionScale = globalThis.__fractalaiMobileInteractionActive ? 0.65 : 1.0;
+
+  return basePixelRatio * zoomMultiplier * interactionScale;
 }
 
 /**

@@ -72,9 +72,12 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
 
   // Get DOM elements
   const fractalTypeSelect = document.getElementById('fractal-type');
+  const mobileFractalTypeSelect = document.getElementById('mobile-fractal-type');
   const iterationsSlider = document.getElementById('iterations');
   const iterationsValue = document.getElementById('iterations-value');
   const colorSchemeSelect = document.getElementById('color-scheme');
+  const mobileColorSchemeSelect = document.getElementById('mobile-color-scheme');
+  const mobilePanSpeedSelect = document.getElementById('mobile-pan-speed');
   const juliaCReal = document.getElementById('julia-c-real');
   const juliaCRealValue = document.getElementById('julia-c-real-value');
   const juliaCImag = document.getElementById('julia-c-imag');
@@ -103,6 +106,235 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
   // Auto-render functionality
   // Initialize from checkbox state (which may have been set from URL parameter)
   let autoRenderEnabled = autoRenderCheckbox ? autoRenderCheckbox.checked : false;
+
+  // Mobile UX: only when we are actually in the mobile breakpoint, auto-render is forced on.
+  // Desktop + fullscreen UI should remain unchanged.
+  const isMobileUI = window.matchMedia?.('(width <= 768px)')?.matches ?? false;
+  const hasMobileSelectors = !!(mobileFractalTypeSelect || mobileColorSchemeSelect);
+  if (isMobileUI && hasMobileSelectors) {
+    autoRenderEnabled = true;
+    if (autoRenderCheckbox) autoRenderCheckbox.checked = true;
+    if (updateFractalBtn) updateFractalBtn.disabled = true;
+  }
+
+  // Mobile pan speed preference (used by touch pan logic in input controls)
+  if (isMobileUI && mobilePanSpeedSelect) {
+    const storageKey = 'mobile-pan-speed';
+    const saved = (() => {
+      try {
+        return localStorage.getItem(storageKey);
+      } catch {
+        return null;
+      }
+    })();
+
+    const initial = saved || mobilePanSpeedSelect.value || 'medium';
+    mobilePanSpeedSelect.value = initial;
+    globalThis.__fractalaiMobilePanSpeed = initial;
+
+    mobilePanSpeedSelect.addEventListener('change', (e) => {
+      const value = e.target.value || 'medium';
+      globalThis.__fractalaiMobilePanSpeed = value;
+      try {
+        localStorage.setItem(storageKey, value);
+      } catch {
+        // ignore
+      }
+    });
+  }
+
+  // Shared reset routine (used by the Reset View button and mobile shake gesture)
+  const resetView = () => {
+    const currentFractalModule = getCurrentFractalModule();
+    const params = getParams();
+    const currentFractalType = getCurrentFractalType();
+    // Reset zoom and offset to initial render position from config or fallback
+    const resetConfig = currentFractalModule?.config;
+    let initialPosition;
+    if (resetConfig?.initialPosition) {
+      initialPosition = resetConfig.initialPosition;
+    } else {
+      initialPosition = getInitialRenderPosition(currentFractalType);
+    }
+    params.zoom = initialPosition.zoom;
+    params.offset.x = initialPosition.offset.x;
+    params.offset.y = initialPosition.offset.y;
+    updateCoordinateDisplay();
+
+    // Reset scale parameters and other settings from config
+    if (resetConfig?.initialSettings) {
+      const settings = resetConfig.initialSettings;
+
+      // Reset xScale from config or default to 1.0
+      if (settings.xScale !== undefined) {
+        params.xScale = settings.xScale;
+        if (xScaleSlider) {
+          xScaleSlider.value = settings.xScale;
+          updateSliderAccessibility(
+            xScaleSlider,
+            xScaleValue,
+            xScaleAnnounce,
+            settings.xScale,
+            'X Axis',
+            false
+          );
+        }
+      } else {
+        params.xScale = 1.0;
+        if (xScaleSlider) {
+          xScaleSlider.value = 1.0;
+          updateSliderAccessibility(xScaleSlider, xScaleValue, xScaleAnnounce, 1.0, 'X Axis', false);
+        }
+      }
+
+      // Reset yScale from config or default to 1.0
+      if (settings.yScale !== undefined) {
+        params.yScale = settings.yScale;
+        if (yScaleSlider) {
+          yScaleSlider.value = settings.yScale;
+          updateSliderAccessibility(
+            yScaleSlider,
+            yScaleValue,
+            yScaleAnnounce,
+            settings.yScale,
+            'Y Axis',
+            false
+          );
+        }
+      } else {
+        params.yScale = 1.0;
+        if (yScaleSlider) {
+          yScaleSlider.value = 1.0;
+          updateSliderAccessibility(yScaleSlider, yScaleValue, yScaleAnnounce, 1.0, 'Y Axis', false);
+        }
+      }
+
+      // Reset juliaC from config if specified, or use default for Julia sets
+      if (settings.juliaC !== undefined) {
+        params.juliaC.x = settings.juliaC.x;
+        params.juliaC.y = settings.juliaC.y;
+        if (juliaCReal) juliaCReal.value = settings.juliaC.x;
+        if (juliaCImag) juliaCImag.value = settings.juliaC.y;
+        if (juliaCRealValue) juliaCRealValue.textContent = settings.juliaC.x.toFixed(4);
+        if (juliaCImagValue) juliaCImagValue.textContent = settings.juliaC.y.toFixed(4);
+      } else if (isJuliaType(currentFractalType)) {
+        // Reset to default Julia C parameters if not specified in config
+        params.juliaC.x = CONFIG.julia.defaultC.x;
+        params.juliaC.y = CONFIG.julia.defaultC.y;
+        if (juliaCReal) juliaCReal.value = CONFIG.julia.defaultC.x;
+        if (juliaCImag) juliaCImag.value = CONFIG.julia.defaultC.y;
+        if (juliaCRealValue) juliaCRealValue.textContent = CONFIG.julia.defaultC.x.toFixed(4);
+        if (juliaCImagValue) juliaCImagValue.textContent = CONFIG.julia.defaultC.y.toFixed(4);
+      }
+
+      // Reset iterations from config if specified
+      if (settings.iterations !== undefined) {
+        params.iterations = settings.iterations;
+        if (iterationsSlider) iterationsSlider.value = settings.iterations;
+        if (iterationsValue) iterationsValue.textContent = settings.iterations.toString();
+        const fullscreenIterationsNumberEl = document.getElementById('fullscreen-iterations-number');
+        if (fullscreenIterationsNumberEl) {
+          fullscreenIterationsNumberEl.textContent = settings.iterations.toString();
+        }
+      }
+
+      // Reset color scheme from config if specified
+      if (settings.colorScheme !== undefined) {
+        params.colorScheme = settings.colorScheme;
+        if (colorSchemeSelect) colorSchemeSelect.value = settings.colorScheme;
+        const newIndex = colorSchemes.indexOf(settings.colorScheme);
+        if (newIndex !== -1) {
+          currentColorSchemeIndex = newIndex;
+        }
+        updateColorPalettePreview();
+      }
+    } else {
+      // Default to 1.0 if no config
+      params.xScale = 1.0;
+      params.yScale = 1.0;
+      if (xScaleSlider) {
+        xScaleSlider.value = 1.0;
+        updateSliderAccessibility(xScaleSlider, xScaleValue, xScaleAnnounce, 1.0, 'X Axis', false);
+      }
+      if (yScaleSlider) {
+        yScaleSlider.value = 1.0;
+        updateSliderAccessibility(yScaleSlider, yScaleValue, yScaleAnnounce, 1.0, 'Y Axis', false);
+      }
+    }
+
+    renderFractal();
+  };
+
+  // Mobile: shake phone to reset view (best-effort; requires motion permissions on iOS)
+  if (isMobileUI && window.matchMedia?.('(pointer: coarse)')?.matches) {
+    // iOS Firefox appears to intercept shakes for its own UI ("Summary not available...").
+    // Best-effort: disable shake-to-reset there to avoid confusing UX.
+    const ua = navigator?.userAgent || '';
+    const isFirefoxiOS = ua.includes('FxiOS');
+    if (isFirefoxiOS) {
+      // no-op
+    } else if (!window.isSecureContext) {
+      // Motion sensors are often restricted to secure contexts on iOS.
+      // Best-effort: skip silently on insecure origins (e.g. http:// LAN IP).
+    } else {
+    const canListen = typeof window !== 'undefined' && 'DeviceMotionEvent' in window;
+    if (canListen) {
+      let lastShakeAt = 0;
+      let prevMagnitude = 0;
+      const COOLDOWN_MS = 1200;
+      const SHAKE_THRESHOLD = 16; // tuned for accel without gravity (m/s^2-ish); best-effort
+
+      const onDeviceMotion = (event) => {
+        const accel = event.acceleration || event.accelerationIncludingGravity;
+        if (!accel) return;
+
+        const ax = accel.x || 0;
+        const ay = accel.y || 0;
+        const az = accel.z || 0;
+        const magnitude = Math.hypot(ax, ay, az);
+
+        // Use a "delta magnitude" to ignore constant gravity and slow tilts.
+        const delta = Math.abs(magnitude - prevMagnitude);
+        prevMagnitude = magnitude * 0.85 + prevMagnitude * 0.15; // light smoothing
+
+        const now = performance.now();
+        if (delta > SHAKE_THRESHOLD && now - lastShakeAt > COOLDOWN_MS) {
+          lastShakeAt = now;
+          resetView();
+        }
+      };
+
+      const attach = () => {
+        window.addEventListener('devicemotion', onDeviceMotion, { passive: true });
+      };
+
+      // iOS 13+ requires explicit permission from a user gesture.
+      const maybeRequestPermission = async () => {
+        const DME = globalThis.DeviceMotionEvent;
+        if (typeof DME?.requestPermission !== 'function') {
+          attach();
+          return;
+        }
+        try {
+          const result = await DME.requestPermission();
+          if (result === 'granted') attach();
+        } catch {
+          // Permission denied or not available; do nothing.
+        }
+      };
+
+      // Request permission / attach on the first touch interaction (user gesture).
+      window.addEventListener(
+        'pointerdown',
+        (e) => {
+          if (e.pointerType !== 'touch') return;
+          void maybeRequestPermission();
+        },
+        { once: true, passive: true }
+      );
+    }
+    }
+  }
 
   // Throttled render function for slider updates with batching
   // Updates UI immediately but batches render calls to reduce unnecessary renders
@@ -230,6 +462,56 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
 
   let currentColorSchemeIndex = colorSchemes.indexOf(params.colorScheme);
   if (currentColorSchemeIndex === -1) currentColorSchemeIndex = 0;
+
+  // Mobile fractal picker: clone options from the main select and keep in sync.
+  if (fractalTypeSelect && mobileFractalTypeSelect) {
+    // Clone the full optgroup/option structure.
+    mobileFractalTypeSelect.innerHTML = fractalTypeSelect.innerHTML;
+    mobileFractalTypeSelect.value = fractalTypeSelect.value;
+
+    const triggerMainChange = (value) => {
+      if (fractalTypeSelect.value === value) return;
+      fractalTypeSelect.value = value;
+      // Dispatch a real change event so existing logic runs (loading, rendering, etc).
+      fractalTypeSelect.dispatchEvent(new Event('change', { bubbles: true }));
+    };
+
+    mobileFractalTypeSelect.addEventListener('change', (e) => {
+      triggerMainChange(e.target.value);
+    });
+
+    // When the main select changes (desktop panel, presets, URL, etc), reflect it in mobile picker.
+    fractalTypeSelect.addEventListener('change', (e) => {
+      const value = e.target.value;
+      if (mobileFractalTypeSelect.value !== value) {
+        mobileFractalTypeSelect.value = value;
+      }
+    });
+  }
+
+  // Mobile theme picker: clone options from main theme select and keep in sync.
+  if (colorSchemeSelect && mobileColorSchemeSelect) {
+    // At this point, the main theme select has already been populated from CONFIG.
+    mobileColorSchemeSelect.innerHTML = colorSchemeSelect.innerHTML;
+    mobileColorSchemeSelect.value = colorSchemeSelect.value;
+
+    const triggerThemeChange = (value) => {
+      if (colorSchemeSelect.value === value) return;
+      colorSchemeSelect.value = value;
+      colorSchemeSelect.dispatchEvent(new Event('change', { bubbles: true }));
+    };
+
+    mobileColorSchemeSelect.addEventListener('change', (e) => {
+      triggerThemeChange(e.target.value);
+    });
+
+    colorSchemeSelect.addEventListener('change', (e) => {
+      const value = e.target.value;
+      if (mobileColorSchemeSelect.value !== value) {
+        mobileColorSchemeSelect.value = value;
+      }
+    });
+  }
 
   // Function to render a mini palette preview for the current color scheme
   const updateColorPalettePreview = () => {
@@ -611,7 +893,7 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
       // Clear the canvas before rendering the new fractal
       const regl = getRegl();
       const canvas = getCanvas();
-      if (regl && canvas) {
+      if (regl && canvas && typeof regl.clear === 'function') {
         regl.clear({
           color: [0, 0, 0, 1],
           depth: 1,
@@ -766,7 +1048,7 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
     // Clear the canvas before rendering new fractal
     const regl = getRegl();
     const canvas = getCanvas();
-    if (regl && canvas) {
+    if (regl && canvas && typeof regl.clear === 'function') {
       regl.clear({
         color: [0, 0, 0, 1],
         depth: 1,
@@ -794,140 +1076,7 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
   });
 
   resetViewBtn.addEventListener('click', () => {
-    const currentFractalModule = getCurrentFractalModule();
-    const params = getParams();
-    const currentFractalType = getCurrentFractalType();
-    // Reset zoom and offset to initial render position from config or fallback
-    const resetConfig = currentFractalModule?.config;
-    let initialPosition;
-    if (resetConfig?.initialPosition) {
-      initialPosition = resetConfig.initialPosition;
-    } else {
-      initialPosition = getInitialRenderPosition(currentFractalType);
-    }
-    params.zoom = initialPosition.zoom;
-    params.offset.x = initialPosition.offset.x;
-    params.offset.y = initialPosition.offset.y;
-    updateCoordinateDisplay();
-
-    // Reset scale parameters and other settings from config
-    if (resetConfig?.initialSettings) {
-      const settings = resetConfig.initialSettings;
-
-      // Reset xScale from config or default to 1.0
-      if (settings.xScale !== undefined) {
-        params.xScale = settings.xScale;
-        if (xScaleSlider) {
-          xScaleSlider.value = settings.xScale;
-          updateSliderAccessibility(
-            xScaleSlider,
-            xScaleValue,
-            xScaleAnnounce,
-            settings.xScale,
-            'X Axis',
-            false
-          );
-        }
-      } else {
-        params.xScale = 1.0;
-        if (xScaleSlider) {
-          xScaleSlider.value = 1.0;
-          updateSliderAccessibility(
-            xScaleSlider,
-            xScaleValue,
-            xScaleAnnounce,
-            1.0,
-            'X Axis',
-            false
-          );
-        }
-      }
-
-      // Reset yScale from config or default to 1.0
-      if (settings.yScale !== undefined) {
-        params.yScale = settings.yScale;
-        if (yScaleSlider) {
-          yScaleSlider.value = settings.yScale;
-          updateSliderAccessibility(
-            yScaleSlider,
-            yScaleValue,
-            yScaleAnnounce,
-            settings.yScale,
-            'Y Axis',
-            false
-          );
-        }
-      } else {
-        params.yScale = 1.0;
-        if (yScaleSlider) {
-          yScaleSlider.value = 1.0;
-          updateSliderAccessibility(
-            yScaleSlider,
-            yScaleValue,
-            yScaleAnnounce,
-            1.0,
-            'Y Axis',
-            false
-          );
-        }
-      }
-
-      // Reset juliaC from config if specified, or use default for Julia sets
-      if (settings.juliaC !== undefined) {
-        params.juliaC.x = settings.juliaC.x;
-        params.juliaC.y = settings.juliaC.y;
-        if (juliaCReal) juliaCReal.value = settings.juliaC.x;
-        if (juliaCImag) juliaCImag.value = settings.juliaC.y;
-        if (juliaCRealValue) juliaCRealValue.textContent = settings.juliaC.x.toFixed(4);
-        if (juliaCImagValue) juliaCImagValue.textContent = settings.juliaC.y.toFixed(4);
-      } else if (isJuliaType(currentFractalType)) {
-        // Reset to default Julia C parameters if not specified in config
-        params.juliaC.x = CONFIG.julia.defaultC.x;
-        params.juliaC.y = CONFIG.julia.defaultC.y;
-        if (juliaCReal) juliaCReal.value = CONFIG.julia.defaultC.x;
-        if (juliaCImag) juliaCImag.value = CONFIG.julia.defaultC.y;
-        if (juliaCRealValue) juliaCRealValue.textContent = CONFIG.julia.defaultC.x.toFixed(4);
-        if (juliaCImagValue) juliaCImagValue.textContent = CONFIG.julia.defaultC.y.toFixed(4);
-      }
-
-      // Reset iterations from config if specified
-      if (settings.iterations !== undefined) {
-        params.iterations = settings.iterations;
-        if (iterationsSlider) iterationsSlider.value = settings.iterations;
-        if (iterationsValue) iterationsValue.textContent = settings.iterations.toString();
-        const fullscreenIterationsNumberEl = document.getElementById(
-          'fullscreen-iterations-number'
-        );
-        if (fullscreenIterationsNumberEl) {
-          fullscreenIterationsNumberEl.textContent = settings.iterations.toString();
-        }
-      }
-
-      // Reset color scheme from config if specified
-      if (settings.colorScheme !== undefined) {
-        params.colorScheme = settings.colorScheme;
-        if (colorSchemeSelect) colorSchemeSelect.value = settings.colorScheme;
-        const newIndex = colorSchemes.indexOf(settings.colorScheme);
-        if (newIndex !== -1) {
-          currentColorSchemeIndex = newIndex;
-        }
-        updateColorPalettePreview();
-      }
-    } else {
-      // Default to 1.0 if no config
-      params.xScale = 1.0;
-      params.yScale = 1.0;
-      if (xScaleSlider) {
-        xScaleSlider.value = 1.0;
-        updateSliderAccessibility(xScaleSlider, xScaleValue, xScaleAnnounce, 1.0, 'X Axis', false);
-      }
-      if (yScaleSlider) {
-        yScaleSlider.value = 1.0;
-        updateSliderAccessibility(yScaleSlider, yScaleValue, yScaleAnnounce, 1.0, 'Y Axis', false);
-      }
-    }
-
-    renderFractal();
+    resetView();
   });
 
   // Shared screenshot function to avoid code duplication
@@ -1011,10 +1160,12 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
 
           if (highResDrawFractal) {
             // Render directly without using the rendering engine
-            regl.clear({
-              color: [0, 0, 0, 1],
-              depth: 1,
-            });
+            if (typeof regl.clear === 'function') {
+              regl.clear({
+                color: [0, 0, 0, 1],
+                depth: 1,
+              });
+            }
 
             // Force viewport one more time and wrap draw in explicit viewport context
             const gl = regl._gl;
