@@ -2,6 +2,8 @@
 
 Thank you for your interest in contributing to FractalAI! This document provides guidelines and instructions for contributing to this project.
 
+> **AI coding agents:** Use [AGENTS.md](AGENTS.md) for build commands, verification steps, and repo conventions. Subtree-specific guidance is in [`tests/AGENTS.md`](tests/AGENTS.md) and [`static/js/AGENTS.md`](static/js/AGENTS.md).
+
 ## Table of Contents
 
 - [Code of Conduct](#code-of-conduct)

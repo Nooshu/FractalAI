@@ -4,6 +4,8 @@ A web-based fractal generator using regl and WebGL. This project demonstrates in
 
 **Version:** 7.1.0
 
+> **AI coding agents:** See [AGENTS.md](AGENTS.md) for build commands, conventions, and subtree-specific guidance. Nested files live in [`tests/AGENTS.md`](tests/AGENTS.md) and [`static/js/AGENTS.md`](static/js/AGENTS.md).
+
 ## Features
 
 ### Extensive Fractal Collection (100+ Fractals)
@@ -570,6 +572,8 @@ We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guid
 - Adding new fractals
 - Testing requirements
 - Submitting changes
+
+AI coding agents should read [AGENTS.md](AGENTS.md) first (with nested guidance in [`tests/AGENTS.md`](tests/AGENTS.md) and [`static/js/AGENTS.md`](static/js/AGENTS.md)).
 
 ## License
 
