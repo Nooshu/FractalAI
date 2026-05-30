@@ -824,7 +824,7 @@ export async function getInterestingBounds(fractalType, fractalModule = null) {
         // Load the fractal to get the module (loader handles caching)
         fractalModule = await fractalLoader.loadFractal(fractalType);
       }
-    } catch (error) {
+    } catch (_error) {
       // If we can't load, continue with defaults
       // console.warn(`Could not load fractal module for ${fractalType}, using defaults`);
     }

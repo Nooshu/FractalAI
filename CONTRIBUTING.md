@@ -34,7 +34,7 @@ By participating in this project, you agree to maintain a respectful and inclusi
    ```
 4. **Start the development server**:
    ```bash
-   npm run dev
+   npm start
    ```
 
 ## Development Setup

@@ -173,10 +173,6 @@ export async function generateCandidates(fractalType, options = {}, fractalModul
 
   // Use interesting bounds if ranges not explicitly provided
   const effectiveZoomRange = zoomRange || bounds.zoom;
-  const effectiveOffsetRange = offsetRange || [
-    Math.min(bounds.offsetX[0], bounds.offsetY[0]),
-    Math.max(bounds.offsetX[1], bounds.offsetY[1]),
-  ];
 
   const candidates = [];
   const availableSchemes = await getAvailableColorSchemes();
@@ -184,8 +180,12 @@ export async function generateCandidates(fractalType, options = {}, fractalModul
   for (let i = 0; i < count; i++) {
     const zoom =
       effectiveZoomRange[0] + Math.random() * (effectiveZoomRange[1] - effectiveZoomRange[0]);
-    const offsetX = bounds.offsetX[0] + Math.random() * (bounds.offsetX[1] - bounds.offsetX[0]);
-    const offsetY = bounds.offsetY[0] + Math.random() * (bounds.offsetY[1] - bounds.offsetY[0]);
+    const offsetX = offsetRange
+      ? offsetRange[0] + Math.random() * (offsetRange[1] - offsetRange[0])
+      : bounds.offsetX[0] + Math.random() * (bounds.offsetX[1] - bounds.offsetX[0]);
+    const offsetY = offsetRange
+      ? offsetRange[0] + Math.random() * (offsetRange[1] - offsetRange[0])
+      : bounds.offsetY[0] + Math.random() * (bounds.offsetY[1] - bounds.offsetY[0]);
 
     // Randomly select color scheme if not specified or if includeColorScheme is true
     const selectedColorScheme =

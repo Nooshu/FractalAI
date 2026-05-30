@@ -222,7 +222,8 @@ export async function loadModel() {
     }
 
     // Create network from JSON (remove version/metadata fields first)
-    const { version, timestamp, favoriteCount, ...networkData } = modelData;
+    const { version: _version, timestamp: _timestamp, favoriteCount: _favoriteCount, ...networkData } =
+      modelData;
     const network = Synaptic.Network.fromJSON(networkData);
 
     return network;

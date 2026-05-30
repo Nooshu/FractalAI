@@ -14,7 +14,7 @@ async function getUpdateDebugDisplay() {
     try {
       const module = await import('./debug-display.js');
       updateDebugDisplayFn = module.updateDebugDisplay;
-    } catch (error) {
+    } catch (_error) {
       // Provide a no-op if module fails to load
       updateDebugDisplayFn = () => {};
     }

@@ -20,7 +20,7 @@ FractalAI is a web-based fractal generator (regl + WebGL) with 100+ fractal type
 - **Node.js**: `22.16.0` (see [`.nvmrc`](.nvmrc)). Run `nvm use` if you use nvm.
 - **npm**: v10+ (`package.json` engines: `node >=22.16.0`, `npm >=10.0.0`).
 - **Install**: `npm install`
-- **Dev server**: `npm run dev` → typically `http://localhost:5173`
+- **Dev server**: `npm start` or `npm run dev` → typically `http://localhost:5173`
 - **Do not** widen dev-server network exposure (`server.host: true` / `0.0.0.0`) unless explicitly required. Use `npm run dev:network` only when LAN testing is needed.
 
 Useful paths when navigating:
@@ -53,6 +53,7 @@ Run the closest checks after substantive changes:
 Other commands:
 
 ```bash
+npm start              # Dev server (alias for npm run dev)
 npm run dev              # Dev server (regenerates preset manifest first)
 npm run build            # Production build → dist/
 npm run preview          # Preview production build

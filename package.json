@@ -9,6 +9,7 @@
     "npm": ">=10.0.0"
   },
   "scripts": {
+    "start": "npm run dev",
     "dev": "node scripts/generate-presets-manifest.js && vite",
     "dev:network": "node scripts/generate-presets-manifest.js && node -e \"import os from 'node:os'; const port=5173; const ifaces=os.networkInterfaces(); const ips=Object.values(ifaces).flat().filter(Boolean).filter((i)=>i.family==='IPv4' && !i.internal).map((i)=>i.address); const ip=ips[0]||'localhost'; console.log('\\nNetwork preview:\\n- Local:   http://localhost:' + port + '/\\n- Network: http://' + ip + ':' + port + '/\\n');\" && vite --host 0.0.0.0 --port 5173",
     "build": "node scripts/generate-presets-manifest.js && NODE_ENV=production npx vite build && NODE_ENV=production node scripts/compress-brotli.js",
@@ -45,7 +46,7 @@
     "@playwright/test": "1.60.0",
     "@vitest/coverage-v8": "4.1.7",
     "esbuild": "0.28.0",
-    "eslint": "10.4.0",
+    "eslint": "10.4.1",
     "jsdom": "29.1.1",
     "prettier": "3.8.3",
     "stylelint": "17.12.0",

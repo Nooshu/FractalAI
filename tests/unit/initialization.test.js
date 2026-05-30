@@ -249,9 +249,6 @@ vi.mock('../../static/js/rendering/multi-resolution.js', () => ({
 }));
 
 describe('initialization module', () => {
-  let originalConsoleLog;
-  let originalConsoleWarn;
-  let originalConsoleError;
   let originalRequestIdleCallback;
   let originalSetTimeout;
   let consoleLogSpy;
@@ -260,9 +257,6 @@ describe('initialization module', () => {
 
   beforeEach(() => {
     // Mock console methods using spies to ensure they persist
-    originalConsoleLog = console.log;
-    originalConsoleWarn = console.warn;
-    originalConsoleError = console.error;
     consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
     consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
     consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});

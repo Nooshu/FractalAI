@@ -40,8 +40,7 @@ describe('discovery/ml-trainer', () => {
   });
 
   it('should save and load model metadata', async () => {
-    const { saveModel, shouldRetrainModel } =
-      await import('../../static/js/discovery/ml-trainer.js');
+    const { saveModel } = await import('../../static/js/discovery/ml-trainer.js');
     // Create a mock model
     const mockModel = {
       toJSON: vi.fn(() => ({ layers: [] })),

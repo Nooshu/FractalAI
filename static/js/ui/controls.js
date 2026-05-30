@@ -1603,7 +1603,6 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
   const autoCyclePauseIcon = document.getElementById('fullscreen-auto-cycle-pause');
   let autoCycleAnimationFrame = null;
   let autoCycleTimeout = null;
-  let isWaitingForRender = false;
   let wasRendering = false;
   const MIN_CYCLE_DELAY = 1000; // Minimum 1 second between theme changes (even if render completes quickly)
 
@@ -1635,7 +1634,6 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
       return;
     }
 
-    isWaitingForRender = true;
     const renderStartTime = performance.now();
     let hasStartedRendering = false;
     const MAX_WAIT_FOR_START = 500; // Max 500ms to wait for rendering to start
@@ -1684,7 +1682,6 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
             stopAutoCycle();
           }
         }, delay);
-        isWaitingForRender = false;
         wasRendering = false;
         return;
       }
@@ -1705,7 +1702,6 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
               stopAutoCycle();
             }
           }, delay);
-          isWaitingForRender = false;
           return;
         }
       }
@@ -1750,7 +1746,6 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
       clearTimeout(autoCycleTimeout);
       autoCycleTimeout = null;
     }
-    isWaitingForRender = false;
     wasRendering = false;
 
     // Update button appearance
@@ -1899,7 +1894,7 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
       : [];
     buttons.forEach((button) => {
       button.addEventListener('mouseenter', handleMouseEnterControls);
-      button.addEventListener('mouseleave', (e) => {
+      button.addEventListener('mouseleave', (_e) => {
         // Only fade if mouse is not over any button or the container
         if (
           !fullscreenControls.matches(':hover') &&
@@ -1925,7 +1920,7 @@ export function setupUIControls(getters, setters, dependencies, callbacks) {
       });
 
       button.addEventListener('focus', handleMouseEnterControls);
-      button.addEventListener('blur', (e) => {
+      button.addEventListener('blur', (_e) => {
         // Only fade on blur if not hovering and not another button is focused
         if (
           !fullscreenControls.matches(':hover') &&
