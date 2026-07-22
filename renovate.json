@@ -54,7 +54,9 @@
 				"flatted",
 				"picomatch",
 				"micromatch",
-				"ajv"
+				"ajv",
+				"js-yaml",
+				"fast-uri"
 			],
 			"matchManagers": ["npm"],
 			"rangeStrategy": "pin"
