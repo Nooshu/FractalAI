@@ -59,7 +59,7 @@
     "flatted": "3.4.4",
     "picomatch": "4.0.5",
     "js-yaml": "5.2.2",
-    "fast-uri": "4.1.1",
+    "fast-uri": "4.1.2",
     "micromatch": {
       "picomatch": "4.0.5"
     },
