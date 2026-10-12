@@ -43,7 +43,7 @@
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
-    "@playwright/test": "1.63.0",
+    "@playwright/test": "1.64.0",
     "@vitest/coverage-v8": "5.0.3",
     "esbuild": "0.28.2",
     "eslint": "10.12.0",
